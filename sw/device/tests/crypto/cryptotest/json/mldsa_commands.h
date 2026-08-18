@@ -20,7 +20,6 @@ extern "C" {
 #define MLDSA_CMD_MAX_SIG_BYTES 4672  // ML-DSA-87: 4627
 #define MLDSA_CMD_MAX_SEED_BYTES 64   // all parameter sets: 32
 #define MLDSA_CMD_MAX_RND_BYTES 32    // all parameter sets
-#define MLDSA_CMD_HASH_BYTES 32
 
 // clang-format off
 
@@ -98,11 +97,35 @@ UJSON_SERDE_STRUCT(CryptotestMldsaSiggenData, cryptotest_mldsa_siggen_data_t, ML
     field(signature_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestMldsaSigverData, cryptotest_mldsa_sigver_data_t, MLDSA_SIGVER_DATA);
 
-// Hash-based output: firmware returns SHA3-256 of outputs + success.
-#define MLDSA_OUTPUT(field, string) \
-    field(hash, uint8_t, MLDSA_CMD_HASH_BYTES) \
+// Keygen output: the key pair in the standard FIPS 204 encoding.
+#define MLDSA_KEYGEN_OUTPUT(field, string) \
+    field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
+    field(pk_len, size_t) \
+    field(sk, uint8_t, MLDSA_CMD_MAX_SK_BYTES) \
+    field(sk_len, size_t) \
     field(success, bool)
-UJSON_SERDE_STRUCT(CryptotestMldsaOutput, cryptotest_mldsa_output_t, MLDSA_OUTPUT);
+UJSON_SERDE_STRUCT(CryptotestMldsaKeygenOutput, cryptotest_mldsa_keygen_output_t, MLDSA_KEYGEN_OUTPUT);
+
+// KeygenSign output: derived public key and signature.
+#define MLDSA_KEYGEN_SIGN_OUTPUT(field, string) \
+    field(pk, uint8_t, MLDSA_CMD_MAX_PK_BYTES) \
+    field(pk_len, size_t) \
+    field(signature, uint8_t, MLDSA_CMD_MAX_SIG_BYTES) \
+    field(signature_len, size_t) \
+    field(success, bool)
+UJSON_SERDE_STRUCT(CryptotestMldsaKeygenSignOutput, cryptotest_mldsa_keygen_sign_output_t, MLDSA_KEYGEN_SIGN_OUTPUT);
+
+// Siggen output: signature.
+#define MLDSA_SIGGEN_OUTPUT(field, string) \
+    field(signature, uint8_t, MLDSA_CMD_MAX_SIG_BYTES) \
+    field(signature_len, size_t) \
+    field(success, bool)
+UJSON_SERDE_STRUCT(CryptotestMldsaSiggenOutput, cryptotest_mldsa_siggen_output_t, MLDSA_SIGGEN_OUTPUT);
+
+// Sigver output: verification result.
+#define MLDSA_SIGVER_OUTPUT(field, string) \
+    field(success, bool)
+UJSON_SERDE_STRUCT(CryptotestMldsaSigverOutput, cryptotest_mldsa_sigver_output_t, MLDSA_SIGVER_OUTPUT);
 
 #undef MODULE_ID
 

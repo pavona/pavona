@@ -13,13 +13,9 @@ Supports:
 Tests with the "Internal" flag are skipped (require internal API).
 Tests with "InvalidPrivateKey" are skipped (FIPS 204 does not mandate
 private key validation during signing).
-
-For siggen, the parser pre-computes a SHA3-256 hash of the expected
-signature, avoiding expensive transfer of large outputs.
 """
 
 import argparse
-import hashlib
 import json
 import sys
 
@@ -30,11 +26,6 @@ PARAMETER_SETS = {
     "65": 65,
     "87": 87,
 }
-
-
-def compute_hash(data):
-    """Compute SHA3-256 hash."""
-    return list(hashlib.sha3_256(data).digest())
 
 
 def parse_verify(data, param_set):
@@ -65,7 +56,7 @@ def parse_sign_seed(data, param_set):
 
     Each group has a privateSeed; we emit a keygen + siggen per test.
     Skip tests with Internal flag (require internal API).
-    Output hash: SHA3-256(pk || signature).
+    Expected outputs: pk and signature.
     """
     test_vectors = []
     for group in data["testGroups"]:
@@ -93,9 +84,8 @@ def parse_sign_seed(data, param_set):
                 "result": is_valid,
             }
             if is_valid:
-                pk = bytes.fromhex(group["publicKey"])
-                sig = bytes.fromhex(test["sig"])
-                entry["expected_hash"] = compute_hash(pk + sig)
+                entry["expected_pk"] = list(bytes.fromhex(group["publicKey"]))
+                entry["expected_signature"] = list(bytes.fromhex(test["sig"]))
             test_vectors.append(entry)
     return test_vectors
 
@@ -106,7 +96,7 @@ def parse_sign_noseed(data, param_set):
     Each group has a full privateKey; we emit siggen per test.
     Skip tests with Internal or InvalidPrivateKey flags.
     FIPS 204 does not mandate private key validation during signing.
-    Output hash for siggen: SHA3-256(signature).
+    Expected output: the signature.
     """
     test_vectors = []
     for group in data["testGroups"]:
@@ -133,8 +123,7 @@ def parse_sign_noseed(data, param_set):
                 "result": is_valid,
             }
             if is_valid:
-                sig = bytes.fromhex(test["sig"])
-                entry["expected_hash"] = compute_hash(sig)
+                entry["expected_signature"] = list(bytes.fromhex(test["sig"]))
             test_vectors.append(entry)
     return test_vectors
 

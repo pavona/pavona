@@ -11,10 +11,6 @@ Supports:
   - ML-DSA-sigGen-FIPS204 (siggen)
   - ML-DSA-sigVer-FIPS204 (sigver)
 
-For keygen and siggen, the parser pre-computes a SHA3-256 hash of the
-expected outputs. The firmware computes the same hash and returns only
-the 32-byte digest, avoiding expensive transfer of large outputs.
-
 Within the external interface, pure ML-DSA and HashML-DSA are supported
 for the hash functions the cryptolib implements (SHA2-256/384/512,
 SHA3-224/256/384/512, SHAKE-128/256); other HashML-DSA groups are
@@ -26,7 +22,6 @@ cryptolib has no path to derive mu from a raw message internally.
 """
 
 import argparse
-import hashlib
 import json
 import sys
 
@@ -61,11 +56,6 @@ def sign_mode_for_test(group, test):
     return HASH_ALGS.get(test["hashAlg"])
 
 
-def compute_hash(data):
-    """Compute SHA3-256 hash."""
-    return list(hashlib.sha3_256(data).digest())
-
-
 def message_and_sign_mode(group, test):
     """Returns the `(message, sign_mode, context)` to send for a test, or
     `(None, None, None)` if unsupported.
@@ -86,7 +76,7 @@ def message_and_sign_mode(group, test):
 
 def parse_keygen(data):
     """Parse ML-DSA-keyGen internalProjection.
-    Output hash: SHA3-256(pk || sk)."""
+    Expected outputs: pk and sk."""
     test_vectors = []
     for group in data["testGroups"]:
         param_set = PARAMETER_SETS[group["parameterSet"]]
@@ -100,7 +90,8 @@ def parse_keygen(data):
                 "operation": "keygen",
                 "parameter_set": param_set,
                 "seed": list(seed),
-                "expected_hash": compute_hash(pk + sk),
+                "expected_pk": list(pk),
+                "expected_sk": list(sk),
                 "result": True,
             })
     return test_vectors
@@ -109,8 +100,8 @@ def parse_keygen(data):
 def parse_siggen(data):
     """Parse ML-DSA-sigGen internalProjection.
     Deterministic and randomized; pure ML-DSA, HashML-DSA, and the internal
-    signature interface with externalMu=true. Output hash:
-    SHA3-256(signature)."""
+    signature interface with externalMu=true. Expected output: the
+    signature."""
     test_vectors = []
     skipped_hash_alg = 0
     skipped_interface = 0
@@ -145,7 +136,7 @@ def parse_siggen(data):
                 "message": list(message),
                 "context": list(context),
                 "rnd": list(rnd),
-                "expected_hash": compute_hash(sig),
+                "expected_signature": list(sig),
                 "result": True,
             })
     if skipped_hash_alg:

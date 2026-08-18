@@ -12,8 +12,9 @@ use serde::Deserialize;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::mldsa_commands::{
-    CryptotestMldsaKeygenData, CryptotestMldsaKeygenSignData, CryptotestMldsaOutput,
-    CryptotestMldsaSiggenData, CryptotestMldsaSigverData, MldsaSignMode, MldsaSubcommand,
+    CryptotestMldsaKeygenData, CryptotestMldsaKeygenOutput, CryptotestMldsaKeygenSignData,
+    CryptotestMldsaKeygenSignOutput, CryptotestMldsaSiggenData, CryptotestMldsaSiggenOutput,
+    CryptotestMldsaSigverData, CryptotestMldsaSigverOutput, MldsaSignMode, MldsaSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -56,10 +57,31 @@ struct MldsaTestCase {
     #[serde(default)]
     signature: Vec<u8>,
     #[serde(default)]
-    expected_hash: Vec<u8>,
+    expected_pk: Vec<u8>,
+    #[serde(default)]
+    expected_sk: Vec<u8>,
+    #[serde(default)]
+    expected_signature: Vec<u8>,
     result: bool,
     #[serde(default)]
     sign_mode: String,
+}
+
+// Raw outputs returned by the device. Only the fields the operation produces
+// are populated.
+#[derive(Default)]
+struct MldsaOutputs {
+    success: bool,
+    pk: Vec<u8>,
+    sk: Vec<u8>,
+    signature: Vec<u8>,
+}
+
+fn check_output(name: &str, tc_id: usize, actual: &[u8], expected: &[u8]) {
+    if expected.is_empty() {
+        return;
+    }
+    assert_eq!(actual, expected, "test #{}: {} mismatch", tc_id, name);
 }
 
 fn mldsa_sign_mode(sign_mode: &str) -> MldsaSignMode {
@@ -88,7 +110,6 @@ const MAX_MSG: usize = 8448; // ML-DSA-87: 8192
 const MAX_CTX: usize = 256; // FIPS 204: 255
 const MAX_SIG: usize = 4672; // ML-DSA-87: 4627
 const MAX_RND: usize = 32;
-const HASH_BYTES: usize = 32;
 
 fn run_mldsa_testcase(
     test_case: &MldsaTestCase,
@@ -103,7 +124,7 @@ fn run_mldsa_testcase(
 
     CryptotestCommand::Mldsa.send(spi_console)?;
 
-    match test_case.operation.as_str() {
+    let outputs = match test_case.operation.as_str() {
         "keygen" => {
             MldsaSubcommand::MldsaKeygen.send(spi_console)?;
             let mut seed: ArrayVec<u8, MAX_SEED> = ArrayVec::new();
@@ -114,6 +135,13 @@ fn run_mldsa_testcase(
                 seed_len: test_case.seed.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMldsaKeygenOutput::recv(spi_console, opts.timeout, false, false)?;
+            MldsaOutputs {
+                success: out.success,
+                pk: out.pk[..out.pk_len].to_vec(),
+                sk: out.sk[..out.sk_len].to_vec(),
+                ..Default::default()
+            }
         }
         "keygen_sign" => {
             MldsaSubcommand::MldsaKeygenSign.send(spi_console)?;
@@ -138,6 +166,14 @@ fn run_mldsa_testcase(
                 rnd_len: test_case.rnd.len(),
             }
             .send(spi_console)?;
+            let out =
+                CryptotestMldsaKeygenSignOutput::recv(spi_console, opts.timeout, false, false)?;
+            MldsaOutputs {
+                success: out.success,
+                pk: out.pk[..out.pk_len].to_vec(),
+                signature: out.signature[..out.signature_len].to_vec(),
+                ..Default::default()
+            }
         }
         "siggen" => {
             MldsaSubcommand::MldsaSiggen.send(spi_console)?;
@@ -162,6 +198,12 @@ fn run_mldsa_testcase(
                 rnd_len: test_case.rnd.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMldsaSiggenOutput::recv(spi_console, opts.timeout, false, false)?;
+            MldsaOutputs {
+                success: out.success,
+                signature: out.signature[..out.signature_len].to_vec(),
+                ..Default::default()
+            }
         }
         "sigver" => {
             MldsaSubcommand::MldsaSigver.send(spi_console)?;
@@ -186,25 +228,30 @@ fn run_mldsa_testcase(
                 signature_len: test_case.signature.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMldsaSigverOutput::recv(spi_console, opts.timeout, false, false)?;
+            MldsaOutputs {
+                success: out.success,
+                ..Default::default()
+            }
         }
         _ => panic!("Unsupported ML-DSA operation: {}", test_case.operation),
-    }
-
-    let output = CryptotestMldsaOutput::recv(spi_console, opts.timeout, false, false)?;
+    };
 
     assert_eq!(
-        output.success, test_case.result,
+        outputs.success, test_case.result,
         "test #{}: expected success={}, got={}",
-        test_case.test_case_id, test_case.result, output.success
+        test_case.test_case_id, test_case.result, outputs.success
     );
 
-    // Verify hash if expected (valid tests with pre-computed hash).
-    if test_case.result && !test_case.expected_hash.is_empty() {
-        assert_eq!(
-            output.hash[..HASH_BYTES],
-            test_case.expected_hash[..],
-            "test #{}: hash mismatch",
-            test_case.test_case_id
+    if test_case.result {
+        let id = test_case.test_case_id;
+        check_output("pk", id, &outputs.pk, &test_case.expected_pk);
+        check_output("sk", id, &outputs.sk, &test_case.expected_sk);
+        check_output(
+            "signature",
+            id,
+            &outputs.signature,
+            &test_case.expected_signature,
         );
     }
 

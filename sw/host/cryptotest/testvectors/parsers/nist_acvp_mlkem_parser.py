@@ -10,11 +10,6 @@ Supports:
   - ML-KEM-keyGen-FIPS203 (keygen)
   - ML-KEM-encapDecap-FIPS203 (encaps, decaps)
 
-Instead of including the full expected outputs (ek, dk, ct, k) in the
-parsed JSON, this parser pre-computes a SHA3-256 hash of the expected
-outputs. The firmware computes the same hash and returns only the
-32-byte digest, avoiding expensive transfer of large outputs.
-
 ACVP encapsulationKeyCheck and decapsulationKeyCheck tests verify that
 the implementation rejects invalid keys. The cryptolib does not expose
 dedicated key validation functions as of now, but encapsulate_derand
@@ -25,7 +20,6 @@ valid keys succeed, invalid keys cause the operation to fail.
 """
 
 import argparse
-import hashlib
 import json
 import sys
 
@@ -38,14 +32,9 @@ PARAMETER_SETS = {
 }
 
 
-def compute_hash(data):
-    """Compute SHA3-256 hash."""
-    return list(hashlib.sha3_256(data).digest())
-
-
 def parse_keygen(data):
     """Parse ML-KEM-keyGen internalProjection.
-    Output hash: SHA3-256(ek || dk)."""
+    Expected outputs: ek and dk."""
     test_vectors = []
     for group in data["testGroups"]:
         param_set = PARAMETER_SETS[group["parameterSet"]]
@@ -59,7 +48,8 @@ def parse_keygen(data):
                 "operation": "keygen",
                 "parameter_set": param_set,
                 "seed": list(seed),
-                "expected_hash": compute_hash(ek + dk),
+                "expected_ek": list(ek),
+                "expected_dk": list(dk),
                 "result": True,
             })
     return test_vectors
@@ -73,7 +63,7 @@ def parse_encap_decap(data):
         function = group["function"]
 
         if function == "encapsulation":
-            # Output hash: SHA3-256(ct || K).
+            # Expected outputs: c and K.
             for test in group["tests"]:
                 c = bytes.fromhex(test["c"])
                 k = bytes.fromhex(test["k"])
@@ -84,11 +74,12 @@ def parse_encap_decap(data):
                     "parameter_set": param_set,
                     "seed": list(bytes.fromhex(test["m"])),
                     "ek": list(bytes.fromhex(test["ek"])),
-                    "expected_hash": compute_hash(c + k),
+                    "expected_c": list(c),
+                    "expected_k": list(k),
                     "result": True,
                 })
         elif function == "decapsulation":
-            # Output hash: SHA3-256(K).
+            # Expected output: K.
             for test in group["tests"]:
                 k = bytes.fromhex(test["k"])
                 test_vectors.append({
@@ -98,7 +89,7 @@ def parse_encap_decap(data):
                     "parameter_set": param_set,
                     "dk": list(bytes.fromhex(test["dk"])),
                     "c": list(bytes.fromhex(test["c"])),
-                    "expected_hash": compute_hash(k),
+                    "expected_k": list(k),
                     "result": True,
                 })
         elif function == "encapsulationKeyCheck":

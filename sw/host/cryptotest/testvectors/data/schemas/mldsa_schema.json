@@ -69,8 +69,16 @@
         "description": "Signature",
         "$ref": "#/$defs/byte_array"
       },
-      "expected_hash": {
-        "description": "SHA3-256 hash of expected outputs",
+      "expected_pk": {
+        "description": "Expected public key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_sk": {
+        "description": "Expected secret key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_signature": {
+        "description": "Expected signature",
         "$ref": "#/$defs/byte_array"
       },
       "result": {

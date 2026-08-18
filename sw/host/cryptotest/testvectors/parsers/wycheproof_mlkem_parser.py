@@ -10,15 +10,9 @@ Supports:
   - mlkem_*_keygen_seed_test.json (--test-type keygen)
   - mlkem_*_encaps_test.json (--test-type encaps)
   - mlkem_*_semi_expanded_decaps_test.json (--test-type decaps)
-
-Instead of including the full expected outputs (ek, dk, ct, k) in the
-parsed JSON, this parser pre-computes a SHA3-256 hash of the expected
-outputs. The firmware computes the same hash and returns only the
-32-byte digest, avoiding expensive transfer of large outputs.
 """
 
 import argparse
-import hashlib
 import json
 import sys
 
@@ -31,14 +25,9 @@ PARAMETER_SETS = {
 }
 
 
-def compute_hash(data):
-    """Compute SHA3-256 hash."""
-    return list(hashlib.sha3_256(data).digest())
-
-
 def parse_keygen_decaps(group, param_set):
     """Parse mlkem_*_test.json: keygen + decaps.
-    Output hash: SHA3-256(ek || K)."""
+    Expected outputs: ek and K."""
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"
@@ -54,14 +43,15 @@ def parse_keygen_decaps(group, param_set):
             "result": result,
         }
         if result and ek and K:
-            tv["expected_hash"] = compute_hash(ek + K)
+            tv["expected_ek"] = list(ek)
+            tv["expected_k"] = list(K)
         test_vectors.append(tv)
     return test_vectors
 
 
 def parse_keygen(group, param_set):
     """Parse mlkem_*_keygen_seed_test.json: keygen only.
-    Output hash: SHA3-256(ek || dk)."""
+    Expected outputs: ek and dk."""
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"
@@ -76,7 +66,8 @@ def parse_keygen(group, param_set):
             "result": result,
         }
         if result and ek and dk:
-            tv["expected_hash"] = compute_hash(ek + dk)
+            tv["expected_ek"] = list(ek)
+            tv["expected_dk"] = list(dk)
         test_vectors.append(tv)
     return test_vectors
 
@@ -84,7 +75,7 @@ def parse_keygen(group, param_set):
 def parse_encaps(group, param_set):
     """Parse mlkem_*_encaps_test.json: encaps only.
     The randomness m is stored in the seed field.
-    Output hash: SHA3-256(ct || K)."""
+    Expected outputs: c and K."""
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"
@@ -100,15 +91,16 @@ def parse_encaps(group, param_set):
             "result": result,
         }
         if result and c and K:
-            tv["expected_hash"] = compute_hash(c + K)
+            tv["expected_c"] = list(c)
+            tv["expected_k"] = list(K)
         test_vectors.append(tv)
     return test_vectors
 
 
 def parse_decaps(group, param_set):
     """Parse mlkem_*_semi_expanded_decaps_test.json: decaps only.
-    No expected hash — Wycheproof decaps tests do not include K,
-    so only success/failure is verified."""
+    Wycheproof decaps tests do not include K, so only success/failure
+    is verified."""
     test_vectors = []
     for test in group["tests"]:
         result = test["result"] == "valid"

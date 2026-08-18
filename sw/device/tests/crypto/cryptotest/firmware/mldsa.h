@@ -29,14 +29,16 @@ typedef struct mldsa_test_scratch {
     cryptotest_mldsa_siggen_data_t siggen;
     cryptotest_mldsa_sigver_data_t sigver;
   } cmd;
-  // Crypto work area, sk import scratch, and hash scratch.
+  // Crypto work area, sk import scratch, and response staging: the response
+  // is only assembled once the crypto has finished.
   union {
     uint32_t keypair[kOtcryptoMldsa87WorkBufferKeypairWords];
     uint32_t sign[kOtcryptoMldsa87WorkBufferSignWords];
     uint32_t verify[kOtcryptoMldsa87WorkBufferVerifyWords];
     uint32_t sk_scratch[MLDSA_MAX_SK_BLOB_WORDS];
-    uint8_t
-        tmp[kOtcryptoMldsa87PublicKeyBytes + kOtcryptoMldsa87SecretKeyBytes];
+    cryptotest_mldsa_keygen_output_t keygen_out;
+    cryptotest_mldsa_keygen_sign_output_t keygen_sign_out;
+    cryptotest_mldsa_siggen_output_t siggen_out;
   } work;
 } mldsa_test_scratch_t;
 

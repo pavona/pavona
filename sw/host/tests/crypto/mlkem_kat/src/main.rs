@@ -12,8 +12,9 @@ use serde::Deserialize;
 
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::mlkem_commands::{
-    CryptotestMlkemDecapsData, CryptotestMlkemEncapsData, CryptotestMlkemKeygenData,
-    CryptotestMlkemKeygenDecapsData, CryptotestMlkemOutput, MlkemSubcommand,
+    CryptotestMlkemDecapsData, CryptotestMlkemDecapsOutput, CryptotestMlkemEncapsData,
+    CryptotestMlkemEncapsOutput, CryptotestMlkemKeygenData, CryptotestMlkemKeygenDecapsData,
+    CryptotestMlkemKeygenDecapsOutput, CryptotestMlkemKeygenOutput, MlkemSubcommand,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -50,8 +51,32 @@ struct MlkemTestCase {
     #[serde(default)]
     c: Vec<u8>,
     #[serde(default)]
-    expected_hash: Vec<u8>,
+    expected_ek: Vec<u8>,
+    #[serde(default)]
+    expected_dk: Vec<u8>,
+    #[serde(default)]
+    expected_c: Vec<u8>,
+    #[serde(default)]
+    expected_k: Vec<u8>,
     result: bool,
+}
+
+// Raw outputs returned by the device. Only the fields the operation produces
+// are populated.
+#[derive(Default)]
+struct MlkemOutputs {
+    success: bool,
+    ek: Vec<u8>,
+    dk: Vec<u8>,
+    c: Vec<u8>,
+    k: Vec<u8>,
+}
+
+fn check_output(name: &str, tc_id: usize, actual: &[u8], expected: &[u8]) {
+    if expected.is_empty() {
+        return;
+    }
+    assert_eq!(actual, expected, "test #{}: {} mismatch", tc_id, name);
 }
 
 // Buffer sizes based on ML-KEM-1024 (largest parameter set),
@@ -60,7 +85,6 @@ const MAX_SEED: usize = 128; // ML-KEM-1024: 64
 const MAX_EK: usize = 2048; // ML-KEM-1024: 1568
 const MAX_DK: usize = 3200; // ML-KEM-1024: 3168
 const MAX_CT: usize = 1600; // ML-KEM-1024: 1568
-const HASH_BYTES: usize = 32;
 
 fn run_mlkem_testcase(
     test_case: &MlkemTestCase,
@@ -75,7 +99,7 @@ fn run_mlkem_testcase(
 
     CryptotestCommand::Mlkem.send(spi_console)?;
 
-    match test_case.operation.as_str() {
+    let outputs = match test_case.operation.as_str() {
         "keygen" => {
             MlkemSubcommand::MlkemKeygen.send(spi_console)?;
             let mut seed: ArrayVec<u8, MAX_SEED> = ArrayVec::new();
@@ -86,6 +110,13 @@ fn run_mlkem_testcase(
                 seed_len: test_case.seed.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMlkemKeygenOutput::recv(spi_console, opts.timeout, false, false)?;
+            MlkemOutputs {
+                success: out.success,
+                ek: out.ek[..out.ek_len].to_vec(),
+                dk: out.dk[..out.dk_len].to_vec(),
+                ..Default::default()
+            }
         }
         "keygen_decaps" => {
             MlkemSubcommand::MlkemKeygenDecaps.send(spi_console)?;
@@ -101,6 +132,14 @@ fn run_mlkem_testcase(
                 c_len: test_case.c.len(),
             }
             .send(spi_console)?;
+            let out =
+                CryptotestMlkemKeygenDecapsOutput::recv(spi_console, opts.timeout, false, false)?;
+            MlkemOutputs {
+                success: out.success,
+                ek: out.ek[..out.ek_len].to_vec(),
+                k: out.k[..out.k_len].to_vec(),
+                ..Default::default()
+            }
         }
         "encaps" => {
             MlkemSubcommand::MlkemEncaps.send(spi_console)?;
@@ -116,6 +155,13 @@ fn run_mlkem_testcase(
                 ek_len: test_case.ek.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMlkemEncapsOutput::recv(spi_console, opts.timeout, false, false)?;
+            MlkemOutputs {
+                success: out.success,
+                c: out.c[..out.c_len].to_vec(),
+                k: out.k[..out.k_len].to_vec(),
+                ..Default::default()
+            }
         }
         "decaps" => {
             MlkemSubcommand::MlkemDecaps.send(spi_console)?;
@@ -131,26 +177,28 @@ fn run_mlkem_testcase(
                 c_len: test_case.c.len(),
             }
             .send(spi_console)?;
+            let out = CryptotestMlkemDecapsOutput::recv(spi_console, opts.timeout, false, false)?;
+            MlkemOutputs {
+                success: out.success,
+                k: out.k[..out.k_len].to_vec(),
+                ..Default::default()
+            }
         }
         _ => panic!("Unsupported ML-KEM operation: {}", test_case.operation),
-    }
-
-    let output = CryptotestMlkemOutput::recv(spi_console, opts.timeout, false, false)?;
+    };
 
     assert_eq!(
-        output.success, test_case.result,
+        outputs.success, test_case.result,
         "test #{}: expected success={}, got={}",
-        test_case.test_case_id, test_case.result, output.success
+        test_case.test_case_id, test_case.result, outputs.success
     );
 
-    // Verify hash if expected (valid tests with pre-computed hash).
-    if test_case.result && !test_case.expected_hash.is_empty() {
-        assert_eq!(
-            output.hash[..HASH_BYTES],
-            test_case.expected_hash[..],
-            "test #{}: hash mismatch",
-            test_case.test_case_id
-        );
+    if test_case.result {
+        let id = test_case.test_case_id;
+        check_output("ek", id, &outputs.ek, &test_case.expected_ek);
+        check_output("dk", id, &outputs.dk, &test_case.expected_dk);
+        check_output("c", id, &outputs.c, &test_case.expected_c);
+        check_output("k", id, &outputs.k, &test_case.expected_k);
     }
 
     Ok(())

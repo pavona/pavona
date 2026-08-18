@@ -22,14 +22,16 @@ typedef struct mlkem_test_scratch {
                sizeof(uint32_t))];
   uint32_t sk[MLKEM_MAX_SK_BLOB_WORDS];
   uint32_t ct[(kOtcryptoMlkem1024CiphertextBytes + 32) / sizeof(uint32_t)];
-  // Crypto work area, dk import scratch, and hash scratch.
+  // Crypto work area, dk import scratch, and response staging: the response
+  // is only assembled once the crypto has finished.
   union {
     uint32_t keypair[kOtcryptoMlkem1024WorkBufferKeypairWords];
     uint32_t encaps[kOtcryptoMlkem1024WorkBufferEncapsWords];
     uint32_t decaps[kOtcryptoMlkem1024WorkBufferDecapsWords];
     uint32_t dk_scratch[MLKEM_MAX_SK_BLOB_WORDS];
-    uint8_t tmp[kOtcryptoMlkem1024PublicKeyBytes +
-                kOtcryptoMlkem1024SecretKeyBytes];
+    cryptotest_mlkem_keygen_decaps_output_t keygen_decaps_out;
+    cryptotest_mlkem_keygen_output_t keygen_out;
+    cryptotest_mlkem_encaps_output_t encaps_out;
   } work;
 } mlkem_test_scratch_t;
 

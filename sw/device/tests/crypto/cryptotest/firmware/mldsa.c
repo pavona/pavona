@@ -11,7 +11,6 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -23,17 +22,6 @@
 #else
 #define MLDSA_TEST_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassiveRemote
 #endif
-
-static status_t hash_output(const uint8_t *data, size_t len,
-                            cryptotest_mldsa_output_t *out) {
-  otcrypto_const_byte_buf_t msg = {.data = data, .len = len};
-  otcrypto_hash_digest_t digest = {
-      .data = (uint32_t *)out->hash,
-      .len = 8,
-      .mode = kOtcryptoHashModeSha3_256,
-  };
-  return otcrypto_sha3_256(msg, &digest);
-}
 
 static otcrypto_mldsa_sign_mode_t mldsa_sign_mode_from_wire(
     cryptotest_mldsa_sign_mode_t wire_mode) {
@@ -64,11 +52,24 @@ static otcrypto_mldsa_sign_mode_t mldsa_sign_mode_from_wire(
   }
 }
 
-static status_t send_fail(ujson_t *uj) {
-  cryptotest_mldsa_output_t out;
-  memset(&out, 0, sizeof(out));
-  out.success = false;
-  RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
+static status_t send_keygen_fail(ujson_t *uj, mldsa_test_scratch_t *s) {
+  cryptotest_mldsa_keygen_output_t *out = &s->work.keygen_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mldsa_keygen_output_t, uj, out);
+  return OK_STATUS();
+}
+
+static status_t send_keygen_sign_fail(ujson_t *uj, mldsa_test_scratch_t *s) {
+  cryptotest_mldsa_keygen_sign_output_t *out = &s->work.keygen_sign_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mldsa_keygen_sign_output_t, uj, out);
+  return OK_STATUS();
+}
+
+static status_t send_siggen_fail(ujson_t *uj, mldsa_test_scratch_t *s) {
+  cryptotest_mldsa_siggen_output_t *out = &s->work.siggen_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mldsa_siggen_output_t, uj, out);
   return OK_STATUS();
 }
 
@@ -144,7 +145,7 @@ static status_t generate_seed_mask(uint32_t *seed_mask, size_t seed_words) {
 }
 #endif  // ACC_MLDSA_HARDENED
 
-// Output hash: SHA3-256(pk || sk).
+// Returns the key pair in the standard FIPS 204 encoding.
 static status_t handle_mldsa_keygen(ujson_t *uj, mldsa_test_scratch_t *s) {
   cryptotest_mldsa_keygen_data_t *d = &s->cmd.keygen;
   TRY(ujson_deserialize_cryptotest_mldsa_keygen_data_t(uj, d));
@@ -241,28 +242,26 @@ static status_t handle_mldsa_keygen(ujson_t *uj, mldsa_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
-    return send_fail(uj);
+    return send_keygen_fail(uj, s);
   }
 
-  cryptotest_mldsa_output_t out;
-  memset(&out, 0, sizeof(out));
-  // Hash pk || sk; the sk is reconstructed into the standard reference layout.
-  uint8_t *hash_buf = s->work.tmp;
-  memcpy(hash_buf, s->pk, pk_bytes);
+  cryptotest_mldsa_keygen_output_t *out = &s->work.keygen_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->pk, s->pk, pk_bytes);
+  out->pk_len = pk_bytes;
 #ifdef ACC_MLDSA_HARDENED
-  mldsa_unmask_to_std(d->parameter_set, (const uint8_t *)sk.keyblob,
-                      hash_buf + pk_bytes);
+  mldsa_unmask_to_std(d->parameter_set, (const uint8_t *)sk.keyblob, out->sk);
 #else
   // Unprotected: the keyblob is the plain sk.
-  memcpy(hash_buf + pk_bytes, sk.keyblob, sk_bytes);
+  memcpy(out->sk, sk.keyblob, sk_bytes);
 #endif
-  TRY(hash_output(hash_buf, pk_bytes + sk_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
+  out->sk_len = sk_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mldsa_keygen_output_t, uj, out);
   return OK_STATUS();
 }
 
-// Keygen from seed, then sign. Output hash: SHA3-256(pk || signature).
+// Keygen from seed, then sign. Returns the derived public key and signature.
 static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
   cryptotest_mldsa_keygen_sign_data_t *d = &s->cmd.keygen_sign;
   TRY(ujson_deserialize_cryptotest_mldsa_keygen_sign_data_t(uj, d));
@@ -364,7 +363,7 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
-    return send_fail(uj);
+    return send_keygen_sign_fail(uj, s);
   }
 
   otcrypto_const_byte_buf_t message = {.data = d->message,
@@ -398,19 +397,17 @@ static status_t handle_mldsa_keygen_sign(ujson_t *uj, mldsa_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(sign_status)) {
-    return send_fail(uj);
+    return send_keygen_sign_fail(uj, s);
   }
 
-  // Hash pk || sig using work.tmp as scratch.
-  uint8_t *hash_buf = s->work.tmp;
-  memcpy(hash_buf, s->pk, pk_bytes);
-  memcpy(hash_buf + pk_bytes, s->sig, sig_bytes);
-
-  cryptotest_mldsa_output_t out;
-  memset(&out, 0, sizeof(out));
-  TRY(hash_output(hash_buf, pk_bytes + sig_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
+  cryptotest_mldsa_keygen_sign_output_t *out = &s->work.keygen_sign_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->pk, s->pk, pk_bytes);
+  out->pk_len = pk_bytes;
+  memcpy(out->signature, s->sig, sig_bytes);
+  out->signature_len = sig_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mldsa_keygen_sign_output_t, uj, out);
   return OK_STATUS();
 }
 
@@ -495,7 +492,7 @@ static void mldsa_std_sk_to_masked(uint32_t parameter_set, const uint8_t *std,
 }
 #endif
 
-// Output hash: SHA3-256(signature).
+// Returns the signature.
 static status_t handle_mldsa_siggen(ujson_t *uj, mldsa_test_scratch_t *s) {
   cryptotest_mldsa_siggen_data_t *d = &s->cmd.siggen;
   TRY(ujson_deserialize_cryptotest_mldsa_siggen_data_t(uj, d));
@@ -582,18 +579,19 @@ static status_t handle_mldsa_siggen(ujson_t *uj, mldsa_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(sign_status)) {
-    return send_fail(uj);
+    return send_siggen_fail(uj, s);
   }
 
-  cryptotest_mldsa_output_t out;
-  memset(&out, 0, sizeof(out));
-  TRY(hash_output((uint8_t *)s->sig, sig_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
+  cryptotest_mldsa_siggen_output_t *out = &s->work.siggen_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->signature, s->sig, sig_bytes);
+  out->signature_len = sig_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mldsa_siggen_output_t, uj, out);
   return OK_STATUS();
 }
 
-// Sigver: returns success/failure only, no hash.
+// Sigver: returns the verification result only.
 static status_t handle_mldsa_sigver(ujson_t *uj, mldsa_test_scratch_t *s) {
   cryptotest_mldsa_sigver_data_t *d = &s->cmd.sigver;
   TRY(ujson_deserialize_cryptotest_mldsa_sigver_data_t(uj, d));
@@ -653,11 +651,11 @@ static status_t handle_mldsa_sigver(ujson_t *uj, mldsa_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
 
-  cryptotest_mldsa_output_t out;
+  cryptotest_mldsa_sigver_output_t out;
   memset(&out, 0, sizeof(out));
   out.success =
       status_ok(verify_status) && verification_result == kHardenedBoolTrue;
-  RESP_OK(ujson_serialize_cryptotest_mldsa_output_t, uj, &out);
+  RESP_OK(ujson_serialize_cryptotest_mldsa_sigver_output_t, uj, &out);
   return OK_STATUS();
 }
 

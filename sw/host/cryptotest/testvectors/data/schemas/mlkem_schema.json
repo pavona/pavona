@@ -52,8 +52,20 @@
         "description": "Ciphertext",
         "$ref": "#/$defs/byte_array"
       },
-      "expected_hash": {
-        "description": "SHA3-256 hash of expected outputs",
+      "expected_ek": {
+        "description": "Expected encapsulation key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_dk": {
+        "description": "Expected decapsulation key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_c": {
+        "description": "Expected ciphertext",
+        "$ref": "#/$defs/byte_array"
+      },
+      "expected_k": {
+        "description": "Expected shared secret",
         "$ref": "#/$defs/byte_array"
       },
       "result": {

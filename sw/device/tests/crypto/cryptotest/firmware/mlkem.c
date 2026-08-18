@@ -11,7 +11,6 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -26,22 +25,31 @@
 #define MLKEM_SECRET_KEY_SECURITY_LEVEL kOtcryptoKeySecurityLevelPassiveRemote
 #endif
 
-static status_t hash_output(const uint8_t *data, size_t len,
-                            cryptotest_mlkem_output_t *out) {
-  otcrypto_const_byte_buf_t msg = {.data = data, .len = len};
-  otcrypto_hash_digest_t digest = {
-      .data = (uint32_t *)out->hash,
-      .len = 8,
-      .mode = kOtcryptoHashModeSha3_256,
-  };
-  return otcrypto_sha3_256(msg, &digest);
+static status_t send_keygen_decaps_fail(ujson_t *uj, mlkem_test_scratch_t *s) {
+  cryptotest_mlkem_keygen_decaps_output_t *out = &s->work.keygen_decaps_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mlkem_keygen_decaps_output_t, uj, out);
+  return OK_STATUS();
 }
 
-static status_t send_fail(ujson_t *uj) {
-  cryptotest_mlkem_output_t out;
+static status_t send_keygen_fail(ujson_t *uj, mlkem_test_scratch_t *s) {
+  cryptotest_mlkem_keygen_output_t *out = &s->work.keygen_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mlkem_keygen_output_t, uj, out);
+  return OK_STATUS();
+}
+
+static status_t send_encaps_fail(ujson_t *uj, mlkem_test_scratch_t *s) {
+  cryptotest_mlkem_encaps_output_t *out = &s->work.encaps_out;
+  memset(out, 0, sizeof(*out));
+  RESP_OK(ujson_serialize_cryptotest_mlkem_encaps_output_t, uj, out);
+  return OK_STATUS();
+}
+
+static status_t send_decaps_fail(ujson_t *uj) {
+  cryptotest_mlkem_decaps_output_t out;
   memset(&out, 0, sizeof(out));
-  out.success = false;
-  RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
+  RESP_OK(ujson_serialize_cryptotest_mlkem_decaps_output_t, uj, &out);
   return OK_STATUS();
 }
 
@@ -57,7 +65,7 @@ static status_t generate_seed_mask(uint32_t *seed_mask, size_t seed_words) {
 }
 #endif
 
-// Output hash: SHA3-256(ek || K).
+// Returns the derived encapsulation key and the decapsulated shared secret.
 static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
                                            mlkem_test_scratch_t *s) {
   cryptotest_mlkem_keygen_decaps_data_t d;
@@ -115,7 +123,7 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
   // Reject non-word-multiple input lengths; word-multiple-but-wrong lengths
   // are caught by the library's word-count check.
   if (d.seed_len % sizeof(uint32_t) != 0 || d.c_len % sizeof(uint32_t) != 0) {
-    return send_fail(uj);
+    return send_keygen_decaps_fail(uj, s);
   }
   size_t seed_len_words = d.seed_len / sizeof(uint32_t);
 
@@ -159,7 +167,7 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
       return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
-    return send_fail(uj);
+    return send_keygen_decaps_fail(uj, s);
   }
 
   memset(s->ct, 0, sizeof(s->ct));
@@ -200,22 +208,21 @@ static status_t handle_mlkem_keygen_decaps(ujson_t *uj,
       return INVALID_ARGUMENT();
   }
   if (!status_ok(decaps_status)) {
-    return send_fail(uj);
+    return send_keygen_decaps_fail(uj, s);
   }
 
   size_t ss_words = keyblob_share_num_words(ss_config);
   uint32_t ss_unmasked[ss_words];
   TRY(keyblob_key_unmask(&ss, ss_words, ss_unmasked));
 
-  uint8_t *hash_buf = s->work.tmp;
-  memcpy(hash_buf, s->pk, pk_bytes);
-  memcpy(hash_buf + pk_bytes, ss_unmasked, ss_bytes);
-
-  cryptotest_mlkem_output_t out;
-  memset(&out, 0, sizeof(out));
-  TRY(hash_output(hash_buf, pk_bytes + ss_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
+  cryptotest_mlkem_keygen_decaps_output_t *out = &s->work.keygen_decaps_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->ek, s->pk, pk_bytes);
+  out->ek_len = pk_bytes;
+  memcpy(out->k, ss_unmasked, ss_bytes);
+  out->k_len = ss_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mlkem_keygen_decaps_output_t, uj, out);
   return OK_STATUS();
 }
 
@@ -248,7 +255,7 @@ static status_t mlkem_unmask_sk(const otcrypto_blinded_key_t *sk, size_t k,
 }
 #endif
 
-// Output hash: SHA3-256(ek || dk).
+// Returns the key pair in the standard FIPS 203 encoding.
 static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
   cryptotest_mlkem_keygen_data_t d;
   TRY(ujson_deserialize_cryptotest_mlkem_keygen_data_t(uj, &d));
@@ -302,7 +309,7 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
   // Reject non-word-multiple input lengths; word-multiple-but-wrong lengths
   // are caught by the library's word-count check.
   if (d.seed_len % sizeof(uint32_t) != 0) {
-    return send_fail(uj);
+    return send_keygen_fail(uj, s);
   }
   size_t seed_len_words = d.seed_len / sizeof(uint32_t);
 
@@ -346,29 +353,27 @@ static status_t handle_mlkem_keygen(ujson_t *uj, mlkem_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(keygen_status)) {
-    return send_fail(uj);
+    return send_keygen_fail(uj, s);
   }
 
-  // Rebuild the standard dk and build pk||sk hash in work.tmp.
-  uint8_t *hash_buf = s->work.tmp;
-  memcpy(hash_buf, s->pk, pk_bytes);
+  cryptotest_mlkem_keygen_output_t *out = &s->work.keygen_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->ek, s->pk, pk_bytes);
+  out->ek_len = pk_bytes;
 #ifdef ACC_MLKEM_HARDENED
   size_t k = (sk_bytes - 96) / 768;
-  TRY(mlkem_unmask_sk(&sk, k, hash_buf + pk_bytes));
+  TRY(mlkem_unmask_sk(&sk, k, out->dk));
 #else
   // Unprotected: the keyblob is the plain dk.
-  memcpy(hash_buf + pk_bytes, sk.keyblob, sk_bytes);
+  memcpy(out->dk, sk.keyblob, sk_bytes);
 #endif
-
-  cryptotest_mlkem_output_t out;
-  memset(&out, 0, sizeof(out));
-  TRY(hash_output(hash_buf, pk_bytes + sk_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
+  out->dk_len = sk_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mlkem_keygen_output_t, uj, out);
   return OK_STATUS();
 }
 
-// Output hash: SHA3-256(ct || K).
+// Returns the ciphertext and the shared secret.
 static status_t handle_mlkem_encaps(ujson_t *uj, mlkem_test_scratch_t *s) {
   cryptotest_mlkem_encaps_data_t d;
   TRY(ujson_deserialize_cryptotest_mlkem_encaps_data_t(uj, &d));
@@ -406,7 +411,7 @@ static status_t handle_mlkem_encaps(ujson_t *uj, mlkem_test_scratch_t *s) {
   // Reject non-word-multiple randomness lengths; word-multiple-but-wrong
   // lengths are caught by the library's word-count check.
   if (d.seed_len % sizeof(uint32_t) != 0) {
-    return send_fail(uj);
+    return send_encaps_fail(uj, s);
   }
   uint32_t m_words[MLKEM_CMD_MAX_SEED_BYTES / sizeof(uint32_t)];
   memcpy(m_words, d.seed, d.seed_len);
@@ -451,26 +456,25 @@ static status_t handle_mlkem_encaps(ujson_t *uj, mlkem_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(encaps_status)) {
-    return send_fail(uj);
+    return send_encaps_fail(uj, s);
   }
 
   size_t ss_words = keyblob_share_num_words(ss_config);
   uint32_t ss_unmasked[ss_words];
   TRY(keyblob_key_unmask(&ss, ss_words, ss_unmasked));
 
-  uint8_t *hash_buf = s->work.tmp;
-  memcpy(hash_buf, s->ct, ct_bytes);
-  memcpy(hash_buf + ct_bytes, ss_unmasked, ss_bytes);
-
-  cryptotest_mlkem_output_t out;
-  memset(&out, 0, sizeof(out));
-  TRY(hash_output(hash_buf, ct_bytes + ss_bytes, &out));
-  out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
+  cryptotest_mlkem_encaps_output_t *out = &s->work.encaps_out;
+  memset(out, 0, sizeof(*out));
+  memcpy(out->c, s->ct, ct_bytes);
+  out->c_len = ct_bytes;
+  memcpy(out->k, ss_unmasked, ss_bytes);
+  out->k_len = ss_bytes;
+  out->success = true;
+  RESP_OK(ujson_serialize_cryptotest_mlkem_encaps_output_t, uj, out);
   return OK_STATUS();
 }
 
-// Output hash: SHA3-256(K).
+// Returns the shared secret.
 static status_t handle_mlkem_decaps(ujson_t *uj, mlkem_test_scratch_t *s) {
   cryptotest_mlkem_decaps_data_t d;
   TRY(ujson_deserialize_cryptotest_mlkem_decaps_data_t(uj, &d));
@@ -530,7 +534,7 @@ static status_t handle_mlkem_decaps(ujson_t *uj, mlkem_test_scratch_t *s) {
   // Reject non-word-multiple ciphertext lengths; word-multiple-but-wrong
   // lengths are caught by the library's word-count check.
   if (d.c_len % sizeof(uint32_t) != 0) {
-    return send_fail(uj);
+    return send_decaps_fail(uj);
   }
   memset(s->ct, 0, sizeof(s->ct));
   memcpy(s->ct, d.c, d.c_len);
@@ -571,18 +575,19 @@ static status_t handle_mlkem_decaps(ujson_t *uj, mlkem_test_scratch_t *s) {
       return INVALID_ARGUMENT();
   }
   if (!status_ok(decaps_status)) {
-    return send_fail(uj);
+    return send_decaps_fail(uj);
   }
 
   size_t ss_words = keyblob_share_num_words(ss_config);
   uint32_t ss_unmasked[ss_words];
   TRY(keyblob_key_unmask(&ss, ss_words, ss_unmasked));
 
-  cryptotest_mlkem_output_t out;
+  cryptotest_mlkem_decaps_output_t out;
   memset(&out, 0, sizeof(out));
-  TRY(hash_output((uint8_t *)ss_unmasked, ss_bytes, &out));
+  memcpy(out.k, ss_unmasked, ss_bytes);
+  out.k_len = ss_bytes;
   out.success = true;
-  RESP_OK(ujson_serialize_cryptotest_mlkem_output_t, uj, &out);
+  RESP_OK(ujson_serialize_cryptotest_mlkem_decaps_output_t, uj, &out);
   return OK_STATUS();
 }
 
