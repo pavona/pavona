@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import List
+from typing import Any, List
 import hjson
 from pathlib import Path
 import re
@@ -30,16 +30,18 @@ class Name:
     internal representation into "ExampleName".
     """
 
-    def __add__(self, other) -> str:
-        return Name(self._parts + other._parts)
+    def __add__(self, other: 'Name') -> 'Name':
+        return Name(list(self._parts) + list(other._parts))
 
     def __repr__(self) -> str:
         return "Name({})".format(self._parts)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self._parts)
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(object, Name):
+            return NotImplemented
         return self._parts == other._parts
 
     @staticmethod
@@ -104,7 +106,7 @@ class Name:
 # HJSON HANDLING #
 ##################
 
-def cast_hjson_values(hjson_inp: dict | list | str | bool | int | float | None) -> object:
+def cast_hjson_values(hjson_inp: Any) -> Any | dict[str, Any]:
     """Cast values from an Hjson file into their Python equivalents.
 
     According to the Pavona style guide, any type of value may be put into
@@ -166,7 +168,7 @@ def cast_hjson_values(hjson_inp: dict | list | str | bool | int | float | None) 
     raise TypeError(f"Item of unknown type {type(hjson_inp)} found in HJSON.")
 
 
-def import_hjson(file: Path | str, no_casting: bool = False) -> dict:
+def import_hjson(file: Path | str, no_casting: bool = False) -> dict[str, Any]:
     """Import an Hjson file into an OrderedDict.
 
     Optionally, do not try to re-cast values from the Hjson (from
@@ -175,5 +177,5 @@ def import_hjson(file: Path | str, no_casting: bool = False) -> dict:
     file = Path(file).resolve()
     raw_hjson = hjson.loads(file.read_text())
     if no_casting:
-        return raw_hjson
+        return raw_hjson  # type: ignore
     return cast_hjson_values(raw_hjson)
