@@ -494,7 +494,6 @@ MLKEM_COMMON_DEPS = [
     "//sw/acc/crypto/mlkem:basemul",
     "//sw/acc/crypto/mlkem:cbd",
     "//sw/acc/crypto/mlkem:intt",
-    "//sw/acc/crypto/mlkem:kmac_send_msg",
     "//sw/acc/crypto/mlkem:consts",
     "//sw/acc/crypto/mlkem:mlkem_encap",
     "//sw/acc/crypto/mlkem:mlkem_indcpa_enc",

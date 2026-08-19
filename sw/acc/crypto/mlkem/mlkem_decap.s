@@ -252,9 +252,8 @@ _continue:
   lw   x10, 0(x5)
   la   x5, ctbytes
   lw   x5, 0(x5)
-  add  x11, x0, x5
+  srli x5, x5, 5
 #ifdef HARDENED
-  srli x5, x11, 5
   loop x5, 3
     bn.lid  x0, 0(x10++)
     bn.wsrw kmac_msg, w0
@@ -269,13 +268,16 @@ _continue:
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5)
 #else
-  jal     x1, keccak_send_message
+  loop x5, 2
+    bn.lid  x0, 0(x10++)
+    bn.wsrw kmac_msg, w0
+  endloop
   /* Retrieve K_false. */
   la      x5, ss_false
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5)
 #endif
- 
+
   /*** Step 5: w0 <- indcpa_enc_cmp(m', ek_pke, r', c). ***/
   /* Compute re-encryption and compare the re-encrypted ciphertext with the
    * public ciphertext. w0 contains the comparison result. */

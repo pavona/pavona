@@ -93,28 +93,22 @@ _pk_len_k2:
 
 _continue:
   /*** Step 2: Append ek (i.e, ek_pke) to dk_pke and compute h = SHA3-256(ek). ***/
-  /* Copy ek to dk_pke. */
-  srli x5, x8, 5
-  la   x6, dptr_sk
-  lw   x6, 0(x6)
-  la   x7, dptr_pk
-  lw   x7, 0(x7)
-  loop x5, 2
-    bn.lid x0, 0(x7++)
-    bn.sid x0, 0(x6++)
-  endloop
-
-  /* Compute h = SHA3-256(ek). */
   /* Initialize SHA3-256 operation. */
   la      x5, dptr_pk
   lw      x10, 0(x5)
-  add     x11, x0, x8
-  slli    x5, x11, 5
+  slli    x5, x8, 5
   addi    x5, x5, SHA3_256_CFG
   csrrw   x0, kmac_cfg, x5
-  /* Send ek. */
-  jal     x1, keccak_send_message
-  /* Retrieve h. */
+
+  la      x6, dptr_sk
+  lw      x6, 0(x6)
+  srli    x8, x8, 5
+  loop x8, 3
+    bn.lid  x0, 0(x10++)
+    bn.sid  x0, 0(x6++)  /* Copy ek to dk_pke. */
+    bn.wsrw kmac_msg, w0 /* Send ek. */
+  endloop
+  /* Retrieve h = SHA3-256(ek). */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x6++)
 

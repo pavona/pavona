@@ -118,13 +118,6 @@ acc_library(
     for variant, variant_copts in VARIANTS.items()
 ]
 
-acc_library(
-    name = "kmac_send_msg",
-    srcs = [
-        "kmac_send_msg.s",
-    ],
-)
-
 [
     acc_library(
         name = "mlkem_decap_" + variant,

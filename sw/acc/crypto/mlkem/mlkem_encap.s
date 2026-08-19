@@ -61,25 +61,26 @@ _continue:
 
   /*** Step 1: Compute h = SHA3-256(ek). ***/
   /* Initialize SHA3-256 operation. */
-  add     x10, x11, x0
-  add     x11, x5, x0
-  slli    x5, x11, 5
-  addi    x5, x5, SHA3_256_CFG
-  csrrw   x0, kmac_cfg, x5
+  slli    x6, x5, 5
+  addi    x6, x6, SHA3_256_CFG
+  csrrw   x0, kmac_cfg, x6
+  srli    x5, x5, 5
   /* Send ek_pke. */
-  jal     x1, keccak_send_message
+  loop x5, 2
+    bn.lid  x0, 0(x11++)
+    bn.wsrw kmac_msg, w0
+  endloop
   /* Retrieve h. */
   bn.wsrr w1, kmac_digest
 
   /*** Step 2: Compute (ss, r) = SHA3-512(m || h). ***/
   /* Initialize SHA3-512 operation. */
-  addi  x11, x0, 64
-  slli  x5, x11, 5
+  addi  x5, x0, 64
+  slli  x5, x5, 5
   addi  x5, x5, SHA3_512_CFG
   csrrw x0, kmac_cfg, x5
   /* Send m. */
-  add     x5, s0, x0
-  bn.lid  x0, 0(x5)
+  bn.lid  x0, 0(x8)
   bn.wsrw kmac_msg, w0
   /* Send h. */
   bn.wsrw kmac_msg, w1
