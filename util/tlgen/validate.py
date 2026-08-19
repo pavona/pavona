@@ -53,35 +53,6 @@ addrs = {
     'added': {}
 }
 
-node = {
-    'name': 'Node configuration',
-    'description': '''
-Crossbar node description. It can be host, device, or internal nodes.
-''',
-    'required': {
-        'name': ['s', 'Module instance name'],
-        'type': [
-            's',
-            'Module type: {"host", "device", "async", "socket_1n", "socket_m1"}'
-        ],
-    },
-    'optional': {
-        'addr_space': ['s', 'address space for a host port'],
-        'clock': ['s', 'main clock of the port'],
-        'reset': ['s', 'main reset of the port'],
-        'pipeline': ['pb', 'If true, pipeline is added in front of the port'],
-        'req_fifo_pass': ['pb',
-                          'If true, pipeline fifo has passthrough behavior on req'],
-        'rsp_fifo_pass': ['pb',
-                          'If true, pipeline fifo has passthrough behavior on rsp'],
-        'inst_type': ['s', 'Instance type'],
-        'xbar': ['pb', 'If true, the node is connected to another Xbar'],
-        'addr_range': ['lg', addrs],
-        'stub': ['pb', 'Real node or stub.  Stubs only occupy address ranges']
-    },
-    'added': {}
-}
-
 XBAR_VALIDATOR = create_validator("urn:tlgen:xbar")
 
 # Minimum device spacing that is checked during validation

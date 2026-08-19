@@ -1,0 +1,35 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:tlgen:node",
+  title: "Node configuration",
+  description: "Crossbar node description. It can be host, device, or internal nodes.",
+  type: "object",
+  required: ["name", "type"]
+  properties: {
+    name: { type: "string", description: "Module instance name" },
+    type: {
+      type: "string",
+      description: "Module type: {'host', 'device', 'async', 'socket_1n', 'socket_m1'}"
+    },
+
+    addr_space: { type: "string", description: "address space for a host port" },
+    clock: { type: "string", description: "main clock of the port" },
+    reset: { type: "string", description: "main reset of the port" },
+    pipeline: { type: "boolean", description: "If true, pipeline is added in front of the port" },
+    req_fifo_pass: {
+      type: "boolean",
+      description: "If true, pipeline fifo has passthrough behavior on req"
+    },
+    rsp_fifo_pass: {
+      type: "boolean",
+      description: "If true, pipeline fifo has passthrough behavior on rsp"
+    },
+    inst_type: { type: "string", description: "Instance type" },
+    xbar: { type: "boolean", description: "If true, the node is connected to another Xbar" },
+    addr_range: { type: "array" },
+    stub: { type: "boolean", description: "Real node or stub.  Stubs only occupy address ranges" }
+  }
+}

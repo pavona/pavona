@@ -29,8 +29,9 @@
       type: "object",
       description: "List of edge. Key is host, entry in value list is device"
     },
-    nodes: { type: "array"
-      items: { type: "object" }
+    nodes: {
+      type: "array"
+      items: { $ref: "urn:tlgen:node" }
     }
     addr_spaces: {
       type: "array",
