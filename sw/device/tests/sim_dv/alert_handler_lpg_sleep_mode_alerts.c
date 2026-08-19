@@ -55,7 +55,7 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
 
-// This location will be update from SV to contain the expected alert.
+// This location will be updated from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
 
 static dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
