@@ -79,6 +79,17 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     return -1;
   endfunction
 
+  // This sequence is used in some cases that don't result on a reset, but the body task exits.
+  // This would cause dut_init to be run in post_start, which messes the state of the chip unless
+  // do_dut_init is 0. The sim_cfg file can discriminate between such cases, so it will explicitly
+  // override do_dut_init via plusargs when needed.
+  local function void handle_do_dut_init();
+    `uvm_info(`gfn, "handling override_do_dut_init", UVM_MEDIUM)
+    if ($value$plusargs("override_do_dut_init=%b", do_dut_init)) begin
+      `uvm_info(`gfn, $sformatf("plusargs overrides do_dut_init to %b", do_dut_init), UVM_MEDIUM)
+    end
+  endfunction
+
   virtual task body();
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
@@ -167,6 +178,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
 
     // Don't cause a second reset, to avoid confusion, and having to inject the fault again.
     do_apply_reset = 1'b0;
+    handle_do_dut_init();
 
     `uvm_info(`gfn, $sformatf(
               "Injecting fault for IP %s, with alert %0d",
