@@ -56,9 +56,8 @@ pavona_completecfg_rule = rule(
         "seedcfg": attr.label(allow_single_file = True, doc = "Seed configuration Hjson"),
         "data": attr.label_list(allow_files = True, doc = "Other top-specific sources needed"),
         "_topgen": attr.label(
-            default = "//util:topgen.py",
+            default = "//util:toptool",
             executable = True,
-            allow_single_file = True,
             cfg = "exec",
         ),
     },
@@ -72,18 +71,11 @@ def pavona_completecfg(name, top, seed, data = [], **kwargs):
     Data should include top-reggen IPs, the RACL config, the OTP memory map, and
     all xbar configuration hjsons.
     """
-    needed_for_topgen = [
-        # always required whenever running topgen
-        "//util/topgen:topgen",
-        "//hw/ip:block_descriptions",
-        "//hw/ip_templates:all_files",
-    ]
-
     pavona_completecfg_rule(
         name = name,
         topcfg = top,
         seedcfg = seed,
-        data = data + needed_for_topgen,
+        data = data,
         **kwargs
     )
 

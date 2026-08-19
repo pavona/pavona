@@ -81,6 +81,24 @@ py_binary(
 )
 
 py_binary(
+    name = "toptool",
+    srcs = ["topgen.py"],
+    data = [
+        "//hw/ip:block_descriptions",
+        "//hw/ip_templates:all_files",
+    ],
+    imports = ["."],
+    main = "topgen.py",
+    deps = [
+        "//util/design/lib:otp_mem_map",
+        "//util/ipgen",
+        "//util/reggen",
+        "//util/tlgen",
+        "//util/topgen",
+    ],
+)
+
+py_binary(
     name = "autogen_dif",
     srcs = ["autogen_dif.py"],
     data = [

@@ -9,6 +9,21 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 package(default_visibility = ["//visibility:public"])
 
 py_library(
+    name = "reggen",
+    srcs = glob(["**/*.py"]),
+    imports = [".."],
+    deps = [
+        requirement("hjson"),
+        requirement("semantic_version"),
+        requirement("mako"),
+        requirement("pyyaml"),
+        requirement("mistletoe"),
+        requirement("peakrdl_systemrdl"),
+        requirement("tabulate"),
+    ],
+)
+
+py_library(
     name = "lib",
     srcs = [
         "__init__.py",
