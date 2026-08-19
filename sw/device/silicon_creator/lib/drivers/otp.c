@@ -48,7 +48,7 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
 dt_otp_partition_info_t otp_readable_partition_info(otp_partition_t partition) {
   HARDENED_CHECK_LT(partition, kOtpPartitionCount);
   dt_otp_partition_info_t partition_info =
-      dt_otp_ctrl_sw_readable_partition(kDtOtpCtrl, partition);
+      dt_otp_ctrl_partition(kDtOtpCtrl, partition);
   HARDENED_CHECK_GT(partition_info.size, 0);
 
   return partition_info;

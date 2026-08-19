@@ -38,15 +38,16 @@ status_t otp_ctrl_testutils_dai_access_error_check(
     if (!bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("Expected a DAI error for access to 0x%x", address);
     }
-    if (status.causes[kDifOtpCtrlPartitionDaiError] !=
-        kDifOtpCtrlErrorLockedAccess) {
+    // causes[kOtpPartitionCount] is resrved for the DAI error.
+    if (status.causes[kOtpPartitionCount] != kDifOtpCtrlErrorLockedAccess) {
       LOG_ERROR("Expected access locked error for access to 0x%x", address);
     }
   } else {
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("No DAI error expected for access to 0x%x", address);
     }
-    if (status.causes[kDifOtpCtrlPartitionDaiError] != kDifOtpCtrlErrorOk) {
+    // causes[kOtpPartitionCount] is resrved for the DAI error.
+    if (status.causes[kOtpPartitionCount] != kDifOtpCtrlErrorOk) {
       LOG_ERROR("No DAI error code expected for access to 0x%x", address);
     }
   }
@@ -61,14 +62,14 @@ status_t otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
 }
 
 status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
-                                           dif_otp_ctrl_partition_t partition,
+                                           otp_partition_t partition,
                                            uint64_t digest) {
   TRY(dif_otp_ctrl_dai_digest(otp, partition, digest));
   return otp_ctrl_testutils_wait_for_dai(otp);
 }
 
 status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition,
+                                       otp_partition_t partition,
                                        uint32_t address, uint32_t *result) {
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
@@ -80,7 +81,7 @@ status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
 }
 
 status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              uint32_t start_address,
                                              uint32_t *buffer, size_t len) {
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));
@@ -97,7 +98,7 @@ status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
 }
 
 status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition,
+                                       otp_partition_t partition,
                                        uint32_t address, uint64_t *result) {
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   TRY(otp_ctrl_testutils_dai_read_pre_hook(otp));
@@ -109,7 +110,7 @@ status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
 }
 
 status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              uint32_t start_address,
                                              uint64_t *buffer, size_t len) {
   uint32_t stop_address = start_address + (len * sizeof(uint64_t));
@@ -147,7 +148,7 @@ static status_t otp_ctrl_dai_write_error_check(const dif_otp_ctrl_t *otp) {
 }
 
 status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t start_address,
                                         const uint32_t *buffer, size_t len) {
   // Software partitions don't have scrambling or ECC enabled, so it is possible
@@ -155,11 +156,11 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
   // performing the write.
   bool check_before_write = (
 #ifdef OPENTITAN_IS_EGRET
-      partition == kDifOtpCtrlPartitionRotCreatorAuthCodesign ||
-      partition == kDifOtpCtrlPartitionRotCreatorAuthState ||
+      partition == kOtpPartitionRotCreatorAuthCodesign ||
+      partition == kOtpPartitionRotCreatorAuthState ||
 #endif  // OPENTITAN_IS_EGRET
-      partition == kDifOtpCtrlPartitionCreatorSwCfg ||
-      partition == kDifOtpCtrlPartitionOwnerSwCfg);
+      partition == kOtpPartitionCreatorSwCfg ||
+      partition == kOtpPartitionOwnerSwCfg);
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint32_t), ++i) {
@@ -194,7 +195,7 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
 }
 
 status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t start_address,
                                         const uint64_t *buffer, size_t len) {
   uint32_t stop_address = start_address + (len * sizeof(uint64_t));

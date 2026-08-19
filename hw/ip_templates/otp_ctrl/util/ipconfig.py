@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """
-This contains a class to access the clkmgr's configuration from its ipconfig
+This contains a class to access the otp_ctrl's configuration from its ipconfig
 files.
 """
 from typing import List, Dict
@@ -20,31 +20,33 @@ class OtpCtrlIpConfig:
         self._param_values = ipconfig["param_values"]
         self._id_prefix = id_prefix
 
-    def sw_readable_partitions(self) -> List[Dict]:
+    def sw_readable(self, partition) -> bool:
         """
-        Return the list of OTP partitions whose fields are readable after being locked,
-        i.e. those that have a digest (SW or HW), that are not secret and that can not
-        be read locked (or only through SW).
-        Each partition is described by its name and its identifier through the following
-        fields:
-        - `name` is the OTP partition name, e.g. `CREATOR_SW_CFG`
-        - `id` is the OTP partition identifier, e.g. `kOtpCtrlCreatorSwCfg`
+        Returns true iff a partition should be marked as software-readable.
         """
-        readable_partitions = []
-        for partition in self._param_values["otp_mmap"]["partitions"]:
-            if partition.get("read_lock") not in ["CSR", "None"]:
-                continue
-            if partition.get("secret"):
-                continue
-            if not partition.get("sw_digest") and not partition.get("hw_digest"):
-                continue
+        if partition.get("read_lock") not in ["CSR", "None"]:
+            return False
+        if partition.get("secret"):
+            return False
+        if not partition.get("sw_digest") and not partition.get("hw_digest"):
+            return False
+        return True
 
-            readable_partitions.append(partition)
-
+    def partitions(self) -> List[Dict]:
+        """
+        Return the list of all OTP partitions.
+        """
         return [
             {
                 "name": Name.from_snake_case(partition["name"]),
                 "id": self._id_prefix + Name.from_snake_case(partition["name"]),
+                "variant": partition["variant"],
+                "secret": partition["secret"],
+                "sw_readable": self.sw_readable(partition),
+                "sw_digest": partition["sw_digest"],
+                "hw_digest": partition["hw_digest"],
+                "read_lock": partition["read_lock"],
+                "zeroizable": partition["zeroizable"],
             }
-            for partition in readable_partitions
+            for partition in self._param_values["otp_mmap"]["partitions"]
         ]

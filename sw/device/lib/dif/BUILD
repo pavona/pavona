@@ -68,9 +68,7 @@ DIFS = {
     "mbx": {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
-    "otp_ctrl": {
-        "ut_target_compatible_with": pavona_require_top("egret"),
-    },
+    "otp_ctrl": {},
     "pattgen": {},
     "pinmux": {
         "ut_target_compatible_with": pavona_require_top("egret"),

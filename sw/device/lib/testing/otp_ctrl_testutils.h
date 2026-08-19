@@ -47,7 +47,7 @@ status_t otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl);
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
-                                           dif_otp_ctrl_partition_t partition,
+                                           otp_partition_t partition,
                                            uint64_t digest);
 
 /**
@@ -62,7 +62,7 @@ status_t otp_ctrl_testutils_lock_partition(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition,
+                                       otp_partition_t partition,
                                        uint32_t address, uint32_t *result);
 
 /**
@@ -78,7 +78,7 @@ status_t otp_ctrl_testutils_dai_read32(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              uint32_t start_address,
                                              uint32_t *buffer, size_t len);
 
@@ -94,7 +94,7 @@ status_t otp_ctrl_testutils_dai_read32_array(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition,
+                                       otp_partition_t partition,
                                        uint32_t address, uint64_t *result);
 
 /**
@@ -110,7 +110,7 @@ status_t otp_ctrl_testutils_dai_read64(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              uint32_t start_address,
                                              uint64_t *buffer, size_t len);
 
@@ -137,7 +137,7 @@ status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t start_address,
                                         const uint32_t *buffer, size_t len);
 
@@ -156,7 +156,7 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t start_address,
                                         const uint64_t *buffer, size_t len);
 

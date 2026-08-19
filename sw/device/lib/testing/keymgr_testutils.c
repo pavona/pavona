@@ -91,17 +91,17 @@ static status_t check_lock_otp_partition(void) {
   TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
 
   bool is_computed;
-  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionSecret2,
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionSecret2,
                                       &is_computed));
   if (is_computed) {
     uint64_t digest;
-    TRY(dif_otp_ctrl_get_digest(&otp, kDifOtpCtrlPartitionSecret2, &digest));
+    TRY(dif_otp_ctrl_get_digest(&otp, kOtpPartitionSecret2, &digest));
     LOG_INFO("OTP partition locked. Digest: %x-%x", ((uint32_t *)&digest)[0],
              ((uint32_t *)&digest)[1]);
     return OK_STATUS();
   }
 
-  TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2, 0));
+  TRY(otp_ctrl_testutils_lock_partition(&otp, kOtpPartitionSecret2, 0));
   return OK_STATUS();
 }
 
@@ -206,7 +206,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
         mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
 
     bool secret2_computed = false;
-    TRY(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kDifOtpCtrlPartitionSecret2,
+    TRY(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kOtpPartitionSecret2,
                                         &secret2_computed));
 
     // Only initialise the creator secret if `SECRET2` digest has not been

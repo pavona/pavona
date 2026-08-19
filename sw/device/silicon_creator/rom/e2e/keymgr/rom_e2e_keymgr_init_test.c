@@ -34,10 +34,10 @@ static uint32_t otp_state[kHmacDigestNumWords + 4] = {0};
 
 static void print_otp_sw_cfg_digests(void) {
   uint64_t creator_digest, owner_digest = 0;
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-      &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, &creator_digest));
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-      &otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, &owner_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                       &creator_digest));
+  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionOwnerSwCfg,
+                                       &owner_digest));
   LOG_INFO("CreatorSwCfg Digest: 0x%08x%08x", (uint32_t)(creator_digest >> 32),
            (uint32_t)creator_digest);
   LOG_INFO("OwnerSwCfg Digest:   0x%08x%08x", (uint32_t)(owner_digest >> 32),
@@ -56,12 +56,12 @@ bool test_main(void) {
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     LOG_INFO("Power on reset. Locking OTP *SwCfg partitions ...");
     const uint64_t kFakeOtpDigest = 0xaaaabbbbccccdddd;
-    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
-        &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-        /*digest=*/kFakeOtpDigest));
-    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
-        &otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
-        /*digest=*/kFakeOtpDigest));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                          /*digest=*/kFakeOtpDigest));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionOwnerSwCfg,
+                                          /*digest=*/kFakeOtpDigest));
     rstmgr_testutils_reason_clear();
     LOG_INFO("Issuing a software reset ...");
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
@@ -85,12 +85,12 @@ bool test_main(void) {
     //   - the digest of the CreatorSwCfg partition,
     //   - the digest of the OwnerSwCfg partition,
     //   - the SHA256 integrity hash of the first stage boot keys.
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, (uint64_t *)otp_state));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, (uint64_t *)&otp_state[2]));
+    CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                         (uint64_t *)otp_state));
+    CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionOwnerSwCfg,
+                                         (uint64_t *)&otp_state[2]));
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
-        &otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+        &otp_ctrl, kOtpPartitionRotCreatorAuthCodesign,
         OTP_CTRL_PARAM_ROTCREATORAUTHCODESIGNBLOCKSHA2_256HASHOFFSET -
             OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
         &otp_state[4], /*num_words=*/kHmacDigestNumWords));

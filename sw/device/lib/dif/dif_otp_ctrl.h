@@ -24,238 +24,6 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * A partition within OTP memory.
- */
-typedef enum dif_otp_ctrl_partition {
-  /**
-   * Vendor test partition.
-   *
-   * This is reserved for manufacturing smoke checks. The OTP wrapper
-   * control logic inside prim_otp is allowed to read/write to this
-   * region. ECC uncorrectable errors seen on the functional prim_otp
-   * interface will not lead to an alert for this partition.
-   * Instead, such errors will be reported as correctable ECC errors.
-   */
-  kDifOtpCtrlPartitionVendorTest,
-  /**
-   * Software configuration partition.
-   *
-   * This is for device-specific calibration data, e.g, clock, LDO, RNG,
-   * and configuration settings set by the ROM.
-   */
-  kDifOtpCtrlPartitionCreatorSwCfg,
-  /**
-   * Software configuration partition.
-   *
-   * This contains data that changes software behavior in the ROM, for
-   * example enabling defensive features in ROM or selecting failure
-   * modes if verification fails.
-   */
-  kDifOtpCtrlPartitionOwnerSwCfg,
-#if defined(OPENTITAN_IS_EGRET)
-  /**
-   * This OTP partition is used to store four P-256 keys and four Sphincs+ keys.
-   *
-   * The partition requires 464
-   * bytes of software visible storage. The partition is
-   * locked at manufacturing time to protect against
-   * malicious write attempts.
-   */
-  kDifOtpCtrlPartitionRotCreatorAuthCodesign,
-  /**
-   * This OTP partition is used to capture the state of each key slot.
-   *
-   * Each key can be in one of the
-   * following states: BLANK, ENABLED, DISABLED. The
-   * encoded values are such that transitions between
-   * BLANK -> ENABLED ->  DISABLED are possible without
-   * causing ECC errors (this is a mechanism similar to
-   * how we manage life cycle state transitions). The
-   * partition is left unlocked to allow STATE updates in
-   * the field. The ROM_EXT is required to lock access to
-   * the OTP Direct Access Interface to prevent DoS
-   * attacks from malicious code executing on Silicon
-   * Owner partitions. DAI write locking is available in
-   * Egret.
-   */
-  kDifOtpCtrlPartitionRotCreatorAuthState,
-#elif defined(OPENTITAN_IS_DRAGONFLY)
-  /**
-   * SW managed asset ownership states partition.
-   *
-   * Multibit enable value for the tracking the asset ownership states.
-   * Note that the states can be written multiple times in a device lifetime.
-   * The values to be written are engineered in the same way as the LC_CTRL
-   * state encoding words so that the ECC encoding remains valid even after
-   * updating the values.
-   *
-   * The constants can be found in the lc_ctrl_state_pkg.sv package.
-   *
-   * The programming order has to adhere to:
-   *
-   * OWNERSHIP_ST_RAW (factory all-zero state) ->
-   * OWNERSHIP_ST_LOCKED0 ->
-   * OWNERSHIP_ST_RELEASED0 ->
-   * ...
-   * OWNERSHIP_ST_SCRAPPED
-   *
-   * Note that if there are less than 4 slots available the higher slot states
-   * become logically equivalent to OWNERSHIP_SCRAPPED (firmware has to handle
-   * this correctly).
-   */
-  kDifOtpCtrlPartitionOwnershipSlotState,
-  /**
-   * Software managed creator partition.
-   *
-   */
-  kDifOtpCtrlPartitionRotCreatorIdentity,
-  /**
-   * Software managed owner slot 0 partition.
-   *
-   */
-  kDifOtpCtrlPartitionRotOwnerAuthSlot0,
-  /**
-   * Software managed owner slot 1 partition.
-   *
-   */
-  kDifOtpCtrlPartitionRotOwnerAuthSlot1,
-  /**
-   * Software managed platform integrator slot 0 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatIntegAuthSlot0,
-  /**
-   * Software managed platform integrator slot 1 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatIntegAuthSlot1,
-  /**
-   * Software managed platform owner slot 0 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatOwnerAuthSlot0,
-  /**
-   * Software managed platform owner slot 1 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatOwnerAuthSlot1,
-  /**
-   * Software managed platform owner slot 2 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatOwnerAuthSlot2,
-  /**
-   * Software managed platform owner slot 3 partition.
-   *
-   */
-  kDifOtpCtrlPartitionPlatOwnerAuthSlot3,
-  /**
-   * Anti-replay protection Strike Counters partition.
-   *
-   */
-  kDifOtpCtrlPartitionExtNvm,
-  /**
-   * ROM Patch Code section.
-   *
-   * May contain multiple signed ROM2 patches.
-   */
-  kDifOtpCtrlPartitionRomPatch,
-  /**
-   * SoC Fuses CP section.
-   *
-   */
-  kDifOtpCtrlPartitionSocFusesCp,
-  /**
-   * SoC Fuses FT section.
-   *
-   */
-  kDifOtpCtrlPartitionSocFusesFt,
-  /**
-   * Scratch Fuses section.
-   *
-   */
-  kDifOtpCtrlPartitionScratchFuses,
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
-  /**
-   * Hardware configuration 0 partition.
-   *
-   * This contains a device identifier and manufacturing state.
-   */
-  kDifOtpCtrlPartitionHwCfg0,
-  /**
-   * Hardware configuration 1 partition.
-   *
-   * This contains several hardware feature switches.
-   */
-  kDifOtpCtrlPartitionHwCfg1,
-  /**
-   * Secret partition 0.
-   *
-   * This contains TEST lifecycle unlock tokens.
-   */
-  kDifOtpCtrlPartitionSecret0,
-  /**
-   * Secret partition 1.
-   *
-   * This contains SRAM and flash scrambling keys.
-   */
-  kDifOtpCtrlPartitionSecret1,
-  /**
-   * Secret partition 2.
-   *
-   * This contains RMA unlock token, creator root key, and creator seed.
-   */
-  kDifOtpCtrlPartitionSecret2,
-#if defined(OPENTITAN_IS_DRAGONFLY)
-  /**
-   * Secret partition 3.
-   *
-   * This contains the owner seed.
-   */
-  kDifOtpCtrlPartitionSecret3,
-#elif defined(OPENTITAN_IS_EGRET)
-// Egret only has 3 secret partitions.
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
-  /**
-   * Lifecycle partition.
-   *
-   * This contains lifecycle transition count and state. This partition
-   * cannot be locked since the life cycle state needs to advance to RMA
-   * in-field. Note that while this partition is not marked secret, it
-   * is not readable nor writeable via the DAI. Only the LC controller
-   * can access this partition, and even via the LC controller it is not
-   * possible to read the raw manufacturing life cycle state in encoded
-   * form, since that encoding is considered a netlist secret. The LC
-   * controller only exposes a decoded version of this state.
-   */
-  kDifOtpCtrlPartitionLifeCycle,
-
-  /**
-   * This is not a partition; rather, it represents the total number of
-   * partitions.
-   */
-  kDifOtpCtrlNumberOfPartitions,
-
-  /**
-   * The following two are not partitions; rather they represent error codes
-   * that have a corresponding entry in dif_otp_ctrl_status_t.causes.
-   */
-  kDifOtpCtrlPartitionDaiError = kDifOtpCtrlNumberOfPartitions,
-  kDifOtpCtrlPartitionLciError,
-
-  /**
-   * This is not a partition; rather, it represents the total number of entries
-   * in dif_otp_ctrl_status_t.causes.
-   */
-  kDifOtpCtrlNumberOfCauses,
-
-} dif_otp_ctrl_partition_t;
-
-/**
  * Runtime configuration for OTP.
  *
  * This struct describes runtime information for one-time configuration of the
@@ -426,9 +194,9 @@ typedef struct dif_otp_ctrl_status {
   uint32_t codes;
   /**
    * A list of root causes for each partition as well as for DAI and LCI.
-   * dif_otp_ctrl_partition_t can be used for indexing.
+   * otp_partition_t can be used for indexing.
    */
-  dif_otp_ctrl_error_t causes[kDifOtpCtrlNumberOfCauses];
+  dif_otp_ctrl_error_t causes[kOtpPartitionCount + 2];
 } dif_otp_ctrl_status_t;
 
 /**
@@ -562,7 +330,7 @@ dif_result_t dif_otp_ctrl_check_trigger_is_locked(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition);
+                                       otp_partition_t partition);
 
 /**
  * Checks whether reads to a SW partition are locked out.
@@ -577,7 +345,7 @@ dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_reading_is_locked(const dif_otp_ctrl_t *otp,
-                                            dif_otp_ctrl_partition_t partition,
+                                            otp_partition_t partition,
                                             bool *is_locked);
 
 /**
@@ -603,7 +371,8 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
+dif_result_t dif_otp_ctrl_relative_address(const dif_otp_ctrl_t *otp,
+                                           otp_partition_t partition,
                                            uint32_t abs_address,
                                            uint32_t *relative_address);
 
@@ -625,7 +394,7 @@ dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
-                                         dif_otp_ctrl_partition_t partition,
+                                         otp_partition_t partition,
                                          uint32_t address);
 
 /**
@@ -679,7 +448,7 @@ dif_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint32_t value);
 
 /**
@@ -700,7 +469,7 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint64_t value);
 
 /**
@@ -723,7 +492,7 @@ dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
-                                     dif_otp_ctrl_partition_t partition,
+                                     otp_partition_t partition,
                                      uint64_t digest);
 
 /**
@@ -741,7 +510,7 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              bool *is_computed);
 
 /**
@@ -761,7 +530,7 @@ dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
-                                     dif_otp_ctrl_partition_t partition,
+                                     otp_partition_t partition,
                                      uint64_t *digest);
 
 /**
@@ -785,7 +554,7 @@ dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_read_blocking(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint32_t *buf,
                                         size_t len);
 
