@@ -10,52 +10,47 @@
 
 .text
 
-.equ x5, t0
-/*
+/**
  * Send a variable-length message to the Keccak core.
  *
  * Expects the Keccak core to have already received a `start` command matching
  * the desired hash function. After calling this routine, reading from the
- * KECCAK_DIGEST special register will return the hash digest.
+ * kmac_digest special register returns the hash digest.
  *
- * @param[in]   a1: len, byte-length of the message
- * @param[in]   a0: dptr_msg, pointer to message in DMEM
- * @param[in]   w31: all-zero
- * @param[in] dmem[dptr_msg..dptr_msg+len]: msg, hash function input
+ * Sends the message as full 32-byte chunks, followed by a single partial write
+ * of the remaining len mod 32 bytes when the length is not a multiple of 32.
  *
- * clobbered registers: t0, a1, w0
- * clobbered flag groups: None
+ * On return, x10 points just past the last full 32-byte chunk sent; a trailing
+ * partial chunk is read without advancing x10.
+ *
+ * @param[in]  x10: dmem pointer to the message
+ * @param[in]  x11: byte length of the message
+ *
+ * clobbered registers: x5, x10, w0
+ * clobbered flag groups: none
  */
+
 .globl keccak_send_message
 .type keccak_send_message, @function
 keccak_send_message:
-  /* Compute the number of full 256-bit message chunks.
-  t0 <= x11 >> 5 = floor(len / 32) */
-  srli t0, x11, 5
+  /* Compute the number of full 256-bit message chunks. */
+  srli x5, x11, 5
+  beq  x5, x0, _no_full_wdr
 
-  /* Write all full 256-bit sections of the test message. */
-  beq  t0, zero, _no_full_wdr
-
-  loop t0, 2
-      /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
-         x10 <= x10 + 32 */
-      bn.lid  x0, 0(x10++)
-      /* Write to the KECCAK_MSG wide special register (index 9).
-         KECCAK_MSG <= w0 */
-      bn.wsrw 0x9, w0
+  loop x5, 2
+    bn.lid  x0, 0(x10++)
+    bn.wsrw kmac_msg, w0
   endloop
 
 _no_full_wdr:
-  /* Compute the remaining message length.
-       t0 <= x11 & 31 = len mod 32 */
-  andi t0, x11, 31
-
+  /* Compute the remaining message length. */
+  andi x5, x11, 31
   /* If the remaining length is zero, return early. */
-  beq t0, x0, _keccak_send_message_end
+  beq  x5, x0, _keccak_send_message_end
 
-  csrrw   x0, kmac_partial_write, t0
+  csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x10)
-  bn.wsrw 0x9, w0
+  bn.wsrw kmac_msg, w0
 
-  _keccak_send_message_end:
+_keccak_send_message_end:
   ret

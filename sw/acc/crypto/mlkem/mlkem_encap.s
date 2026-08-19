@@ -10,114 +10,93 @@
 
 .text
 
-/* Register aliases */
-.equ x2, sp
-.equ x3, fp
-.equ x5, t0
-.equ x6, t1
-.equ x7, t2
-.equ x8, s0
-.equ x9, s1
-.equ x10, a0
-.equ x11, a1
-.equ x12, a2
-.equ x13, a3
-.equ x14, a4
-.equ x15, a5
-.equ x16, a6
-.equ x17, a7
-.equ x18, s2
-.equ x19, s3
-.equ x20, s4
-.equ x21, s5
-.equ x22, s6
-.equ x23, s7
-.equ x24, s8
-.equ x25, s9
-.equ x26, s10
-.equ x27, s11
-.equ x28, t3
-.equ x29, t4
-.equ x30, t5
-.equ x31, t6
-
-
 /* Config to start a SHA3_256 operation. */
 #define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
 
-/*
- * Name:        crypto_kem_enc
+/**
+ * Encapsulation for the CCA-secure ML-KEM key encapsulation mechanism.
  *
- * Description: Generates cipher text and shared
- *              secret for given public key
+ * Uses the encapsulation key to generate a shared secret key and an
+ * associated ciphertext.
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ * The packed ek is 384 * k + 32 bytes, that is 800, 1184 and 1568 bytes for
+ * k = 2, 3 and 4.
+ *  Step 1: h = SHA3-256(ek)
+ *  Step 2: (ss, r) = SHA3-512(m || h)
+ *  Step 3: c = indcpa_enc(m, ek_pke, r) // ek_pke <- ek
  *
- * @param[in]  x10 (a0): dmem pointer to input random bytes (32)
- * @param[in]  x11 (a1): dmem pointer to input public key
- * @param[out] x12 (a2): dmem pointer to output ciphertext
- * @param[out] x13 (a3): dmem pointer to output shared secret
- * @param[in]  x14 (a4): k, the security level
+ * @param[in]  x10: dmem pointer to the input message m (32 bytes)
+ * @param[in]  x11: dmem pointer to the input packed public key ek
+ * @param[out] x12: dmem pointer to the output ciphertext c
+ * @param[out] x13: dmem pointer to the output shared secret ss
+ * @param[in]  x14: k, the security level
  *
- * clobbered registers: x4 to x29, w0 to w31, acc, acch, mod
+ * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
+ *                      w0 to w26, w30, acc, acch, mod
  * clobbered flag groups: FG0
  */
+
 .globl crypto_kem_enc
 .type crypto_kem_enc, @function
 crypto_kem_enc:
   addi x4, x0, 2
-  beq  a4, x4, _pk_len_k2
+  beq  x14, x4, _pk_len_k2
   addi x4, x0, 3
-  beq  a4, x4, _pk_len_k3
-  addi t0, x0, 1568
+  beq  x14, x4, _pk_len_k3
+  addi x5, x0, 1568 /* Byte length of ek_pke for k = 4. */
   beq  x0, x0, _continue
+
 _pk_len_k3:
-  addi t0, x0, 1184
+  addi x5, x0, 1184 /* Byte length of ek_pke for k = 3. */
   beq  x0, x0, _continue
+
 _pk_len_k2:
-  addi t0, x0, 800
+  addi x5, x0, 800  /* Byte length of ek_pke for k = 2. */
 
 _continue:
-  /* Save input addresses. */
-  add s0, a0, x0
-  add s1, a1, x0
+  add x8, x10, x0
+  add x9, x11, x0
 
-  /* Compute H(pk). */
-  add     a0, a1, x0 /* a1 = ptr_pk */
-  add     a1, t0, x0
-  slli    t0, a1, 5
-  addi    t0, t0, SHA3_256_CFG
-  csrrw   x0, kmac_cfg, t0
+  /*** Step 1: Compute h = SHA3-256(ek). ***/
+  /* Initialize SHA3-256 operation. */
+  add     x10, x11, x0
+  add     x11, x5, x0
+  slli    x5, x11, 5
+  addi    x5, x5, SHA3_256_CFG
+  csrrw   x0, kmac_cfg, x5
+  /* Send ek_pke. */
   jal     x1, keccak_send_message
+  /* Retrieve h. */
   bn.wsrr w1, kmac_digest
 
-  /* Compute hash_g(coins||H(pk)). ***/
-  addi  a1, x0, 64
-  slli  t0, a1, 5
-  addi  t0, t0, SHA3_512_CFG
-  csrrw x0, kmac_cfg, t0
-
-  /* Send the message. */
-  add     t0, s0, x0
-  bn.lid  x0, 0(t0)
+  /*** Step 2: Compute (ss, r) = SHA3-512(m || h). ***/
+  /* Initialize SHA3-512 operation. */
+  addi  x11, x0, 64
+  slli  x5, x11, 5
+  addi  x5, x5, SHA3_512_CFG
+  csrrw x0, kmac_cfg, x5
+  /* Send m. */
+  add     x5, s0, x0
+  bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
+  /* Send h. */
   bn.wsrw kmac_msg, w1
-
-  /* Read the digest. */
+  /* Retrieve ss. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(a3)
-  la      t0, indcpa_enc_seed
+  bn.sid  x0, 0(x13)
+  /* Retrieve r. */
+  la      x5, indcpa_enc_seed
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(t0)
+  bn.sid  x0, 0(x5)
 
-  /*** indcpa_enc ***/
-  add  a0, s0, x0 /* coins */
-  add  a1, s1, x0 /* pk */
-  add  a3, a2, x0 /* ct */
-  la   a2, indcpa_enc_seed
-  /* a4 is still k. */
+  /*** Step 3: c = indcpa_enc(m, ek_pke, r). ***/
+  add  x10, x8, x0
+  add  x11, x9, x0
+  add  x13, x12, x0
+  la   x12, indcpa_enc_seed
+  /* x14 is still k. */
   jal  x1, indcpa_enc
 
   ret
