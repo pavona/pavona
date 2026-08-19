@@ -11,6 +11,9 @@ def selfdoc(heading: int, cmd: str = "") -> str:
     """Return self-documentation for TL crossbar."""
     schema_parser = jsonschema2md.Parser(header_level=heading)
 
-    return document_schema(outfile=None,
-                           schema="urn:tlgen:xbar",
-                           schema_parser=schema_parser)
+    return "\n".join([document_schema(outfile=None,
+                                      schema="urn:tlgen:xbar",
+                                      schema_parser=schema_parser),
+                      document_schema(outfile=None,
+                                      schema="urn:tlgen:node",
+                                      schema_parser=schema_parser)])
