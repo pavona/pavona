@@ -8,6 +8,32 @@
   other_clock_list: []
   reset_primary: ""
   other_reset_list: []
+  features: [
+    {
+      name: "XBAR.ROUTING"
+      desc: '''
+        XBAR routes transactions from hosts to destination devices using an address map.
+      '''
+    },
+    {
+      name: "XBAR.CONCURRENCY"
+      desc: '''
+        XBAR allows multiple hosts to simultaneously access shared devices.
+      '''
+    },
+    {
+      name: "XBAR.TRANSACTION_DELAYS"
+      desc: '''
+          XBAR operates correctly under zero, small, and large communication delays on both request and response channels.
+      '''
+    },
+    {
+      name: "XBAR.ERROR"
+      desc: '''
+        XBAR communicates error conditions and remains operational after reset events.
+      '''
+    }
+  ]
   //available_input_list: []
 
   inter_signal_list: [

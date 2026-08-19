@@ -33,6 +33,7 @@
             '''
       stage: V1
       tests: ["pattgen_smoke"]
+      features: []
     }
     {
       name: perf
@@ -51,6 +52,7 @@
             '''
       stage: V2
       tests: ["pattgen_perf"]
+      features: []
     }
     {
       name: cnt_rollover
@@ -74,6 +76,7 @@
             '''
       stage: V2
       tests: ["cnt_rollover"]
+      features: []
     }
     {
       name: error
@@ -91,6 +94,7 @@
             '''
       stage: V2
       tests: ["pattgen_error"]
+      features: []
     }
     {
       name: stress_all
@@ -99,6 +103,7 @@
             '''
       stage: V2
       tests: ["pattgen_stress_all"]
+      features: []
     }
   ]
 

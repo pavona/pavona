@@ -105,7 +105,7 @@
             '''
       stage: V2
       tests: ["lc_ctrl_state_failure"]
-      features: []
+      features: ["LC_CTRL.LOGICAL_SCRAP"]
     }
     {
       name: lc_errors
@@ -215,7 +215,10 @@
             '''
       stage: V2
       tests: ["lc_ctrl_volatile_unlock_smoke"]
-      features: ["LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED"]
+      features: ["LC_CTRL.STATE.RAW",
+                 "LC_CTRL.STATE.TEST_UNLOCKED",
+                 "LC_CTRL.ACCESS.JTAG",
+                 "LC_CTRL.AUTHENTICATED_TRANSITIONS"]
     }
     {
       name: stress_all

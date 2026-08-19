@@ -64,7 +64,7 @@ Once these steps are complete, the slow FSM transitions to a low power state and
 <!-- END-FEATURE: PWRMGR.RESET.POR_REQUEST -->
 <!-- END-FEATURE: PWRMGR.LOW_POWER.DISABLE_POWER -->
 
-#### Sparse FSM
+#### Slow Sparse FSM
 
 Since the slow FSM is sparsely encoded, it is possible for the FSM to end up in an undefined state if attacked.
 When this occurs, the slow FSM sends an `invalid` indication to the fast FSM and forcibly powers off and clamps everything.
@@ -111,7 +111,7 @@ Note in this scenario the slow FSM is not requested to take over.
 <!-- END-FEATURE: PWRMGR.LOW_POWER.ENTRY -->
 <!-- END-FEATURE: PWRMGR.STARTUP.LIFE_CYCLE_INITIALIZATION -->
 
-#### Sparse FSM
+#### Fast Sparse FSM
 
 Since the fast FSM is sparsely encoded, it is possible for the FSM to end up in an undefined state if attacked.
 When this occurs, the fast FSM forcibly disables all clocks and holds the system in reset.

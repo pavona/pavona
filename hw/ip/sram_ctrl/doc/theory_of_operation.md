@@ -12,7 +12,7 @@ As shown in the block diagram above, the SRAM controller contains a TL-UL adapte
 
 The SRAM controller supports the system-wide end-to-end bus integrity scheme and thus stores the data integrity bits alongside each data word in the memory.
 This means that both the 32 data bits and the 7 integrity bits are passed through the scrambling device.
-BEGIN
+
 Sub-word write operations therefore perform a read-modify-write operation in order to ensure consistency of the integrity bits.
 Hence, the throughput of sub-word write operations is three times lower than for full-word write operations.
 Note however that the throughput of read operations is the same for full- and sub-word read operations.

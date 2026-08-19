@@ -59,7 +59,7 @@
     {
       name: error_log
       desc: '''
-        Drive the racl_error_i and racl_error_external_i inputs, and report errors with racl_ctrl. 
+        Drive the racl_error_i and racl_error_external_i inputs, and report errors with racl_ctrl.
 
         Verify that simultaneous reports are correctly arbitrated and that the expected error is logged.
       '''

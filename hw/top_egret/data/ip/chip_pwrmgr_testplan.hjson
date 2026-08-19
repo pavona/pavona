@@ -249,6 +249,7 @@
       si_stage: NA
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
       bazel: []
+      features: []
     }
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset

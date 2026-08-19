@@ -102,7 +102,7 @@ These modules can be both directly and indirectly controlled by software.
 The controls can also be individual to each peripheral.
 <!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
 
-## Wait-for-Interrupt (wfi) Gating
+## Wait-for-Interrupt (`wfi`) Gating
 
 Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
 
@@ -114,22 +114,22 @@ Of the groups enumerated, only transactional, infrastructural and peripheral gro
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
 The interaction with each clock group is briefly described below.
 
-### Transactional Clock Group wfi Gating
+### Transactional Clock Group `wfi` Gating
 
 While `wfi` gating can be applied to this group, the modules in this category are already expected to be turned off and on by software depending on usage.
 Specifically, these modules are already completely managed by software when not in use, thus may not see significant benefit from `wfi` gating.
 
-### Peripheral Clock Group wfi Gating
+### Peripheral Clock Group `wfi` Gating
 
 Since peripherals, especially those in device mode, are often operated in an interrupt driven way, the peripheral's core operating clock frequently must stay alive even if the processor is asleep.
 This implies that in order for peripherals to completely support `wfi` clock gating, they must be split between functional clocks and bus clocks.
 
-The bus clocks represent the software interface and can be turned off based on `wfi gating`, while the functional clocks should be kept running to ensure outside activity can be captured and interrupts created.
+The bus clocks represent the software interface and can be turned off based on `wfi` gating, while the functional clocks should be kept running to ensure outside activity can be captured and interrupts created.
 In this scenario, it is important to ensure the functional clocks are responsible for creating interrupts and not the bus clocks, as the latter may not be available during `wfi`.
 
 This division may only be beneficial for peripherals where register and local fabric size is large relative to the functional component.
 
-### Infrastructural Clock Group wfi Gating
+### Infrastructural Clock Group `wfi` Gating
 
 This clock group matches `wfi` functionality well.
 Most infrastructural components such as fabric, gaskets and memories, have no need to be clocked when the processor is idle.

@@ -387,7 +387,7 @@ This counter accumulates across an entire transaction, and with the correct choi
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
 
-#### Controller Module
+#### Controller Interrupts
 Whenever the RX FIFO exceeds the designated number of entries, the interrupt `rx_threshold` is asserted to inform firmware.
 Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.RX_THRESH`](registers.md#host_fifo_config).
 
@@ -451,7 +451,7 @@ When a transfer completes, the `cmd_complete` interrupt is asserted, in the begi
 This interrupt is overloaded and represents the full IP's participation in any bus transactions.
 The Target Module's transfers also signal `cmd_complete`.
 
-#### Target Module
+#### Target Interrupts
 
 As mentioned above, the interrupt `cmd_complete` is asserted whenever a `RESTART` or a `STOP` bit is observed by the target, for a transfer that addressed the Target Module.
 

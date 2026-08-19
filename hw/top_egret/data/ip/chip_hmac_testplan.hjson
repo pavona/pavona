@@ -19,6 +19,7 @@
       tests: ["chip_sw_hmac_enc",
               "chip_sw_hmac_enc_jitter_en"]
       bazel: ["//sw/device/tests:hmac_enc_test"]
+      features: []
     }
     {
       name: chip_sw_hmac_idle
@@ -41,6 +42,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_hmac_enc_idle"]
       bazel: ["//sw/device/tests:hmac_enc_idle_test"]
+      features: []
     }
     {
       name: chip_sw_hmac_all_configurations

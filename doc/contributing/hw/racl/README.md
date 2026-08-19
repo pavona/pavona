@@ -32,7 +32,7 @@ If the access is denied then the error is logged into an Error-Log register.
 ### RACL Controller
 
 For a top-level that uses RACL, there is an associated RACL Controller (`racl_ctrl`), which acts as the interface between the TileLink bus and the RACL matching logic.
-For more information regarding the RACL controller, see [Dragonfly's RACL controller documentation](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/theory_of_operation.md)
+For more information regarding the RACL controller, see the docs for the top-specific instantiation of `racl_ctrl`, such as [Dragonfly's RACL controller documentation](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/theory_of_operation.md).
 
 ### RACL Controller Groups
 A RACL controller group is defined by a name and a set of policies.

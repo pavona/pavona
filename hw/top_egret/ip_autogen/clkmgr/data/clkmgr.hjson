@@ -85,9 +85,7 @@
 
   features: [
     { name: "CLKMGR.ENABLE.PERIPH_CLK",
-      desc: '''Clock manager supports the gating of clocks from peripheral
-            devices, such as IO or USB.
-            '''
+      desc: "Clock manager supports the gating of clocks to peripheral devices"
     }
     { name: "CLKMGR.HINT.TRANS_CLK",
       desc: '''Clock manager is able to suggest (hint) that transactional

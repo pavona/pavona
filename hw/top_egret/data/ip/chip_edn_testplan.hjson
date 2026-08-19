@@ -24,6 +24,7 @@
       bazel: ["//sw/device/tests:entropy_src_edn_reqs_test",
               "//sw/device/tests:csrng_edn_concurrency_test",
               "//sw/device/tests:entropy_src_ast_rng_req_test",]
+              features: []
     },
     {
       name: chip_sw_edn_boot_mode

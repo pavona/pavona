@@ -241,6 +241,7 @@
             to rstmgr.
             '''
       stage: V2S
+      tests: []
       features: ["RSTMGR.RESET_CONSISTENCY_CHECKS"]
     }
   ]

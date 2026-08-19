@@ -94,7 +94,7 @@ An update error causes the `recov_ctrl_update_err` alert, which is not fatal.
 
 RACL may also be used outside of Pavona.
 For this purpose, the RACL controller provides an additional input to collect error logs from externally subscribing IPs.
-See the [interface documentation for the Dragonfly racl_ctrl](interfaces.md).
+See the [interface documentation](interfaces.md).
 Additionally, the [`util/raclgen.py`](../../../../../util/raclgen/README.md) tool can be used to generate the necessary policy selection vectors.
 <!-- END-FEATURE: RACL.EXT_USE -->
 
@@ -122,7 +122,7 @@ If IPs use more than one reg\_top, each reg\_top will get a dedicated selection 
   This is coming from the RACL controller.
 - `racl_policy_sel_i`: A vector of indices that select the policy from the policy vector.
   Entry 0 of this array defines the policy selection for register 0 in that IP, entry 1 defines the selection for register 1, etc.
-  In the example from [the RACL spec](../../../../doc/contributing/hw/racl/README.md#top-level_racl_configuration), the vector might look like `[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 2, 1]`.
+  In the example from [the RACL spec](../../../../../doc/contributing/hw/racl/README.md#top-level_racl_configuration), the vector might look like `[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 2, 1]`.
   + If an IP features multiple reg\_tops, each will have its own `racl_policy_sel_<reg_top_name>_i` policy selector input.
     `racl_violation_o` will then be the OR combination of violations among reg\_tops.
     If multiple RACL violations can happen at the same time, they must be arbitrated appropriately before passing the error log to the RACL controller.

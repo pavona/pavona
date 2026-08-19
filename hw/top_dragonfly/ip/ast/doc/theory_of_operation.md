@@ -15,7 +15,7 @@ shown in the diagram, but will be explained as well.
 
 ### Signal naming conventions used in this document
 
-Signal naming generally complies with the [Verilog style guide](../../../../doc/contributing/style_guides/verilog_coding_style.md) names and suffixes with some augmentations:
+Signal naming generally complies with the [Verilog style guide](../../../../../doc/contributing/style_guides/verilog_coding_style.md) names and suffixes with some augmentations:
 - Clock signals start with `clk_*`
 
 - Inputs and outputs are marked with `*_i/o`
@@ -838,11 +838,11 @@ injection.
 <!-- BEGIN-FEATURE: AST.ENTROPY -->
 # Random Number Generator
 
-AST contains an entropy source vendor IP block that generates random number
+AST contains an entropy source vendor [IP](../../../../ip/csrng/README.md) block that generates random number
 bitstreams, and performs health testing and conditioning of these random
 numbers. The conditioned and FIPS compliant entropy bits are packed into
 384-bit seeds and then fed into the [<u>CSRNG
-module</u>](../../../ip/csrng/README.md).
+module</u>](../../../../ip/csrng/README.md).
 
 
 # Entropy Consumption
@@ -850,7 +850,7 @@ module</u>](../../../ip/csrng/README.md).
 AST consumes entropy for defensive purposes. However, AST does not
 consume its raw entropy directly. Instead, AST receives entropy from the
 [<u>Entropy Distribution Network
-(EDN)</u>](../../../ip/edn/README.md). Note
+(EDN)</u>](../../../../ip/edn/README.md). Note
 that entropy_ack and entropy_i are packed into entropy_rsp_i in the
 interface. Also note that once entropy_req_o is set, it will remain set
 until ack or until reset.

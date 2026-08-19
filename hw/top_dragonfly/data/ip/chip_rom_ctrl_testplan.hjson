@@ -13,6 +13,15 @@
             '''
       features: ["ROM_CTRL.SCRAMBLED"]
       stage: V2
+      si_stage: SV1
+      bazel: [
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_dev",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod_end",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_rma",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_test_unlocked0"
+      ]
+      lc_states: ["PROD"]
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -26,6 +35,7 @@
             '''
       features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -40,6 +50,7 @@
             - Verify that KMAC returns an error signal to the ROM controller.
             - Verify that the ROM controller itself transitions to invalid state and the chip is
               effectively dead.
+            SiVal: Creating a glitch is not feasible, so this is not a sival test.
             '''
       features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.FI_HARDENING"]
       stage: V3

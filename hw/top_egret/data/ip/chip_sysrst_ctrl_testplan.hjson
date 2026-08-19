@@ -67,6 +67,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_outputs"]
       bazel: ["//sw/device/tests:sysrst_ctrl_outputs_test"]
+      features: []
     }
     {
       name: chip_sw_sysrst_ctrl_in_irq

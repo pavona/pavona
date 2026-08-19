@@ -133,7 +133,7 @@ The hardware and secret partitions directly affect downstream hardware.
 The contents must go through periodic integrity checks and therefore the stored digest is calculated by hardware when software provides the intent to lock (as opposed to the software partitions where the digest has to be calculated by software).
 
 <!-- BEGIN-FEATURE: OTP_CTRL.PROGRAM -->
-### Life Cycle Partition
+### Life Cycle Partition Access
 
 The life cycle partition cannot be locked and will therefore not contain a stored digest.
 Note however that only the life cycle controller has access to this partition, i.e., the Direct Access Interface (DAI) cannot read nor write from/to the life cycle partition.
@@ -182,7 +182,6 @@ These values are stored in OTP as plaintext.
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
 The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../../ip/prim/doc/prim_present.md).
-
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
@@ -318,7 +317,7 @@ For example, secret partitions in dragonfly are zeroizable: see [dragonfly's mem
 Every partition type except `LIFE_CYCLE` can be zeroizable regardless of whether it has hardware or software digests.
 When a partition is marked as zeroizable, the partition generation [library](../../../../../util/design/lib/OtpMemMap.py) inserts a 64-bit item (the **zeroization marker**) at the end of the partition that serves as an indicator that a partition is zeroized or in the process of being zeroized.
 
-### Zeroizing a Partition
+### Zeroizing a Partition Procedure
 
 Zeroizing a partition is completely handled by firmware and resembles an ordinary in-field provisioning flow.
 Zeroization is performed via the `ZEROIZE` DAI command issued to the address of any specific item in a zeroizable partition, including digests and zeroization markers.

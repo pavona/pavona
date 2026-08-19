@@ -7,6 +7,7 @@
 <!-- BEGIN-FEATURE: AES.MODE.OFB -->
 <!-- BEGIN-FEATURE: AES.MODE.CTR -->
 <!-- BEGIN-FEATURE: AES.MANUAL_OPERATION -->
+<!-- BEGIN-FEATURE: AES.STATUS.STALL -->
 # Theory of Operation
 
 The AES unit supports both encryption and decryption for AES-128/192/256 in ECB, CBC, CFB, OFB and CTR modes as well as GCM using a single, shared data path.
@@ -41,7 +42,6 @@ This is the default behavior.
 It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
 In this case, the AES unit only starts the encryption/decryption once the START bit in [`TRIGGER`](registers.md#trigger) is set to `1` (automatically cleared to `0` once the next encryption/decryption is started).
 
-<!-- BEGIN-FEATURE: AES.STATUS.STALL -->
 Similarly, the AES unit indicates via a status register when having new output data available to be read by the processor.
 Also, there is a back-pressure mechanism for the output data.
 If the AES unit wants to finish the encryption/decryption of a data block but the previous output data has not yet been read by the processor, the AES unit is stalled.

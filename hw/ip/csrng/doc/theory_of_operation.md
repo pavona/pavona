@@ -13,21 +13,23 @@ Once setup, the application interface user can request for entropy bits to be ge
 The application interface supports up to 15 hardware interfaces, and one software interface.
 
 The following describes how CSRNG generates entropy bits from the application interface:
-An `instantiate` command is issued from one of the application interfaces.
-This request moves into the `cmd_stage` block.
-Here the request is arbitrated between all of the `cmd_stage` blocks.
-The winner will get its command moved into the command dispatch logic.
-A common state machine will process all application interface commands in order of arbitration.
-At this point, some seed entropy may be required depending on the command and any flags.
-If needed, a request to the entropy source hardware interface will be made.
+
+
+- An `instantiate` command is issued from one of the application interfaces.
+- This request moves into the `cmd_stage` block.
+- The request is arbitrated between all of the `cmd_stage` blocks.
+- The winner will get its command moved into the command dispatch logic.
+- A common state machine will process all application interface commands in order of arbitration.
+Seed entropy may be required depending on the command and any flags.
+- If needed, a request to the entropy source hardware interface will be made.
 This step can take milliseconds if seed entropy is not immediately available.
-Once all of the prerequisites have been collected, a CTR_DRBG command can be launched.
+- Once all of the prerequisites have been collected, a CTR_DRBG command can be launched.
 This command will go into the `ctr_drbg_cmd` block.
 This `ctr_drbg_cmd` block uses two NIST-defined functions, the update and the `block_encrypt` functions.
-If the command is a generate, the `ctr_drbg_cmd` block will process the first half of the algorithm, and then pass it on to the `ctr_drbg_gen` block.
+- If the command is a generate, the `ctr_drbg_cmd` block will process the first half of the algorithm, and then pass it on to the `ctr_drbg_gen` block.
 Additionally, the `ctr_drbg_gen` block also uses the `update` block and the `block_encrypt` block.
 To keep resources to a minimum, both of these blocks have arbiters to allow sharing between the `ctr_drbg_cmd` and `ctr_drbg_gen` blocks.
-The command field called `ccmd` (for current command) is sent along the pipeline to not only identify the command, but is also reused as a routing tag for the arbiters to use when returning the block response.
+- The command field called `ccmd` (for current command) is sent along the pipeline to not only identify the command, but is also reused as a routing tag for the arbiters to use when returning the block response.
 
 Once the command has traversed through all of the CTR_DRBG blocks, the result will eventually land into the `state_db` block.
 This block will hold the instance state for each application interface.
@@ -57,7 +59,8 @@ Furthermore, CSRNG will respond with the appropriate error status response on th
 
 <!-- BEGIN-FEATURE: CSRNG.READ_INT_STATE -->
 #### Working State Values
-The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance. For debug and validation purposes, CSRNG provides read access to this internal working state.
+The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance.
+For debug and validation purposes, CSRNG provides read access to this internal working state.
 It holds the following values:
 
 <table>
@@ -225,7 +228,9 @@ The actions performed by each command, as well as which flags are supported, are
     <td>Instantiate</td>
     <td>0x1</td>
     <td> Initializes an instance in CSRNG.
-         When debug in enabled, CSRNG allows for seed diversification using either a production or non-production seed constant. The selected constant is determined by a debug enable signal controlled by the life cycle controller and is only enabled in test mode (so production devices can only use the production seed constant). When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
+         When debug in enabled, CSRNG allows for seed diversification using either a production or non-production seed constant.
+         The selected constant is determined by a debug enable signal controlled by the life cycle controller and is only enabled in test mode (so production devices can only use the production seed constant).
+         When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
         <b>WARNING:</b> Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
          When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.

@@ -112,7 +112,6 @@ assistance to indicate which edge caused the output interrupt.
 **Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
 <!-- END-FEATURE: GPIO.IN.INTR_CTRL -->
-
 ### Input Period Counters
 
 The GPIO module provides 8 (number configurable through a template parameter) input period counters.

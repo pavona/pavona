@@ -171,7 +171,7 @@ This throughput could be enhanced in a future version by feeding the message int
 If HMAC mode is turned on, it introduces extra latency due to the second round of computing the final hash of the outer key and the result of the first round using the inner key.
 This adds an extra 240 cycles (80 for the inner key, 80 for the outer key, and 80 for the result of the first round) to complete a HMAC SHA-2 256 digest of a message.
 For instance, if an empty message is given then it takes 360 cycles (80 for msg itself and 240 for the extra) to get the HMAC authentication token.
-For operating in a multiple message stream mode, refer to the [`context`](programmers_guide.md#saving-and-restoring-the-context) section in teh programmers guide.
+For operating in a multiple message stream mode, refer to the [`context`](programmers_guide.md#saving-and-restoring-the-context) section in the programmers guide.
 <!-- END-FEATURE: HMAC.MODE.SHA2 -->
 <!-- END-FEATURE: HMAC.MODE.HMAC -->
 <!-- END-FEATURE: HMAC.DIGEST_SIZE.SHA2-256 -->

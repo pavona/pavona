@@ -21,6 +21,7 @@
       ]
       lc_states: ["PROD"]
       bazel: ["//sw/device/tests:kmac_mode_kmac_test"]
+      features: []
     }
     {
       name: chip_sw_kmac_app_keymgr
@@ -38,6 +39,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_keymgr_key_derivation"]
+      features: []
     }
     {
       name: chip_sw_kmac_app_lc
@@ -52,6 +54,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_lc_ctrl_transition"]
+      features: []
     }
     {
       name: chip_sw_kmac_app_rom
@@ -71,6 +74,7 @@
       bazel: [
         "//sw/device/tests:kmac_app_rom_test",
       ]
+      features: []
     }
     {
       name: chip_sw_kmac_entropy
@@ -100,6 +104,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_kmac_entropy"]
       bazel: ["//sw/device/tests:kmac_entropy_test"]
+      features: []
     }
     {
       name: chip_sw_kmac_idle
@@ -120,6 +125,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_kmac_idle"]
       bazel: ["//sw/device/tests:kmac_idle_test"]
+      features: []
     }
     {
       name: chip_sw_kmac_sha3_stress
