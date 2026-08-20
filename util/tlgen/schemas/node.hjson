@@ -29,7 +29,10 @@
     },
     inst_type: { type: "string", description: "Instance type" },
     xbar: { type: "boolean", description: "If true, the node is connected to another Xbar" },
-    addr_range: { type: "array" },
+    addr_range: {
+      type: "array",
+      items: { $ref: "urn:tlgen:addrs" }
+    },
     stub: { type: "boolean", description: "Real node or stub.  Stubs only occupy address ranges" }
   }
 }

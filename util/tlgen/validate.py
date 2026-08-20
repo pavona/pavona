@@ -13,45 +13,6 @@ from .item import Node, Host, Device, AsyncFifo, Socket1N, SocketM1
 from .lib import simplify_addr
 from .xbar import Xbar
 
-# val_types = {
-#     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],
-#     'x': ["xint", "x for undefined otherwise int"],
-#     'b': [
-#         "bitrange", "bit number as decimal integer, \
-#                     or bit-range as decimal integers msb:lsb"
-#     ],
-#     'l': ["list", "comma separated list enclosed in `[]`"],
-#     'ln': ["name list", 'comma separated list enclosed in `[]` of '\
-#            'one or more groups that have just name and dscr keys.'\
-#            ' e.g. `{ name: "name", desc: "description"}`'],
-#     'lnw': ["name list+", 'name list that optionally contains a width'],
-#     'lp': ["parameter list", 'parameter list having default value optionally'],
-#     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
-#     'lg': ["list of group", "comma separated group of key:value enclosed in `{}`"\
-#            " the second entry of the list is the sub group format"],
-#     's': ["string", "string, typically short"],
-#     't': ["text", "string, may be multi-line enclosed in `'''` "\
-#           "may use `**bold**`, `*italic*` or `!!Reg` markup"],
-#     'T': ["tuple", "tuple enclosed in ()"],
-#     'pi': ["python int", "Native Python type int (generated)"],
-#     'pb': ["python Bool", "Native Python type Bool (generated)"],
-#     'pl': ["python list", "Native Python type list (generated)"],
-#     'pe': ["python enum", "Native Python type enum (generated)"]
-# }
-addrs = {
-    'name': 'Address configurations',
-    'description':
-    '''Device Node address configuration. It contains the base address and the size in bytes.
-''',
-    'required': {
-        'base_addrs':
-        ['g', 'Base addresses of the device. It is required for the device'],
-        'size_byte':
-        ['d', 'Memory space of the device. It is required for the device'],
-    },
-    'optional': {},
-    'added': {}
-}
 
 XBAR_VALIDATOR = create_validator("urn:tlgen:xbar")
 
