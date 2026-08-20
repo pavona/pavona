@@ -16,4 +16,7 @@ def selfdoc(heading: int, cmd: str = "") -> str:
                                       schema_parser=schema_parser),
                       document_schema(outfile=None,
                                       schema="urn:tlgen:node",
+                                      schema_parser=schema_parser),
+                      document_schema(outfile=None,
+                                      schema="urn:tlgen:addrs",
                                       schema_parser=schema_parser)])
