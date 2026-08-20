@@ -56,11 +56,13 @@ Other tools from the RV32 toolchain can be used directly, such as objcopy.
 
 #### Macros
 
-A `.macro`/`.irp`/`.irpc` parameter may be used as a `bn.*` register
-operand, e.g. `bn.xor \a, \a, \b` inside `.macro foo a, b`: `acc_as.py`
-defers the encoding to the real assembler, so `.if`, `.exitm` and recursive
-macros all work as usual. Not supported: `.altmacro`, and a parameterized
-mnemonic, immediate, or enum/option/csr/wsr operand.
+A `.macro`/`.irp`/`.irpc` parameter may be used as a `bn.*` register or
+immediate operand, e.g. `bn.xor \a, \a, \b` inside `.macro foo a, b`:
+`acc_as.py` defers the encoding to the real assembler, so `.if`, `.exitm`
+and recursive macros all work as usual. Not supported: `.altmacro`, a
+parameterized mnemonic or enum/option/csr/wsr operand, `li` with a
+parameterized immediate, or a relocation (e.g. `%lo(...)`) as a
+parameterized `bn.*` immediate.
 
 ### Passing of data between the host CPU and ACC
 

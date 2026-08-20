@@ -22,10 +22,11 @@ Partial support:
   - Operands may not have embedded spaces or commas. Complicated immediate
     expressions are not currently supported.
 
-  - A macro/.irp/.irpc parameter ("\\foo") may be used as a bn.* register
-    operand: see Transformer.mk_symbolic_line. Not supported: a
-    parameterized mnemonic, immediate, or enum/option/csr/wsr operand, and
-    .altmacro.
+  - A macro/.irp/.irpc parameter ("\\foo") may be used as a bn.* register or
+    immediate operand: see Transformer.mk_symbolic_line. Not supported: a
+    parameterized mnemonic or enum/option/csr/wsr operand, .altmacro, `li`
+    with a parameterized immediate, or a relocation (e.g. %lo(...)) as a
+    parameterized bn.* immediate.
 
 '''
 
@@ -39,7 +40,8 @@ from typing import Dict, List, Optional, Set, TextIO, Tuple
 from shared.bit_ranges import BitRanges
 from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
-from shared.operand import ImmOperandType, Operand, RegOperandType
+from shared.operand import (ImmOperandType, IsrOperandType, Operand,
+                            RegOperandType)
 from shared.toolchain import find_tool
 
 # RISC-V ABI register names for x0..x31, in order (see mk_symbolic_line).
@@ -792,14 +794,91 @@ class Transformer:
 
         return '.word {:#010x}'.format(word_val)
 
+    def _symbolic_bits_expr(self, bits: BitRanges, value_expr: str) -> str:
+        '''Text form of BitRanges.encode: distribute a bits.width-bit value
+        expression across bits' (possibly disjoint) ranges, OR'd together.
+
+        '''
+        parts = []
+        bits_taken = 0
+        for msb, lsb in bits.ranges:
+            rng_width = msb - lsb + 1
+            value_msb = bits.width - 1 - bits_taken
+            value_lsb = value_msb - rng_width + 1
+            rng_mask = (1 << rng_width) - 1
+            bits_taken += rng_width
+
+            piece = ('({})'.format(value_expr) if value_lsb == 0 else
+                     '(({}) >> {})'.format(value_expr, value_lsb))
+            piece = '({} & {:#x})'.format(piece, rng_mask)
+            if lsb:
+                piece = '({} << {})'.format(piece, lsb)
+            parts.append(piece)
+
+        assert bits_taken == bits.width
+        return parts[0] if len(parts) == 1 else ' | '.join(parts)
+
+    def _imm_symbolic_enc_expr(self, insn: Insn, op_name: str,
+                               op_type: ImmOperandType,
+                               text: str) -> Tuple[str, List[str]]:
+        '''Text form of op_val_to_enc_val for a parameterized immediate
+
+        text is the operand expression (containing a macro/.irp/.irpc
+        parameter). Returns the encoded-value expression plus the .if/.error
+        guards standing in for the ValueErrors op_val_to_enc_val would raise.
+
+        '''
+        if op_type.pc_rel:
+            raise RuntimeError(
+                '{}:{}: operand {!r} of {!r} is PC-relative and cannot be a '
+                'macro/.irp/.irpc parameter.'.format(
+                    self.in_path, self.line_number, op_name, insn.mnemonic))
+        if op_type.width is None:
+            raise RuntimeError(
+                '{}:{}: operand {!r} of {!r} has unknown width and cannot '
+                'be a macro/.irp/.irpc parameter.'.format(
+                    self.in_path, self.line_number, op_name, insn.mnemonic))
+
+        guards = []  # type: List[str]
+        val_expr = '({})'.format(text)
+
+        if op_type.shift:
+            step = 1 << op_type.shift
+            guards += [
+                '.if (({}) & {:#x}) != 0'.format(val_expr, step - 1),
+                '.error "{}: value for operand \'{}\' is not a multiple of '
+                '{}"'.format(insn.mnemonic, op_name, step),
+                '.endif',
+            ]
+            val_expr = '(({}) / {})'.format(val_expr, step)
+
+        if op_type.enc_offset:
+            val_expr = '(({}) - {})'.format(val_expr, op_type.enc_offset)
+
+        enc_rng = op_type.get_enc_range()
+        assert enc_rng is not None
+        enc_lo, enc_hi = enc_rng
+        guards += [
+            '.if (({}) < {}) || (({}) > {})'.format(val_expr, enc_lo,
+                                                    val_expr, enc_hi),
+            '.error "{}: value for operand \'{}\' is out of range '
+            '[{}, {}]"'.format(insn.mnemonic, op_name, enc_lo, enc_hi),
+            '.endif',
+        ]
+
+        mask = (1 << op_type.width) - 1
+        enc_expr = '(({}) & {:#x})'.format(val_expr, mask)
+        return enc_expr, guards
+
     def mk_symbolic_line(self, insn: Insn,
                          op_to_expr: Dict[str, Optional[str]]) -> List[str]:
         '''Like mk_raw_line, but for an instruction with a parameterized
-        register operand: builds a .word expression instead of a concrete
-        word, so the real assembler resolves the register at invocation
-        time. Non-parameterized operands are still resolved numerically here.
+        operand: builds a .word expression instead of a concrete word,
+        deferring the value (and its range/alignment checks) to the real
+        assembler at invocation time. Non-parameterized operands are still
+        resolved numerically here.
 
-        Returns the guards followed by the .word line.
+        Returns the .if/.error guards followed by the .word line.
 
         '''
         assert insn.encoding is not None
@@ -824,28 +903,25 @@ class Transformer:
             text = expr.strip()
             op_type = insn.name_to_operand[op_name].op_type
 
-            if not isinstance(op_type, RegOperandType):
+            if isinstance(op_type, RegOperandType):
+                # An undefined .L__acc_<reg_type>_<text> symbol (an invalid
+                # register name) fails to assemble on its own: it can't
+                # appear in the bitwise arithmetic below. No guard needed.
+                enc_expr = '.L__acc_{}_{}'.format(op_type.reg_type, text)
+            elif (isinstance(op_type, ImmOperandType) and
+                  not isinstance(op_type, IsrOperandType)):
+                enc_expr, imm_guards = self._imm_symbolic_enc_expr(
+                    insn, op_name, op_type, text)
+                guards += imm_guards
+            else:
                 raise RuntimeError(
                     '{}:{}: operand {!r} of {!r} cannot be a macro/.irp/'
-                    '.irpc parameter: only register operands can.'.format(
-                        self.in_path, self.line_number, op_name,
-                        insn.mnemonic))
+                    '.irpc parameter (unsupported for this kind of '
+                    'operand).'.format(self.in_path, self.line_number,
+                                       op_name, insn.mnemonic))
 
-            bits = field.scheme_field.bits
-            if len(bits.ranges) != 1:
-                raise RuntimeError(
-                    '{}:{}: operand {!r} of {!r} is encoded in more than one '
-                    'bit range, which acc_as.py cannot defer to the real '
-                    'assembler.'.format(self.in_path, self.line_number,
-                                        op_name, insn.mnemonic))
-
-            # An undefined .L__acc_<reg_type>_<text> symbol (a bad register
-            # name, or one outside w0..w31/x0..x31) fails to assemble on its
-            # own: it can't appear in the bitwise arithmetic below.
-            sym = '.L__acc_{}_{}'.format(op_type.reg_type, text)
-
-            _, lsb = bits.ranges[0]
-            frags.append(sym if not lsb else '({} << {})'.format(sym, lsb))
+            frags.append(self._symbolic_bits_expr(field.scheme_field.bits,
+                                                  enc_expr))
 
         word_expr = '{:#010x}'.format(base_val)
         for frag in frags:
