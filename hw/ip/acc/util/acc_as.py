@@ -22,6 +22,11 @@ Partial support:
   - Operands may not have embedded spaces or commas. Complicated immediate
     expressions are not currently supported.
 
+  - A macro/.irp/.irpc parameter ("\\foo") may be used as a bn.* register
+    operand: see Transformer.mk_symbolic_line. Not supported: a
+    parameterized mnemonic, immediate, or enum/option/csr/wsr operand, and
+    .altmacro.
+
 '''
 
 import os
@@ -36,6 +41,14 @@ from shared.encoding import Encoding
 from shared.insn_yaml import Insn, InsnsFile, load_insns_yaml
 from shared.operand import ImmOperandType, Operand, RegOperandType
 from shared.toolchain import find_tool
+
+# RISC-V ABI register names for x0..x31, in order (see mk_symbolic_line).
+_GPR_ABI_NAMES = [
+    'zero', 'ra', 'sp', 'gp', 'tp', 't0', 't1', 't2', 's0', 's1',
+    'a0', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7',
+    's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9', 's10', 's11',
+    't3', 't4', 't5', 't6',
+]
 
 
 class RVFmt:
@@ -471,6 +484,11 @@ def _unpack_lx(where: str, mnemonic: str,
                            '<imm> operand wrongly marked as optional in '
                            'insns.yml?')
 
+    # A parameter reference ("\foo"): pass it through as-is. li/la expand to
+    # plain RV32I text, so the real assembler resolves it at invocation time.
+    if '\\' in grd:
+        return (grd.strip(), imm)
+
     try:
         gpr_type = RegOperandType('gpr', False, True)
         grd_op_val = gpr_type.str_to_op_val(grd)
@@ -492,6 +510,13 @@ def expand_li(where: str, op_to_expr: Dict[str, Optional[str]]) -> List[str]:
     # hw/ip/acc/dv/accsim/test/simple/pseudos/li.s.
 
     grd_txt, imm = _unpack_lx(where, 'li', op_to_expr)
+
+    if '\\' in imm:
+        raise RuntimeError(
+            '{}: LI cannot take a macro/.irp/.irpc parameter as its '
+            'immediate (only <grd> may be parameterized). Use addi/lui '
+            'directly instead.'.format(where))
+
     try:
         imm_int = int(imm, 0)
     except ValueError:
@@ -663,6 +688,11 @@ class Transformer:
         # The key symbol for this statement
         self.key_sym = None  # type: Optional[str]
 
+        # Nesting depth of .macro/.irp/.irpc/.rept bodies (all closed by
+        # .endm/.endmacro or .endr). A "\foo" operand is only legal while
+        # this is nonzero; see gen_line.
+        self.body_depth = 0
+
         self.in_comment = False
         self.in_string = False
 
@@ -685,6 +715,58 @@ class Transformer:
         out_handle.write(f'.file "{in_path}"\n')
         out_handle.write('.line 1\n')
 
+        # Register name -> index, for mk_symbolic_line. Written at top
+        # level rather than inside the first body that needs them: a
+        # .macro/.rept body is only expanded once invoked, and a macro that's
+        # never invoked would then never define them.
+        for idx in range(32):
+            out_handle.write(f'.set .L__acc_wdr_w{idx}, {idx}\n')
+        for idx in range(32):
+            out_handle.write(f'.set .L__acc_gpr_x{idx}, {idx}\n')
+        for idx, name in enumerate(_GPR_ABI_NAMES):
+            out_handle.write(f'.set .L__acc_gpr_{name}, {idx}\n')
+
+    def _resolve_operand_enc_val(self, insn: Insn, op_name: str,
+                                 expr: Optional[str]) -> int:
+        '''Resolve a fully-literal operand expression to an encoded value
+
+        Split out of mk_raw_line so mk_symbolic_line can reuse it for the
+        non-parameterized operands of an otherwise-parameterized instruction.
+
+        '''
+        op_type = insn.name_to_operand[op_name].op_type
+        try:
+            op_val = (0 if expr is None else op_type.str_to_op_val(
+                expr.strip()))
+        except ValueError as err:
+            raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                  self.line_number,
+                                                  err)) from None
+        if op_val is None:
+            raise RuntimeError('{}:{}: Cannot resolve operand expression '
+                               '{!r} to an index and the instruction {!r} '
+                               'has an encoding incompatible with rv32i '
+                               '.insn lines.'.format(
+                                   self.in_path, self.line_number, expr,
+                                   insn.mnemonic)) from None
+
+        try:
+            enc_val = op_type.op_val_to_enc_val(op_val, None)
+        except ValueError as err:
+            raise RuntimeError('{}:{}: {}'.format(self.in_path,
+                                                  self.line_number,
+                                                  err)) from None
+
+        if enc_val is None:
+            raise RuntimeError(
+                '{}:{}: Cannot encode {!r} operand for '
+                '{!r} instruction without a current PC '
+                '(which is not known to acc_as.py).'.format(
+                    self.in_path, self.line_number, expr,
+                    insn.mnemonic)) from None
+
+        return enc_val
+
     def mk_raw_line(self, insn: Insn, op_to_expr: Dict[str,
                                                        Optional[str]]) -> str:
         '''Generate a .word-style raw line
@@ -695,43 +777,11 @@ class Transformer:
         '''
         assert insn.encoding is not None
 
-        # Generate a mapping from operand name to an encoded value. Note that
-        # read_index checks that the value fits in the operand type and
-        # converts to the value that should be encoded.
+        # Generate a mapping from operand name to an encoded value.
         op_to_idx = {}
         for op_name, expr in op_to_expr.items():
-            op_type = insn.name_to_operand[op_name].op_type
-            try:
-                op_val = (0 if expr is None else op_type.str_to_op_val(
-                    expr.strip()))
-            except ValueError as err:
-                raise RuntimeError('{}:{}: {}'.format(self.in_path,
-                                                      self.line_number,
-                                                      err)) from None
-            if op_val is None:
-                raise RuntimeError('{}:{}: Cannot resolve operand expression '
-                                   '{!r} to an index and the instruction {!r} '
-                                   'has an encoding incompatible with rv32i '
-                                   '.insn lines.'.format(
-                                       self.in_path, self.line_number, expr,
-                                       insn.mnemonic)) from None
-
-            try:
-                enc_val = op_type.op_val_to_enc_val(op_val, None)
-            except ValueError as err:
-                raise RuntimeError('{}:{}: {}'.format(self.in_path,
-                                                      self.line_number,
-                                                      err)) from None
-
-            if enc_val is None:
-                raise RuntimeError(
-                    '{}:{}: Cannot encode {!r} operand for '
-                    '{!r} instruction without a current PC '
-                    '(which is not known to acc_as.py).'.format(
-                        self.in_path, self.line_number, expr,
-                        insn.mnemonic)) from None
-
-            op_to_idx[op_name] = enc_val
+            op_to_idx[op_name] = self._resolve_operand_enc_val(
+                insn, op_name, expr)
 
         try:
             word_val = insn.encoding.assemble(op_to_idx)
@@ -741,6 +791,67 @@ class Transformer:
                                                   err)) from None
 
         return '.word {:#010x}'.format(word_val)
+
+    def mk_symbolic_line(self, insn: Insn,
+                         op_to_expr: Dict[str, Optional[str]]) -> List[str]:
+        '''Like mk_raw_line, but for an instruction with a parameterized
+        register operand: builds a .word expression instead of a concrete
+        word, so the real assembler resolves the register at invocation
+        time. Non-parameterized operands are still resolved numerically here.
+
+        Returns the guards followed by the .word line.
+
+        '''
+        assert insn.encoding is not None
+
+        base_val = insn.encoding.get_ones_mask()
+        guards = []  # type: List[str]
+        frags = []  # type: List[str]
+
+        for field_name, field in insn.encoding.fields.items():
+            if not isinstance(field.value, str):
+                # Fixed field: already folded into get_ones_mask() above.
+                continue
+
+            op_name = field.value
+            expr = op_to_expr.get(op_name)
+
+            if expr is None or '\\' not in expr:
+                enc_val = self._resolve_operand_enc_val(insn, op_name, expr)
+                base_val |= field.scheme_field.bits.encode(enc_val)
+                continue
+
+            text = expr.strip()
+            op_type = insn.name_to_operand[op_name].op_type
+
+            if not isinstance(op_type, RegOperandType):
+                raise RuntimeError(
+                    '{}:{}: operand {!r} of {!r} cannot be a macro/.irp/'
+                    '.irpc parameter: only register operands can.'.format(
+                        self.in_path, self.line_number, op_name,
+                        insn.mnemonic))
+
+            bits = field.scheme_field.bits
+            if len(bits.ranges) != 1:
+                raise RuntimeError(
+                    '{}:{}: operand {!r} of {!r} is encoded in more than one '
+                    'bit range, which acc_as.py cannot defer to the real '
+                    'assembler.'.format(self.in_path, self.line_number,
+                                        op_name, insn.mnemonic))
+
+            # An undefined .L__acc_<reg_type>_<text> symbol (a bad register
+            # name, or one outside w0..w31/x0..x31) fails to assemble on its
+            # own: it can't appear in the bitwise arithmetic below.
+            sym = '.L__acc_{}_{}'.format(op_type.reg_type, text)
+
+            _, lsb = bits.ranges[0]
+            frags.append(sym if not lsb else '({} << {})'.format(sym, lsb))
+
+        word_expr = '{:#010x}'.format(base_val)
+        for frag in frags:
+            word_expr = '({}) | ({})'.format(word_expr, frag)
+
+        return guards + ['.word {}'.format(word_expr)]
 
     def mk_rve_line(self, insn: Insn, rve: RVEncoding,
                     op_to_expr: Dict[str, Optional[str]]) -> str:
@@ -881,6 +992,30 @@ class Transformer:
             raise RuntimeError(
                 '{}:{}: Instruction {!r} has no encoding.'.format(
                     self.in_path, self.line_number, insn.mnemonic))
+
+        # A "\foo" operand only gets its value once the real assembler
+        # substitutes it, so defer to mk_symbolic_line instead of resolving
+        # it here. Outside any body that could supply one, it's a mistake.
+        has_param_operand = any(expr is not None and '\\' in expr
+                                for expr in op_to_expr.values())
+        if has_param_operand:
+            if self.body_depth == 0:
+                raise RuntimeError(
+                    "{}:{}: operand for {!r} contains '\\', but this line "
+                    'is not inside a .macro/.irp/.irpc/.rept body.'.format(
+                        self.in_path, self.line_number, insn.mnemonic))
+
+            self.out_handle.write(f'# {reconstructed}\n')
+            self.out_handle.write(f'.line {self.line_number - 1}\n')
+            self.out_handle.write(f'.loc {self.in_idx + 1} {self.line_number}\n')
+            for out_line in self.mk_symbolic_line(insn, op_to_expr):
+                self.out_handle.write(f'{out_line}\n')
+
+            # As below: a (possibly parameterized) loop/loopi still needs its
+            # body-start label for the matching endloop check.
+            if insn.mnemonic in ('loop', 'loopi'):
+                self._open_loop(insn, op_to_expr)
+            return
 
         # A custom instruction. We have two possible approaches.
         #
@@ -1123,10 +1258,25 @@ class Transformer:
         self.key_sym = match.group(0)
         self.state = 1
 
-        if ".macro" in line:
-            line_match = re.search(r"\.macro\s(\w+)", line)
-            if line_match is not None:
-                self.macros.append(line_match.group(1))
+        key_sym_lower = self.key_sym.lower()
+
+        # .altmacro uses "&foo" instead of "\foo" for parameters, which
+        # mk_symbolic_line doesn't understand.
+        if key_sym_lower in ('.altmacro', '.noaltmacro'):
+            raise RuntimeError(
+                '{}:{}: {!r} is not supported by acc_as.py.'.format(
+                    self.in_path, self.line_number, self.key_sym))
+
+        if key_sym_lower == '.macro':
+            name_match = re.search(r'\.macro\s+([0-9a-zA-Z_$.]+)', line)
+            if name_match is not None:
+                self.macros.append(name_match.group(1))
+
+        # .rept, .irp and .irpc are all closed by .endr.
+        if key_sym_lower in ('.macro', '.irp', '.irpc', '.rept'):
+            self.body_depth += 1
+        elif key_sym_lower in ('.endm', '.endmacro', '.endr'):
+            self.body_depth = max(0, self.body_depth - 1)
 
         def perform_replacement(line: str, symbol_table: Dict[str, List[str]]) -> str:
             # Remove comment (only works single-line comments)
