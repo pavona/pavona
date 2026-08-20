@@ -8066,6 +8066,36 @@ pavona_test(
 )
 
 pavona_test(
+    name = "otp_ctrl_sw_parts_test",
+    srcs = ["otp_ctrl_sw_parts_test.c"],
+    exec_env = dicts.add(
+        EGRET_TEST_ENVS,
+        EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
+        {
+            "//hw/top_egret:sim_dv": None,
+            "//hw/top_egret:sim_verilator": None,
+            "//hw/top_egret:fpga_cw340_sival": None,
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_egret:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+pavona_test(
     name = "soc_proxy_smoketest",
     srcs = ["soc_proxy_smoketest.c"],
     exec_env = DRAGONFLY_TEST_ENVS,
