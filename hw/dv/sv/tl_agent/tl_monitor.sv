@@ -179,6 +179,9 @@ class tl_monitor extends dv_base_monitor#(
       req.a_source  = h2d.a_source;
       req.a_user    = h2d.a_user;
       req.a_blocked = cfg.enable_blocker && vif_a_blocked;
+      if (cfg.reset_domain != null) begin
+        req.a_channel_ref_edge = cfg.reset_domain.clk_rst_vif.posedge_count;
+      end
       `uvm_info(`gfn, $sformatf("[%0s][a_chan] : %0s", agent_name, req.convert2string()), UVM_HIGH)
 
       if (cfg.en_cov) sample_outstanding_cov(req);
@@ -234,6 +237,9 @@ class tl_monitor extends dv_base_monitor#(
       rsp.d_sink   = cfg.vif.mon_cb.d2h.d_sink;
       rsp.d_size   = cfg.vif.mon_cb.d2h.d_size;
       rsp.d_user   = cfg.vif.mon_cb.d2h.d_user;
+      if (cfg.reset_domain != null) begin
+        rsp.d_channel_ref_edge = cfg.reset_domain.clk_rst_vif.posedge_count;
+      end
 
       `uvm_info(`gfn, $sformatf("[%0s][d_chan] : %0s", agent_name, rsp.convert2string()), UVM_HIGH)
 

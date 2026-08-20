@@ -104,6 +104,14 @@ class tl_seq_item extends uvm_sequence_item;
   // (either because of timeout or because a reset was asserted).
   bit                             rsp_completed;
 
+  // Reference-clock identities of the edges on which the monitor observed the
+  // A- and D-channel handshakes.  Generated items leave these fields at zero;
+  // monitor observations populate them when each channel is published.
+  // Consumers can use this metadata to order accepted TL activity against
+  // observations from other agents without sampling a clock interface.
+  longint unsigned                a_channel_ref_edge;
+  longint unsigned                d_channel_ref_edge;
+
   // The a_param and d_param message fields are reserved in the spec for future use. Force them to
   // be zero in items that we generate.
   extern constraint param_c;
@@ -173,6 +181,8 @@ class tl_seq_item extends uvm_sequence_item;
     `uvm_field_int  (rsp_abort_after_d_valid_len, UVM_DEFAULT | UVM_NOPACK)
     `uvm_field_int  (req_completed,       UVM_DEFAULT | UVM_NOPACK)
     `uvm_field_int  (rsp_completed,       UVM_DEFAULT | UVM_NOPACK)
+    `uvm_field_int  (a_channel_ref_edge,  UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPACK)
+    `uvm_field_int  (d_channel_ref_edge,  UVM_DEFAULT | UVM_NOCOMPARE | UVM_NOPACK)
   `uvm_object_utils_end
 
   extern function new (string name = "");
@@ -325,7 +335,9 @@ function string tl_seq_item::convert2string();
          $sformatf("req_abort_after_a_valid_len = %0b ", req_abort_after_a_valid_len),
          $sformatf("rsp_abort_after_d_valid_len = %0b ", rsp_abort_after_d_valid_len),
          $sformatf("req_completed = %0b ", req_completed),
-         $sformatf("rsp_completed = %0b ", rsp_completed)};
+         $sformatf("rsp_completed = %0b ", rsp_completed),
+         $sformatf("a_channel_ref_edge = %0d ", a_channel_ref_edge),
+         $sformatf("d_channel_ref_edge = %0d ", d_channel_ref_edge)};
   return str;
 endfunction
 
