@@ -10,7 +10,9 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
+#if defined(OPENTITAN_IS_EGRET)
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#endif
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -18,7 +20,9 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#if defined(OPENTITAN_IS_EGRET)
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#endif
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
@@ -44,8 +48,10 @@ static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1, "this test expects an alert_handler");
 static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
 static_assert(kDtRvCoreIbexCount == 1, "this test expects exactly one Ibex");
+#if defined(OPENTITAN_IS_EGRET)
 static const dt_flash_ctrl_t kFlashCtrlDt = 0;
 static_assert(kDtFlashCtrlCount == 1, "this test expects a flash_ctrl");
+#endif
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 
@@ -59,8 +65,9 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t ibex;
+#if defined(OPENTITAN_IS_EGRET)
 static dif_flash_ctrl_state_t flash_ctrl;
-
+#endif
 static dif_pwrmgr_request_sources_t wakeup_sources;
 
 /**
@@ -84,7 +91,9 @@ static void init_peripherals(void) {
 
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &ibex));
 
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
+#endif
 }
 
 /**
@@ -93,6 +102,18 @@ static void init_peripherals(void) {
  */
 void wait_enough_for_alert_ping(void) {
   // wait enough
+  // For dragonfly we reduce the wait times about 10 times, because
+  // alert_handler's clock is at 250MHz, while egret's is at 24 MHz.
+  // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
+#if defined(OPENTITAN_IS_EGRET)
+  // 2*4*(2**16)*(42ns) = 22ms
+  uint32_t silicon_micros = 1000 * 22;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  // 2*4*(2**16)*(4ns) = 21ms
+  uint32_t silicon_micros = 2100;
+#else
+#error Unsupported top
+#endif
   switch (kDeviceType) {
     case kDeviceFpgaCw310:
     case kDeviceFpgaCw340:
@@ -101,14 +122,10 @@ void wait_enough_for_alert_ping(void) {
       busy_spin_micros(1000 * 200);
       break;
     case kDeviceSilicon:
-      // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-      // 2*4*(2**16)*(42ns) = 22ms
-      busy_spin_micros(1000 * 22);
+      busy_spin_micros(silicon_micros);
       break;
     case kDeviceSimDV:
-      // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-      // 2*4*(2**16)*(42ns) = 22ms
-      busy_spin_micros(1000 * 22);
+      busy_spin_micros(silicon_micros);
       break;
     case kDeviceSimVerilator:
       // Verilator
@@ -264,13 +281,20 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
 static void enter_low_power(bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
+#if defined(OPENTITAN_IS_EGRET)
   cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInActivePower)) |
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  cfg = (cfg & kDifPwrmgrDomainOptionIoClockInLowPower) |
+#else
+#error Unsupported top
+#endif
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
 
   CHECK_STATUS_OK(
       pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, cfg));
+  LOG_INFO("enter_low_power WFI");
   wait_for_interrupt();
 }
 
@@ -304,7 +328,7 @@ static size_t test_step_cnt;
 
 /**
  * Helper function to keep the test body clean
- * Initializes the flash_ctrl and test counters.
+ * Initializes the test counters.
  * This is called once per reset.
  */
 void init_test_components(void) {
@@ -500,7 +524,7 @@ bool test_main(void) {
     LOG_INFO("Will run %d iterations per phase", rnd_num_iterations);
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-
+#if defined(OPENTITAN_IS_EGRET)
     // We need to initialize the info FLASH partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
@@ -509,6 +533,7 @@ bool test_main(void) {
                                                   &kOwnerSecret));
       chip_sw_reset();
     }
+#endif
   }
   CHECK_STATUS_OK(
       ret_sram_testutils_counter_get(kCounterTestPhase, &rnd_num_iterations));
