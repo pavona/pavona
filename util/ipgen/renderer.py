@@ -114,7 +114,7 @@ class IpTemplateRendererBase:
             if core_name == uniq_name or core_name.startswith(f'{uniq_name}_'):
                 return core_name
             if core_name.startswith(f'{name}_'):
-                return f'{uniq_name}_{core_name[len(name)+1:]}'
+                return f'{uniq_name}_{core_name[len(name) + 1:]}'
             elif core_name == name:
                 return uniq_name
         else:
