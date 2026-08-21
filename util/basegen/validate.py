@@ -17,6 +17,7 @@ from .lib import REPO_TOP, import_hjson
 
 SCHEMA_DIRS = {REPO_TOP / "util" / "basegen" / "schemas",
                REPO_TOP / "util" / "ipgen" / "schemas",
+               REPO_TOP / "util" / "raclgen" / "schemas",
                REPO_TOP / "util" / "reggen" / "schemas",
                REPO_TOP / "util" / "tlgen" / "schemas",
                REPO_TOP / "util" / "topgen" / "schemas"}
