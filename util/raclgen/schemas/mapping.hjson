@@ -1,0 +1,22 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:raclgen:mapping",
+  title: "RACL Mapping",
+  description: "Register access control list (RACL) mapping",
+  type: "object",
+  required: []
+  properties: {
+    registers: { type: "object", description: "Dict, specifying the policy for each register" },
+    windows: { type: "object", description: "Dict, specifying the policy for each window" },
+    ranges: { type: "array",
+              items: { type: "object" }
+              description: '''List, specifying the policy for each range.
+                           Each element in this list must be a dict
+                           which contain the keys defined in range_required.
+                           '''
+    }
+  }
+}
