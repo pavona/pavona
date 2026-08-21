@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import hjson  # type: ignore
-from reggen.lib import (check_bool, check_int, check_keys, check_list,
+from reggen.lib import (check_bool, check_int, check_list,
                         check_name, check_str)
 from reggen.params import BaseParam, Params
 
@@ -14,6 +14,7 @@ from basegen.validate import create_validator, all_validation_errors
 
 
 TPL_PARAM_VALIDATOR = create_validator("urn:ipgen:template_parameter")
+IP_CONFIG_VALIDATOR = create_validator("urn:ipgen:ip_config")
 
 
 class TemplateParseError(Exception):
@@ -310,19 +311,18 @@ class IpConfig:
     def from_raw(cls, template_params: TemplateParams, raw: object,
                  where: str) -> 'IpConfig':
         """ Load an IpConfig from a raw object """
-
-        rd = check_keys(raw, 'configuration file ' + where, ['instance_name'],
-                        ['param_values', 'dtgen'])
-        instance_name = check_name(rd.get('instance_name'),
-                                   "the key 'instance_name' of " + where)
-
         if not isinstance(raw, dict):
             raise ValueError(
                 "The IP configuration is expected to be a dict, but was "
                 "actually a " + type(raw).__name__)
+        validation_errors = all_validation_errors(raw, IP_CONFIG_VALIDATOR, "ip_config")
+        if validation_errors:
+            raise ValueError(f"IP config file {where} did not correctly conform to schema")
 
+        instance_name = check_name(raw.get('instance_name'),
+                                   "the key 'instance_name' of " + where)
         param_values = IpConfig._check_param_values(template_params,
-                                                    rd['param_values'])
+                                                    raw['param_values'])
         # The dtgen part of the configuration only depends on the template
         # and not on the values, so it is re-derived in the constructor anyway.
         # Therefore we just ignore it.
