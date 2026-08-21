@@ -18,17 +18,6 @@ from reggen.window import Window
 
 from basegen.validate import create_validator, all_validation_errors
 
-# Required fields for the RACL mapping hjson
-mapping_required = {
-}
-mapping_optional = {
-    'registers': ['g', 'Dict, specifying the policy for each register'],
-    'windows': ['g', 'Dict, specifying the policy for each window'],
-    'ranges': ['l', 'List, specifying the policy for each range.'
-               'Each element in this list must be a dict'
-               'which contain the keys defined in range_required.']
-}
-
 # Required fields for each range within the RACL mapping hjson
 range_required = {
     'base': ['d', 'Base address of range'],
@@ -53,6 +42,7 @@ DEFAULT_RACL_CONFIG = {
 }
 
 RACL_VALIDATOR = create_validator("urn:raclgen:racl")
+MAPPING_VALIDATOR = create_validator("urn:raclgen:mapping")
 
 
 def _read_hjson(filename: str) -> Dict[str, object]:
@@ -162,7 +152,8 @@ def parse_racl_mapping(
     if racl_policies is None:
         raise SystemExit(f'RACL group {racl_group} not defined in RACL config')
 
-    error = check_keys(mapping, mapping_required, mapping_optional, [], 'RACL Mapping')
+    validation_errors = all_validation_errors(mapping, MAPPING_VALIDATOR)
+    error = len(validation_errors)
     if error:
         raise SystemExit(f"Error occurred while validating {mapping_path}")
 
