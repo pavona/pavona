@@ -116,3 +116,4 @@ TPL_PARAM_VALIDATOR = create_validator("urn:ipgen:template_parameter")
 IP_CONFIG_VALIDATOR = create_validator("urn:ipgen:ip_config")
 
 RACL_VALIDATOR = create_validator("urn:raclgen:racl")
+RACL_MAPPING_VALIDATOR = create_validator("urn:raclgen:mapping")
