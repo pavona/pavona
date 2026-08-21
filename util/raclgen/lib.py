@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -15,20 +16,7 @@ from reggen.multi_register import MultiRegister
 from reggen.register import Register
 from reggen.window import Window
 
-
-# Required fields for the RACL hjson
-racl_required = {
-    'error_response': [
-        'pb',
-        'When true, return TLUL error on denied RACL access, otherwise not'
-    ],
-    'role_bit_lsb': ['d', 'RACL role bit LSB within the TLUL user bit vector'],
-    'role_bit_msb': ['d', 'RACL role bit MSB within the TLUL user bit vector'],
-    'ctn_uid_bit_lsb': ['d', 'CTN UID bit LSB within the TLUL user bit vector'],
-    'ctn_uid_bit_msb': ['d', 'CTN UID bit MSB within the TLUL user bit vector'],
-    'roles': ['l', 'List, specifying all RACL roles'],
-    'policies': ['g', 'Dict, specifying the policies of all RACL groups']
-}
+from basegen.validate import create_validator, all_validation_errors
 
 # Required fields for the RACL mapping hjson
 mapping_required = {
@@ -64,6 +52,8 @@ DEFAULT_RACL_CONFIG = {
     'rot_private_policy_wr': 0
 }
 
+RACL_VALIDATOR = create_validator("urn:raclgen:racl")
+
 
 def _read_hjson(filename: str) -> Dict[str, object]:
     try:
@@ -80,7 +70,8 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config = _read_hjson(config_path)
 
     # TODO(#25690) Further sanity checks on the parsed RACL config
-    error = check_keys(racl_config, racl_required, [], [], 'RACL Config')
+    validation_errors = all_validation_errors(racl_config, RACL_VALIDATOR, "racl")
+    error = len(validation_errors)
     if error:
         raise SystemExit(f"Error occurred while validating {config_path}")
 
