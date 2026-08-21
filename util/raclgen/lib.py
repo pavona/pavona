@@ -10,20 +10,12 @@ from typing import Dict, Optional, Tuple, List, TextIO
 
 import hjson
 from reggen.ip_block import IpBlock
-from reggen.validate import check_keys
 from reggen.md_helpers import mono, list_item, table, title
 from reggen.multi_register import MultiRegister
 from reggen.register import Register
 from reggen.window import Window
 
 from basegen.validate import create_validator, all_validation_errors
-
-# Required fields for each range within the RACL mapping hjson
-range_required = {
-    'base': ['d', 'Base address of range'],
-    'size': ['d', 'Size of range'],
-    'policy': ['s', 'Policy name']
-}
 
 # Default configuration to render the RACL package for systems that don't use RACL but need the
 # type definitions
@@ -156,11 +148,6 @@ def parse_racl_mapping(
     error = len(validation_errors)
     if error:
         raise SystemExit(f"Error occurred while validating {mapping_path}")
-
-    for range in mapping.get('ranges', []):
-        error = check_keys(range, range_required, [], [], 'RACL Range')
-        if error:
-            raise SystemExit(f"Error occurred while validating {mapping_path}")
 
     policy_names = [policy['name'] for policy in racl_policies]
 
