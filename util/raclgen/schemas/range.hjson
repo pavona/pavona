@@ -1,0 +1,25 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:raclgen:range",
+  title: "RACL Range",
+  description: "RACL address range policies",
+  type: "object",
+  required: ["base", "size", "policy"]
+  additionalProperties: false,
+  properties: {
+    base: {
+      type: "integer",
+      description: "Base address of range",
+      minimum: 0
+    },
+    size: {
+      type: "integer",
+      description: "Size of range",
+      exclusiveMinimum: 0
+    },
+    policy: { type: "string", description: "Policy name" }
+  }
+}

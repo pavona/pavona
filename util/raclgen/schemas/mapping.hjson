@@ -13,11 +13,8 @@
     registers: { type: "object", description: "Dict, specifying the policy for each register" },
     windows: { type: "object", description: "Dict, specifying the policy for each window" },
     ranges: { type: "array",
-              items: { type: "object" }
-              description: '''List, specifying the policy for each range.
-                           Each element in this list must be a dict
-                           which contain the keys defined in range_required.
-                           '''
+              items: { $ref: "urn:raclgen:range" }
+              description: "List, specifying the policy for each range."
     }
   }
 }
