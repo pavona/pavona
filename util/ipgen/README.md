@@ -199,13 +199,12 @@ options:
 
 ### `ipgen describe`
 
-<!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py generate --help -->
+<!-- BEGIN CMDGEN util/selfdoc.py quote:util/ipgen.py describe --help -->
 ```
-$ util/ipgen.py generate --help
-usage: ipgen.py generate [-h] [--verbose] -C TEMPLATE_DIR [--no-top] -o OUTDIR
-                         [--force] --config-file CONFIG_FILE
+$ util/ipgen.py describe --help
+usage: ipgen.py describe [-h] [--verbose] -C TEMPLATE_DIR [--no-top]
 
-Generate an IP block from an IP template
+Show all information available for the IP template.
 
 options:
   -h, --help            show this help message and exit
@@ -213,11 +212,6 @@ options:
   -C TEMPLATE_DIR, --template-dir TEMPLATE_DIR
                         IP template directory
   --no-top              Generate standalone IP without top-specific references
-  -o OUTDIR, --outdir OUTDIR
-                        output directory for the resulting IP block
-  --force, -f           overwrite the output directory, if it exists
-  --config-file CONFIG_FILE, -c CONFIG_FILE
-                        path to a configuration file
 ```
 <!-- END CMDGEN -->
 
