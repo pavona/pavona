@@ -95,8 +95,8 @@ bool test_main(void) {
       &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
 
   bool secret1_locked = false;
-  CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
-      &otp_ctrl, kDifOtpCtrlPartitionSecret1, &secret1_locked));
+  CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kOtpPartitionSecret1,
+                                               &secret1_locked));
 
   if (!secret1_locked) {
     LOG_INFO("Powered up for the first time, program and lock otp");
@@ -123,8 +123,7 @@ bool test_main(void) {
       uint64_t val =
           (uint64_t)rand_testutils_gen32() << 32 | rand_testutils_gen32();
 
-      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
-                                              kDifOtpCtrlPartitionSecret1,
+      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl, kOtpPartitionSecret1,
                                               kFlashAddrKeyOffset + i, val));
       CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
@@ -134,8 +133,7 @@ bool test_main(void) {
       uint64_t val =
           (uint64_t)rand_testutils_gen32() << 32 | rand_testutils_gen32();
 
-      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl,
-                                              kDifOtpCtrlPartitionSecret1,
+      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl, kOtpPartitionSecret1,
                                               kFlashDataKeyOffset + i, val));
       CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
@@ -145,14 +143,14 @@ bool test_main(void) {
       uint64_t val =
           (uint64_t)rand_testutils_gen32() << 32 | rand_testutils_gen32();
 
-      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(
-          &otp_ctrl, kDifOtpCtrlPartitionSecret1, kSramDataKeyOffset + i, val));
+      CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp_ctrl, kOtpPartitionSecret1,
+                                              kSramDataKeyOffset + i, val));
       CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp_ctrl));
     };
 
     // Lock the secret1 partition.
-    CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
-        &otp_ctrl, kDifOtpCtrlPartitionSecret1, 0));
+    CHECK_STATUS_OK(
+        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionSecret1, 0));
 
     // Inform rom to setup scramble next round.
     uint32_t otp_val = 0;
@@ -160,7 +158,7 @@ bool test_main(void) {
         otp_val, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
         kMultiBitBool4True);
     CHECK_DIF_OK(dif_otp_ctrl_dai_program32(
-        &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+        &otp_ctrl, kOtpPartitionCreatorSwCfg,
         (OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET -
          OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
         otp_val));

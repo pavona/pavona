@@ -180,7 +180,7 @@ status_t manuf_individualize_device_owner_sw_cfg_check(
  * to the `buffer`.
  */
 status_t manuf_individualize_device_partition_expected_read(
-    dif_otp_ctrl_partition_t partition, uint8_t *buffer);
+    const dif_otp_ctrl_t *otp_ctrl, otp_partition_t partition, uint8_t *buffer);
 
 /**
  * Configures and locks the ROT_CREATOR_AUTH_CODESIGN OTP partition.

@@ -117,10 +117,10 @@ status_t test_chip_specific_startup(ujson_t *uj) {
 
   // We need to know the OTP configs for AST init and jitter in order to
   // correctly determine the pass/fail conditions.
-  TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+  TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kOtpPartitionCreatorSwCfg,
                                  kAstInitEnOffset,
                                  &cs.otp.creator_sw_cfg_ast_init_en, 1));
-  TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+  TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kOtpPartitionCreatorSwCfg,
                                  kJitterEnOffset,
                                  &cs.otp.creator_sw_cfg_jitter_en, 1));
 

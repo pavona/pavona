@@ -174,16 +174,16 @@ static status_t otp_partition_secret2_configure(
 
   // Provision RMA unlock token and RootKey shares into OTP.
   TRY(otp_ctrl_testutils_dai_write64(
-      otp_ctrl, kDifOtpCtrlPartitionSecret2, kRmaUnlockTokenOffset,
+      otp_ctrl, kOtpPartitionSecret2, kRmaUnlockTokenOffset,
       rma_unlock_token_hash->hash, kRmaUnlockTokenSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kOtpPartitionSecret2,
                                      kRootKeyOffsetShare0, share0,
                                      kRootKeyShareSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kOtpPartitionSecret2,
                                      kRootKeyOffsetShare1, share1,
                                      kRootKeyShareSizeIn64BitWords));
 
-  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kOtpPartitionSecret2,
                                         /*digest=*/0));
 
   return OK_STATUS();
@@ -198,7 +198,7 @@ status_t manuf_personalize_device_secrets(
 
   // Skip provisioning of SECRET1 OTP partition if already done.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret2,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
@@ -211,7 +211,7 @@ status_t manuf_personalize_device_secrets(
   // Note: for SECRET1 partition to be provisioned, the HW_CFG1 partition
   // must have been provisioned, and the CSRNG SW interface should have been
   // enabled, so no need to check again here.
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret1,
                                       &is_locked));
   if (!is_locked) {
     return INTERNAL();
@@ -266,15 +266,15 @@ static status_t otp_secret_write(const dif_otp_ctrl_t *otp_ctrl,
     return INTERNAL();
   }
 
-  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret1,
-                                     offset, data, len));
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kOtpPartitionSecret1, offset,
+                                     data, len));
   return OK_STATUS();
 }
 
 status_t manuf_personalize_device_secrets_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret2,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret2,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
@@ -283,21 +283,21 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
                                           const dif_otp_ctrl_t *otp_ctrl) {
   // Skip provisioning of SECRET1 OTP partition if already done.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret1,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
   }
 
   // Check that the HW_CFG0 OTP partition has been locked (and is activated).
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg0,
                                       &is_locked));
   if (!is_locked) {
     return INTERNAL();
   }
 
   // Check that the HW_CFG1 OTP partition has been locked (and is activated).
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg1,
                                       &is_locked));
   if (!is_locked) {
     return INTERNAL();
@@ -306,7 +306,7 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
   // Check that the CSRNG SW application interface is enabled in the HW_CFG1
   // partition, as we cannot provision SECRET1 without access to the CSRNG.
   uint32_t otp_hw_cfg1_settings;
-  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kOtpPartitionHwCfg1,
                                     kHwCfgEnSramIfetchOffset,
                                     &otp_hw_cfg1_settings));
   uint32_t csrng_sw_app_read =
@@ -333,7 +333,7 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
                        kSecret1SramDataKeySeed64Bitwords));
 
   TRY(entropy_csrng_uninstantiate());
-  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kOtpPartitionSecret1,
                                         /*digest=*/0));
 
   return OK_STATUS();
@@ -342,7 +342,7 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
 status_t manuf_personalize_device_secret1_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret1,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }

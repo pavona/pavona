@@ -69,32 +69,32 @@ void init_otp_mem_dump_buffers(void) {
 
 status_t otp_vendor_test_dump(uint32_t *buffer) {
   // Read VENDOR_TEST partition
-  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionVendorTest,
-                                          0, buffer, kOtpFiVendorTestSize));
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kOtpPartitionVendorTest, 0,
+                                          buffer, kOtpFiVendorTestSize));
 
   return OK_STATUS();
 }
 
 status_t otp_owner_sw_cfg_dump(uint32_t *buffer) {
   // Read OWNER_SW_CFG partition
-  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionOwnerSwCfg,
-                                          0, buffer, kOtpFiOwnerSwCfgSize));
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kOtpPartitionOwnerSwCfg, 0,
+                                          buffer, kOtpFiOwnerSwCfgSize));
 
   return OK_STATUS();
 }
 
 status_t otp_hw_cfg_dump(uint32_t *buffer) {
   // Read HW_CFG partition
-  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionHwCfg0, 0,
-                                          buffer, kOtpFiHwCfg0Size));
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kOtpPartitionHwCfg0, 0, buffer,
+                                          kOtpFiHwCfg0Size));
 
   return OK_STATUS();
 }
 
 status_t otp_life_cycle_dump(uint32_t *buffer) {
   // Read LIFE_CYCLE partition
-  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionLifeCycle,
-                                          0, buffer, kOtpFiLifeCycleSize));
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kOtpPartitionLifeCycle, 0,
+                                          buffer, kOtpFiLifeCycleSize));
 
   return OK_STATUS();
 }
@@ -149,8 +149,9 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
     }
   }
   uj_output.otp_status_codes = status.codes;
+  // Number of causes = Partition count + 2.
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlNumberOfCauses);
+         kOtpPartitionCount + 2);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
@@ -238,8 +239,9 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
     }
   }
   uj_output.otp_status_codes = status.codes;
+  // Number of causes = Partition count + 2.
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlNumberOfCauses);
+         kOtpPartitionCount + 2);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
@@ -299,8 +301,9 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
     }
   }
   uj_output.otp_status_codes = status.codes;
+  // Number of causes = Partition count + 2.
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlNumberOfCauses);
+         kOtpPartitionCount + 2);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
@@ -360,8 +363,9 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
     }
   }
   uj_output.otp_status_codes = status.codes;
+  // Number of causes = Partition count + 2.
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlNumberOfCauses);
+         kOtpPartitionCount + 2);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,

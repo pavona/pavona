@@ -91,17 +91,17 @@ static status_t init_flash_info_page0(bool write_ast_data) {
 /**
  * Check the AST configuration data was programmed correctly.
  */
-static status_t check_otp_ast_cfg(void) {
+static status_t check_otp_ast_cfg(const dif_otp_ctrl_t *otp) {
   // Check OTP fields were programmed correctly.
   uint32_t data;
   uint32_t relative_addr;
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     TRY(dif_otp_ctrl_relative_address(
-        kDifOtpCtrlPartitionCreatorSwCfg,
+        otp, kOtpPartitionCreatorSwCfg,
         OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET + i * sizeof(uint32_t),
         &relative_addr));
-    TRY(otp_ctrl_testutils_dai_read32(
-        &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data));
+    TRY(otp_ctrl_testutils_dai_read32(&otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                      relative_addr, &data));
     TRY_CHECK(data == i);
   }
 
@@ -121,7 +121,7 @@ static status_t check_otp_ast_cfg(void) {
 /**
  * Check the *SW_CFG partition digests.
  */
-static status_t check_otp_sw_cfg_digest(dif_otp_ctrl_partition_t partition) {
+static status_t check_otp_sw_cfg_digest(otp_partition_t partition) {
   uint64_t expected_digest, actual_digest = 0;
 
   // Get actual_digest.
@@ -133,26 +133,26 @@ static status_t check_otp_sw_cfg_digest(dif_otp_ctrl_partition_t partition) {
       (const unsigned char *)TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
       OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET;
   switch (partition) {
-    case kDifOtpCtrlPartitionCreatorSwCfg:
+    case kOtpPartitionCreatorSwCfg:
       hmac_sha256_update(kOtpSwCfgWindowBase +
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET,
                          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE -
                              OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE);
       break;
-    case kDifOtpCtrlPartitionOwnerSwCfg:
+    case kOtpPartitionOwnerSwCfg:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
           OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
               OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE);
       break;
-    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
+    case kOtpPartitionRotCreatorAuthCodesign:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
               OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE);
       break;
-    case kDifOtpCtrlPartitionRotCreatorAuthState:
+    case kOtpPartitionRotCreatorAuthState:
       hmac_sha256_update(
           kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
@@ -252,17 +252,16 @@ bool test_main(void) {
       status_ok(
           manuf_individualize_device_rot_creator_auth_state_check(&otp_ctrl))) {
     // Check OTP AST and digest contents.
-    CHECK_STATUS_OK(check_otp_ast_cfg());
+    CHECK_STATUS_OK(check_otp_ast_cfg(&otp_ctrl));
     LOG_INFO("Checking CreatorSwCfg digest ...");
-    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kDifOtpCtrlPartitionCreatorSwCfg));
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionCreatorSwCfg));
     LOG_INFO("Checking OwnerSwCfg digest ...");
-    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kDifOtpCtrlPartitionOwnerSwCfg));
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionOwnerSwCfg));
     LOG_INFO("Checking RotCreatorAuthCodesign digest ...");
     CHECK_STATUS_OK(
-        check_otp_sw_cfg_digest(kDifOtpCtrlPartitionRotCreatorAuthCodesign));
+        check_otp_sw_cfg_digest(kOtpPartitionRotCreatorAuthCodesign));
     LOG_INFO("Checking RotCreatorAuthState digest ...");
-    CHECK_STATUS_OK(
-        check_otp_sw_cfg_digest(kDifOtpCtrlPartitionRotCreatorAuthState));
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotCreatorAuthState));
     return true;
   }
 

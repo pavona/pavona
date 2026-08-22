@@ -411,22 +411,21 @@ static status_t init_ref_otp_data(void) {
   if (!otp_ref_init) {
     // Read VENDOR_TEST partition.
     TRY(otp_ctrl_testutils_dai_read32_array(
-        &otp, kDifOtpCtrlPartitionVendorTest, 0, otp_data_read_ref_vendor_test,
+        &otp, kOtpPartitionVendorTest, 0, otp_data_read_ref_vendor_test,
         (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
          OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
             sizeof(uint32_t)));
 
     // Read CREATOR_SW_CFG partition.
     TRY(otp_ctrl_testutils_dai_read32_array(
-        &otp, kDifOtpCtrlPartitionCreatorSwCfg, 0,
-        otp_data_read_ref_creator_sw_cfg,
+        &otp, kOtpPartitionCreatorSwCfg, 0, otp_data_read_ref_creator_sw_cfg,
         (OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
          OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
             sizeof(uint32_t)));
 
     // READ OWNER_SW_CFG partition.
     TRY(otp_ctrl_testutils_dai_read32_array(
-        &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0, otp_data_read_ref_owner_sw_cfg,
+        &otp, kOtpPartitionOwnerSwCfg, 0, otp_data_read_ref_owner_sw_cfg,
         (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
          OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
             sizeof(uint32_t)));
@@ -460,18 +459,17 @@ static status_t read_otp_partitions(ujson_t *uj) {
   pentest_set_trigger_high();
   asm volatile(NOP10);
   TRY(otp_ctrl_testutils_dai_read32_array(
-      &otp, kDifOtpCtrlPartitionVendorTest, 0, otp_data_read_res_vendor_test,
+      &otp, kOtpPartitionVendorTest, 0, otp_data_read_res_vendor_test,
       (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
        OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
           sizeof(uint32_t)));
   TRY(otp_ctrl_testutils_dai_read32_array(
-      &otp, kDifOtpCtrlPartitionCreatorSwCfg, 0,
-      otp_data_read_res_creator_sw_cfg,
+      &otp, kOtpPartitionCreatorSwCfg, 0, otp_data_read_res_creator_sw_cfg,
       (OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
        OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE) /
           sizeof(uint32_t)));
   TRY(otp_ctrl_testutils_dai_read32_array(
-      &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0, otp_data_read_res_owner_sw_cfg,
+      &otp, kOtpPartitionOwnerSwCfg, 0, otp_data_read_res_owner_sw_cfg,
       (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
        OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
           sizeof(uint32_t)));
@@ -4879,9 +4877,9 @@ status_t handle_ibex_fi_otp_data_read(ujson_t *uj) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) __attribute__((optnone)) {
   TRY(init_ref_otp_data());
-  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionVendorTest));
-  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionCreatorSwCfg));
-  TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionOwnerSwCfg));
+  TRY(dif_otp_ctrl_lock_reading(&otp, kOtpPartitionVendorTest));
+  TRY(dif_otp_ctrl_lock_reading(&otp, kOtpPartitionCreatorSwCfg));
+  TRY(dif_otp_ctrl_lock_reading(&otp, kOtpPartitionOwnerSwCfg));
 
   TRY(read_otp_partitions(uj));
 
@@ -4904,8 +4902,8 @@ status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) __attribute__((optnone)) {
   pentest_set_trigger_high();
   asm volatile(NOP10);
   TRY(otp_ctrl_testutils_dai_write64(
-      &otp, kDifOtpCtrlPartitionSecret0, kSecret0TestUnlockTokenOffset,
-      faulty_token, kSecret0TestUnlockTokenSizeIn64BitWords));
+      &otp, kOtpPartitionSecret0, kSecret0TestUnlockTokenOffset, faulty_token,
+      kSecret0TestUnlockTokenSizeIn64BitWords));
   asm volatile(NOP10);
   pentest_set_trigger_low();
 

@@ -66,7 +66,7 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   val = bitfield_field32_write(val, kDisRvDmLateDebug,
                                kHwCfg1Settings.dis_rv_dm_late_debug);
 
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kOtpPartitionHwCfg1,
                                      kHwCfgEnSramIfetchOffset, &val,
                                      /*len=*/1));
   return OK_STATUS();
@@ -79,7 +79,7 @@ status_t manuf_individualize_device_hw_cfg(
   bool is_locked;
 
   // Provision HW_CFG0 if it is not locked.
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg0,
                                       &is_locked));
   if (!is_locked) {
     // Configure flash info page permissions in case we started from a cold
@@ -145,27 +145,27 @@ status_t manuf_individualize_device_hw_cfg(
         (ast_cfg_version << 8);
 
     // Write the complete device ID to OTP.
-    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kOtpPartitionHwCfg0,
                                        kHwCfgDeviceIdOffset, device_id,
                                        kHwCfgDeviceIdSizeIn32BitWords));
 
     // Configure ManufState as all 0s. It is unused.
     uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords] = {0};
-    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kOtpPartitionHwCfg0,
                                        kHwCfgManufStateOffset, manuf_state,
                                        kHwCfgManufStateSizeIn32BitWords));
-    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kOtpPartitionHwCfg0,
                                           /*digest=*/0));
   }
 
   // Provision HW_CFG1 if it is not locked.
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg1,
                                       &is_locked));
   if (!is_locked) {
     // Configure byte-sized hardware enable knobs.
     TRY(hw_cfg1_enable_knobs_set(otp_ctrl));
 
-    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kOtpPartitionHwCfg1,
                                           /*digest=*/0));
   }
   return OK_STATUS();
@@ -176,13 +176,13 @@ status_t manuf_individualize_device_hw_cfg_check(
   // TODO: Add DeviceId by comparing OTP flash value against the value reported
   // by lc_ctrl. Consider erasing the data from the flash info pages.
   bool is_locked0, is_locked1;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg0,
                                       &is_locked0));
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionHwCfg1,
                                       &is_locked1));
   uint64_t digest0, digest1;
-  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg0, &digest0));
-  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg1, &digest1));
+  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kOtpPartitionHwCfg0, &digest0));
+  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kOtpPartitionHwCfg1, &digest1));
 
   return is_locked0 && is_locked1 ? OK_STATUS() : INTERNAL();
 }
@@ -191,22 +191,22 @@ status_t manuf_individualize_device_secret0(
     const dif_lc_ctrl_t *lc_ctrl, const dif_otp_ctrl_t *otp_ctrl,
     const manuf_cp_provisioning_data_t *provisioning_data) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret0,
                                       &is_locked));
   if (is_locked) {
     return OK_STATUS();
   }
 
-  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kOtpPartitionSecret0,
                                      kSecret0TestUnlockTokenOffset,
                                      provisioning_data->test_unlock_token_hash,
                                      kSecret0TestUnlockTokenSizeIn64BitWords));
-  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+  TRY(otp_ctrl_testutils_dai_write64(otp_ctrl, kOtpPartitionSecret0,
                                      kSecret0TestExitTokenOffset,
                                      provisioning_data->test_exit_token_hash,
                                      kSecret0TestExitTokenSizeIn64BitWords));
 
-  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kOtpPartitionSecret0,
                                         /*digest=*/0));
 
   return OK_STATUS();
@@ -215,7 +215,7 @@ status_t manuf_individualize_device_secret0(
 status_t manuf_individualize_device_secret0_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionSecret0,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionSecret0,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }

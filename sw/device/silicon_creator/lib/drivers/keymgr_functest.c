@@ -119,18 +119,17 @@ static void init_flash(void) {
 
 static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
   bool is_computed;
-  CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(otp, kDifOtpCtrlPartitionSecret2,
-                                               &is_computed));
+  CHECK_DIF_OK(
+      dif_otp_ctrl_is_digest_computed(otp, kOtpPartitionSecret2, &is_computed));
   if (is_computed) {
     uint64_t digest;
-    CHECK_DIF_OK(
-        dif_otp_ctrl_get_digest(otp, kDifOtpCtrlPartitionSecret2, &digest));
+    CHECK_DIF_OK(dif_otp_ctrl_get_digest(otp, kOtpPartitionSecret2, &digest));
     LOG_INFO("OTP partition locked. Digest: %x-%x", ((uint32_t *)&digest)[0],
              ((uint32_t *)&digest)[1]);
     return;
   }
   CHECK_STATUS_OK(
-      otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0));
+      otp_ctrl_testutils_lock_partition(otp, kOtpPartitionSecret2, 0));
 }
 
 /** Key manager configuration steps performed in ROM. */

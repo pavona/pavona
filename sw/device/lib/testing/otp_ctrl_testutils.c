@@ -38,7 +38,7 @@ status_t otp_ctrl_testutils_dai_access_error_check(
     if (!bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("Expected a DAI error for access to 0x%x", address);
     }
-    // causes[kOtpPartitionCount] is resrved for the DAI error.
+    // causes[kOtpPartitionCount] is reserved for the DAI error.
     if (status.causes[kOtpPartitionCount] != kDifOtpCtrlErrorLockedAccess) {
       LOG_ERROR("Expected access locked error for access to 0x%x", address);
     }
@@ -46,7 +46,7 @@ status_t otp_ctrl_testutils_dai_access_error_check(
     if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
       LOG_ERROR("No DAI error expected for access to 0x%x", address);
     }
-    // causes[kOtpPartitionCount] is resrved for the DAI error.
+    // causes[kOtpPartitionCount] is reserved for the DAI error.
     if (status.causes[kOtpPartitionCount] != kDifOtpCtrlErrorOk) {
       LOG_ERROR("No DAI error code expected for access to 0x%x", address);
     }

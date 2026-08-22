@@ -262,8 +262,7 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
                        &lc_ctrl));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR),
@@ -351,10 +350,10 @@ static status_t measure_otp_partition(otp_partition_t partition,
     // until the final stages of personalization.
     if (partition == kOtpPartitionOwnerSwCfg) {
       manuf_individualize_device_partition_expected_read(
-          kDifOtpCtrlPartitionOwnerSwCfg, (uint8_t *)otp_state);
+          &otp_ctrl, kOtpPartitionOwnerSwCfg, (uint8_t *)otp_state);
     } else if (partition == kOtpPartitionCreatorSwCfg) {
       manuf_individualize_device_partition_expected_read(
-          kDifOtpCtrlPartitionCreatorSwCfg, (uint8_t *)otp_state);
+          &otp_ctrl, kOtpPartitionCreatorSwCfg, (uint8_t *)otp_state);
     }
   }
 
@@ -708,7 +707,7 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
   // Read complete device ID and push into perso blob. The host will need the
   // device ID to reconstruct the WAS.
   uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
-  TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp_ctrl, kOtpPartitionHwCfg0,
                                           kHwCfgDeviceIdOffset, device_id,
                                           ARRAYSIZE(device_id)));
   perso_tlv_object_header_t device_id_header = 0;

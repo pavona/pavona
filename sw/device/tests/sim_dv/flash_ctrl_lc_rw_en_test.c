@@ -231,7 +231,7 @@ static void keymgr_advance_state(dif_keymgr_t *keymgr,
 // creator secrets are provisioned and the DUT will not allow further writes to
 // the creator secrets.
 static void dut_provision_creator_secrets(void) {
-  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2, 0));
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kOtpPartitionSecret2, 0));
   dif_otp_ctrl_status_t otp_status;
   do {
     CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &otp_status));

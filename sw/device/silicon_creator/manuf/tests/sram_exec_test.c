@@ -52,9 +52,8 @@ static status_t peripheral_handles_init(void) {
 
 static status_t otp_ctrl_read_hw_cfg0_device_id(uint32_t *device_id) {
   for (size_t i = kDeviceIdOffset; i < kDeviceIdSizeIn32BitWords; ++i) {
-    TRY(otp_ctrl_testutils_dai_read32(&otp, kDifOtpCtrlPartitionHwCfg0,
-                                      kDeviceIdOffset + (i * 4),
-                                      &device_id[i]));
+    TRY(otp_ctrl_testutils_dai_read32(
+        &otp, kOtpPartitionHwCfg0, kDeviceIdOffset + (i * 4), &device_id[i]));
     LOG_INFO("Device ID (%d) = %08x", i, device_id[i]);
   }
   return OK_STATUS();
@@ -69,8 +68,7 @@ static status_t otp_ctrl_read_hw_cfg0_device_id(uint32_t *device_id) {
 static status_t check_device_id_is_unprovisioned(void) {
   // Check HW_CFG0 is unlocked.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg0,
-                                      &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionHwCfg0, &is_locked));
   CHECK(!is_locked);
 
   // Check Device ID is all zeros.
@@ -88,8 +86,7 @@ static status_t check_device_id_is_unprovisioned(void) {
 static status_t check_device_id_is_provisioned(void) {
   // Check HW_CFG0 is still unlocked.
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(&otp, kDifOtpCtrlPartitionHwCfg0,
-                                      &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionHwCfg0, &is_locked));
   CHECK(!is_locked);
 
   // Check Device ID matches what is expected.
@@ -105,9 +102,8 @@ static status_t check_device_id_is_provisioned(void) {
 static status_t provisioning_device_id_start(void) {
   LOG_INFO("Provisioning Device ID in OTP.");
   check_device_id_is_unprovisioned();
-  TRY(otp_ctrl_testutils_dai_write32(&otp, kDifOtpCtrlPartitionHwCfg0,
-                                     kDeviceIdOffset, kTestDeviceId,
-                                     kDeviceIdSizeIn32BitWords));
+  TRY(otp_ctrl_testutils_dai_write32(&otp, kOtpPartitionHwCfg0, kDeviceIdOffset,
+                                     kTestDeviceId, kDeviceIdSizeIn32BitWords));
   return OK_STATUS();
 }
 

@@ -69,7 +69,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 }
 
 status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
-                                       dif_otp_ctrl_partition_t partition,
+                                       otp_partition_t partition,
                                        otcrypto_word32_buf_t output) {
   if (otp_ctrl == NULL || output.len != kSha256DigestWords) {
     return INVALID_ARGUMENT();
@@ -80,13 +80,13 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
   };
 
   switch (partition) {
-    case kDifOtpCtrlPartitionVendorTest: {
+    case kOtpPartitionVendorTest: {
       uint32_t
           vendor_test_32bit_array[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
                                    OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
                                   sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
-          otp_ctrl, kDifOtpCtrlPartitionVendorTest, 0, vendor_test_32bit_array,
+          otp_ctrl, kOtpPartitionVendorTest, 0, vendor_test_32bit_array,
           (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
            OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
               sizeof(uint32_t)));
@@ -97,7 +97,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
-    case kDifOtpCtrlPartitionCreatorSwCfg: {
+    case kOtpPartitionCreatorSwCfg: {
       // Note: we purposely exclude the AST configuration data field of this
       // partition from the digest calculation because this could be different
       // per chip and we do not want to it to be part of the foundation for the
@@ -119,7 +119,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
-    case kDifOtpCtrlPartitionOwnerSwCfg: {
+    case kOtpPartitionOwnerSwCfg: {
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
@@ -129,13 +129,13 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
-    case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
+    case kOtpPartitionRotCreatorAuthCodesign: {
       uint32_t rot_creator_auth_codesign_32bit_array
           [(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
             OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
-          otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign, 0,
+          otp_ctrl, kOtpPartitionRotCreatorAuthCodesign, 0,
           rot_creator_auth_codesign_32bit_array,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
@@ -147,13 +147,13 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
-    case kDifOtpCtrlPartitionRotCreatorAuthState: {
+    case kOtpPartitionRotCreatorAuthState: {
       uint32_t rot_creator_auth_state_32bit_array
           [(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
             OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
-          otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState, 0,
+          otp_ctrl, kOtpPartitionRotCreatorAuthState, 0,
           rot_creator_auth_state_32bit_array,
           (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /

@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -46,8 +47,8 @@ static uint32_t
  */
 OT_WARN_UNUSED_RESULT
 static status_t otp_img_write(const dif_otp_ctrl_t *otp,
-                              dif_otp_ctrl_partition_t partition,
-                              const otp_kv_t *kv, size_t len) {
+                              otp_partition_t partition, const otp_kv_t *kv,
+                              size_t len) {
   for (size_t i = 0; i < len; ++i) {
     // We purposely skip the provisioning of the flash data region default
     // configuration as it must be enabled only after the OTP SECRET1
@@ -89,7 +90,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     }
     // clang-format on
     uint32_t offset;
-    TRY(dif_otp_ctrl_relative_address(partition, kv[i].offset, &offset));
+    TRY(dif_otp_ctrl_relative_address(otp, partition, kv[i].offset, &offset));
     switch (kv[i].type) {
       case kOptValTypeUint32Buff:
         TRY(otp_ctrl_testutils_dai_write32(otp, partition, offset,
@@ -118,11 +119,13 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
  * @return OK_STATUS if the expected OTP values are successfully written to the
  * `buffer`.
  */
-static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
+static status_t otp_img_expected_value_read(const dif_otp_ctrl_t *otp,
+                                            otp_partition_t partition,
                                             uint32_t field_offset,
                                             uint8_t *buffer) {
   uint32_t relative_addr;
-  TRY(dif_otp_ctrl_relative_address(partition, field_offset, &relative_addr));
+  TRY(dif_otp_ctrl_relative_address(otp, partition, field_offset,
+                                    &relative_addr));
   switch (field_offset) {
     case OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET:
       memcpy(buffer + relative_addr, &kOwnerSwCfgRomBootstrapDisValue,
@@ -159,7 +162,7 @@ static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
  */
 OT_WARN_UNUSED_RESULT
 static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
-                                   dif_otp_ctrl_partition_t partition) {
+                                   otp_partition_t partition) {
   // Compute SHA256 of the OTP partition.
   uint32_t digest[kSha256DigestWords];
   otcrypto_word32_buf_t otp_partition_digest = {
@@ -221,11 +224,11 @@ static status_t manuf_individualize_device_ast_cfg(
     if (addr < kValidAstCfgOtpAddrLow || addr >= kInvalidAstCfgOtpAddrHigh) {
       return OUT_OF_RANGE();
     }
-    TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg, addr,
+    TRY(dif_otp_ctrl_relative_address(otp_ctrl, kOtpPartitionCreatorSwCfg, addr,
                                       &relative_addr));
-    TRY(otp_ctrl_testutils_dai_write32(
-        otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data,
-        /*len=*/1));
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                       relative_addr, &data,
+                                       /*len=*/1));
     flash_info_page_buf[ast_cfg_offset + i] =
         UINT32_MAX;  // Erase AST config data after use.
   }
@@ -247,8 +250,8 @@ static status_t manuf_individualize_device_ast_cfg(
 
 status_t manuf_individualize_device_creator_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                    kOtpKvCreatorSwCfg, kOtpKvCreatorSwCfgSize));
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionCreatorSwCfg, kOtpKvCreatorSwCfg,
+                    kOtpKvCreatorSwCfgSize));
   TRY(manuf_individualize_device_ast_cfg(otp_ctrl, flash_state));
   return OK_STATUS();
 }
@@ -257,33 +260,34 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
                                               uint32_t field_offset) {
   uint32_t relative_addr;
   const uint32_t *field_value_addr;
-  dif_otp_ctrl_partition_t partition;
+  otp_partition_t partition;
   switch (field_offset) {
     case OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET:
       field_value_addr = &kOwnerSwCfgRomBootstrapDisValue;
-      partition = kDifOtpCtrlPartitionOwnerSwCfg;
+      partition = kOtpPartitionOwnerSwCfg;
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET:
       field_value_addr = &kCreatorSwCfgFlashInfoBootDataCfgValue;
-      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      partition = kOtpPartitionCreatorSwCfg;
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET:
       field_value_addr = &kCreatorSwCfgFlashDataDefaultCfgValue;
-      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      partition = kOtpPartitionCreatorSwCfg;
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET:
       field_value_addr = &kCreatorSwCfgImmutableRomExtEnValue;
-      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      partition = kOtpPartitionCreatorSwCfg;
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
       field_value_addr = &kCreatorSwCfgManufStateValue;
-      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      partition = kOtpPartitionCreatorSwCfg;
       break;
     default:
       return INTERNAL();
   }
 
-  TRY(dif_otp_ctrl_relative_address(partition, field_offset, &relative_addr));
+  TRY(dif_otp_ctrl_relative_address(otp_ctrl, partition, field_offset,
+                                    &relative_addr));
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, partition, relative_addr,
                                      field_value_addr, /*len=*/1));
 
@@ -294,11 +298,11 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionCreatorSwCfg,
+      otp_ctrl, kOtpPartitionCreatorSwCfg,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
   uint32_t val = 0;
-  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                    offset, &val));
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kOtpPartitionCreatorSwCfg, offset,
+                                    &val));
   bool is_provisioned = (val == kCreatorSwCfgFlashDataDefaultCfgValue);
   return is_provisioned ? OK_STATUS() : INTERNAL();
 }
@@ -307,54 +311,56 @@ status_t manuf_individualize_device_flash_info_boot_data_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t offset;
   TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionCreatorSwCfg,
+      otp_ctrl, kOtpPartitionCreatorSwCfg,
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET, &offset));
   uint32_t val = 0;
-  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                    offset, &val));
+  TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kOtpPartitionCreatorSwCfg, offset,
+                                    &val));
   bool is_provisioned = (val == kCreatorSwCfgFlashInfoBootDataCfgValue);
   return is_provisioned ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_individualize_device_creator_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionCreatorSwCfg));
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_creator_sw_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(
-      otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionCreatorSwCfg,
+                                      &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
                     kOtpKvOwnerSwCfgSize));
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_partition_expected_read(
-    dif_otp_ctrl_partition_t partition, uint8_t *buffer) {
+    const dif_otp_ctrl_t *otp_ctrl, otp_partition_t partition,
+    uint8_t *buffer) {
   switch (partition) {
-    case kDifOtpCtrlPartitionOwnerSwCfg:
+    case kOtpPartitionOwnerSwCfg:
       TRY(otp_img_expected_value_read(
-          partition, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET,
-          buffer));
+          otp_ctrl, partition,
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET, buffer));
       break;
-    case kDifOtpCtrlPartitionCreatorSwCfg:
+    case kOtpPartitionCreatorSwCfg:
       TRY(otp_img_expected_value_read(
-          partition,
+          otp_ctrl, partition,
           OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET,
           buffer));
       TRY(otp_img_expected_value_read(
-          partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, buffer));
-      TRY(otp_img_expected_value_read(
-          partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET,
+          otp_ctrl, partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET,
           buffer));
+      TRY(otp_img_expected_value_read(
+          otp_ctrl, partition,
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET, buffer));
       break;
     default:
       return INTERNAL();
@@ -365,32 +371,32 @@ status_t manuf_individualize_device_partition_expected_read(
 
 status_t manuf_individualize_device_owner_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionOwnerSwCfg));
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_owner_sw_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionOwnerSwCfg,
                                       &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_individualize_device_rot_creator_auth_codesign(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotCreatorAuthCodesign,
                     kOtpKvRotCreatorAuthCodesign,
                     kOtpKvRotCreatorAuthCodesignSize));
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotCreatorAuthCodesign));
   return OK_STATUS();
 }
 
 status_t manuf_individualize_device_rot_creator_auth_state(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState,
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotCreatorAuthState,
                     kOtpKvRotCreatorAuthState, kOtpKvRotCreatorAuthStateSize));
-  TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotCreatorAuthState));
   return OK_STATUS();
 }
 
@@ -398,7 +404,7 @@ status_t manuf_individualize_device_rot_creator_auth_codesign_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(
-      otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign, &is_locked));
+      otp_ctrl, kOtpPartitionRotCreatorAuthCodesign, &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
@@ -406,6 +412,6 @@ status_t manuf_individualize_device_rot_creator_auth_state_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(
-      otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState, &is_locked));
+      otp_ctrl, kOtpPartitionRotCreatorAuthState, &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }

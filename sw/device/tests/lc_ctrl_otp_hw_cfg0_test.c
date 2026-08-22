@@ -26,8 +26,8 @@ static const uint8_t kNumDeviceId = 8;
  * Read and return 32-bit OTP data via the DAI interface.
  */
 static void otp_ctrl_dai_read_32(const dif_otp_ctrl_t *otp,
-                                 dif_otp_ctrl_partition_t partition,
-                                 uint32_t address, uint32_t *buf) {
+                                 otp_partition_t partition, uint32_t address,
+                                 uint32_t *buf) {
   CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(otp, partition, address));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(otp, buf));
@@ -58,8 +58,7 @@ bool test_main(void) {
   // plan to backdoor inject.
   uint32_t otp_device_id;
   for (uint32_t i = 0; i < kNumDeviceId; i++) {
-    otp_ctrl_dai_read_32(&otp, kDifOtpCtrlPartitionHwCfg0, i * 4,
-                         &otp_device_id);
+    otp_ctrl_dai_read_32(&otp, kOtpPartitionHwCfg0, i * 4, &otp_device_id);
 
     CHECK(otp_device_id == lc_device_id.data[i],
           "Device_ID_%d mismatch bewtween otp_ctrl: %08x and lc_ctrl: %08x", i,

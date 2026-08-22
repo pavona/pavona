@@ -31,10 +31,8 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
         "Powered up for the first time, lock SECRET2 and SECRET3 partitions");
     dif_otp_ctrl_t otp;
     TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
-    TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
-                                          0));
-    TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret3,
-                                          0));
+    TRY(otp_ctrl_testutils_lock_partition(&otp, kOtpPartitionSecret2, 0));
+    TRY(otp_ctrl_testutils_lock_partition(&otp, kOtpPartitionSecret3, 0));
 
     // Reboot device.
     rstmgr_testutils_reason_clear();

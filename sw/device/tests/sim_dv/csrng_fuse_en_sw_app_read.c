@@ -75,7 +75,7 @@ static void check_csrng_fuse_enabled(bool expected) {
 
   uint32_t value;
   // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg1,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kOtpPartitionHwCfg1,
                                            kOtpIfetchHwRelativeOffset));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));

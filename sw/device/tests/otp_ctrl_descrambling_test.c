@@ -15,25 +15,25 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 typedef struct partition_data {
-  dif_otp_ctrl_partition_t partition;
+  otp_partition_t partition;
   size_t size;
 } partition_data_t;
 
 static const partition_data_t kPartitions[] = {
     {
-        .partition = kDifOtpCtrlPartitionSecret0,
+        .partition = kOtpPartitionSecret0,
         .size =
             (OTP_CTRL_PARAM_SECRET0_SIZE - OTP_CTRL_PARAM_SECRET0_DIGEST_SIZE) /
             sizeof(uint64_t),
     },
     {
-        .partition = kDifOtpCtrlPartitionSecret1,
+        .partition = kOtpPartitionSecret1,
         .size =
             (OTP_CTRL_PARAM_SECRET1_SIZE - OTP_CTRL_PARAM_SECRET1_DIGEST_SIZE) /
             sizeof(uint64_t),
     },
     {
-        .partition = kDifOtpCtrlPartitionSecret2,
+        .partition = kOtpPartitionSecret2,
         .size =
             (OTP_CTRL_PARAM_SECRET2_SIZE - OTP_CTRL_PARAM_SECRET2_DIGEST_SIZE) /
             sizeof(uint64_t),

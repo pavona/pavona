@@ -16,15 +16,15 @@ dif_otp_ctrl_t otp;
 status_t test_otp_creator_lockdown(void) {
   uint32_t value;
   LOG_INFO("OTP OwnerSwCfg:");
-  TRY(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionOwnerSwCfg, 0,
-                                 &value, sizeof(value)));
+  TRY(dif_otp_ctrl_read_blocking(&otp, kOtpPartitionOwnerSwCfg, 0, &value,
+                                 sizeof(value)));
   LOG_INFO("OTP OwnerSwCfg word 0 = %x", value);
 
   // If the creator partition has been locked down, this read should cause a
   // fault.
   LOG_INFO("OTP CreatorSwCfg:");
-  TRY(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionCreatorSwCfg, 0,
-                                 &value, sizeof(value)));
+  TRY(dif_otp_ctrl_read_blocking(&otp, kOtpPartitionCreatorSwCfg, 0, &value,
+                                 sizeof(value)));
   LOG_INFO("OTP CreatorSwCfg word 0 = %x", value);
 
   return OK_STATUS();

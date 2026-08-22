@@ -36,33 +36,9 @@ static const uint32_t kTestData[] = {
 OTTF_DEFINE_TEST_CONFIG();
 
 typedef struct partition_data {
-  dif_otp_ctrl_partition_t partition;
+  otp_partition_t partition;
   size_t size;
 } partition_data_t;
-
-static const partition_data_t kPartitions[] = {
-    {
-        .partition = kDifOtpCtrlPartitionVendorTest,
-        .size = OTP_CTRL_PARAM_VENDOR_TEST_SIZE / sizeof(uint32_t),
-    },
-    {
-        .partition = kDifOtpCtrlPartitionCreatorSwCfg,
-        .size = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE / sizeof(uint32_t),
-    },
-    {
-        .partition = kDifOtpCtrlPartitionOwnerSwCfg,
-        .size = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / sizeof(uint32_t),
-    },
-    {
-        .partition = kDifOtpCtrlPartitionRotCreatorAuthCodesign,
-        .size =
-            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE / sizeof(uint32_t),
-    },
-    {
-        .partition = kDifOtpCtrlPartitionRotCreatorAuthState,
-        .size = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE / sizeof(uint32_t),
-    },
-};
 
 static void peripheral_handles_init(void) {
   CHECK_DIF_OK(dif_otp_ctrl_init(
@@ -77,16 +53,16 @@ static void otp_ctrl_dai_write_test(bool expect_eq) {
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
     uint32_t address = 0x10 + i * sizeof(uint32_t);
-    CHECK_DIF_OK(
-        dif_otp_ctrl_dai_program32(&otp, kDifOtpCtrlPartitionVendorTest,
-                                   address, kTestData[i]),
-        "Failed to program word kTestData[%d] = 0x%08x.", i, kTestData[i]);
+    CHECK_DIF_OK(dif_otp_ctrl_dai_program32(&otp, kOtpPartitionVendorTest,
+                                            address, kTestData[i]),
+                 "Failed to program word kTestData[%d] = 0x%08x.", i,
+                 kTestData[i]);
   }
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   uint32_t readout[ARRAYSIZE(kTestData)] = {0};
   CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
-      &otp, kDifOtpCtrlPartitionVendorTest, 0x10, readout, ARRAYSIZE(readout)));
+      &otp, kOtpPartitionVendorTest, 0x10, readout, ARRAYSIZE(readout)));
 
   if (expect_eq) {
     CHECK_ARRAYS_EQ(readout, kTestData, ARRAYSIZE(kTestData));
@@ -107,12 +83,21 @@ static void dai_disable(void) {
 static void otp_ctrl_dai_disable_test(uint32_t last_dai_value) {
   dai_disable();
   LOG_INFO("Checking that the DAI is disabled.");
-  for (uint32_t i = 0; i < ARRAYSIZE(kPartitions); ++i) {
-    const partition_data_t *partition = &kPartitions[i];
-    LOG_INFO("Checking partition %d.", partition->partition);
-    uint32_t readout[partition->size];
+  for (uint32_t i = 0; i < kOtpPartitionCount; ++i) {
+    otp_partition_t partition = (otp_partition_t)i;
+    dt_otp_partition_info_t partition_info =
+        dt_otp_ctrl_partition(kDtOtpCtrl, partition);
+    size_t partition_len = partition_info.size;
+    if (partition_info.sw_digest || partition_info.hw_digest) {
+      partition_len += sizeof(uint64_t);
+    }
+    if (partition_info.zeroizable) {
+      partition_len += sizeof(uint64_t);
+    }
+    LOG_INFO("Checking partition %d.", partition);
+    uint32_t readout[partition_len];
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
-        &otp, partition->partition, 0, readout, ARRAYSIZE(readout)));
+        &otp, partition, 0, readout, ARRAYSIZE(readout)));
 
     // The current DAI locking mechanism just locks the register inteface, so
     // all transactions should result in a DAI idle status.
@@ -125,8 +110,8 @@ static void otp_ctrl_dai_disable_test(uint32_t last_dai_value) {
     // returning any read values.
     for (uint32_t j = 0; j < ARRAYSIZE(readout); ++j) {
       CHECK(readout[j] == last_dai_value,
-            "Partition %d, word %d: expected 0x%08x, got 0x%08x.",
-            partition->partition, j, last_dai_value, readout[j]);
+            "Partition %d, word %d: expected 0x%08x, got 0x%08x.", partition, j,
+            last_dai_value, readout[j]);
     }
   }
 }

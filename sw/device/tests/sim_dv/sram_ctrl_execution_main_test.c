@@ -69,7 +69,7 @@ static bool otp_ifetch_enabled(void) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
 
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg1,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kOtpPartitionHwCfg1,
                                            kOtpIfetchHwRelativeOffset));
 
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));

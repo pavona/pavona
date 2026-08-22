@@ -83,24 +83,24 @@ static void lock_otp_secret0_partition(void) {
     }
   }
 
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret0,
                                           /*address=*/0x0,
                                           /*value=*/otp_unlock_token_0));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret0,
                                           /*address=*/0x8,
                                           /*value=*/otp_unlock_token_1));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret0,
                                           /*address=*/0x10,
                                           /*value=*/otp_exit_token_0));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret0,
                                           /*address=*/0x18,
                                           /*value=*/otp_exit_token_1));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
-  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kOtpPartitionSecret0,
                                        /*digest=*/0));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
@@ -117,16 +117,16 @@ static void lock_otp_secret2_partition(void) {
                          << ((i - LC_TOKEN_SIZE / 2) * 8);
     }
   }
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret2,
                                           /*address=*/0x0,
                                           /*value=*/otp_rma_token_0));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
-  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret2,
                                           /*address=*/0x8,
                                           /*value=*/otp_rma_token_1));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
-  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionSecret2,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kOtpPartitionSecret2,
                                        /*digest=*/0));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 }
@@ -166,8 +166,8 @@ bool test_main(void) {
   if (curr_state == kDifLcCtrlStateTestUnlocked0) {
     CHECK_STATUS_OK(lc_ctrl_testutils_check_transition_count(&lc, 1));
     bool secret0_locked;
-    CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
-        &otp, kDifOtpCtrlPartitionSecret0, &secret0_locked));
+    CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionSecret0,
+                                                 &secret0_locked));
 
     if (!secret0_locked) {
       LOG_INFO("In TestUnlocked0 state. Write and lock OTP secret0 partition.");
@@ -213,8 +213,8 @@ bool test_main(void) {
     }
   } else if (curr_state == kDestState) {
     bool secret2_locked;
-    CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
-        &otp, kDifOtpCtrlPartitionSecret2, &secret2_locked));
+    CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionSecret2,
+                                                 &secret2_locked));
 
     if (!secret2_locked) {
       LOG_INFO(

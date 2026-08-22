@@ -100,7 +100,7 @@ static void otp_write_test(uint32_t address, const uint8_t *buffer,
     uint64_t word;
     memcpy(&word, &buffer[i], sizeof(word));
     CHECK_DIF_OK(
-        dif_otp_ctrl_dai_program64(&otp, kDifOtpCtrlPartitionSecret2, i, word));
+        dif_otp_ctrl_dai_program64(&otp, kOtpPartitionSecret2, i, word));
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
     CHECK(address <= INT32_MAX, "address must fit into int32_t");
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_access_error_check(
@@ -122,8 +122,7 @@ static void otp_read_test(uint32_t address, const uint8_t *buffer,
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   for (uint32_t i = address; i < address + size; i += sizeof(uint64_t)) {
     uint64_t got, exp;
-    CHECK_DIF_OK(
-        dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionSecret2, i));
+    CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kOtpPartitionSecret2, i));
     CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
     CHECK(address <= INT32_MAX, "address must fit into int32_t");
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_access_error_check(
@@ -318,8 +317,8 @@ bool test_main(void) {
         reset_chip();
 
       } else if (rst_info == kDifRstmgrResetInfoSw) {
-        CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
-            &otp, kDifOtpCtrlPartitionSecret2, &is_computed));
+        CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionSecret2,
+                                                     &is_computed));
 
         if (!is_computed) {
           LOG_INFO("Second access test iteration...");
@@ -329,8 +328,8 @@ bool test_main(void) {
           // SECRET2 has not been locked yet.
           keymgr_check_root_key_is_invalid();
           // Lock the SECRET2 partition.
-          CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
-              &otp, kDifOtpCtrlPartitionSecret2, 0));
+          CHECK_STATUS_OK(
+              otp_ctrl_testutils_lock_partition(&otp, kOtpPartitionSecret2, 0));
           reset_chip();
         } else {
           LOG_INFO("Third access test iteration...");

@@ -128,7 +128,7 @@ bool test_main(void) {
       // After update info partition in flash,
       // lock secret2 partition in otp.
       CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
-          &otp_ctrl, kDifOtpCtrlPartitionSecret2, 0));
+          &otp_ctrl, kOtpPartitionSecret2, 0));
       break;
     case kTestPhase1:
       LOG_INFO("testphase1");

@@ -193,7 +193,7 @@ TEST_F(ReadLockTest, IsLocked) {
       {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
         true}});
   EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
+      &otp_, kOtpPartition${part_name_camel}, &flag));
   EXPECT_FALSE(flag);
 
   EXPECT_READ32(
@@ -201,7 +201,7 @@ TEST_F(ReadLockTest, IsLocked) {
       {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
         false}});
   EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
+      &otp_, kOtpPartition${part_name_camel}, &flag));
   EXPECT_TRUE(flag);
   % if not loop.last:
 
@@ -221,7 +221,7 @@ TEST_F(ReadLockTest, Lock) {
       {{OTP_CTRL_${part_name_define}_READ_LOCK_${part_name_define}_READ_LOCK_BIT,
         false}});
   EXPECT_DIF_OK(dif_otp_ctrl_lock_reading(
-      &otp_, kDifOtpCtrlPartition${part_name_camel}));
+      &otp_, kOtpPartition${part_name_camel}));
   % if not loop.last:
 
   %endif
@@ -235,9 +235,9 @@ TEST_F(ReadLockTest, NotLockablePartitions) {
   part_name_camel = Name.to_camel_case(part["name"])
 %>\
   EXPECT_DIF_BADARG(
-      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartition${part_name_camel}));
+      dif_otp_ctrl_lock_reading(&otp_, kOtpPartition${part_name_camel}));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartition${part_name_camel}, &flag));
+      &otp_, kOtpPartition${part_name_camel}, &flag));
   % if not loop.last:
 
   %endif
@@ -250,15 +250,15 @@ TEST_F(ReadLockTest, NullArgs) {
 % for part in read_locked_csr_parts:
 <%
   part_name_camel = Name.to_camel_case(part["name"])
-  lock_reading_line = f"dif_otp_ctrl_lock_reading(nullptr, kDifOtpCtrlPartition{part_name_camel}));"
+  lock_reading_line = f"dif_otp_ctrl_lock_reading(nullptr, kOtpPartition{part_name_camel}));"
 %>\
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      nullptr, kDifOtpCtrlPartition${part_name_camel}, &flag));
+      nullptr, kOtpPartition${part_name_camel}, &flag));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
-      &otp_, kDifOtpCtrlPartition${part_name_camel}, nullptr));
+      &otp_, kOtpPartition${part_name_camel}, nullptr));
   % if len(lock_reading_line) > 80 - 6:
   EXPECT_DIF_BADARG(dif_otp_ctrl_lock_reading(
-      nullptr, kDifOtpCtrlPartition${part_name_camel}));
+      nullptr, kOtpPartition${part_name_camel}));
   % else:
   EXPECT_DIF_BADARG(
       ${lock_reading_line}
@@ -323,7 +323,7 @@ TEST_F(StatusTest, NullArgs) {
 
 struct RelativeAddressParams {
   std::string name;
-  dif_otp_ctrl_partition_t partition;
+  otp_partition_t partition;
   uint32_t abs_address;
   dif_result_t expected_result;
   uint32_t expected_relative_address;
@@ -353,14 +353,14 @@ INSTANTIATE_TEST_SUITE_P(
 %>\
         RelativeAddressParams{
             "${part_name_camel}Okay",
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
             OTP_CTRL_PARAM_${part_name_define}_OFFSET + ${step},
             kDifOk,
             ${step},
         },
         RelativeAddressParams{
             "${part_name_camel}Unaligned",
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
             OTP_CTRL_PARAM_${part_name_define}_OFFSET + 1,
             kDifUnaligned,
             0,
@@ -371,7 +371,7 @@ INSTANTIATE_TEST_SUITE_P(
   % if not loop.first:
         RelativeAddressParams{
             "${part_name_camel}OutOfRangeBeforeStart",
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
             OTP_CTRL_PARAM_${part_name_define}_OFFSET - ${step},
             kDifOutOfRange,
             0,
@@ -379,7 +379,7 @@ INSTANTIATE_TEST_SUITE_P(
   % endif
         RelativeAddressParams{
             "${part_name_camel}OutOfRangePastEnd",
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
   % if len(f"OTP_CTRL_PARAM_{part_name_define}_OFFSET + OTP_CTRL_PARAM_{part_name_define}_SIZE,") <= 80 - 12:
             OTP_CTRL_PARAM_${part_name_define}_OFFSET + OTP_CTRL_PARAM_${part_name_define}_SIZE,
   % else:
@@ -402,7 +402,7 @@ TEST_F(DaiReadTest, Read32) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kOtpPartitionHwCfg0,
                                             /*address=*/0x20));
 
   EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_RDATA_0_REG_OFFSET, 0x12345678);
@@ -425,7 +425,7 @@ TEST_F(DaiReadTest, Read64) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_RD_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartition${part_name_camel},
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_read_start(&otp_, kOtpPartition${part_name_camel},
                                             /*address=*/0x8));
 
   EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_RDATA_1_REG_OFFSET, 0x12345678);
@@ -440,23 +440,23 @@ TEST_F(DaiReadTest, Read64) {
 }
 
 TEST_F(DaiReadTest, Unaligned) {
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kOtpPartitionHwCfg0,
                                         /*address=*/0b01),
             kDifUnaligned);
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionSecret2,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kOtpPartitionSecret2,
                                         /*address=*/0b100),
             kDifUnaligned);
 }
 
 TEST_F(DaiReadTest, OutOfRange) {
-  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_EQ(dif_otp_ctrl_dai_read_start(&otp_, kOtpPartitionHwCfg0,
                                         /*address=*/0x100),
             kDifOutOfRange);
 }
 
 TEST_F(DaiReadTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_read_start(nullptr,
-                                                kDifOtpCtrlPartitionHwCfg0,
+                                                kOtpPartitionHwCfg0,
                                                 /*address=*/0x0));
 
   uint32_t val32;
@@ -477,7 +477,7 @@ TEST_F(DaiProgramTest, Program32) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_program32(&otp_, kOtpPartitionHwCfg0,
                                            /*address=*/0x20,
                                            /*value=*/0x12345678));
 }
@@ -490,30 +490,30 @@ TEST_F(DaiProgramTest, Program64) {
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionSecret2,
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_program64(&otp_, kOtpPartitionSecret2,
                                            /*address=*/0x8,
                                            /*value=*/0x1234567890abcdef));
 }
 
 TEST_F(DaiProgramTest, BadPartition) {
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionSecret1,
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kOtpPartitionSecret1,
                                        /*address=*/0x0, /*value=*/42),
             kDifError);
-  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kOtpPartitionHwCfg0,
                                        /*address=*/0x0, /*value=*/42),
             kDifError);
 
   // LC is never writeable.
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionLifeCycle,
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kOtpPartitionLifeCycle,
                                        /*address=*/0x0, /*value=*/42),
             kDifError);
 }
 
 TEST_F(DaiProgramTest, Unaligned) {
-  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_EQ(dif_otp_ctrl_dai_program32(&otp_, kOtpPartitionHwCfg0,
                                        /*address=*/0b01, /*value=*/42),
             kDifUnaligned);
-  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kDifOtpCtrlPartitionSecret2,
+  EXPECT_EQ(dif_otp_ctrl_dai_program64(&otp_, kOtpPartitionSecret2,
                                        /*address=*/0b100, /*value=*/42),
             kDifUnaligned);
 }
@@ -521,24 +521,24 @@ TEST_F(DaiProgramTest, Unaligned) {
 TEST_F(DaiProgramTest, OutOfRange) {
   // Check that we can't write a digest directly.
   EXPECT_EQ(dif_otp_ctrl_dai_program32(
-                &otp_, kDifOtpCtrlPartitionCreatorSwCfg,
+                &otp_, kOtpPartitionCreatorSwCfg,
                 /*address=*/OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET,
                 /*value=*/42),
             kDifOutOfRange);
 
   // Same digest check for 64-bit.
   EXPECT_EQ(dif_otp_ctrl_dai_program64(
-                &otp_, kDifOtpCtrlPartitionSecret2,
+                &otp_, kOtpPartitionSecret2,
                 /*address=*/OTP_CTRL_PARAM_SECRET2_DIGEST_OFFSET, /*value=*/42),
             kDifOutOfRange);
 }
 
 TEST_F(DaiProgramTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_program32(nullptr,
-                                               kDifOtpCtrlPartitionHwCfg0,
+                                               kOtpPartitionHwCfg0,
                                                /*address=*/0x0, /*value=*/42));
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_program64(nullptr,
-                                               kDifOtpCtrlPartitionSecret0,
+                                               kOtpPartitionSecret0,
                                                /*address=*/0x0, /*value=*/42));
 }
 
@@ -551,7 +551,7 @@ TEST_F(DaiDigestTest, DigestSw) {
   part_name_define = part_name.as_c_define()
   part_name_camel = part_name.as_camel_case()
   dai_digest_line = ("EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, "
-                     + f"kDifOtpCtrlPartition{part_name_camel},")
+                     + f"kOtpPartition{part_name_camel},")
 %>\
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                  OTP_CTRL_PARAM_${part_name.as_c_define()}_DIGEST_OFFSET);
@@ -561,14 +561,14 @@ TEST_F(DaiDigestTest, DigestSw) {
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
   % if len(dai_digest_line) > 80 - 2:
-<% dai_digest_line = (f"kDifOtpCtrlPartition{part_name_camel},") %>\
+<% dai_digest_line = (f"kOtpPartition{part_name_camel},") %>\
     % if len(dai_digest_line) > 80 - 40:
   EXPECT_DIF_OK(
-      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartition${part_name_camel},
+      dif_otp_ctrl_dai_digest(&otp_, kOtpPartition${part_name_camel},
                               /*digest=*/0xabcdef0000abcdef));
     % else:
   EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_,
-                                        kDifOtpCtrlPartition${part_name_camel},
+                                        kOtpPartition${part_name_camel},
                                         /*digest=*/0xabcdef0000abcdef));
     % endif
   % else:
@@ -588,14 +588,14 @@ TEST_F(DaiDigestTest, DigestHw) {
   part_name_define = part_name.as_c_define()
   part_name_camel = part_name.as_camel_case()
   dai_digest_line = ("EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, "
-                     + f"kDifOtpCtrlPartition{part_name_camel},")
+                     + f"kOtpPartition{part_name_camel},")
 %>\
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                  OTP_CTRL_PARAM_${part_name_define}_OFFSET);
   EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
 
-  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartition${part_name_camel},
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kOtpPartition${part_name_camel},
                                         /*digest=*/0));
   % if not loop.last:
 
@@ -604,22 +604,22 @@ TEST_F(DaiDigestTest, DigestHw) {
 }
 
 TEST_F(DaiDigestTest, BadPartition) {
-  EXPECT_EQ(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionLifeCycle,
+  EXPECT_EQ(dif_otp_ctrl_dai_digest(&otp_, kOtpPartitionLifeCycle,
                                     /*digest=*/0),
             kDifError);
 }
 
 TEST_F(DaiDigestTest, BadDigest) {
-  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionHwCfg0,
+  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_, kOtpPartitionHwCfg0,
                                             /*digest=*/0xabcdef0000abcdef));
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(&otp_,
-                                            kDifOtpCtrlPartitionCreatorSwCfg,
+                                            kOtpPartitionCreatorSwCfg,
                                             /*digest=*/0));
 }
 
 TEST_F(DaiDigestTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_otp_ctrl_dai_digest(nullptr,
-                                            kDifOtpCtrlPartitionCreatorSwCfg,
+                                            kOtpPartitionCreatorSwCfg,
                                             /*digest=*/0xabcdef0000abcdef));
 }
 
@@ -628,17 +628,17 @@ class IsDigestComputed : public OtpTest {};
 TEST_F(IsDigestComputed, NullArgs) {
   bool is_computed;
   EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
-      nullptr, kDifOtpCtrlPartitionSecret2, &is_computed));
+      nullptr, kOtpPartitionSecret2, &is_computed));
   EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
-      &otp_, kDifOtpCtrlPartitionSecret2, nullptr));
+      &otp_, kOtpPartitionSecret2, nullptr));
   EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
-      nullptr, kDifOtpCtrlPartitionSecret2, nullptr));
+      nullptr, kOtpPartitionSecret2, nullptr));
 }
 
 TEST_F(IsDigestComputed, BadPartition) {
   bool is_computed;
   EXPECT_DIF_BADARG(dif_otp_ctrl_is_digest_computed(
-      &otp_, kDifOtpCtrlPartitionLifeCycle, &is_computed));
+      &otp_, kOtpPartitionLifeCycle, &is_computed));
 }
 
 TEST_F(IsDigestComputed, Success) {
@@ -647,18 +647,18 @@ TEST_F(IsDigestComputed, Success) {
   EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET, 0x98abcdef);
   EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0xabcdef01);
   EXPECT_DIF_OK(dif_otp_ctrl_is_digest_computed(
-      &otp_, kDifOtpCtrlPartitionSecret2, &is_computed));
+      &otp_, kOtpPartitionSecret2, &is_computed));
   EXPECT_TRUE(is_computed);
 
   EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET, 0);
   EXPECT_READ32(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_otp_ctrl_is_digest_computed(
-      &otp_, kDifOtpCtrlPartitionSecret2, &is_computed));
+      &otp_, kOtpPartitionSecret2, &is_computed));
   EXPECT_FALSE(is_computed);
 }
 
 struct DigestParams {
-  dif_otp_ctrl_partition_t partition;
+  otp_partition_t partition;
   bool has_digest;
   ptrdiff_t reg0, reg1;
 };
@@ -717,14 +717,14 @@ INSTANTIATE_TEST_SUITE_P(
 %>\
   % if part in digest_parts:
         DigestParams{
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
             true,
             OTP_CTRL_${part_name_define}_DIGEST_0_REG_OFFSET,
             OTP_CTRL_${part_name_define}_DIGEST_1_REG_OFFSET,
         }${"" if loop.last else ","}
   % else:
         DigestParams{
-            kDifOtpCtrlPartition${part_name_camel},
+            kOtpPartition${part_name_camel},
             false,
             0,
             0,
@@ -747,30 +747,30 @@ TEST_F(BlockingIoTest, Read) {
 
   std::vector<uint32_t> buf(kWords);
   EXPECT_DIF_OK(dif_otp_ctrl_read_blocking(
-      &otp_, kDifOtpCtrlPartitionOwnerSwCfg, 0x10, buf.data(), buf.size()));
+      &otp_, kOtpPartitionOwnerSwCfg, 0x10, buf.data(), buf.size()));
   EXPECT_THAT(buf, ElementsAre(1, 2, 3, 4));
 }
 
 TEST_F(BlockingIoTest, BadPartition) {
   std::vector<uint32_t> buf(kWords);
-  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionHwCfg0, 0x10,
+  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kOtpPartitionHwCfg0, 0x10,
                                        buf.data(), buf.size()),
             kDifError);
 }
 
 TEST_F(BlockingIoTest, Unaligned) {
   std::vector<uint32_t> buf(kWords);
-  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionOwnerSwCfg,
+  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kOtpPartitionOwnerSwCfg,
                                        0x11, buf.data(), buf.size()),
             kDifUnaligned);
 }
 
 TEST_F(BlockingIoTest, OutOfRange) {
   std::vector<uint32_t> buf(0x2f0);
-  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionOwnerSwCfg,
+  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kOtpPartitionOwnerSwCfg,
                                        0x300, buf.data(), buf.size()),
             kDifOutOfRange);
-  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kDifOtpCtrlPartitionOwnerSwCfg,
+  EXPECT_EQ(dif_otp_ctrl_read_blocking(&otp_, kOtpPartitionOwnerSwCfg,
                                        0x10, buf.data(), 0x330),
             kDifOutOfRange);
 }
@@ -778,9 +778,9 @@ TEST_F(BlockingIoTest, OutOfRange) {
 TEST_F(BlockingIoTest, NullArgs) {
   std::vector<uint32_t> buf(kWords);
   EXPECT_DIF_BADARG(dif_otp_ctrl_read_blocking(
-      nullptr, kDifOtpCtrlPartitionOwnerSwCfg, 0x10, buf.data(), buf.size()));
+      nullptr, kOtpPartitionOwnerSwCfg, 0x10, buf.data(), buf.size()));
   EXPECT_DIF_BADARG(dif_otp_ctrl_read_blocking(
-      &otp_, kDifOtpCtrlPartitionOwnerSwCfg, 0x10, nullptr, buf.size()));
+      &otp_, kOtpPartitionOwnerSwCfg, 0x10, nullptr, buf.size()));
 }
 
 }  // namespace

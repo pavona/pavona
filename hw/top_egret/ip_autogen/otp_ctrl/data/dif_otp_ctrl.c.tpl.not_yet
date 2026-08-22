@@ -163,7 +163,7 @@ dif_result_t dif_otp_ctrl_check_trigger_is_locked(const dif_otp_ctrl_t *otp,
   return kDifOk;
 }
 
-static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
+static bool sw_read_lock_reg_offset(otp_partition_t partition,
                                     ptrdiff_t *reg_offset,
                                     bitfield_bit32_index_t *index) {
   switch (partition) {
@@ -173,7 +173,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
   part_name_define = part_name.as_c_define()
   index_line = f"*index = OTP_CTRL_{part_name_define}_READ_LOCK_{part_name_define}_READ_LOCK_BIT;"
 %>\
-    case kDifOtpCtrlPartition${part_name.as_camel_case()}:
+    case kOtpPartition${part_name.as_camel_case()}:
       *reg_offset = OTP_CTRL_${part_name_define}_READ_LOCK_REG_OFFSET;
   % if len(index_line) > 80 - 6:
       *index =
@@ -190,7 +190,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
 }
 
 dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
-                                       dif_otp_ctrl_partition_t partition) {
+                                       otp_partition_t partition) {
   if (otp == NULL) {
     return kDifBadArg;
   }
@@ -208,7 +208,7 @@ dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_reading_is_locked(const dif_otp_ctrl_t *otp,
-                                            dif_otp_ctrl_partition_t partition,
+                                            otp_partition_t partition,
                                             bool *is_locked) {
   if (otp == NULL || is_locked == NULL) {
     return kDifBadArg;
@@ -372,7 +372,7 @@ static const partition_info_t kPartitions[] = {
   is_lifecycle = part["variant"] == "LifeCycle"
   is_software = part["variant"] == "Unbuffered"
 %>\
-    [kDifOtpCtrlPartition${part_name_camel}] = {
+    [kOtpPartition${part_name_camel}] = {
         .start_addr = OTP_CTRL_PARAM_${part_name_define}_OFFSET,
         .len = OTP_CTRL_PARAM_${part_name_define}_SIZE,
         .align_mask = ${"0x7" if part in secret_parts else "0x3"},
@@ -383,7 +383,7 @@ static const partition_info_t kPartitions[] = {
 };
 // clang-format on
 
-dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
+dif_result_t dif_otp_ctrl_relative_address(otp_partition_t partition,
                                            uint32_t abs_address,
                                            uint32_t *relative_address) {
   *relative_address = 0;
@@ -410,7 +410,7 @@ dif_result_t dif_otp_ctrl_relative_address(dif_otp_ctrl_partition_t partition,
 }
 
 dif_result_t dif_otp_ctrl_dai_read_start(const dif_otp_ctrl_t *otp,
-                                         dif_otp_ctrl_partition_t partition,
+                                         otp_partition_t partition,
                                          uint32_t address) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
     return kDifBadArg;
@@ -462,7 +462,7 @@ dif_result_t dif_otp_ctrl_dai_read64_end(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint32_t value) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
     return kDifBadArg;
@@ -506,7 +506,7 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint64_t value) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
     return kDifBadArg;
@@ -547,7 +547,7 @@ dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
-                                     dif_otp_ctrl_partition_t partition,
+                                     otp_partition_t partition,
                                      uint64_t digest) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions)) {
     return kDifBadArg;
@@ -591,7 +591,7 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
   return kDifOk;
 }
 
-static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
+static bool get_digest_regs(otp_partition_t partition, ptrdiff_t *reg0,
                             ptrdiff_t *reg1) {
   switch (partition) {
 % for part in digest_parts:
@@ -599,7 +599,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
   part_name = Name.from_snake_case(part["name"])
   part_name_define = part_name.as_c_define()
 %>\
-    case kDifOtpCtrlPartition${part_name.as_camel_case()}:
+    case kOtpPartition${part_name.as_camel_case()}:
       *reg0 = OTP_CTRL_${part_name_define}_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_${part_name_define}_DIGEST_1_REG_OFFSET;
       break;
@@ -612,7 +612,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
 }
 
 dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
-                                             dif_otp_ctrl_partition_t partition,
+                                             otp_partition_t partition,
                                              bool *is_computed) {
   if (otp == NULL || is_computed == NULL) {
     return kDifBadArg;
@@ -633,7 +633,7 @@ dif_result_t dif_otp_ctrl_is_digest_computed(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
-                                     dif_otp_ctrl_partition_t partition,
+                                     otp_partition_t partition,
                                      uint64_t *digest) {
   if (otp == NULL || digest == NULL) {
     return kDifBadArg;
@@ -657,7 +657,7 @@ dif_result_t dif_otp_ctrl_get_digest(const dif_otp_ctrl_t *otp,
 }
 
 dif_result_t dif_otp_ctrl_read_blocking(const dif_otp_ctrl_t *otp,
-                                        dif_otp_ctrl_partition_t partition,
+                                        otp_partition_t partition,
                                         uint32_t address, uint32_t *buf,
                                         size_t len) {
   if (otp == NULL || partition >= ARRAYSIZE(kPartitions) || buf == NULL) {

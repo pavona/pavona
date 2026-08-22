@@ -105,7 +105,7 @@ bool test_main(void) {
     // Check the value of the DeviceId in the HW_CFG0 partition.
     uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
-        &otp_ctrl, kDifOtpCtrlPartitionHwCfg0, 0, device_id,
+        &otp_ctrl, kOtpPartitionHwCfg0, 0, device_id,
         kHwCfgDeviceIdSizeIn32BitWords));
     LOG_INFO("CP Device ID in OTP: %08x%08x%08x%08x", device_id[3],
              device_id[2], device_id[2], device_id[0]);
