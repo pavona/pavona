@@ -72,16 +72,17 @@ modulus_over_2_m2_16:
   .word 0x0af70af7
   .word 0x0af70af7
 
-.globl modulus_times_19
-modulus_times_19:
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
-  .word 0xf713f713
+/* 19 * Q - 1. */
+.globl modulus_times_19_minus_1
+modulus_times_19_minus_1:
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
+  .word 0xf712f712
 
 .globl mont
 mont:

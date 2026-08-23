@@ -12,7 +12,7 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 KYBER_Q = 3329
 N = 256  # number of output coefficients
 # Largest multiple of q below 2**16; a batch is rejected if any of its 16
-# candidates exceeds LIMIT.
+# candidates is >= LIMIT.
 LIMIT = 19 * KYBER_Q
 
 
@@ -31,9 +31,9 @@ def gen_poly_rej_samp_test(
         word = [random.getrandbits(16) for _ in range(16)]
         for c in word:
             rand_in += int.to_bytes(c, byteorder="little", length=2)
-        # The gadget accepts the whole word only if every candidate <= 19*q,
+        # The gadget accepts the whole word only if every candidate < 19*q,
         # then reduces each accepted candidate mod q.
-        if all(c <= LIMIT for c in word):
+        if all(c < LIMIT for c in word):
             coeffs += [c % KYBER_Q for c in word]
 
     r_bytes = bytes()

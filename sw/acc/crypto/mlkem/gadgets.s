@@ -487,9 +487,9 @@ refreshios:
 .globl poly_rej_samp
 .type poly_rej_samp, @function
 poly_rej_samp:
-	/* Load 19*Q into w1. */
+	/* Load 19*Q - 1 into w1. */
 	addi      t0, x0, 1
-	la        t1, modulus_times_19
+	la        t1, modulus_times_19_minus_1
 	bn.lid    t0++, 0(t1)
 	bn.shv.8s w1, w1 >> 16
 
