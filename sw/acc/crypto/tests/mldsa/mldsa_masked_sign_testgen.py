@@ -186,5 +186,6 @@ if __name__ == '__main__':
         vector = json.load(open(args.from_vector))[args.index]
     # run_mldsa dispatches on this mode symbol (e.g. mldsa44 -> MODE_SIGN_44).
     mode_symbol = 'MODE_SIGN_' + args.params.removeprefix('mldsa')
-    gen_sign_test(mldsa, ell, k, eta, args.nshares, mode_symbol, args.testcase,
-                  vector=vector)
+    with args.testcase:
+        gen_sign_test(mldsa, ell, k, eta, args.nshares, mode_symbol,
+                      args.testcase, vector=vector)

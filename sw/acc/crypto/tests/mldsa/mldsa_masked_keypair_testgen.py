@@ -112,4 +112,6 @@ if __name__ == '__main__':
         raise ValueError(f'Invalid parameters: {args.params}')
     mldsa = INSTANCE_FOR_PARAMS[args.params]
     k, ell, eta = KLE_FOR_PARAMS[args.params]
-    gen_masked_keypair_test(mldsa, k, ell, eta, args.nshares, args.testcase)
+    with args.testcase:
+        gen_masked_keypair_test(mldsa, k, ell, eta, args.nshares,
+                                args.testcase)
