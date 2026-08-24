@@ -38,9 +38,10 @@ main:
 
   la x2, stack_end
 
-  /* MOD = R | Q. */
-  la      x5, modulus
+  /* mod = qinv | q. */
+  la      x5, modulus_bn
   bn.lid  x0++, 0(x5)
+  bn.rshi w0, w31, w0 >> 240
   la      x5, modulus_inv
   addi    x4, x0, 1
   bn.lid  x4, 0(x5)

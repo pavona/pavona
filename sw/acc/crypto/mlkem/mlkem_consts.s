@@ -9,24 +9,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Constants used by internal libraries for ML-KEM computations.
+ * Constants used by internal libraries for ML-KEM computations with the modulus q = 3329.
  */
 
 .data
 .balign 32
-
-/* q = 3329. */
-.globl modulus
-modulus:
-  .word 0x00000d01
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-
 /* qinv = -q^-1 mod 2^16 = 3327. */
 .globl modulus_inv
 modulus_inv:
