@@ -108,9 +108,20 @@ void wait_enough_for_alert_ping(void) {
 #if defined(OPENTITAN_IS_EGRET)
   // 2*4*(2**16)*(42ns) = 22ms
   uint32_t silicon_micros = 1000 * 22;
+  // For sim_dv we force the counter to be 3 bits wide, rather that 16.
+  // See chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.
+  // For small number of micros this adds an extra one in case the timer
+  // was started close to the end of a micro.
+  // 2*4*(2**3)*(42ns) + 1us ~= 7us
+  uint32_t sim_dv_micros = 7;
 #elif defined(OPENTITAN_IS_DRAGONFLY)
   // 2*4*(2**16)*(4ns) = 21ms
   uint32_t silicon_micros = 2100;
+  // For sim_dv we force the counter to be 3 bits wide, rather that 16.
+  // For small number of micros this adds an extra one in case the timer
+  // was started close to the end of a micro.
+  // 2*4*(2**3)*(4ns) + 1us ~= 2us
+  uint32_t sim_dv_micros = 2;
 #else
 #error Unsupported top
 #endif
@@ -125,7 +136,7 @@ void wait_enough_for_alert_ping(void) {
       busy_spin_micros(silicon_micros);
       break;
     case kDeviceSimDV:
-      busy_spin_micros(silicon_micros);
+      busy_spin_micros(sim_dv_micros);
       break;
     case kDeviceSimVerilator:
       // Verilator
