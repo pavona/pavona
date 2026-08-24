@@ -97,17 +97,6 @@ const_1290167:
   .word 0x00000000
   .word 0x00000000
 
-.globl const_8
-const_8:
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-  .word 0x00080008
-
 /* 2^32 mod q. */
 .globl const_tomont
 const_tomont:

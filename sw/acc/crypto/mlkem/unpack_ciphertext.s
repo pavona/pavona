@@ -35,10 +35,10 @@
 .globl poly_decompress
 .type poly_decompress, @function
 poly_decompress:
-  /* Load constants. */
-  addi   x4, x0, 2
-  la     x5, const_8
-  bn.lid x4, 0(x5)
+  /* Create constant w2 = (0x0008)^16. */
+  bn.subi    w2, w31, 1
+  bn.shv.16h w2, w2 >> 15
+  bn.shv.16h w2, w2 << 3
 
   addi x4, x0, 4
   beq  x12, x4, _handle_k4_poly_decompress
@@ -197,7 +197,7 @@ _handle_k4_poly_decompress:
  *
  * @param[in,out] w1: input vector with 16 5-bit compressed coefficients, which
  *                    is overwritten with the 16 16-bit output coefficients
- * @param[in]     w2: const_8
+ * @param[in]     w2: (0x0008)^16
  *
  * clobbered registers: w1, acc, acch
  * clobbered flag groups: none
@@ -206,8 +206,8 @@ _handle_k4_poly_decompress:
 .type poly_decompress_k4, @function
 poly_decompress_k4:
   bn.shv.16h           w1, w1 << 11 /* << 11 */
-  bn.wsrw              acc, w2      /* Write const_8 to acc. */
-  bn.wsrw              acch, w2     /* Write const_8 to acch. */
+  bn.wsrw              acc, w2      /* Write (0x0008)^16 to acc. */
+  bn.wsrw              acch, w2     /* Write (0x0008)^16 to acch. */
   bn.mulv.l.16h.acc.hi w1, w1, sw0.0 /* * q + acc(h) */
   ret
 
@@ -237,11 +237,9 @@ poly_decompress_k4:
 .type poly_polyvec_decompress, @function
 poly_polyvec_decompress:
   /* Load constants. */
-  la         x5, const_8
-  addi       x4, x0, 2
-  bn.lid     x4, 0(x5)
-  bn.shv.8s  w2, w2 << 16
-  bn.shv.8s  w2, w2 >> 4 /* w2 = (0x00008000)^8 */
+  bn.subi    w2, w31, 1
+  bn.shv.8s  w2, w2 >> 31
+  bn.shv.8s  w2, w2 << 15 /* w2 = (0x00008000)^8 */
   bn.subi    w3, w31, 1
   bn.shv.16h w3, w3 >> 4 /* w3 = (0x0fff)^16 */
 
