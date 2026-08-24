@@ -34,7 +34,7 @@
  * @param[in]  x14: k, the security level
  *
  * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
- *                      w0 to w26, w30, acc, acch, mod
+ *                      w0 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */
 

@@ -53,7 +53,7 @@
  *
  * UNPROTECTED
  * clobbered registers: x2 to x5, x8 to x13, x18 to x19, x21 to x25,
- *                      w0 to w26, w30, acc, acch, mod
+ *                      w0 to w26, acch, acc, mod
  * clobbered flag groups: FG0
  *
  * HARDENED

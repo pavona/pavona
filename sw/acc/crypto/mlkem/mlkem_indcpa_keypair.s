@@ -49,7 +49,7 @@
  * @param[in]  x13: k, the security level
  *
  * UNPROTECTED
- * clobbered registers: x4 to x13, x18 to x28, w0 to w26, acc, acch, mod
+ * clobbered registers: x4 to x13, x18 to x28, w0 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  *
  * HARDENED

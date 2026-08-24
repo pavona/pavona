@@ -18,8 +18,7 @@
  * second ciphertext component v.
  *
  * On return, x10 has been advanced by one polynomial (512 bytes) and x11 by
- * the 128 or 160 bytes written. Register w16 (sw0) is saved in w30 and
- * restored before returning.
+ * the 128 or 160 bytes written.
  *
  * This routine is constant time.
  *
@@ -28,7 +27,7 @@
  * @param[in]  x12: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10 to x11, w0 to w5, w16, w30
+ * clobbered registers: x4 to x5, x10 to x11, w0 to w4, w17
  * clobbered flag groups: FG0
  */
 
@@ -40,8 +39,8 @@ poly_compress:
   addi   x4, x0, 2
   bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
   la     x5, const_1290167
-  addi   x4, x0, 5
-  bn.lid x4, 0(x5) /* w5 = const_1290167 */
+  addi   x4, x0, 17
+  bn.lid x4, 0(x5)
 
   /* The compression of a is done as follows:
    *    ((((a << d) + m) * c) >> (32 - d)) & ((1 << d) - 1)
@@ -56,8 +55,7 @@ poly_compress:
    * 64-bit multiplication product. */
   addi    x4, x0, 4
   beq     x12, x4, _handle_k4_poly_compress
-  bn.mov  w30, w16
-  bn.subi w16, w5, 7 /* w16 = 80635 * 16 = 1290160 */
+  bn.subi w17, w17, 7 /* w17 = 80635 * 16 = 1290160 */
 
   loopi 4, 16
     loopi 4, 14
@@ -65,11 +63,11 @@ poly_compress:
       bn.shv.16h           w0, w0 << 4   /* <= 4 */
       bn.addv.16h          w0, w0, w2    /* += 1665 */
       bn.trn1.16h          w1, w0, w31   /* Put even coeffs to 32-bit slots. */
-      bn.mulv.l.8s.even.hi w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
-      bn.mulv.l.8s.odd.hi  w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
+      bn.mulv.l.8s.even.hi w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
+      bn.mulv.l.8s.odd.hi  w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
       bn.trn2.16h          w0, w0, w31   /* Put odd coeffs to 32-bit slots. */
-      bn.mulv.l.8s.even.hi w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
-      bn.mulv.l.8s.odd.hi  w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
+      bn.mulv.l.8s.even.hi w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
+      bn.mulv.l.8s.odd.hi  w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
       bn.trn1.16h          w1, w1, w0
       loopi 16, 2
         bn.rshi w4, w1, w4 >> 4
@@ -80,14 +78,12 @@ poly_compress:
     bn.sid x4, 0(x11++)
   endloop
 
-  bn.mov w16, w30
   ret
 
 _handle_k4_poly_compress:
   bn.shv.8s w3, w2 >> 17 /* w3 = (0x340)^8 */
   bn.shv.8s w3, w3 << 1  /* w3 = (0x680)^8 */
-  bn.mov    w30, w16
-  bn.addi   w16, w5, 9   /* w16 = 1290176 */
+  bn.addi   w17, w17, 9   /* w17 = 1290176 */
 
   /* 1 */
   loopi 3, 6
@@ -193,7 +189,6 @@ _handle_k4_poly_compress:
   endloop
   bn.sid x4, 0(x11++)
 
-  bn.mov w16, w30
   ret
 
 /**
@@ -207,7 +202,7 @@ _handle_k4_poly_compress:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 5-bit compressed coefficients
  * @param[in]  w3: (0x680)^8, that is 1664 in every 32-bit lane
- * @param[in]  w16 (sw0): sw0.0 = 1290176 = 40318 * 2^5
+ * @param[in]  w17 (sw1): sw1.0 = 1290176 = 40318 * 2^5
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1
@@ -218,13 +213,13 @@ _poly_compress_16:
   bn.trn1.16h          w1, w0, w31   /* Put even coeffs to 32-bit slots. */
   bn.shv.8s            w1, w1 << 5   /* << 5 */
   bn.addv.8s           w1, w1, w3    /* +1664 */
-  bn.mulv.l.8s.even.hi w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn2.16h          w0, w0, w31   /* Put odd coeffs to 32-bit slots. */
   bn.shv.8s            w0, w0 << 5   /* << 5 */
   bn.addv.8s           w0, w0, w3    /* +1664 */
-  bn.mulv.l.8s.even.hi w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn1.16h          w1, w1, w0
   ret
 
@@ -236,8 +231,7 @@ _poly_compress_16:
  * polynomial of the first ciphertext component u.
  *
  * On return, x10 has been advanced by one polynomial (512 bytes) and x11 by
- * the 320 or 352 bytes written. Register w16 (sw0) is saved in w30 and
- * restored before returning.
+ * the 320 or 352 bytes written.
  *
  * This routine is constant time.
  *
@@ -246,7 +240,7 @@ _poly_compress_16:
  * @param[in]  x12: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10 to x11, w0 to w5, w16, w30
+ * clobbered registers: x4 to x5, x10 to x11, w0 to w4, w17
  * clobbered flag groups: FG0
  */
 
@@ -258,14 +252,12 @@ poly_polyvec_compress:
   addi   x4, x0, 2
   bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
   la     x5, const_1290167
-  addi   x4, x0, 5
-  bn.lid x4, 0(x5) /* w5 = const_1290167 */
+  addi   x4, x0, 17
+  bn.lid x4, 0(x5)
 
   addi      x4, x0, 4
   beq       x12, x4, _handle_k4_poly_polyvec_compress
   bn.shv.8s w3, w2 >> 16 /* w3 = (0x681)^8 */
-  bn.mov    w30, w16
-  bn.mov    w16, w5      /* w16 = (1290167) */
 
   loopi 2, 61
     /* 1 */
@@ -352,7 +344,6 @@ poly_polyvec_compress:
     bn.sid  x4, 0(x11++)
   endloop
 
-  bn.mov w16, w30
   ret
 
 _handle_k4_poly_polyvec_compress:
@@ -366,8 +357,7 @@ _handle_k4_poly_polyvec_compress:
    * we pre-multiply c with 2 so that the right shift will be by 32 bits
    * instead. This means it is equivalent to taking the high 32-bit part of the
    * 64-bit multiplication product. */
-  bn.mov  w30, w16
-  bn.addi w16, w5, 1 /* w16 = 1290168 */
+  bn.addi w17, w17, 1 /* w17 = 1290168 */
 
   /* 1 */
   bn.lid x0, 0(x10++)
@@ -546,7 +536,6 @@ _handle_k4_poly_polyvec_compress:
   endloop
   bn.sid x4, 0(x11++)
 
-  bn.mov w16, w30
   ret
 
 /**
@@ -558,7 +547,7 @@ _handle_k4_poly_polyvec_compress:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 10-bit compressed coefficients
  * @param[in]  w3: (0x681)^8, that is 1665 in every 32-bit lane
- * @param[in]  w16 (sw0): sw0.0 = 1290167, the value of const_1290167
+ * @param[in]  w17 (sw1): sw1.0 = 1290167, the value of const_1290167
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1
@@ -569,13 +558,13 @@ _poly_polyvec_compress_16_kn4:
   bn.trn1.16h          w1, w0, w31   /* Put even coeffs to 32-bit slots. */
   bn.shv.8s            w1, w1 << 10  /* << 10 */
   bn.addv.8s           w1, w1, w3    /* +1665 */
-  bn.mulv.l.8s.even.hi w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn2.16h          w0, w0, w31   /* Put odd coeffs to 32-bit slots. */
   bn.shv.8s            w0, w0 << 10  /* << 10 */
   bn.addv.8s           w0, w0, w3    /* +1665 */
-  bn.mulv.l.8s.even.hi w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn1.16h          w1, w1, w0
   ret
 
@@ -589,7 +578,7 @@ _poly_polyvec_compress_16_kn4:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 11-bit compressed coefficients
  * @param[in]  w3: (0x680)^8, that is 1664 in every 32-bit lane
- * @param[in]  w16 (sw0): sw0.0 = 1290168 = 645084 * 2
+ * @param[in]  w17 (sw1): sw1.0 = 1290168 = 645084 * 2
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1
@@ -600,12 +589,12 @@ _poly_polyvec_compress_16_k4:
   bn.trn1.16h          w1, w0, w31   /* Put even coeffs to 32-bit slots. */
   bn.shv.8s            w1, w1 << 11  /* << 11 */
   bn.addv.8s           w1, w1, w3    /* +1664 */
-  bn.mulv.l.8s.even.hi w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn2.16h          w0, w0, w31   /* Put odd coeffs to 32-bit slots. */
   bn.shv.8s            w0, w0 << 11  /* << 11 */
   bn.addv.8s           w0, w0, w3    /* +1664 */
-  bn.mulv.l.8s.even.hi w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
-  bn.mulv.l.8s.odd.hi  w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.even.hi w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
+  bn.mulv.l.8s.odd.hi  w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
   bn.trn1.16h          w1, w1, w0
   ret

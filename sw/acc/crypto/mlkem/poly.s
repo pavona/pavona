@@ -56,8 +56,7 @@ poly_frommsg:
  * which yields 1 exactly for the coefficients that are closer to
  * (q + 1) / 2 = 1665 than to 0.
  *
- * On return, x10 has been advanced by one polynomial (512 bytes). Register w16
- * (sw0) is saved in w30 and restored before returning.
+ * On return, x10 has been advanced by one polynomial (512 bytes).
  *
  * This routine is constant time.
  *
@@ -65,7 +64,7 @@ poly_frommsg:
  * @param[out] x11: dmem pointer to the output byte array
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10, w0 to w3, w16, w30
+ * clobbered registers: x4 to x5, x10, w0 to w3, w17
  * clobbered flag groups: FG0
  */
 
@@ -76,26 +75,25 @@ poly_tomsg:
   la     x5, modulus_over_2
   addi   x4, x0, 2
   bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
-  bn.mov w30, w16
   la     x5, const_1290167
-  addi   x4, x0, 16
-  bn.lid x4, 0(x5) /* w16 = 1290167 */
+  addi   x4, x0, 17
+  bn.lid x4, 0(x5)
 
   /* Multiply the constant 80635 with 2**4 so that later we shift to the right
    * 32 bits instead of 28 bits. This means we can return the high parts of
    * the 64-bit products within the multiplication instruction. */
-  bn.subi w16, w16, 7 /* w16 = 1290160 = 80635 << 4 */
+  bn.subi w17, w17, 7 /* w17 = 1290160 = 80635 << 4 */
 
   loopi 16, 14
     bn.lid               x0, 0(x10++)
     bn.shv.16h           w0, w0 << 1   /* <= 1 */
     bn.addv.16h          w0, w0, w2    /* += 1665 */
     bn.trn1.16h          w1, w0, w31   /* Put even coeffs in 32-bit slots. */
-    bn.mulv.l.8s.even.hi w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
-    bn.mulv.l.8s.odd.hi  w1, w1, sw0.0 /* >> 32 = high parts of 64-bit products. */
+    bn.mulv.l.8s.even.hi w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
+    bn.mulv.l.8s.odd.hi  w1, w1, sw1.0 /* >> 32 = high parts of 64-bit products. */
     bn.trn2.16h          w0, w0, w31   /* Put odd coeffs to 32-bit slots. */
-    bn.mulv.l.8s.even.hi w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
-    bn.mulv.l.8s.odd.hi  w0, w0, sw0.0 /* >> 32 = high parts of 64-bit products. */
+    bn.mulv.l.8s.even.hi w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
+    bn.mulv.l.8s.odd.hi  w0, w0, sw1.0 /* >> 32 = high parts of 64-bit products. */
     bn.trn1.16h          w0, w1, w0
     loopi 16, 2
       bn.rshi w3, w0, w3 >> 1
@@ -106,7 +104,6 @@ poly_tomsg:
   addi   x4, x0, 3
   bn.sid x4, 0(x11)
 
-  bn.mov w16, w30
   ret
 
 /**
