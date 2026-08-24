@@ -5991,7 +5991,11 @@ pavona_test(
     ),
     fpga = fpga_params(
         timeout = "long",
-        tags = ["slow_test"],
+        # Broken: "SFDP header contains incorrect signature: 0xffffffff".
+        tags = [
+            "broken",
+            "slow_test",
+        ],
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"

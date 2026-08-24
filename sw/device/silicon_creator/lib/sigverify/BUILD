@@ -113,10 +113,14 @@ pavona_test(
 pavona_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_test_rom": None,
+            # Broken: ".rodata overlaps .non_volatile_counter_3".
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(
@@ -314,11 +318,15 @@ pavona_test(
 pavona_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         {
             # Test set is too large as ROM_EXT
             "//hw/top_egret:fpga_cw310_test_rom": None,
+            # Broken: ".rodata overlaps .non_volatile_counter_3".
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
         },
     ),
     fpga = fpga_params(

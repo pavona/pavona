@@ -284,7 +284,8 @@ pentest_cryptolib_fi_sym(
 
 pentest_cryptolib_fi_sym(
     name = "fi_sym_cryptolib_python_test",
-    tags = [],
+    # Broken: "JSONDecodeError: Expecting value: line 1 column 1 (char 0)".
+    tags = ["broken"],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/fi:fi_sym_cryptolib_python_test",
     test_vectors = [],
@@ -356,7 +357,8 @@ pentest_cryptolib_sca_sym(
 
 pentest_cryptolib_sca_sym(
     name = "sca_sym_cryptolib_python_test",
-    tags = [],
+    # Broken: "JSONDecodeError: Expecting value: line 1 column 1 (char 0)".
+    tags = ["broken"],
     test_args = "",
     test_harness = "//sw/host/penetrationtests/python/sca:sca_sym_cryptolib_python_test",
     test_vectors = [],
