@@ -44,10 +44,8 @@ poly_decompress:
   beq  x12, x4, _handle_k4_poly_decompress
 
 _handle_kn4_poly_decompress:
-  la         x5, const_0x0fff
-  addi       x4, x0, 3
-  bn.lid     x4, 0(x5)
-  bn.shv.16h w3, w3 >> 8 /* 0xf */
+  bn.subi    w3, w31, 1
+  bn.shv.16h w3, w3 >> 12 /* 0xf */
   addi       x4, x0, 1
 
   loopi 4, 11
@@ -239,13 +237,13 @@ poly_decompress_k4:
 .type poly_polyvec_decompress, @function
 poly_polyvec_decompress:
   /* Load constants. */
-  la        x5, const_8
-  addi      x4, x0, 2
-  bn.lid    x4++, 0(x5)
-  bn.shv.8s w2, w2 << 16
-  bn.shv.8s w2, w2 >> 4 /* w2 = (0x00008000)^8 */
-  la        x5, const_0x0fff
-  bn.lid    x4++, 0(x5)
+  la         x5, const_8
+  addi       x4, x0, 2
+  bn.lid     x4, 0(x5)
+  bn.shv.8s  w2, w2 << 16
+  bn.shv.8s  w2, w2 >> 4 /* w2 = (0x00008000)^8 */
+  bn.subi    w3, w31, 1
+  bn.shv.16h w3, w3 >> 4 /* w3 = (0x0fff)^16 */
 
   /* The decompression of a is done as follows:
    *    (((a & m) * q) + c) >> d
@@ -262,6 +260,7 @@ poly_polyvec_decompress:
    * (c << (16 - d)) to acc(h) before the multiplication with q. The final
    * right shift by 16 bits is taking the high 16-bit part of the 32-bit
    * multiplication product. All of this can be done with one bn.mulv.l.16h.acc.hi. */
+  addi x4, x0, 4
   beq  x12, x4, _handle_k4_polyvec_decompress
 
 _handle_kn4_polyvec_decompress:

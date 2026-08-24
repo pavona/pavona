@@ -96,6 +96,7 @@ poly_tobytes:
  *
  * @param[in]  x10: dmem pointer to the input byte array
  * @param[out] x11: dmem pointer to the output polynomial
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x5, x10 to x11, w0 to w2
  * clobbered flag groups: FG0
@@ -104,11 +105,10 @@ poly_tobytes:
 .globl poly_frombytes
 .type poly_frombytes, @function
 poly_frombytes:
-  la     x5, const_0x0fff
-  addi   x4, x0, 2
-  bn.lid x4, 0(x5)
-  addi   x4, x0, 1
+  bn.subi    w2, w31, 1
+  bn.shv.16h w2, w2 >> 4
 
+  addi x4, x0, 1
   loopi 4, 35
     bn.lid x0, 0(x10++)
 

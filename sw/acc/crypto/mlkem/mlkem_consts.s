@@ -86,17 +86,6 @@ mont:
   .word 0x08ed08ed
   .word 0x08ed08ed
 
-.globl const_0x0fff
-const_0x0fff:
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-  .word 0x0fff0fff
-
 .globl const_1290167
 const_1290167:
   .word 0x0013afb7
