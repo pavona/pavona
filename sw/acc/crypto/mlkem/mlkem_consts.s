@@ -86,17 +86,6 @@ mont:
   .word 0x08ed08ed
   .word 0x08ed08ed
 
-.globl const_1290167
-const_1290167:
-  .word 0x0013afb7
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-  .word 0x00000000
-
 /* 2^32 mod q. */
 .globl const_tomont
 const_tomont:

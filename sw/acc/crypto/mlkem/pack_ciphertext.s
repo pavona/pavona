@@ -35,12 +35,13 @@
 .type poly_compress, @function
 poly_compress:
   /* Load constants. */
-  la     x5, modulus_over_2
-  addi   x4, x0, 2
-  bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
-  la     x5, const_1290167
-  addi   x4, x0, 17
-  bn.lid x4, 0(x5)
+  la        x5, modulus_over_2
+  addi      x4, x0, 2
+  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  la        x5, const_m_dv
+  addi      x4, x0, 17
+  bn.lid    x4, 0(x5)
+  bn.shv.8s w17, w17 >> 8 /* 1290167 */
 
   /* The compression of a is done as follows:
    *    ((((a << d) + m) * c) >> (32 - d)) & ((1 << d) - 1)
@@ -248,12 +249,13 @@ _poly_compress_16:
 .type poly_polyvec_compress, @function
 poly_polyvec_compress:
   /* Load constants. */
-  la     x5, modulus_over_2
-  addi   x4, x0, 2
-  bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
-  la     x5, const_1290167
-  addi   x4, x0, 17
-  bn.lid x4, 0(x5)
+  la        x5, modulus_over_2
+  addi      x4, x0, 2
+  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  la        x5, const_m_dv
+  addi      x4, x0, 17
+  bn.lid    x4, 0(x5)
+  bn.shv.8s w17, w17 >> 8 /* 1290167 */
 
   addi      x4, x0, 4
   beq       x12, x4, _handle_k4_poly_polyvec_compress
@@ -547,7 +549,7 @@ _handle_k4_poly_polyvec_compress:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 10-bit compressed coefficients
  * @param[in]  w3: (0x681)^8, that is 1665 in every 32-bit lane
- * @param[in]  w17 (sw1): sw1.0 = 1290167, the value of const_1290167
+ * @param[in]  w17 (sw1): sw1.0 = 1290167
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1

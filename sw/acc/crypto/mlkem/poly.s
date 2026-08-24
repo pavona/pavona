@@ -72,17 +72,14 @@ poly_frommsg:
 .type poly_tomsg, @function
 poly_tomsg:
   /* Load constants. */
-  la     x5, modulus_over_2
-  addi   x4, x0, 2
-  bn.lid x4, 0(x5) /* w2 = (0x681)^16 */
-  la     x5, const_1290167
-  addi   x4, x0, 17
-  bn.lid x4, 0(x5)
-
-  /* Multiply the constant 80635 with 2**4 so that later we shift to the right
-   * 32 bits instead of 28 bits. This means we can return the high parts of
-   * the 64-bit products within the multiplication instruction. */
-  bn.subi w17, w17, 7 /* w17 = 1290160 = 80635 << 4 */
+  la        x5, modulus_over_2
+  addi      x4, x0, 2
+  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  la        x5, const_m_dv
+  addi      x4, x0, 17
+  bn.lid    x4, 0(x5)
+  bn.shv.8s w17, w17 >> 8 /* 1290167 */
+  bn.subi   w17, w17, 7   /* w17 = 1290160 = 80635 << 4 */
 
   loopi 16, 14
     bn.lid               x0, 0(x10++)
