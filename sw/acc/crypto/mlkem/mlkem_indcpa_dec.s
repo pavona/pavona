@@ -49,11 +49,12 @@
  * @param[in]  x11: dmem pointer to the input packed masked secret key dk_pke
  * @param[out] x12: dmem pointer to the output message m
  * @param[in]  x13: k, the security level
+ * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
  * clobbered registers: x2 to x5, x8 to x13, x18 to x19, x21 to x25,
- *                      w0 to w26, acch, acc, mod
+ *                      w0 to w15, w17 to w26, acch, acc, mod
  * clobbered flag groups: FG0
  *
  * HARDENED
@@ -91,7 +92,6 @@ indcpa_dec:
   add x9, x10, x0
 
   /* Unpack b <- c[0 : cu]. */
-  bn.wsrr   w16, mod
   add       x10, x8, x0
   add       x11, x22, x0
   add       x12, x19, x0
@@ -182,7 +182,6 @@ indcpa_dec:
   add x9, x10, x0
 
   /* Refresh dk_pke[0] arithmetic shares (mod = q here). */
-  bn.wsrr w16, mod
   add     x10, x21, x0
   add     x12, x21, x0
   jal     x1, refreshmodq

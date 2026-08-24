@@ -39,14 +39,14 @@ main:
   la x2, stack_end
 
   /* mod = qinv | q. */
+  li      x4, 16
   la      x5, modulus_bn
-  bn.lid  x0++, 0(x5)
-  bn.rshi w0, w31, w0 >> 240
+  bn.lid  x4++, 0(x5)
+  bn.rshi w16, w31, w16 >> 240
   la      x5, modulus_inv
-  addi    x4, x0, 1
   bn.lid  x4, 0(x5)
-  bn.or   w0, w0, w1 << 32
-  bn.wsrw mod, w0
+  bn.or   w16, w16, w17 << 32
+  bn.wsrw mod, w16
 
   la   x10, coins
   la   x11, ek

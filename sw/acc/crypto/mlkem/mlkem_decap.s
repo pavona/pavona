@@ -47,11 +47,12 @@
  * @param[in]  x11: dmem pointer to the input masked secret key dk
  * @param[out] x12: dmem pointer to the output shared secret ss
  * @param[in]  x13: k, the security level
+ * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
- * clobbered registers: x2 to x15, x18 to x19, x21 to x28, w0 to w26,
- *                      mod, acch, acc
+ * clobbered registers: x2 to x15, x18 to x19, x21 to x28,
+ *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  *
  * HARDENED

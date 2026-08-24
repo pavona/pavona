@@ -32,9 +32,12 @@
  * @param[out] x12: dmem pointer to the output ciphertext c
  * @param[out] x13: dmem pointer to the output shared secret ss
  * @param[in]  x14: k, the security level
+ * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
- *                      w0 to w26, mod, acch, acc
+ * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
+ *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */
 

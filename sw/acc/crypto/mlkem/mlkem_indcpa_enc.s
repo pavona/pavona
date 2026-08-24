@@ -39,9 +39,11 @@
  * @param[in]  x12: dmem pointer to the input randomness r (32 bytes)
  * @param[out] x13: dmem pointer to the output ciphertext
  * @param[in]  x14: k, the security level
+ * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
- *                      w0 to w26, mod, acch, acc
+ *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -117,7 +119,6 @@ _continue_compute_v:
   jal  x1, poly_getnoise_eta_init
 
   /* Compute sp[0] = ntt(sp[0]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpolyvec_sp
@@ -169,7 +170,6 @@ _handle_k4_compute_v:
   add x9, x10, x0
 
   /* Compute sp[1] = ntt(sp[1]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
@@ -207,7 +207,6 @@ _handle_k3_compute_v:
   add x9, x10, x0
 
   /* Compute sp[i] = ntt(sp[i]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
@@ -238,7 +237,6 @@ _handle_k2_compute_v:
   jal  x1, poly_getnoise_eta_init
 
   /* Compute sp[3] = ntt(sp[3]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
@@ -340,7 +338,7 @@ _handle_k2_compute_v:
   addi x23, x23, -1
 
   /* Loop over i = 1..k - 1. */
-  loop x8, 98
+  loop x8, 95
     /* Generate at[i][0]. */
     la  x11, poly_at
     jal x1, poly_gen_matrix
@@ -354,7 +352,6 @@ _handle_k2_compute_v:
     jal  x1, poly_gen_matrix_init
 
     /* Compute b = at[i][0] * sp[0]. */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, poly_at
@@ -365,7 +362,7 @@ _handle_k2_compute_v:
     add        x24, x11, x0
     bn.wsrw    mod, w16
 
-    loop x21, 23
+    loop x21, 22
       /* Generate at[i][j]. */
       la   x11, poly_at
       jal  x1, poly_gen_matrix
@@ -379,7 +376,6 @@ _handle_k2_compute_v:
       jal  x1, poly_gen_matrix_init
 
       /* Compute b += at[i][j] * sp[j]. */
-      bn.wsrr    w16, mod
       bn.shv.16h w0, w16 << 1
       bn.wsrw    mod, w0
       la         x10, poly_at
@@ -396,7 +392,6 @@ _handle_k2_compute_v:
     jal  x1, poly_gen_matrix
 
     /* Compute b += at[i][k - 1] * sp[k - 1]. */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, poly_at
@@ -459,7 +454,6 @@ _handle_k2_compute_v:
   jal  x1, poly_gen_matrix_init
 
   /* Compute b = at[k - 1][0] * sp[0]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at
@@ -470,7 +464,7 @@ _handle_k2_compute_v:
   add        x24, x11, x0
   bn.wsrw    mod, w16
 
-  loop x21, 23
+  loop x21, 22
     /* Generate at[k - 1][j]. */
     la  x11, poly_at
     jal x1, poly_gen_matrix
@@ -484,7 +478,6 @@ _handle_k2_compute_v:
     jal  x1, poly_gen_matrix_init
 
     /* Compute b += at[k - 1][j] * sp[j]. */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, poly_at
@@ -501,7 +494,6 @@ _handle_k2_compute_v:
   jal x1, poly_gen_matrix
 
   /* Compute b += at[k - 1][k - 1] * sp[k - 1]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at
@@ -545,7 +537,6 @@ _handle_k2_compute_b:
   jal  x1, poly_gen_matrix_init
 
   /* Compute b = at[0][0] * sp[0]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at
@@ -561,7 +552,6 @@ _handle_k2_compute_b:
   jal x1, poly_gen_matrix
 
   /* Compute b += at[0][1] * sp[1]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at
@@ -621,7 +611,6 @@ _handle_k2_compute_b:
   jal  x1, poly_gen_matrix_init
 
   /* Compute b = at[1][0] * sp[0]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at
@@ -637,7 +626,6 @@ _handle_k2_compute_b:
   jal x1, poly_gen_matrix
 
   /* Compute b += at[1][1] * sp[1]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, poly_at

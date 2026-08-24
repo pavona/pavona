@@ -47,9 +47,12 @@
  * @param[out] x11: dmem pointer to the output packed public key ek_pke
  * @param[out] x12: dmem pointer to the output packed secret key dk_pke
  * @param[in]  x13: k, the security level
+ * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
- * clobbered registers: x4 to x13, x18 to x28, w0 to w26, mod, acch, acc
+ * clobbered registers: x4 to x13, x18 to x28,
+ *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  *
  * HARDENED
@@ -118,7 +121,7 @@ _continue:
   la     x23, twiddles_ntt
 
   addi x19, x19, -1 /* k - 1 */
-  loop x19, 22
+  loop x19, 21
     /* Generate sk[i]. */
     add x10, x20, x0
     add x11, x22, x0
@@ -133,7 +136,6 @@ _continue:
     jal  x1, poly_getnoise_eta_init
 
     /* Compute sk[i] = ntt(sk[i]). */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     add        x10, x22, x0
@@ -156,7 +158,6 @@ _continue:
   jal x1, poly_getnoise_eta_1
 
   /* Compute sk[k - 1] = ntt(sk[k - 1]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x22, x0
@@ -208,7 +209,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 80
+  loop x19, 78
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -222,7 +223,6 @@ _continue:
     jal  x1, poly_gen_matrix_init
 
     /* Compute pk = a[i][0] * sk[0]. */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     add        x10, x25, x0
@@ -297,7 +297,6 @@ _continue:
     jal x1, poly_tomont
 
     /* Compute e[i] = ntt(e[i]). */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, mpoly_e
@@ -332,7 +331,6 @@ _continue:
   jal  x1, poly_gen_matrix_init
 
   /* Compute pk = a[k - 1][0] * sk[0]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x25, x0
@@ -399,7 +397,6 @@ _continue:
   jal x1, poly_tomont
 
   /* Compute e[k - 1] = ntt(e[k - 1]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpoly_e
@@ -498,7 +495,7 @@ _continue:
   la     x23, twiddles_ntt
 
   addi x19, x19, -1 /* k - 1 */
-  loop x19, 29
+  loop x19, 28
     /* Generate sk[i]. */
     add x10, x20, x0
     add x11, x22, x0
@@ -513,7 +510,6 @@ _continue:
     jal  x1, masked_poly_getnoise_eta_init
 
     /* Compute sk[i] = ntt(sk[i]). */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     add        x10, x22, x0
@@ -546,7 +542,6 @@ _continue:
   jal x1, masked_poly_getnoise_eta_1
 
   /* Compute sk[k - 1] = ntt(sk[k - 1]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
 
@@ -608,7 +603,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 111
+  loop x19, 109
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -622,7 +617,6 @@ _continue:
     jal  x1, poly_gen_matrix_init
 
     /* Compute pk = a[i][0] * sk[0]. */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
 
@@ -715,7 +709,6 @@ _continue:
     endloop
 
     /* Compute e[i] = ntt(e[i]). */
-    bn.wsrr    w16, mod
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
 
@@ -778,7 +771,6 @@ _continue:
   jal  x1, poly_gen_matrix_init
 
   /* Compute pk = a[k - 1][0] * sk[0]. */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
 
@@ -863,7 +855,6 @@ _continue:
   endloop
 
   /* Compute e[k - 1] = ntt(e[k - 1]). */
-  bn.wsrr    w16, mod
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
 
