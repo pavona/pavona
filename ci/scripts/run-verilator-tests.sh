@@ -46,5 +46,6 @@ fi
     --local_resources=cpu=8 \
     --test_tag_filters=verilator,-broken \
     --test_output=errors \
+    --//hw:verilator_options=--threads,1 \
     --//hw:make_options=-j,8 \
     "${TESTS[@]}"
