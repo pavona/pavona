@@ -203,7 +203,7 @@ _handle_k4_poly_compress:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 5-bit compressed coefficients
  * @param[in]  w3: (0x680)^8, that is 1664 in every 32-bit lane
- * @param[in]  w17 (sw1): sw1.0 = 1290176 = 40318 * 2^5
+ * @param[in]  w17 (sw1): sw1.0 = 1290176 = 40318 * 2^5 (1st 32-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1
@@ -549,7 +549,7 @@ _handle_k4_poly_polyvec_compress:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 10-bit compressed coefficients
  * @param[in]  w3: (0x681)^8, that is 1665 in every 32-bit lane
- * @param[in]  w17 (sw1): sw1.0 = 1290167
+ * @param[in]  w17 (sw1): sw1.0 = 1290167 (1st 32-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1
@@ -580,7 +580,7 @@ _poly_polyvec_compress_16_kn4:
  * @param[in]  w0: input vector with 16 16-bit coefficients
  * @param[out] w1: output vector with 16 11-bit compressed coefficients
  * @param[in]  w3: (0x680)^8, that is 1664 in every 32-bit lane
- * @param[in]  w17 (sw1): sw1.0 = 1290168 = 645084 * 2
+ * @param[in]  w17 (sw1): sw1.0 = 1290168 = 645084 * 2 (1st 32-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: w0 to w1

@@ -49,7 +49,8 @@
  * @param[out] w0: comparison result; 0 if the ciphertexts match and all-ones
  *                 otherwise for UNPROTECTED, 1 if they match and 0 otherwise
  *                 for HARDENED
- * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED

@@ -180,6 +180,8 @@ poly_sub:
  * This routine is constant time.
  *
  * @param[in,out] x10: dmem pointer to x
+ * @param[in]     w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                           sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]     w31: all-zero register
  *
  * clobbered registers: x4 to x5, x10, w0 to w1, acch, acc

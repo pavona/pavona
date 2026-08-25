@@ -37,7 +37,8 @@
  * @param[out] x11: dmem pointer to the output public key ek
  * @param[out] x12: dmem pointer to the output secret key dk
  * @param[in]  x13: k, the security level
- * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED

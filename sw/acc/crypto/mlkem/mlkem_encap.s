@@ -32,7 +32,8 @@
  * @param[out] x12: dmem pointer to the output ciphertext c
  * @param[out] x13: dmem pointer to the output shared secret ss
  * @param[in]  x14: k, the security level
- * @param[in]  w16: sw0.0 = q, sw0.2 = qinv
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,

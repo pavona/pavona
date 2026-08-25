@@ -26,6 +26,8 @@
  * @param[in]  x10: dmem pointer to the input byte array
  * @param[out] x11: dmem pointer to the output polynomial
  * @param[in]  x12: k, the security level
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10 to x11, w0 to w3, acch, acc
@@ -198,6 +200,8 @@ _handle_k4_poly_decompress:
  * @param[in,out] w1: input vector with 16 5-bit compressed coefficients, which
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x0008)^16
+ * @param[in]     w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                           sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  *
  * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
@@ -227,6 +231,8 @@ poly_decompress_k4:
  * @param[in]  x10: dmem pointer to the input byte array
  * @param[out] x11: dmem pointer to the output polynomial
  * @param[in]  x12: k, the security level
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10 to x11, w0 to w3, acch, acc
@@ -556,6 +562,8 @@ _handle_k4_polyvec_decompress:
  * @param[in,out] w1: input vector with 16 10-bit compressed coefficients, which
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x00008000)^8
+ * @param[in]     w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                           sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  *
  * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
@@ -578,6 +586,8 @@ polyvec_decompress_kn4:
  * @param[in,out] w1: input vector with 16 11-bit compressed coefficients, which
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x00008000)^8
+ * @param[in]     w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                           sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  *
  * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
