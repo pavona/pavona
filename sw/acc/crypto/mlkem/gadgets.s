@@ -4,39 +4,6 @@
 
 .text
 
-/* Register aliases */
-.equ x0, zero
-.equ x2, sp
-.equ x3, fp
-.equ x5, t0
-#define t1 x6
-.equ x7, t2
-.equ x8, s0
-.equ x9, s1
-.equ x10, a0
-.equ x11, a1
-.equ x12, a2
-.equ x13, a3
-.equ x14, a4
-.equ x15, a5
-.equ x16, a6
-.equ x17, a7
-.equ x18, s2
-.equ x19, s3
-.equ x20, s4
-.equ x21, s5
-.equ x22, s6
-.equ x23, s7
-.equ x24, s8
-.equ x25, s9
-.equ x26, s10
-.equ x27, s11
-.equ x28, t3
-.equ x29, t4
-.equ x30, t5
-.equ x31, t6
-
-
 /*
  * Bibliography
  *
@@ -101,24 +68,24 @@
 .type secand, @function
 secand:
   /* Save addresses. */
-  addi t0, a0, 0
-  addi t1, a2, 0
-  addi t2, a5, 0
+  addi x5, x10, 0
+  addi x6, x12, 0
+  addi x7, x15, 0
 
   /* Load x. */
   bn.xor w0, w0, w0
-  bn.lid x0, 0(t0) /* x[0] */
+  bn.lid x0, 0(x5) /* x[0] */
   bn.xor w1, w1, w1
-  add    t0, t0, a1
+  add    x5, x5, x11
   addi   x4, x0, 1
-  bn.lid x4++, 0(t0) /* x[1] */
+  bn.lid x4++, 0(x5) /* x[1] */
 
   /* Load y. */
   bn.xor w2, w2, w2
-  bn.lid x4++, 0(t1) /* y[0] */
+  bn.lid x4++, 0(x6) /* y[0] */
   bn.xor w3, w3, w3
-  add    t1, t1, a3
-  bn.lid x4, 0(t1) /* y[1] */
+  add    x6, x6, x13
+  bn.lid x4, 0(x6) /* y[1] */
 
   addi    x4, x0, 6
   bn.wsrr w5, urnd
@@ -133,8 +100,8 @@ secand:
   bn.and  w8, w8, w5 /* &= r */
   bn.xor  w7, w7, w8 /* w7 ^= w8 */
   bn.xor  w6, w6, w7
-  bn.sid  x4, 0(t2) /* Save r[0]. */
-  add     t2, t2, a6
+  bn.sid  x4, 0(x7) /* Save r[0]. */
+  add     x7, x7, x16
   /* Handle z_10. */
   bn.xor  w6, w6, w6
   bn.and  w6, w1, w3 /* x[1] & y[1] */
@@ -146,12 +113,12 @@ secand:
   bn.and  w8, w8, w5 /* &= r */
   bn.xor  w7, w7, w8 /* w7 ^= w8 */
   bn.xor  w6, w6, w7
-  bn.sid  x4, 0(t2) /* Save r[1]. */
+  bn.sid  x4, 0(x7) /* Save r[1]. */
 
-  /* Advance a0, a2, a5 to the next bit. */
-  addi a0, a0, 32
-  addi a2, a2, 32
-  addi a5, a5, 32
+  /* Advance x10, x12, x15 to the next bit. */
+  addi x10, x10, 32
+  addi x12, x12, 32
+  addi x15, x15, 32
   ret
 
 /*
@@ -185,24 +152,24 @@ secand:
 .type secfulladder, @function
 secfulladder:
   /* Save addresses. */
-  add t0, a0, x0
-  add t1, a2, x0
-  add t2, a5, x0
-  add t3, a7, x0
+  add x5, x10, x0
+  add x6, x12, x0
+  add x7, x15, x0
+  add x28, x17, x0
 
   /* Load x. */
   bn.xor w0, w0, w0
-  bn.lid x0, 0(t0) /* x[0] */
-  add    t0, t0, a1
+  bn.lid x0, 0(x5) /* x[0] */
+  add    x5, x5, x11
   addi   x4, x0, 1
   bn.xor w1, w1, w1
-  bn.lid x4++, 0(t0) /* x[1] */
+  bn.lid x4++, 0(x5) /* x[1] */
   /* Load y. */
   bn.xor w2, w2, w2
-  bn.lid x4++, 0(t1) /* y[0] */
-  add    t1, t1, a3
+  bn.lid x4++, 0(x6) /* y[0] */
+  add    x6, x6, x13
   bn.xor w3, w3, w3
-  bn.lid x4, 0(t1) /* y[1] */
+  bn.lid x4, 0(x6) /* y[1] */
 
   /* Compute sharewise a = x ^ y. */
   bn.xor w4, w4, w4
@@ -213,19 +180,19 @@ secfulladder:
   /* Compute r = cin ^ a. */
   bn.xor w2, w2, w2
   addi   x4, x0, 2
-  bn.lid x4++, 0(t3)
-  add    t3, t3, t4
+  bn.lid x4++, 0(x28)
+  add    x28, x28, x29
   bn.xor w3, w3, w3
-  bn.lid x4++, 0(t3)
+  bn.lid x4++, 0(x28)
 
   bn.xor w6, w6, w6
   bn.xor w6, w4, w2
   addi   x4, x0, 6
-  bn.sid x4, 0(t2)
-  add    t2, t2, a6
+  bn.sid x4, 0(x7)
+  add    x7, x7, x16
   bn.xor w6, w6, w6
   bn.xor w6, w5, w3
-  bn.sid x4, 0(t2)
+  bn.sid x4, 0(x7)
 
   /* Compute cout = x ^ secand(a, x ^ cin). */
   /* a: w4 -- w5
@@ -253,10 +220,10 @@ secfulladder:
   bn.xor  w2, w2, w3
   bn.xor  w3, w3, w3
   bn.xor  w3, w2, w0
-  add     t2, t5, x0
+  add     x7, x30, x0
   addi    x4, x0, 3
-  bn.sid  x4, 0(t2)
-  add     t2, t2, t6
+  bn.sid  x4, 0(x7)
+  add     x7, x7, x31
   /* Handle cout_10. */
   bn.xor  w2, w2, w2
   bn.and  w2, w5, w7
@@ -270,12 +237,12 @@ secfulladder:
   bn.xor  w2, w2, w3
   bn.xor  w3, w3, w3
   bn.xor  w3, w2, w1
-  bn.sid  x4, 0(t2)
+  bn.sid  x4, 0(x7)
 
   /* Point to next bit. */
-  addi a0, a0, 32
-  addi a2, a2, 32
-  addi a5, a5, 32
+  addi x10, x10, 32
+  addi x12, x12, 32
+  addi x15, x15, 32
   ret
 
 /*
@@ -305,55 +272,55 @@ secfulladder:
 .globl secadd
 .type secadd, @function
 secadd:
-  /* Reserve frame: 64 B carry c at 0(sp), plus saved s0, a7. */
-  addi sp, sp, -96
-  sw   s0, 64(sp)
-  sw   a7, 68(sp)
+  /* Reserve frame: 64 B carry c at 0(x2), plus saved x8, x17. */
+  addi x2, x2, -96
+  sw   x8, 64(x2)
+  sw   x17, 68(x2)
 
   /* Initialize c = 0. */
   bn.xor w0, w0, w0
-  addi   t0, sp, 0 /* ptr_c */
+  addi   x5, x2, 0 /* ptr_c */
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
   /* Ripple-carry adder. */
-  addi s0, a7, -1
-  addi a7, sp, 0 /* ptr_c = cin */
-  addi t4, x0, 32
-  addi t5, sp, 0 /* ptr_c = cout */
-  addi t6, x0, 32
+  addi x8, x17, -1
+  addi x17, x2, 0 /* ptr_c = cin */
+  addi x29, x0, 32
+  addi x30, x2, 0 /* ptr_c = cout */
+  addi x31, x0, 32
   /* Loop over i=0,...,k-2. */
-  loop s0, 2
-    /* a0 already points to x[i] */
-    /* a1 is already share stride of x. */
-    /* a2 already points to y[i] */
-    /* a3 is already share stride of y. */
-    /* a5 already points to r. */
-    /* a6 is already share stride of r. */
-    /* a7 already points to ptr_c = cin. */
-    /* t4 is already share stride of cin. */
-    /* t5 already points to ptr_c = cout. */
-    /* t6 is already share stride of cout. */
+  loop x8, 2
+    /* x10 already points to x[i] */
+    /* x11 is already share stride of x. */
+    /* x12 already points to y[i] */
+    /* x13 is already share stride of y. */
+    /* x15 already points to r. */
+    /* x16 is already share stride of r. */
+    /* x17 already points to ptr_c = cin. */
+    /* x29 is already share stride of cin. */
+    /* x30 already points to ptr_c = cout. */
+    /* x31 is already share stride of cout. */
     jal  x1, secfulladder
     /* After secfulladder:
-     *  - a0 and a2 points to x[i + 1] and y[i + 1].
-     *  - a1 and a3 are still share stride of x and y.
-     *  - a5 points to r[i + 1].
-     *  - a6 is still share stride of r.
-     *  - a7 points to cin.
-     *  - t4 is still share stride of cin.
-     *  - t5 points to cout.
-     *  - t6 is still share stride of cout. */
+     *  - x10 and x12 points to x[i + 1] and y[i + 1].
+     *  - x11 and x13 are still share stride of x and y.
+     *  - x15 points to r[i + 1].
+     *  - x16 is still share stride of r.
+     *  - x17 points to cin.
+     *  - x29 is still share stride of cin.
+     *  - x30 points to cout.
+     *  - x31 is still share stride of cout. */
     nop
   endloop
 
   /* Handle bit i = k-1. */
   /* Compute r[k-1] = x[k-1] ^ y[k-1] ^ c. */
-  addi t0, sp, 0 /* ptr_c */
+  addi x5, x2, 0 /* ptr_c */
   addi x4, x0, 1
-  addi t1, x0, 2
-  addi t2, x0, 3
+  addi x6, x0, 2
+  addi x7, x0, 3
   loopi 2, 14
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -361,23 +328,23 @@ secadd:
     bn.xor w2, w2, w2
     bn.xor w3, w3, w3
     /* Computation. */
-    bn.lid x0, 0(a0)
-    bn.lid x4, 0(a2)
-    bn.lid t1, 0(t0)
+    bn.lid x0, 0(x10)
+    bn.lid x4, 0(x12)
+    bn.lid x6, 0(x5)
     bn.xor w3, w0, w1
     bn.xor w3, w3, w2
-    bn.sid t2, 0(a5)
+    bn.sid x7, 0(x15)
     /* Adjust addresses. */
-    add    a0, a0, a1
-    add    a2, a2, a3
-    add    t0, t0, t4
-    add    a5, a5, a6
+    add    x10, x10, x11
+    add    x12, x12, x13
+    add    x5, x5, x29
+    add    x15, x15, x16
   endloop
 
   /* Restore registers and frame. */
-  lw   s0, 64(sp)
-  lw   a7, 68(sp)
-  addi sp, sp, 96
+  lw   x8, 64(x2)
+  lw   x17, 68(x2)
+  addi x2, x2, 96
   ret
 
 /*
@@ -407,21 +374,21 @@ bitcopymask:
   loopi 2, 10
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(a0)
-    add    a0, a0, a1
+    bn.lid x0, 0(x10)
+    add    x10, x10, x11
     /* Copy x to bit 0. */
-    bn.sid x0, 0(a3++)
+    bn.sid x0, 0(x13++)
     /* Clear bit 1 -- 7. */
     loopi 7, 1
-      bn.sid x4, 0(a3++)
+      bn.sid x4, 0(x13++)
     endloop
     /* Copy x to bit 8. */
-    bn.sid x0, 0(a3++)
+    bn.sid x0, 0(x13++)
     /* Clear bit 9. */
-    bn.sid x4, 0(a3++)
+    bn.sid x4, 0(x13++)
     /* Copy x to bit 10 -- 11. */
-    bn.sid x0, 0(a3++)
-    bn.sid x0, 0(a3++)
+    bn.sid x0, 0(x13++)
+    bn.sid x0, 0(x13++)
   endloop
   ret
 
@@ -449,23 +416,23 @@ bitcopymask:
 .globl refreshios
 .type refreshios, @function
 refreshios:
-  add  t0, a0, a2 /* 2nd share of x */
-  add  t1, a4, a2 /* 2nd share of r */
+  add  x5, x10, x12 /* 2nd share of x */
+  add  x6, x14, x12 /* 2nd share of r */
   addi x4, x0, 1
-  loop a1, 11
+  loop x11, 11
     bn.wsrr w2, urnd
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.xor  w1, w0, w2
-    bn.sid  x4, 0(a4++)
+    bn.sid  x4, 0(x14++)
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(t0++)
+    bn.lid  x0, 0(x5++)
     bn.xor  w1, w0, w2
-    bn.sid  x4, 0(t1++)
+    bn.sid  x4, 0(x6++)
   endloop
   ret
 
@@ -476,8 +443,8 @@ refreshios:
  * rejection sampling on uniform random bytes from URND.
  *
  * @param[in]  w16: sw0, R | Q
- * @param[out] a0: ptr_r, dmem pointer to output polynomial
- * @param[in]  a1: dmem pointer to random input words (MLKEM_REJ_SAMPLE_TEST only)
+ * @param[out] x10: ptr_r, dmem pointer to output polynomial
+ * @param[in]  x11: dmem pointer to random input words (MLKEM_REJ_SAMPLE_TEST only)
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x5 to x6, x10, w0 to w5, acch, acc
@@ -488,27 +455,27 @@ refreshios:
 .type poly_rej_samp, @function
 poly_rej_samp:
   /* Load 19*Q - 1 into w1. */
-  addi      t0, x0, 1
-  la        t1, modulus_times_19_minus_1
-  bn.lid    t0++, 0(t1)
+  addi      x5, x0, 1
+  la        x6, modulus_times_19_minus_1
+  bn.lid    x5++, 0(x6)
   bn.shv.8s w1, w1 >> 16
   
   /* Load mont = 2**16 % Q into w2. */
-  la     t1, mont
-  bn.lid t0, 0(t1)
+  la     x6, mont
+  bn.lid x5, 0(x6)
   
-  /* a0 + 512 is the last valid address. */
-  addi t0, a0, 512
+  /* x10 + 512 is the last valid address. */
+  addi x5, x10, 512
 
 #if defined(MLKEM_REJ_SAMPLE_TEST)
-  addi t5, x0, 3
+  addi x30, x0, 3
 #endif
   
   /* Loop until 256 coefficients have been written to the output */
 _rej_sample_loop:
   /* Get 16 randoms. */
 #if defined(MLKEM_REJ_SAMPLE_TEST)
-  bn.lid      t5, 0(a1++)
+  bn.lid      x30, 0(x11++)
 #else
   bn.wsrr     w3, urnd
 #endif
@@ -520,12 +487,12 @@ _rej_sample_loop:
   bn.shv.8s   w5, w5 >> 31
   bn.trn1.16h w4, w4, w5
   bn.xor      w4, w4, w31, FG0
-  csrrs       t1, fg0, x0 /* Read flag fg0. */
-  srli        t1, t1, 3 /* Extract FG0.z */
+  csrrs       x6, fg0, x0 /* Read flag fg0. */
+  srli        x6, x6, 3 /* Extract FG0.z */
   
   /* If FG0.z == 0, there is at least one bad coeff. We throw away this
    * vector and sample again. */
-  beq t1, x0, _rej_sample_loop
+  beq x6, x0, _rej_sample_loop
   
   /* Once the whole vector is accepted, reduce the accepted candidates mod Q
    * using Montgomery. */
@@ -533,10 +500,10 @@ _rej_sample_loop:
   bn.mulv.l.16h.lo     w0, w0, sw0.2
   bn.mulv.l.16h.acc.hi w0, w0, sw0.0
   bn.addvm.16h         w0, w0, w31
-  bn.sid               x0, 0(a0++)
+  bn.sid               x0, 0(x10++)
   
-  /* If a0 == t0, we've filled up a polynomial. Otherwise, continue to sample. */
-  beq a0, t0, _end_rej_sample_loop
+  /* If x10 == x5, we've filled up a polynomial. Otherwise, continue to sample. */
+  beq x10, x5, _end_rej_sample_loop
   beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
@@ -564,38 +531,38 @@ _end_rej_sample_loop:
 .globl refreshmodq
 .type refreshmodq, @function
 refreshmodq:
-  /* Reserve frame: 512 B for rand at 0(sp), plus saved a0, a2. */
-  addi sp, sp, -544
-  sw a0, 512(sp)
-  sw a2, 516(sp)
+  /* Reserve frame: 512 B for rand at 0(x2), plus saved x10, x12. */
+  addi x2, x2, -544
+  sw x10, 512(x2)
+  sw x12, 516(x2)
 
   /* Generate rand. */
-  add a0, sp, x0
+  add x10, x2, x0
   jal x1, poly_rej_samp
 
   /* r[0] = x[0] + rand. */
   /* r[1] = x[1] - rand. */
-  add  t0, sp, 0 /* rand */
-  lw   a0, 512(sp)
-  addi t1, a0, 512 /* x[1] */
-  lw   a2, 516(sp)
-  addi t2, a2, 512 /* r[1] */
+  add  x5, x2, 0 /* rand */
+  lw   x10, 512(x2)
+  addi x6, x10, 512 /* x[1] */
+  lw   x12, 516(x2)
+  addi x7, x12, 512 /* r[1] */
   addi x4, x0, 1
-  addi t3, x0, 2
+  addi x28, x0, 2
   loopi 16, 9
-    bn.lid       x0, 0(t0++)
-    bn.lid       x4, 0(a0++)
+    bn.lid       x0, 0(x5++)
+    bn.lid       x4, 0(x10++)
     bn.addvm.16h w2, w1, w0
-    bn.sid       t3, 0(a2++)
+    bn.sid       x28, 0(x12++)
     bn.xor       w1, w1, w1
     bn.xor       w2, w2, w2
-    bn.lid       x4, 0(t1++)
+    bn.lid       x4, 0(x6++)
     bn.subvm.16h w2, w1, w0
-    bn.sid       t3, 0(t2++)
+    bn.sid       x28, 0(x7++)
   endloop
 
   /* Restore stack. */
-  addi sp, sp, 544
+  addi x2, x2, 544
   ret
 
 /*
@@ -619,17 +586,17 @@ poly_to_bitsliced:
   /* Reverse-load the 16 input WDRs: coefficient WDR i -> w[15 - i]. */
   addi x4, x0, 15
   loopi 16, 2
-    bn.lid x4, 0(a0++)
+    bn.lid x4, 0(x10++)
     addi   x4, x4, -1
   endloop
 
   jal x1, _bitslice_transpose
 
-  /* Store the 12 bitsliced words bs[0..11] via a0 so a1 is left unchanged. */
+  /* Store the 12 bitsliced words bs[0..11] via x10 so x11 is left unchanged. */
   addi   x4, x0, 0
-  addi   a0, a1, 0
+  addi   x10, x11, 0
   loopi 12, 2
-    bn.sid x4, 0(a0++)
+    bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
   ret
@@ -656,7 +623,7 @@ poly_from_bitsliced:
   /* Load bs[0..11] into w0..w11; zero the upper bit positions w12..w15. */
   addi x4, x0, 0
   loopi 12, 2
-    bn.lid x4, 0(a0++)
+    bn.lid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
   bn.xor w12, w12, w12
@@ -669,7 +636,7 @@ poly_from_bitsliced:
   /* Reverse-store: w[b] -> coefficient WDR (15 - b). */
   addi x4, x0, 15
   loopi 16, 2
-    bn.sid x4, 0(a1++)
+    bn.sid x4, 0(x11++)
     addi   x4, x4, -1
   endloop
   ret
@@ -908,59 +875,59 @@ _bitslice_transpose:
 .globl seca2b
 .type seca2b, @function
 seca2b:
-  /* Save fp to stack */
-  addi sp, sp, -32
-  sw   fp, 0(sp)
-  addi fp, sp, 0
+  /* Save x3 to stack */
+  addi x2, x2, -32
+  sw   x3, 0(x2)
+  addi x3, x2, 0
 
   /* Adjust stack for temp variables. */
-  slli t0, a2, 1
-  sub  sp, sp, t0 /* ptr_s */
-  add  t1, sp, x0
-  sub  sp, sp, t0 /* ptr_sp */
+  slli x5, x12, 1
+  sub  x2, x2, x5 /* ptr_s */
+  add  x6, x2, x0
+  sub  x2, x2, x5 /* ptr_sp */
 
   /* Build s = (x[0], 0). */
-  add t2, t1, x0 /* Save ptr_s. */
-  loop a1, 3
+  add x7, x6, x0 /* Save ptr_s. */
+  loop x11, 3
     bn.xor w0, w0, w0
-    bn.lid x0, 0(a0++)
-    bn.sid x0, 0(t1++)
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x6++)
   endloop
   bn.xor w0, w0, w0
-  loop a1, 1
-    bn.sid x0, 0(t1++)
+  loop x11, 1
+    bn.sid x0, 0(x6++)
   endloop
 
   /* Build s' = (0, x[1]). */
-  add t0, sp, x0
-  loop a1, 1
-    bn.sid x0, 0(t0++)
+  add x5, x2, x0
+  loop x11, 1
+    bn.sid x0, 0(x5++)
   endloop
-  loop a1, 3
-    bn.lid x0, 0(a0++)
-    bn.sid x0, 0(t0++)
+  loop x11, 3
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
     bn.xor w0, w0, w0
   endloop
 
   /* Save registers. */
-  add t0, a1, x0
-  add t1, a2, x0
-  add t3, a4, x0
+  add x5, x11, x0
+  add x6, x12, x0
+  add x28, x14, x0
 
   /* Compute r = secadd(s, s', k). */
-  addi a0, t2, 0 /* ptr_s */
-  addi a1, t1, 0
-  addi a2, sp, 0 /* ptr_sp */
-  addi a3, t1, 0
-  addi a5, t3, 0 /* ptr_r */
-  addi a6, t1, 0
-  addi a7, t0, 0 /* k */
+  addi x10, x7, 0 /* ptr_s */
+  addi x11, x6, 0
+  addi x12, x2, 0 /* ptr_sp */
+  addi x13, x6, 0
+  addi x15, x28, 0 /* ptr_r */
+  addi x16, x6, 0
+  addi x17, x5, 0 /* k */
   jal  x1, secadd
 
-  /* Restore sp and fp. */
-  addi sp, fp, 0
-  lw   fp, 0(sp)
-  addi sp, sp, 32
+  /* Restore x2 and x3. */
+  addi x2, x3, 0
+  lw   x3, 0(x2)
+  addi x2, x2, 32
   ret
 
 /*
@@ -987,19 +954,19 @@ seca2b:
 .globl seca2bmodq
 .type seca2bmodq, @function
 seca2bmodq:
-  /* Frame below sp:
-   *   sp +    0 : s' / a   (832 B)
-   *   sp +  832 : carry c  ( 64 B)
-   *   sp +  896 : s / u    (832 B)
-   *   sp + 1728 : saved s2 */
-  addi sp, sp, -1760
-  sw   s2, 1728(sp)
-  addi s2, a2, 0 /* output pointer */
+  /* Frame below x2:
+   *   x2 +    0 : s' / a   (832 B)
+   *   x2 +  832 : carry c  ( 64 B)
+   *   x2 +  896 : s / u    (832 B)
+   *   x2 + 1728 : saved x18 */
+  addi x2, x2, -1760
+  sw   x18, 1728(x2)
+  addi x18, x12, 0 /* output pointer */
 
   /* Compute s = p + x[0], k + 1 bits (one share).
    * p = 2**(k + 1) - q = 4863 = b1001011111111. */
-  addi t0, sp, 896 /* ptr_s */
-  /* a0 already points to x[0]. */
+  addi x5, x2, 896 /* ptr_s */
+  /* x10 already points to x[0]. */
   addi x4, x0, 1
   /* cin = 0 */
   bn.xor w2, w2, w2
@@ -1010,10 +977,10 @@ seca2bmodq:
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
     /* Compute r = x ^ p ^ cin. */
-    bn.lid x0, 0(a0++)
+    bn.lid x0, 0(x10++)
     bn.not w3, w0 /* a = x ^ p */
     bn.xor w1, w3, w2 /* r = a ^ cin */
-    bn.sid x4, 0(t0++) /* Save r. */
+    bn.sid x4, 0(x5++) /* Save r. */
     /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (a & (x ^ cin)). */
     bn.xor w2, w0, w2 /* cout = x ^ cin */
     bn.and w2, w3, w2 /* cout &= a */
@@ -1025,9 +992,9 @@ seca2bmodq:
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
   /* Compute r = x ^ 0 ^ cin = x ^ cin. */
-  bn.lid x0, 0(a0++)
+  bn.lid x0, 0(x10++)
   bn.xor w1, w0, w2 /* r = x ^ cin */
-  bn.sid x4, 0(t0++) /* Save r. */
+  bn.sid x4, 0(x5++) /* Save r. */
   /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (x & r). */
   bn.and w2, w0, w1 /* cout = x & r */
   bn.xor w2, w2, w0 /* cout ^= x */
@@ -1037,10 +1004,10 @@ seca2bmodq:
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
   /* Compute r = x ^ p ^ cin. */
-  bn.lid x0, 0(a0++)
+  bn.lid x0, 0(x10++)
   bn.not w3, w0 /* a = x ^ p */
   bn.xor w1, w3, w2 /* r = a ^ cin */
-  bn.sid x4, 0(t0++) /* Save r. */
+  bn.sid x4, 0(x5++) /* Save r. */
   /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (a & (x ^ cin)). */
   bn.xor w2, w0, w2 /* cout = x ^ cin */
   bn.and w2, w3, w2 /* cout &= a */
@@ -1052,9 +1019,9 @@ seca2bmodq:
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
     /* Compute r = x ^ 0 ^ cin = x ^ cin. */
-    bn.lid x0, 0(a0++)
+    bn.lid x0, 0(x10++)
     bn.xor w1, w0, w2 /* r = x ^ cin */
-    bn.sid x4, 0(t0++) /* Save r. */
+    bn.sid x4, 0(x5++) /* Save r. */
     /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (x & r). */
     bn.and w2, w0, w1 /* cout = x & r */
     bn.xor w2, w2, w0 /* cout ^= x */
@@ -1065,46 +1032,46 @@ seca2bmodq:
   bn.xor w1, w1, w1
   /* Compute r = x ^ p ^ cin = p ^ cin. (x only has k bits, while p has k + 1 bits). */
   bn.not w1, w2 /* r = p ^ cin */
-  bn.sid x4, 0(t0++) /* Save r. */
+  bn.sid x4, 0(x5++) /* Save r. */
 
   /* Extend s to 2 shares, i.e., clear next share of s. */
   bn.xor w0, w0, w0
   loopi 13, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
   /* Clear first share of sprime and copy x[1] to second share of sprime with
    * share stride = 416. */
-  addi t0, sp, 0 /* ptr_sprime */
+  addi x5, x2, 0 /* ptr_sprime */
   loopi 13, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
   loopi 12, 3
-    bn.lid x0, 0(a0++) /* a0 already points to x[1]. */
-    bn.sid x0, 0(t0++)
+    bn.lid x0, 0(x10++) /* x10 already points to x[1]. */
+    bn.sid x0, 0(x5++)
     /* Whitening. */
     bn.xor w0, w0, w0
   endloop
-  bn.sid x0, 0(t0++)
+  bn.sid x0, 0(x5++)
 
   /* Compute u = secadd(s, sprime, k + 1). */
   /* Initialize c = 0. */
-  addi  t0, sp, 832 /* ptr_c */
+  addi  x5, x2, 832 /* ptr_c */
   bn.xor w0, w0, w0
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
-  addi a0, sp, 896 /* ptr_s */
-  addi a1, x0, 416
-  addi a2, sp, 0 /* ptr_sprime */
-  addi a3, x0, 416
-  addi a5, sp, 896 /* ptr_u */
-  addi a6, x0, 416
-  addi a7, sp, 832 /* ptr_c */
-  addi t4, x0, 32
-  addi t5, sp, 832 /* ptr_c */
-  addi t6, x0, 32
+  addi x10, x2, 896 /* ptr_s */
+  addi x11, x0, 416
+  addi x12, x2, 0 /* ptr_sprime */
+  addi x13, x0, 416
+  addi x15, x2, 896 /* ptr_u */
+  addi x16, x0, 416
+  addi x17, x2, 832 /* ptr_c */
+  addi x29, x0, 32
+  addi x30, x2, 832 /* ptr_c */
+  addi x31, x0, 32
   loopi 12, 2
     jal x1, secfulladder
     nop
@@ -1112,8 +1079,8 @@ seca2bmodq:
   /* Handle bit 12. */
   /* Compute r[12] = x[12] ^ y[12] ^ c. */
   addi x4, x0, 1
-  addi t1, x0, 2
-  addi t2, x0, 3
+  addi x6, x0, 2
+  addi x7, x0, 3
   loopi 2, 14
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -1121,43 +1088,43 @@ seca2bmodq:
     bn.xor w2, w2, w2
     bn.xor w3, w3, w3
     /* Computation. */
-    bn.lid x0, 0(a0)
-    bn.lid x4, 0(a2)
-    bn.lid t1, 0(a7)
+    bn.lid x0, 0(x10)
+    bn.lid x4, 0(x12)
+    bn.lid x6, 0(x17)
     bn.xor w3, w0, w1
     bn.xor w3, w3, w2
-    bn.sid t2, 0(a5)
+    bn.sid x7, 0(x15)
     /* Adjust addresses. */
-    add    a0, a0, a1
-    add    a2, a2, a3
-    add    a7, a7, t4
-    add    a5, a5, a6
+    add    x10, x10, x11
+    add    x12, x12, x13
+    add    x17, x17, x29
+    add    x15, x15, x16
   endloop
 
   /* Compute a = bitcopymask(u[k], (k + 1) * 32). */
-  addi a0, sp, 1280 /* ptr_u[k] */
-  addi a1, x0, 416
-  addi a3, sp, 0 /* ptr_a */
+  addi x10, x2, 1280 /* ptr_u[k] */
+  addi x11, x0, 416
+  addi x13, x2, 0 /* ptr_a */
   jal  x1, bitcopymask
 
   /* Compute u = secadd(a, u, k). */
   /* Initialize c = 0. */
-  addi  t0, sp, 832 /* ptr_c */
+  addi  x5, x2, 832 /* ptr_c */
   bn.xor w0, w0, w0
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
-  addi a0, sp, 0 /* ptr_a */
-  addi a1, x0, 384
-  addi a2, sp, 896 /* ptr_u */
-  addi a3, x0, 416
-  addi a5, s2, 0 /* ptr_r */
-  addi a6, x0, 384
-  addi a7, sp, 832 /* ptr_c */
-  addi t4, x0, 32
-  addi t5, sp, 832 /* ptr_c */
-  addi t6, x0, 32
+  addi x10, x2, 0 /* ptr_a */
+  addi x11, x0, 384
+  addi x12, x2, 896 /* ptr_u */
+  addi x13, x0, 416
+  addi x15, x18, 0 /* ptr_r */
+  addi x16, x0, 384
+  addi x17, x2, 832 /* ptr_c */
+  addi x29, x0, 32
+  addi x30, x2, 832 /* ptr_c */
+  addi x31, x0, 32
   loopi 11, 2
     jal x1, secfulladder
     nop
@@ -1165,8 +1132,8 @@ seca2bmodq:
   /* Handle bit 11. */
   /* Compute r[11] = x[11] ^ y[11] ^ c. */
   addi x4, x0, 1
-  addi t1, x0, 2
-  addi t2, x0, 3
+  addi x6, x0, 2
+  addi x7, x0, 3
   loopi 2, 14
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -1174,22 +1141,22 @@ seca2bmodq:
     bn.xor w2, w2, w2
     bn.xor w3, w3, w3
     /* Computation. */
-    bn.lid x0, 0(a0)
-    bn.lid x4, 0(a2)
-    bn.lid t1, 0(a7)
+    bn.lid x0, 0(x10)
+    bn.lid x4, 0(x12)
+    bn.lid x6, 0(x17)
     bn.xor w3, w0, w1
     bn.xor w3, w3, w2
-    bn.sid t2, 0(a5)
+    bn.sid x7, 0(x15)
     /* Adjust addresses. */
-    add    a0, a0, a1
-    add    a2, a2, a3
-    add    a7, a7, t4
-    add    a5, a5, a6
+    add    x10, x10, x11
+    add    x12, x12, x13
+    add    x17, x17, x29
+    add    x15, x15, x16
   endloop
 
-  /* Restore s2 and frame. */
-  lw   s2, 1728(sp)
-  addi sp, sp, 1760
+  /* Restore x18 and frame. */
+  lw   x18, 1728(x2)
+  addi x2, x2, 1760
   ret
 
 /*
@@ -1216,24 +1183,24 @@ seca2bmodq:
 .globl seconebitb2amodq
 .type seconebitb2amodq, @function
 seconebitb2amodq:
-  /* Frame: v[0..1] at sp+0 (1024 B), saved s0/s2 above. */
-  addi sp, sp, -1056
-  sw   s0, 1024(sp)
-  sw   s2, 1028(sp)
-  addi s0, a0, 0 /* ptr_x */
-  addi s2, a2, 0 /* ptr_r */
+  /* Frame: v[0..1] at x2+0 (1024 B), saved x8/x18 above. */
+  addi x2, x2, -1056
+  sw   x8, 1024(x2)
+  sw   x18, 1028(x2)
+  addi x8, x10, 0 /* ptr_x */
+  addi x18, x12, 0 /* ptr_r */
 
   /* Copy x[0] to v[0]. */
-  addi t0, sp, 0 /* ptr_v */
-  add  t1, a0, x0 /* ptr_x[0] */
+  addi x5, x2, 0 /* ptr_v */
+  add  x6, x10, x0 /* ptr_x[0] */
   loopi 16, 2
-    bn.lid x0, 0(t1++)
-    bn.sid x0, 0(t0++)
+    bn.lid x0, 0(x6++)
+    bn.sid x0, 0(x5++)
   endloop
   /* Zeroize v[1]. */
   bn.xor w0, w0, w0
   loopi 16, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
   /* Construct the vector of 1s. */
@@ -1241,55 +1208,55 @@ seconebitb2amodq:
   bn.shv.16h w30, w30 >> 15
 
   /* Refresh v in place. */
-  addi a0, sp, 0 /* ptr_v */
-  addi a2, a0, 0 /* in-place */
+  addi x10, x2, 0 /* ptr_v */
+  addi x12, x10, 0 /* in-place */
   jal  x1, refreshmodq
 
   /* To avoid use modular multiplication, we compute (1 - 2*x[1]) * v[j]
    * as follows:
-   *  - t0 = x[1] - 1
-   *  - We have t0 = 0xFFFF if x[1] = 0 and t0 = 0 if x[1] = 1.
-   *  - t1 = v[j] & t0
-   *  - t1 <<= 1
-   *  - r = bn.subvm(t1, v[j]) with MOD = Q. This works because if x[1] = 0,
-   *    then t1 = 2*v[j] and r = 2*v[j] - v[j] = v[j]. Otherwise,
-   *    t1 = (0 - v[j]) mod Q.
+   *  - x5 = x[1] - 1
+   *  - We have x5 = 0xFFFF if x[1] = 0 and x5 = 0 if x[1] = 1.
+   *  - x6 = v[j] & x5
+   *  - x6 <<= 1
+   *  - r = bn.subvm(x6, v[j]) with MOD = Q. This works because if x[1] = 0,
+   *    then x6 = 2*v[j] and r = 2*v[j] - v[j] = v[j]. Otherwise,
+   *    x6 = (0 - v[j]) mod Q.
    * For v[0], we continue with v[0] = (v[0] + x[1]) mod Q before
    * saving the result to memory.
    */
-  addi t0, s0, 512 /* ptr_x[1] */
-  addi t1, sp, 0 /* ptr_v */
+  addi x5, x8, 512 /* ptr_x[1] */
+  addi x6, x2, 0 /* ptr_v */
   addi x4, x0, 1
   loopi 16, 16
-    bn.lid         x0, 0(t0++) /* x[1] */
+    bn.lid         x0, 0(x5++) /* x[1] */
     bn.subv.16h    w2, w0, w30
-    addi           t2, t1, 0
+    addi           x7, x6, 0
     /* v[0]: also add x[1] before storing. */
-    bn.lid       x4, 0(t1) /* v[0] */
+    bn.lid       x4, 0(x6) /* v[0] */
     bn.and       w3, w1, w2
     bn.shv.16h   w3, w3 << 1
     bn.subvm.16h w1, w3, w1
     bn.addvm.16h w1, w0, w1
-    bn.sid       x4, 0(t1)
-    addi         t1, t1, 512 /* Point to v[1]. */
+    bn.sid       x4, 0(x6)
+    addi         x6, x6, 512 /* Point to v[1]. */
     /* v[1]. */
-    bn.lid       x4, 0(t1) /* v[1] */
+    bn.lid       x4, 0(x6) /* v[1] */
     bn.and       w3, w1, w2
     bn.shv.16h   w3, w3 << 1
     bn.subvm.16h w1, w3, w1
-    bn.sid       x4, 0(t1)
-    addi t1, t2, 32
+    bn.sid       x4, 0(x6)
+    addi x6, x7, 32
   endloop
 
   /* Final refresh: r = refreshmodq(v). */
-  addi a0, sp, 0 /* ptr_v */
-  addi a2, s2, 0 /* ptr_r */
+  addi x10, x2, 0 /* ptr_v */
+  addi x12, x18, 0 /* ptr_r */
   jal  x1, refreshmodq
 
   /* Restore registers and frame. */
-  lw   s0, 1024(sp)
-  lw   s2, 1028(sp)
-  addi sp, sp, 1056
+  lw   x8, 1024(x2)
+  lw   x18, 1028(x2)
+  addi x2, x2, 1056
   ret
 
 /*
@@ -1318,53 +1285,53 @@ seconebitb2amodq:
 .type secb2amodq, @function
 secb2amodq:
   /* Frame (2656 B, 2 shares):
-   *   sp +    0 : saved s0, s2, s3, s4, s5
-   *   sp +   32 : ptr_zp / scratch (1024 B)
-   *   sp + 1056 : ptr_s            ( 832 B)
-   *   sp + 1888 : ptr_a, ptr_b, ptr_c (bitsliced, 768 B) */
-  addi sp, sp, -2048
-  addi sp, sp, -608
-  sw s0, 0(sp)
-  sw s2, 4(sp)
-  sw s3, 8(sp)
-  sw s4, 12(sp)
-  sw s5, 16(sp)
+   *   x2 +    0 : saved x8, x18, x19, x20, x21
+   *   x2 +   32 : ptr_zp / scratch (1024 B)
+   *   x2 + 1056 : ptr_s            ( 832 B)
+   *   x2 + 1888 : ptr_a, ptr_b, ptr_c (bitsliced, 768 B) */
+  addi x2, x2, -2048
+  addi x2, x2, -608
+  sw x8, 0(x2)
+  sw x18, 4(x2)
+  sw x19, 8(x2)
+  sw x20, 12(x2)
+  sw x21, 16(x2)
 
   /* Save input/output addresses and buffer bases. */
-  addi s0, a0, 0 /* ptr_x */
-  addi s2, a2, 0 /* ptr_r */
-  addi s3, sp, 1888 /* ptr_a, ptr_b, ptr_c (bitsliced) */
-  addi s4, sp, 1056 /* ptr_s */
-  /* ptr_zp = sp + 32 */
+  addi x8, x10, 0 /* ptr_x */
+  addi x18, x12, 0 /* ptr_r */
+  addi x19, x2, 1888 /* ptr_a, ptr_b, ptr_c (bitsliced) */
+  addi x20, x2, 1056 /* ptr_s */
+  /* ptr_zp = x2 + 32 */
 
   /* Sample rand, then compute zp = q - rand. */
   addi    x4, x0, 30
-  la      t0, modulus_bn
-  bn.lid  x4, 0(t0)
-  addi    a0, a2, 0 /* ptr_r */
-  addi    t2, sp, 32 /* ptr_zp */
+  la      x5, modulus_bn
+  bn.lid  x4, 0(x5)
+  addi    x10, x12, 0 /* ptr_r */
+  addi    x7, x2, 32 /* ptr_zp */
   bn.wsrr w16, mod
   jal x1, poly_rej_samp
   loopi 16, 3
-    bn.lid      x0, 0(a2++)
+    bn.lid      x0, 0(x12++)
     bn.subv.16h w0, w30, w0 /* Since inputs are < q, we need to only use bn.subv. */
-    bn.sid      x0, 0(t2++)
+    bn.sid      x0, 0(x7++)
   endloop
 
   /* Bitslice share 0 of zp; the last share (bitsliced) is cleared below. */
-  addi a0, sp, 32 /* ptr_zp */
-  addi a1, s3, 0 /* ptr_zp (bitsliced) */
+  addi x10, x2, 32 /* ptr_zp */
+  addi x11, x19, 0 /* ptr_zp (bitsliced) */
   jal  x1, poly_to_bitsliced
-  addi a1, a1, 384
+  addi x11, x11, 384
   /* Clear the last share of zp (bitsliced). */
   bn.xor w0, w0, w0
   loopi 12, 1
-    bn.sid x0, 0(a1++)
+    bn.sid x0, 0(x11++)
   endloop
 
   /* Compute a = seca2bmodq(zp). */
-  addi a0, s3, 0 /* ptr_zp (bitsliced) */
-  addi a2, s3, 0 /* ptr_a */
+  addi x10, x19, 0 /* ptr_zp (bitsliced) */
+  addi x12, x19, 0 /* ptr_a */
   jal  x1, seca2bmodq
 
   /* Compute b = secaddmodq(a, x). */
@@ -1372,176 +1339,176 @@ secb2amodq:
   /* Compute s = secadd(a, x, k + 1). */
   /* Initialize c = 0. */
   bn.xor w0, w0, w0
-  addi   t0, s4, 384 /* ptr_c */
+  addi   x5, x20, 384 /* ptr_c */
   loopi 2, 2
-    bn.sid x0, 0(t0)
-    addi   t0, t0, 416
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 416
   endloop
 
   /* Ripple-carry adder. */
-  addi a0, s3, 0 /* ptr_a */
-  addi a1, x0, 384
-  addi a2, s0, 0 /* ptr_x */
-  addi a3, x0, 384
-  addi a5, s4, 0 /* ptr_s */
-  addi a6, x0, 416
-  addi a7, s4, 384 /* ptr_c = cin */
-  addi t4, x0, 416
-  addi t5, s4, 384 /* ptr_c = cout */
-  addi t6, x0, 416
+  addi x10, x19, 0 /* ptr_a */
+  addi x11, x0, 384
+  addi x12, x8, 0 /* ptr_x */
+  addi x13, x0, 384
+  addi x15, x20, 0 /* ptr_s */
+  addi x16, x0, 416
+  addi x17, x20, 384 /* ptr_c = cin */
+  addi x29, x0, 416
+  addi x30, x20, 384 /* ptr_c = cout */
+  addi x31, x0, 416
   /* Loop over i=1,...,k-1. */
   loopi 12, 2
-    /* a0 already points to x[i] */
-    /* a1 is already share stride of x. */
-    /* a2 already points to y[i] */
-    /* a3 is already share stride of y. */
-    /* a5 already points to r. */
-    /* a6 is already share stride of r. */
-    /* a7 already points to ptr_c = cin. */
-    /* t4 is already share stride of cin. */
-    /* t5 already points to ptr_c = cout. */
-    /* t6 is already share stride of cout. */
+    /* x10 already points to x[i] */
+    /* x11 is already share stride of x. */
+    /* x12 already points to y[i] */
+    /* x13 is already share stride of y. */
+    /* x15 already points to r. */
+    /* x16 is already share stride of r. */
+    /* x17 already points to ptr_c = cin. */
+    /* x29 is already share stride of cin. */
+    /* x30 already points to ptr_c = cout. */
+    /* x31 is already share stride of cout. */
     jal  x1, secfulladder
     /* After secfulladder:
-     *  - a0 and a2 points to x[i + 1] and y[i + 1].
-     *  - a1 and a3 are still share stride of x and y.
-     *  - a5 points to r[i + 1].
-     *  - a6 is still share stride of r.
-     *  - a7 points to cin.
-     *  - t4 is still share stride of cin.
-     *  - t5 points to cout.
-     *  - t6 is still share stride of cout. */
+     *  - x10 and x12 points to x[i + 1] and y[i + 1].
+     *  - x11 and x13 are still share stride of x and y.
+     *  - x15 points to r[i + 1].
+     *  - x16 is still share stride of r.
+     *  - x17 points to cin.
+     *  - x29 is still share stride of cin.
+     *  - x30 points to cout.
+     *  - x31 is still share stride of cout. */
     nop
   endloop
   /* Bit i = k + 1 is already x[k + 1] ^ y[k + 1] ^ c = cout since x[k + 1] = y[k + 1] = 0. */
 
   /* Compute s = secadd(s, p, k + 1) where p = 2**(k + 1) - q = 4863 = b1001011111111. */
   /* Initialize c = 0. */
-  addi   t0, sp, 32 /* ptr_c */
+  addi   x5, x2, 32 /* ptr_c */
   bn.xor w0, w0, w0
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
-  addi s5, t0, 0 /* ptr_p */
+  addi x21, x5, 0 /* ptr_p */
 
-  addi    t0, s5, 0 /* ptr_p */
+  addi    x5, x21, 0 /* ptr_p */
   bn.subi w1, w0, 1
   addi    x4, x0, 1
-  bn.sid  x4, 0(t0++)
-  bn.sid  x0, 0(t0++)
+  bn.sid  x4, 0(x5++)
+  bn.sid  x0, 0(x5++)
 
-  addi a0, s5, 0 /* ptr_p */
-  addi a1, x0, 32
-  addi a2, s4, 0 /* ptr_s */
-  addi a3, x0, 416
-  addi a5, s4, 0 /* ptr_s */
-  addi a6, x0, 416
-  addi a7, sp, 32 /* cin */
-  addi t4, x0, 32
-  addi t5, sp, 32 /* cout */
-  addi t6, x0, 32
+  addi x10, x21, 0 /* ptr_p */
+  addi x11, x0, 32
+  addi x12, x20, 0 /* ptr_s */
+  addi x13, x0, 416
+  addi x15, x20, 0 /* ptr_s */
+  addi x16, x0, 416
+  addi x17, x2, 32 /* cin */
+  addi x29, x0, 32
+  addi x30, x2, 32 /* cout */
+  addi x31, x0, 32
   /* Bit 0 -- 7: p = 1. */
   loopi 8, 2
     jal  x1, secfulladder
-    addi a0, a0, -32 /* Reset a0 to ptr_p. */
+    addi x10, x10, -32 /* Reset x10 to ptr_p. */
   endloop
 
   /* Bit 8: p = 0. */
   bn.xor w0, w0, w0
-  bn.sid x0, 0(a0)
-  addi   a0, s5, 0
+  bn.sid x0, 0(x10)
+  addi   x10, x21, 0
   jal    x1, secfulladder
   /* Bit 9: p = 1. */
   bn.xor  w0, w0, w0
   bn.subi w0, w0, 1
-  addi    a0, s5, 0
-  bn.sid  x0, 0(a0)
+  addi    x10, x21, 0
+  bn.sid  x0, 0(x10)
   jal     x1, secfulladder
   /* Bit 10 -- 11: p = 0. */
   bn.xor w0, w0, w0
-  addi   a0, s5, 0
-  bn.sid x0, 0(a0)
+  addi   x10, x21, 0
+  bn.sid x0, 0(x10)
   jal    x1, secfulladder
-  addi   a0, s5, 0
+  addi   x10, x21, 0
   jal    x1, secfulladder
 
   /* Bit 12: p = 1. */
   /* Compute r[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
   addi x4, x0, 1
-  addi t1, x0, 2
+  addi x6, x0, 2
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
   bn.xor w2, w2, w2
   bn.xor w3, w3, w3
   /* Computation. */
-  bn.lid x0, 0(a2)
-  bn.lid x4, 0(a7)
+  bn.lid x0, 0(x12)
+  bn.lid x4, 0(x17)
   bn.xor w3, w0, w1
   bn.not w2, w3
-  bn.sid t1, 0(a2)
-  add    a2, a2, a3
-  add    a7, a7, t4
+  bn.sid x6, 0(x12)
+  add    x12, x12, x13
+  add    x17, x17, x29
 
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
   bn.xor w2, w2, w2
   /* Computation. */
-  bn.lid x0, 0(a2)
-  bn.lid x4, 0(a7)
+  bn.lid x0, 0(x12)
+  bn.lid x4, 0(x17)
   bn.xor w2, w0, w1
-  bn.sid t1, 0(a2)
+  bn.sid x6, 0(x12)
 
   /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
-  addi a0, s4, 384 /* ptr_s[k] */
-  addi a1, x0, 416 /* share_str = (k + 1) * 32 */
-  addi a3, s3, 0 /* ptr_a */
+  addi x10, x20, 384 /* ptr_s[k] */
+  addi x11, x0, 416 /* share_str = (k + 1) * 32 */
+  addi x13, x19, 0 /* ptr_a */
   jal  x1, bitcopymask
 
   /* Compute r = secadd(a, s, k). */
-  addi a0, s3, 0 /* ptr_a */
-  addi a1, x0, 384
-  addi a2, s4, 0 /* ptr_s */
-  addi a3, x0, 416
-  addi a5, s3, 0 /* ptr_b */
-  addi a6, x0, 384
-  addi a7, x0, 12 /* k */
+  addi x10, x19, 0 /* ptr_a */
+  addi x11, x0, 384
+  addi x12, x20, 0 /* ptr_s */
+  addi x13, x0, 416
+  addi x15, x19, 0 /* ptr_b */
+  addi x16, x0, 384
+  addi x17, x0, 12 /* k */
   jal  x1, secadd
   /* End inlining secaddmodq. */
 
   /* Compute c = refreshios(b, k, k * 32). */
-  addi a0, s3, 0 /* ptr_b */
-  addi a1, x0, 12 /* k */
-  addi a2, x0, 384 /* k * 32 */
-  addi a4, s3, 0 /* ptr_c */
+  addi x10, x19, 0 /* ptr_b */
+  addi x11, x0, 12 /* k */
+  addi x12, x0, 384 /* k * 32 */
+  addi x14, x19, 0 /* ptr_c */
   jal  x1, refreshios
 
   /* Unmask c. */
-  addi t0, s3, 0 /* ptr_c */
+  addi x5, x19, 0 /* ptr_c */
   addi x4, x0, 1
   loopi 12, 5
-    addi   t1, t0, 384
-    bn.lid x0, 0(t0)
-    bn.lid x4, 0(t1)
+    addi   x6, x5, 384
+    bn.lid x0, 0(x5)
+    bn.lid x4, 0(x6)
     bn.xor w0, w0, w1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
   /* Convert c from bitsliced to normal representation, into share 1. */
-  addi a0, s3, 0 /* ptr_c */
-  addi a1, s2, 0 /* ptr_r */
-  addi a1, a1, 512 /* r[1] */
+  addi x10, x19, 0 /* ptr_c */
+  addi x11, x18, 0 /* ptr_r */
+  addi x11, x11, 512 /* r[1] */
   jal x1, poly_from_bitsliced
 
   /* Restore registers. */
-  lw s0, 0(sp)
-  lw s2, 4(sp)
-  lw s3, 8(sp)
-  lw s4, 12(sp)
-  lw s5, 16(sp)
-  addi sp, sp, 2047
-  addi sp, sp, 609
+  lw x8, 0(x2)
+  lw x18, 4(x2)
+  lw x19, 8(x2)
+  lw x20, 12(x2)
+  lw x21, 16(x2)
+  addi x2, x2, 2047
+  addi x2, x2, 609
   ret
 
 /*
@@ -1576,20 +1543,20 @@ secb2amodq:
 .type poly_hocompress, @function
 poly_hocompress:
   /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-  addi sp, sp, -1024
-  add  t2, sp, x0
-  addi sp, sp, -1184
-  sw   s1, 1152(sp)
-  sw   s2, 1156(sp)
-  sw   s3, 1160(sp)
-  addi s1, a2, 0
+  addi x2, x2, -1024
+  add  x7, x2, x0
+  addi x2, x2, -1184
+  sw   x9, 1152(x2)
+  sw   x18, 1156(x2)
+  sw   x19, 1160(x2)
+  addi x9, x12, 0
 
   /* Load all constants. */
   addi      x4, x0, 17
-  la        t0, const_m_dv
-  bn.lid    x4++, 0(t0)
-  la        t0, modulus_over_2
-  bn.lid    x4++, 0(t0)
+  la        x5, const_m_dv
+  bn.lid    x4++, 0(x5)
+  la        x5, modulus_over_2
+  bn.lid    x4++, 0(x5)
   bn.shv.8s w18, w18 >> 16
 
   /* Create 1-bit mask and 2**(alpha - 1). */
@@ -1597,19 +1564,19 @@ poly_hocompress:
   bn.shv.8s w19, w19 >> 31
   bn.shv.8s w19, w19 << 12  /* alpha - 1 */
 
-  /* Select alpha-dependent parameters: w3 = 2**(alpha - 1), s2 = the
-   * extraction byte offset alpha * 32, s3 = dv. */
+  /* Select alpha-dependent parameters: w3 = 2**(alpha - 1), x18 = the
+   * extraction byte offset alpha * 32, x19 = dv. */
   addi      x4, x0, 4
-  addi      s2, x0, 416  /* alpha * 32, alpha = 13 */
-  addi      s3, x0, 5
-  beq       a3, x4, _dv_params_done
+  addi      x18, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x19, x0, 5
+  beq       x13, x4, _dv_params_done
   bn.shv.8s w19, w19 << 1
-  addi      s2, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-  addi      s3, x0, 4
+  addi      x18, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x19, x0, 4
 _dv_params_done:
 
-  addi t1, sp, 0 /* ptr_z */
-  addi t3, t1, 512 /* Skip the first 16 bits. */
+  addi x6, x2, 0 /* ptr_z */
+  addi x28, x6, 512 /* Skip the first 16 bits. */
 
   /* For DV in {4,5}, in order to avoid division by Q, we need to compute:
    *  - x << (DV + ALPHA) --> x is maximum 20 bits.
@@ -1664,7 +1631,7 @@ _dv_params_done:
 
     addi x4, x0, 15
     loopi 16, 18  /* 16 WDRs hold the 256 coeffs */
-      bn.lid             x0, 0(a0++)
+      bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
       bn.trn1.16h        w20, w0, w31
       bn.shv.8s          w20, w20 << 18
@@ -1681,7 +1648,7 @@ _dv_params_done:
       bn.add             w20, w19, w20 >> 8
       /* Combine the results before bitslicing. */
       bn.trn2.16h        w0, w21, w20
-      bn.sid             x0, 0(t2++)
+      bn.sid             x0, 0(x7++)
       bn.trn1.16h        w0, w21, w20
       bn.movr            x4, x0
       addi               x4, x4, -1
@@ -1696,16 +1663,16 @@ _dv_params_done:
 
     add x4, x0, x0
     loopi 16, 2
-      bn.sid x4, 0(t1++)
+      bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi t1, t1, 64 /* Skip the last 2 bits. */
+    addi x6, x6, 64 /* Skip the last 2 bits. */
 
     /* Bitslice the last 2 bits. */
     addi x4, x0, 15
-    addi t2, t2, -512
+    addi x7, x7, -512
     loopi 16, 2
-      bn.lid x4, 0(t2++)
+      bn.lid x4, 0(x7++)
       addi   x4, x4, -1
     endloop
 
@@ -1713,40 +1680,40 @@ _dv_params_done:
 
     add x4, x0, x0
     loopi 2, 2
-      bn.sid x4, 0(t3++)
+      bn.sid x4, 0(x28++)
       addi   x4, x4, 1
     endloop
-    addi t3, t3, 512 /* Skip the first 16 bits. */
+    addi x28, x28, 512 /* Skip the first 16 bits. */
   endloop
 
   /* Compute c = seca2b(z), k = dv + alpha, share bytes = 576. */
-  addi a0, sp, 0 /* ptr_z */
-  addi a1, x0, 18 /* dv + alpha */
-  addi a2, x0, 576
-  addi a4, sp, 0 /* ptr_c */
+  addi x10, x2, 0 /* ptr_z */
+  addi x11, x0, 18 /* dv + alpha */
+  addi x12, x0, 576
+  addi x14, x2, 0 /* ptr_c */
   jal  x1, seca2b
 
   /* Compute r = c >> alpha: keep the bits c[alpha]...c[alpha + dv]. */
-  addi t0, sp, 0 /* ptr_c */
-  add  t0, t0, s2
-  addi t1, s1, 0 /* ptr_r */
+  addi x5, x2, 0 /* ptr_c */
+  add  x5, x5, x18
+  addi x6, x9, 0 /* ptr_r */
   loopi 2, 5
-    loop s3, 3
+    loop x19, 3
       /* Whitening. */
       bn.xor w0, w0, w0
-      bn.lid x0, 0(t0++)
-      bn.sid x0, 0(t1++)
+      bn.lid x0, 0(x5++)
+      bn.sid x0, 0(x6++)
     endloop
     /* After copy DV bits of z to r, we need to adjust address of z again. */
-    add t0, t0, s2
+    add x5, x5, x18
   endloop
 
   /* Restore registers. */
-  lw   s1, 1152(sp)
-  lw   s2, 1156(sp)
-  lw   s3, 1160(sp)
-  addi sp, sp, 1184
-  addi sp, sp, 1024
+  lw   x9, 1152(x2)
+  lw   x18, 1156(x2)
+  lw   x19, 1160(x2)
+  addi x2, x2, 1184
+  addi x2, x2, 1024
   ret
 
 /*
@@ -1779,43 +1746,43 @@ _dv_params_done:
 .type polyvec_hocompress, @function
 polyvec_hocompress:
   /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-  addi sp, sp, -1024
-  add  t2, sp, x0
-  addi sp, sp, -1568
-  sw   s1, 1536(sp)
-  sw   s2, 1540(sp)
-  sw   s3, 1544(sp)
-  addi s1, a2, 0
+  addi x2, x2, -1024
+  add  x7, x2, x0
+  addi x2, x2, -1568
+  sw   x9, 1536(x2)
+  sw   x18, 1540(x2)
+  sw   x19, 1544(x2)
+  addi x9, x12, 0
 
   /* Create 2**(alpha - 1). */
   bn.subi   w30, w31, 1
   bn.shv.8s w30, w30 >> 31
   bn.shv.8s w30, w30 << 12  /* alpha - 1 */
 
-  /* Select alpha-dependent parameters: s2 = the extraction byte offset
-   * alpha * 32, s3 = du. The in-loop computation of 2**(alpha - 1)
-   * branches on a3 (k) directly. */
+  /* Select alpha-dependent parameters: x18 = the extraction byte offset
+   * alpha * 32, x19 = du. The in-loop computation of 2**(alpha - 1)
+   * branches on x13 (k) directly. */
   addi      x4, x0, 4
-  addi      s2, x0, 416  /* alpha * 32, alpha = 13 */
-  addi      s3, x0, 11
-  beq       a3, x4, _du_params_done
+  addi      x18, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x19, x0, 11
+  beq       x13, x4, _du_params_done
   bn.shv.8s w30, w30 << 1
-  addi      s2, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-  addi      s3, x0, 10
+  addi      x18, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x19, x0, 10
 _du_params_done:
 
   /* Load all constants. */
   addi       x4, x0, 17
-  la         t0, const_m_du
-  bn.lid     x4++, 0(t0)
+  la         x5, const_m_du
+  bn.lid     x4++, 0(x5)
 
-  la         t0, const_1664
-  bn.lid     x4, 0(t0)
+  la         x5, const_1664
+  bn.lid     x4, 0(x5)
 
   /* Adjust space for temporary variable y. */
-  addi t0, x0, 21
-  addi t1, sp, 0 /* ptr_z */
-  addi t3, t1, 512 /* Skip the first 16 bits. */
+  addi x5, x0, 21
+  addi x6, x2, 0 /* ptr_z */
+  addi x28, x6, 512 /* Skip the first 16 bits. */
 
   loopi 2, 85
     /* Whitening. */
@@ -1843,7 +1810,7 @@ _du_params_done:
 
     addi x4, x0, 15
     loopi 16, 44  /* 16 WDRs hold the 256 coeffs */
-      bn.lid           x0, 0(a0++)
+      bn.lid           x0, 0(x10++)
       /* Handle even-positioned coeffs. */
       bn.trn1.16h      w19, w0, w31
       /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
@@ -1897,10 +1864,10 @@ _du_params_done:
       bn.addv.8s      w20, w20, w30
       /* Combine the results before bitslicing. */
       bn.trn1.16h     w21, w19, w20
-      bn.movr         x4, t0
+      bn.movr         x4, x5
       addi            x4, x4, -1
       bn.trn2.16h     w21, w19, w20
-      bn.sid          t0, 0(t2++)
+      bn.sid          x5, 0(x7++)
     endloop
 
     /* Clear w30. */
@@ -1911,16 +1878,16 @@ _du_params_done:
 
     add x4, x0, x0
     loopi 16, 2
-      bn.sid x4, 0(t1++)
+      bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi t1, t1, 256 /* Skip the last 8 bits. */
+    addi x6, x6, 256 /* Skip the last 8 bits. */
 
     /* Bitslice the last 8 bits. */
     addi x4, x0, 15
-    addi t2, t2, -512
+    addi x7, x7, -512
     loopi 16, 2
-      bn.lid x4, 0(t2++)
+      bn.lid x4, 0(x7++)
       addi   x4, x4, -1
     endloop
 
@@ -1928,40 +1895,40 @@ _du_params_done:
 
     add x4, x0, x0
     loopi 8, 2
-      bn.sid x4, 0(t3++)
+      bn.sid x4, 0(x28++)
       addi   x4, x4, 1
     endloop
-    addi t3, t3, 512 /* Skip the first 16 bits. */
+    addi x28, x28, 512 /* Skip the first 16 bits. */
   endloop
 
   /* Compute c = seca2b(z), k = du + alpha, share bytes = 768. */
-  addi a0, sp, 0 /* ptr_z */
-  addi a1, x0, 24 /* du + alpha */
-  addi a2, x0, 768
-  addi a4, sp, 0 /* ptr_c */
+  addi x10, x2, 0 /* ptr_z */
+  addi x11, x0, 24 /* du + alpha */
+  addi x12, x0, 768
+  addi x14, x2, 0 /* ptr_c */
   jal  x1, seca2b
 
   /* Compute r = c >> alpha: keep the bits c[alpha]...c[alpha + du]. */
-  addi t0, sp, 0 /* ptr_c */
-  add  t0, t0, s2
-  addi t1, s1, 0 /* ptr_r */
+  addi x5, x2, 0 /* ptr_c */
+  add  x5, x5, x18
+  addi x6, x9, 0 /* ptr_r */
   loopi 2, 5
-    loop s3, 3
+    loop x19, 3
       /* Whitening. */
       bn.xor w0, w0, w0
-      bn.lid x0, 0(t0++)
-      bn.sid x0, 0(t1++)
+      bn.lid x0, 0(x5++)
+      bn.sid x0, 0(x6++)
     endloop
     /* After copy DV bits of z to r, we need to adjust address of z again. */
-    add t0, t0, s2
+    add x5, x5, x18
   endloop
 
   /* Restore registers. */
-  lw   s1, 1536(sp)
-  lw   s2, 1540(sp)
-  lw   s3, 1544(sp)
-  addi sp, sp, 1568
-  addi sp, sp, 1024
+  lw   x9, 1536(x2)
+  lw   x18, 1540(x2)
+  lw   x19, 1544(x2)
+  addi x2, x2, 1568
+  addi x2, x2, 1024
   ret
 
 /*
@@ -1989,50 +1956,50 @@ _du_params_done:
 .type onebitdecompress, @function
 onebitdecompress:
   /* Save the output base pointer; reused as scratch across the call. */
-  addi sp, sp, -32
-  sw   s0, 0(sp)
-  addi s0, a2, 0
+  addi x2, x2, -32
+  sw   x8, 0(x2)
+  addi x8, x12, 0
 
   /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
   addi x4, x0, 1
   loopi 2, 7
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(a0++)
+    bn.lid x0, 0(x10++)
     loopi 16, 3
       bn.shv.16h w1, w0 >> 15
       bn.shv.16h w0, w0 << 1
-      bn.sid     x4, 0(a2++)
+      bn.sid     x4, 0(x12++)
     endloop
     nop
   endloop
 
   /* mp = seconebitb2amodq(m), with w16 = R | Q. */
-  addi a0, s0, 0 /* ptr_m */
-  addi a2, s0, 0 /* ptr_r */
+  addi x10, x8, 0 /* ptr_m */
+  addi x12, x8, 0 /* ptr_r */
   jal  x1, seconebitb2amodq
 
   /* mp *= (q + 1) / 2 mod q, coefficient-wise (Montgomery). */
-  la      t0, modulus_over_2_m2_16 /* ((Q + 1) / 2) * (2^16) % Q. */
+  la      x5, modulus_over_2_m2_16 /* ((Q + 1) / 2) * (2^16) % Q. */
   addi    x4, x0, 1
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   loopi 2, 9
     /* Whitening. */
     bn.xor w0, w0, w0
     loopi 16, 6
-      bn.lid               x0, 0(s0)
+      bn.lid               x0, 0(x8)
       bn.mulv.16h.acc.z.lo w0, w0, w1
       bn.mulv.l.16h.lo     w0, w0, sw0.2
       bn.mulv.l.16h.acc.hi w0, w0, sw0.0
       bn.addvm.16h         w0, w0, w31
-      bn.sid               x0, 0(s0++)
+      bn.sid               x0, 0(x8++)
     endloop
     nop
   endloop
 
   /* Restore the output base pointer and stack. */
-  lw   s0, 0(sp)
-  addi sp, sp, 32
+  lw   x8, 0(x2)
+  addi x2, x2, 32
   ret
 
 /*
@@ -2061,54 +2028,54 @@ onebitdecompress:
 masked_cbd:
   /* Frame: tmp at 0 (768 B), sum at 768 (64 B), s at 832 (384 B, sized for
    * the worst case eta = 3), saved registers at 1216. */
-  addi sp, sp, -1248
-  sw s0, 1216(sp)
-  sw s1, 1220(sp)
-  sw s2, 1224(sp)
-  sw s4, 1228(sp)
-  sw s5, 1232(sp)
-  sw s6, 1236(sp)
+  addi x2, x2, -1248
+  sw x8, 1216(x2)
+  sw x9, 1220(x2)
+  sw x18, 1224(x2)
+  sw x20, 1228(x2)
+  sw x21, 1232(x2)
+  sw x22, 1236(x2)
 
   /* Save input/output addresses and set the scratch pointers. */
-  addi s0, a0, 0
-  addi s1, a1, 0
-  addi s2, a2, 0
-  addi s4, a4, 0
-  addi s5, sp, 832 /* ptr_s */
-  addi s6, sp, 768 /* ptr_sum */
+  addi x8, x10, 0
+  addi x9, x11, 0
+  addi x18, x12, 0
+  addi x20, x14, 0
+  addi x21, x2, 832 /* ptr_s */
+  addi x22, x2, 768 /* ptr_sum */
 
   /* Copy x to s[1,..,eta] and ~y to s[eta + 1,..,2 * eta]. */
-  addi t0, s5, 0 /* ptr_s */
-  slli x4, a2, 5 /* eta * 32 */
-  add  t1, s5, x4 /* ptr_s[eta + 1] */
+  addi x5, x21, 0 /* ptr_s */
+  slli x4, x12, 5 /* eta * 32 */
+  add  x6, x21, x4 /* ptr_s[eta + 1] */
   /* Share 0: copy x[0] and ~y[0]. */
-  loop a2, 7
+  loop x12, 7
     /* Whitening. */
     bn.xor w0, w0, w0
     /* Copy x[0]. */
-    bn.lid x0, 0(a0++)
-    bn.sid x0, 0(t0++)
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
     /* Whitening. */
     bn.xor w0, w0, w0
     /* Copy ~y[0]. */
-    bn.lid x0, 0(a1++)
+    bn.lid x0, 0(x11++)
     bn.not w0, w0
-    bn.sid x0, 0(t1++)
+    bn.sid x0, 0(x6++)
   endloop
-  add t0, t0, x4
-  add t1, t1, x4
+  add x5, x5, x4
+  add x6, x6, x4
   /* Share 1: copy x[1] and y[1]. */
-  loop a2, 6
+  loop x12, 6
     /* Whitening. */
     bn.xor w0, w0, w0
     /* Copy x[1]. */
-    bn.lid x0, 0(a0++)
-    bn.sid x0, 0(t0++)
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
     /* Whitening. */
     bn.xor w0, w0, w0
     /* Copy y[1]. */
-    bn.lid x0, 0(a1++)
-    bn.sid x0, 0(t1++)
+    bn.lid x0, 0(x11++)
+    bn.sid x0, 0(x6++)
   endloop
 
   /* We need to loop over i = 1,...,k where k = ceil(log2(l + 1)) = 3 for both
@@ -2118,189 +2085,189 @@ masked_cbd:
    * is not executed at all. */
   /*----------------------- Iteration i = 1, l = 2 * eta -----------------------*/
   /* Since l mod 2 = 0, we clear the carry sum. */
-  addi   t0, s6, 0 /* ptr_sum */
+  addi   x5, x22, 0 /* ptr_sum */
   bn.xor w0, w0, w0
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
   /* l >>= 1: loop j = 1,..., l = 1,...,eta. */
   /* Inputs to secfulladder. */
-  slli t0, a2, 6 /* (2 * eta) * 32 */
-  addi a0, s5, 0 /* s[0] */
-  addi a1, t0, 0
-  addi a2, s5, 32 /* s[1] */
-  addi a3, t0, 0
-  addi a5, s6, 0 /* ptr_sum = r */
-  addi a6, x0, 32
-  addi a7, s6, 0 /* ptr_sum = cin */
-  addi t4, x0, 32
-  addi t5, s5, 0 /* s[0] = cout */
-  addi t6, t0, 0
-  loop s2, 5
+  slli x5, x12, 6 /* (2 * eta) * 32 */
+  addi x10, x21, 0 /* s[0] */
+  addi x11, x5, 0
+  addi x12, x21, 32 /* s[1] */
+  addi x13, x5, 0
+  addi x15, x22, 0 /* ptr_sum = r */
+  addi x16, x0, 32
+  addi x17, x22, 0 /* ptr_sum = cin */
+  addi x29, x0, 32
+  addi x30, x21, 0 /* s[0] = cout */
+  addi x31, x5, 0
+  loop x18, 5
     /* Compute c, s[j] = secfulladder(s[2j], s[2j + 1], c). */
-    /* a0 already points to s[2j] */
-    /* a1 is already share stride of s. */
-    /* a2 already points to s[2j + 1] */
-    /* a3 is already share stride of s. */
-    /* a5 already points to sum = r. */
-    /* a6 is already share stride of sum = r. */
-    /* a7 already points to sum = cin. */
-    /* t4 is already share stride of sum = cin. */
-    /* t5 already points to s[j] = cout. */
-    /* t6 is already share stride of s = cout. */
+    /* x10 already points to s[2j] */
+    /* x11 is already share stride of s. */
+    /* x12 already points to s[2j + 1] */
+    /* x13 is already share stride of s. */
+    /* x15 already points to sum = r. */
+    /* x16 is already share stride of sum = r. */
+    /* x17 already points to sum = cin. */
+    /* x29 is already share stride of sum = cin. */
+    /* x30 already points to s[j] = cout. */
+    /* x31 is already share stride of s = cout. */
     jal  x1, secfulladder
     /* After secfulladder:
-    *  - a0 and a2 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
-    *  - a1 and a3 are still share stride of s.
-    *  - a5 points to sum + 32 (output) --> need to be adjusted to sum.
-    *  - a6 is still share stride of sum.
-    *  - a7 points to sum (cin).
-    *  - t4 is still share stride of sum.
-    *  - t5 points to s[j] (cout) --> need to be adjusted to s[j + 1].
-    *  - t6 is still share stride of s. */
+    *  - x10 and x12 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
+    *  - x11 and x13 are still share stride of s.
+    *  - x15 points to sum + 32 (output) --> need to be adjusted to sum.
+    *  - x16 is still share stride of sum.
+    *  - x17 points to sum (cin).
+    *  - x29 is still share stride of sum.
+    *  - x30 points to s[j] (cout) --> need to be adjusted to s[j + 1].
+    *  - x31 is still share stride of s. */
     /* Adjust addresses. */
-    addi a0, a0, 32 /* s[2 * (j + 1)] */
-    addi a2, a2, 32 /* s[2 * (j + 1) + 1] */
-    addi a5, a5, -32 /* sum */
-    addi t5, t5, 32 /* s[j + 1] */
+    addi x10, x10, 32 /* s[2 * (j + 1)] */
+    addi x12, x12, 32 /* s[2 * (j + 1) + 1] */
+    addi x15, x15, -32 /* sum */
+    addi x30, x30, 32 /* s[j + 1] */
   endloop
 
   /* Copy sum to ptr_tmp[1]. */
-  addi t0, sp, 0 /* ptr_tmp[1] */
+  addi x5, x2, 0 /* ptr_tmp[1] */
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(a5++) /* a5 still points to sum. */
-    bn.sid x0, 0(t0)
-    addi   t0, t0, 384
+    bn.lid x0, 0(x15++) /* x15 still points to sum. */
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 384
   endloop
 
   /*----------------------- Iteration i = 2, l = eta -----------------------*/
-  addi t0, x0, 2
-  beq  s2, t0, _cbd_eta_2
+  addi x5, x0, 2
+  beq  x18, x5, _cbd_eta_2
   /* Since l mod 2 = 1 if eta = 3, we compute sum = s[l] = s[3]. */
-  addi t0, s6, 0 /* ptr_sum */
-  addi t1, s5, 0 /* ptr_s */
-  addi t1, t1, 64 /* 2 * 32 */
-  slli x4, s2, 6 /* (2 * eta) * 32 */
+  addi x5, x22, 0 /* ptr_sum */
+  addi x6, x21, 0 /* ptr_s */
+  addi x6, x6, 64 /* 2 * 32 */
+  slli x4, x18, 6 /* (2 * eta) * 32 */
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(t1)
-    bn.sid x0, 0(t0++)
-    add    t1, t1, x4
+    bn.lid x0, 0(x6)
+    bn.sid x0, 0(x5++)
+    add    x6, x6, x4
   endloop
   beq x0, x0, _continue_1
 
 _cbd_eta_2:
   /* Since l mod 2 = 0 if eta = 2, we clear the carry sum. */
-  addi   t0, s6, 0 /* ptr_sum */
+  addi   x5, x22, 0 /* ptr_sum */
   bn.xor w0, w0, w0
   loopi 2, 1
-    bn.sid x0, 0(t0++)
+    bn.sid x0, 0(x5++)
   endloop
 
 _continue_1:
   /* l >> 1: loop j = 1,...,l // 2 --> 1 iteration. */
   /* Inputs to secfulladder. */
-  slli t0, s2, 6
-  addi a0, s5, 0 /* s[0] */
-  addi a1, t0, 0
-  addi a2, s5, 32 /* s[1] */
-  addi a3, t0, 0
-  addi a5, s6, 0 /* ptr_sum = r */
-  addi a6, x0, 32
-  addi a7, s6, 0 /* ptr_sum = cin */
-  addi t4, x0, 32
-  addi t5, s5, 0 /* s[0] = cout */
-  addi t6, t0, 0
+  slli x5, x18, 6
+  addi x10, x21, 0 /* s[0] */
+  addi x11, x5, 0
+  addi x12, x21, 32 /* s[1] */
+  addi x13, x5, 0
+  addi x15, x22, 0 /* ptr_sum = r */
+  addi x16, x0, 32
+  addi x17, x22, 0 /* ptr_sum = cin */
+  addi x29, x0, 32
+  addi x30, x21, 0 /* s[0] = cout */
+  addi x31, x5, 0
   /* Compute c, s[j] = secfulladder(s[2j], s[2j + 1], c). */
-  /* a0 already points to s[2j] */
-  /* a1 is already share stride of s. */
-  /* a2 already points to s[2j + 1] */
-  /* a3 is already share stride of s. */
-  /* a5 already points to sum = r. */
-  /* a6 is already share stride of sum = r. */
-  /* a7 already points to sum = cin. */
-  /* t4 is already share stride of sum = cin. */
-  /* t5 already points to s[j] = cout. */
-  /* t6 is already share stride of s = cout. */
+  /* x10 already points to s[2j] */
+  /* x11 is already share stride of s. */
+  /* x12 already points to s[2j + 1] */
+  /* x13 is already share stride of s. */
+  /* x15 already points to sum = r. */
+  /* x16 is already share stride of sum = r. */
+  /* x17 already points to sum = cin. */
+  /* x29 is already share stride of sum = cin. */
+  /* x30 already points to s[j] = cout. */
+  /* x31 is already share stride of s = cout. */
   jal  x1, secfulladder
   /* After secfulladder:
-  *  - a0 and a2 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
-  *  - a1 and a3 are still share stride of s.
-  *  - a5 points to sum + 32 (output) --> need to be adjusted to sum.
-  *  - a6 is still share stride of sum.
-  *  - a7 points to sum (cin).
-  *  - t4 is still share stride of sum.
-  *  - t5 points to s[j] (cout) --> need to be adjusted to s[j + 1].
-  *  - t6 is still share stride of s. */
+  *  - x10 and x12 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
+  *  - x11 and x13 are still share stride of s.
+  *  - x15 points to sum + 32 (output) --> need to be adjusted to sum.
+  *  - x16 is still share stride of sum.
+  *  - x17 points to sum (cin).
+  *  - x29 is still share stride of sum.
+  *  - x30 points to s[j] (cout) --> need to be adjusted to s[j + 1].
+  *  - x31 is still share stride of s. */
 
   /* Copy sum to ptr_tmp[2]. */
-  addi t0, sp, 32 /* ptr_tmp[2] */
+  addi x5, x2, 32 /* ptr_tmp[2] */
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(a7++) /* a7 still points to sum. */
-    bn.sid x0, 0(t0)
-    addi   t0, t0, 384
+    bn.lid x0, 0(x17++) /* x17 still points to sum. */
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 384
   endloop
 
   /*----------------------- Iteration i = 3, l = eta / 2 -----------------------*/
   /* Since l mod 2 = 1, we compute tmp[3] = s[l] = s[1]. */
-  addi t0, sp, 0 /* ptr_tmp */
-  addi t0, t0, 64
-  addi t1, s5, 0 /* ptr_s */
-  slli t2, s2, 6
+  addi x5, x2, 0 /* ptr_tmp */
+  addi x5, x5, 64
+  addi x6, x21, 0 /* ptr_s */
+  slli x7, x18, 6
 
   loopi 2, 5
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(t1)
-    bn.sid x0, 0(t0)
-    add    t1, t1, t2
-    addi   t0, t0, 384
+    bn.lid x0, 0(x6)
+    bn.sid x0, 0(x5)
+    add    x6, x6, x7
+    addi   x5, x5, 384
   endloop
 
   /* Clear bit k --> 12 of tmp. */
-  addi   t0, sp, 0 /* ptr_tmp */
-  addi   t0, t0, 96
+  addi   x5, x2, 0 /* ptr_tmp */
+  addi   x5, x5, 96
   bn.xor w0, w0, w0
   loopi 2, 3
     loopi 9, 1
-      bn.sid x0, 0(t0++)
+      bn.sid x0, 0(x5++)
     endloop
-    addi t0, t0, 96 /* point to next share. */
+    addi x5, x5, 96 /* point to next share. */
   endloop
 
   /* Compute r = secb2amodq(tmp). */
-  addi a0, sp, 0 /* ptr_tmp */
-  addi a2, s4, 0 /* ptr_r */
+  addi x10, x2, 0 /* ptr_tmp */
+  addi x12, x20, 0 /* ptr_r */
   jal  x1, secb2amodq
 
   /* Compute r[0] = r[0] - eta mod q. */
-  addi   t0, s4, 0 /* ptr_r */
-  addi   t1, s5, 0 /* ptr_s */
-  sw     s2, 0(t1)
-  bn.lid x0, 0(t1)
+  addi   x5, x20, 0 /* ptr_r */
+  addi   x6, x21, 0 /* ptr_s */
+  sw     x18, 0(x6)
+  bn.lid x0, 0(x6)
   loopi 16, 1
     bn.rshi w1, w0, w1 >> 16
   endloop
   loopi 16, 3
-    bn.lid       x0, 0(t0)
+    bn.lid       x0, 0(x5)
     bn.subvm.16h w0, w0, w1
-    bn.sid       x0, 0(t0++)
+    bn.sid       x0, 0(x5++)
   endloop
 
   /* Restore registers and stack. */
-  lw s0, 1216(sp)
-  lw s1, 1220(sp)
-  lw s2, 1224(sp)
-  lw s4, 1228(sp)
-  lw s5, 1232(sp)
-  lw s6, 1236(sp)
-  addi sp, sp, 1248
+  lw x8, 1216(x2)
+  lw x9, 1220(x2)
+  lw x18, 1224(x2)
+  lw x20, 1228(x2)
+  lw x21, 1232(x2)
+  lw x22, 1236(x2)
+  addi x2, x2, 1248
   ret
 
 
@@ -2323,24 +2290,24 @@ _continue_1:
 .type masked_poly_getnoise_eta_init, @function
 masked_poly_getnoise_eta_init:
   /* Initialize a SHAKE256 operation. */
-  addi  t0, x0, 33
-  slli  t0, t0, 5
-  addi  t0, t0, SHAKE256_CFG
-  addi  t1, x0, 1
-  slli  t1, t1, 20
-  add   t0, t0, t1
-  csrrw x0, kmac_cfg, t0
+  addi  x5, x0, 33
+  slli  x5, x5, 5
+  addi  x5, x5, SHAKE256_CFG
+  addi  x6, x0, 1
+  slli  x6, x6, 20
+  add   x5, x5, x6
+  csrrw x0, kmac_cfg, x5
 
   /* Send the message to the Keccak core. */
   bn.xor  w0, w0, w0 /* Whitening. */
-  bn.lid  x0, 0(a0++)
+  bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0 /* Whitening. */
-  bn.lid  x0, 0(a0++)
+  bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg1, w0
-  li      t0, 1
-  csrrw   x0, kmac_partial_write, t0
-  bn.lid  x0, 0(a1)
+  li      x5, 1
+  csrrw   x0, kmac_partial_write, x5
+  bn.lid  x0, 0(x11)
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0
   bn.wsrw kmac_msg1, w0
@@ -2386,19 +2353,19 @@ masked_poly_getnoise_eta_2:
 masked_poly_getnoise_eta_1:
   /* Frame: ptr_y at 0, ptr_x at 192 (each 2 * eta * 32, sized for the worst
    * case eta = 3), saved registers at 384. */
-  addi sp, sp, -416
-  sw   s0, 384(sp)
-  sw   s1, 388(sp)
-  sw   s2, 392(sp)
-  sw   s3, 396(sp)
-  addi s0, a0, 0
-  addi s1, a1, 0
-  addi s2, sp, 192 /* ptr_x */
+  addi x2, x2, -416
+  sw   x8, 384(x2)
+  sw   x9, 388(x2)
+  sw   x18, 392(x2)
+  sw   x19, 396(x2)
+  addi x8, x10, 0
+  addi x9, x11, 0
+  addi x18, x2, 192 /* ptr_x */
 
   addi x4, x0, 3
-  bne  a0, x4, _getnoise_eta_2
+  bne  x10, x4, _getnoise_eta_2
 
-  addi t0, sp, 0 /* ptr_y */
+  addi x5, x2, 0 /* ptr_y */
 
   bn.wsrr w17, kmac_digest
   bn.wsrr w23, kmac_digest1
@@ -2418,11 +2385,11 @@ masked_poly_getnoise_eta_1:
 
   add x4, x0, x0
   loopi 3, 2
-    bn.sid x4, 0(s2++)
+    bn.sid x4, 0(x18++)
     addi   x4, x4, 1
   endloop
   loopi 3, 2
-    bn.sid x4, 0(t0++)
+    bn.sid x4, 0(x5++)
     addi   x4, x4, 1
   endloop
 
@@ -2443,11 +2410,11 @@ masked_poly_getnoise_eta_1:
 
   add x4, x0, x0
   loopi 3, 2
-    bn.sid x4, 0(s2++)
+    bn.sid x4, 0(x18++)
     addi   x4, x4, 1
   endloop
   loopi 3, 2
-    bn.sid x4, 0(t0++)
+    bn.sid x4, 0(x5++)
     addi   x4, x4, 1
   endloop
 
@@ -2464,10 +2431,10 @@ _getnoise_eta_2:
   bn.wsrr w20, kmac_digest
   bn.wsrr w24, kmac_digest1
 
-  addi t0, x0, 25
-  addi t1, x0, 17
-  addi t2, x0, 26
-  addi t3, sp, 0 /* ptr_y */
+  addi x5, x0, 25
+  addi x6, x0, 17
+  addi x7, x0, 26
+  addi x28, x2, 0 /* ptr_y */
   loopi 2, 38
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -2493,48 +2460,48 @@ _getnoise_eta_2:
 
     addi x4, x0, 15
     loopi 4, 8
-      bn.movr t0, t1
+      bn.movr x5, x6
       loopi 4, 5
         loopi 16, 2
           bn.rshi w26, w25, w26 >> 16
           bn.rshi w25, w31, w25 >> 4
         endloop
-        bn.movr x4, t2
+        bn.movr x4, x7
         addi    x4, x4, -1
       endloop
-      addi t1, t1, 1
+      addi x6, x6, 1
     endloop
 
     jal x1, _bitslice_transpose
 
-    bn.sid x0, 0(s2++)
+    bn.sid x0, 0(x18++)
     addi   x4, x0, 1
-    bn.sid x4, 0(s2++)
+    bn.sid x4, 0(x18++)
     addi   x4, x4, 1
-    bn.sid x4, 0(t3++)
+    bn.sid x4, 0(x28++)
     addi   x4, x4, 1
-    bn.sid x4, 0(t3++)
+    bn.sid x4, 0(x28++)
   endloop
 
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
-  addi a0, sp, 192 /* ptr_x */
-  addi a1, sp, 0 /* ptr_y */
-  addi a2, s0, 0 /* eta */
-  addi a4, s1, 0 /* ptr_r */
+  addi x10, x2, 192 /* ptr_x */
+  addi x11, x2, 0 /* ptr_y */
+  addi x12, x8, 0 /* eta */
+  addi x14, x9, 0 /* ptr_r */
   jal  x1, masked_cbd
 
   /* Restore inputs. */
-  addi a0, s0, 0
+  addi x10, x8, 0
   /* We want to point r to the next polynomial for next cbd. */
-  addi a1, s1, 512
+  addi x11, x9, 512
 
   /* Restore registers and stack. */
-  lw   s0, 384(sp)
-  lw   s1, 388(sp)
-  lw   s2, 392(sp)
-  lw   s3, 396(sp)
-  addi sp, sp, 416
+  lw   x8, 384(x2)
+  lw   x9, 388(x2)
+  lw   x18, 392(x2)
+  lw   x19, 396(x2)
+  addi x2, x2, 416
   ret
 
 /* Bitslice the SHAKE-256 digests in w17-w22 into the eta = 3 x and y
@@ -2704,16 +2671,16 @@ _bitslice_eta_3:
 .type masked_poly_tomsg, @function
 masked_poly_tomsg:
   /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-  addi sp, sp, -1056
-  sw   s0, 1024(sp)
-  addi s0, a2, 0
+  addi x2, x2, -1056
+  sw   x8, 1024(x2)
+  addi x8, x12, 0
 
   /* Load all constants. */
   addi      x4, x0, 17
-  la        t0, const_m_dv
-  bn.lid    x4++, 0(t0)
-  la        t0, modulus_over_2
-  bn.lid    x4++, 0(t0)
+  la        x5, const_m_dv
+  bn.lid    x4++, 0(x5)
+  la        x5, modulus_over_2
+  bn.lid    x4++, 0(x5)
   bn.shv.8s w18, w18 >> 16
 
   /* Create 2**(alpha - 1), alpha = 15. */
@@ -2729,8 +2696,8 @@ masked_poly_tomsg:
    *  - x >>= k where k = 37. */
   /* Compute y[i] = Compressq(x[i], 1 + alpha); share 0 also adds
    * 2**(alpha - 1). */
-  addi t0, x0, 21
-  addi t1, sp, 0 /* ptr_y */
+  addi x5, x0, 21
+  addi x6, x2, 0 /* ptr_y */
 
   loopi 2, 44
     /* Whitening. */
@@ -2757,7 +2724,7 @@ masked_poly_tomsg:
 
     addi x4, x0, 15
     loopi 16, 16
-      bn.lid             x0, 0(a0++)
+      bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
       bn.trn1.16h        w20, w0, w31
       bn.shv.8s          w20, w20 << 16
@@ -2774,7 +2741,7 @@ masked_poly_tomsg:
       bn.add             w20, w19, w20 >> 8
       /* Combine results. */
       bn.trn1.16h        w21, w21, w20
-      bn.movr            x4, t0
+      bn.movr            x4, x5
       addi               x4, x4, -1
     endloop
 
@@ -2782,7 +2749,7 @@ masked_poly_tomsg:
 
     add x4, x0, x0
     loopi 16, 2
-      bn.sid x4, 0(t1++)
+      bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
 
@@ -2791,28 +2758,28 @@ masked_poly_tomsg:
   endloop
 
   /* Compute z = seca2b(y, k = 1 + alpha, share bytes = k * 32). */
-  addi a0, sp, 0 /* ptr_y */
-  addi a1, x0, 16 /* 1 + alpha */
-  addi a2, x0, 512
-  addi a4, sp, 0 /* ptr_z */
+  addi x10, x2, 0 /* ptr_y */
+  addi x11, x0, 16 /* 1 + alpha */
+  addi x12, x0, 512
+  addi x14, x2, 0 /* ptr_z */
   jal  x1, seca2b
 
   /* Compute z >>= alpha, i.e. keep only bit z[alpha], the message bit. */
-  addi t0, sp, 0 /* ptr_z */
-  addi t0, t0, 480 /* skip to bit-plane alpha = 15 */
-  addi t1, s0, 0 /* ptr_r */
+  addi x5, x2, 0 /* ptr_z */
+  addi x5, x5, 480 /* skip to bit-plane alpha = 15 */
+  addi x6, x8, 0 /* ptr_r */
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(t0++)
-    bn.sid x0, 0(t1++)
+    bn.lid x0, 0(x5++)
+    bn.sid x0, 0(x6++)
     /* Advance to bit-plane alpha of the next share. */
-    addi t0, t0, 480
+    addi x5, x5, 480
   endloop
 
   /* Restore registers. */
-  lw   s0, 1024(sp)
-  addi sp, sp, 1056
+  lw   x8, 1024(x2)
+  addi x2, x2, 1056
   ret
 
 #define N_COEFFS 16
@@ -2839,35 +2806,35 @@ masked_poly_tomsg:
 .type poly_masked_compare_dv, @function
 poly_masked_compare_dv:
   /* Allocate t scratch (2 shares * 160 B, dv = 5 worst case) + saves. */
-  addi sp, sp, -352
-  sw   s0, 324(sp)
-  sw   s1, 328(sp)
-  sw   s2, 332(sp)
-  sw   s4, 340(sp)
-  sw   a5, 344(sp)
+  addi x2, x2, -352
+  sw   x8, 324(x2)
+  sw   x9, 328(x2)
+  sw   x18, 332(x2)
+  sw   x20, 340(x2)
+  sw   x15, 344(x2)
 
   /* Save input/output addresses. */
-  addi s0, a0, 0
-  addi s1, a1, 0
-  addi s2, a2, 0
-  addi s4, a4, 0
+  addi x8, x10, 0
+  addi x9, x11, 0
+  addi x18, x12, 0
+  addi x20, x14, 0
 
   /* Compute t = poly_hocompress(cprime). */
-  addi a0, s0, 0 /* ptr_cprime */
-  addi a2, sp, 0 /* ptr_t */
-  addi a3, a5, 0 /* k */
+  addi x10, x8, 0 /* ptr_cprime */
+  addi x12, x2, 0 /* ptr_t */
+  addi x13, x15, 0 /* k */
   jal  x1, poly_hocompress
 
   /* Decode + bitslice c. */
-  addi a1, s1, 0 /* ptr_c */
+  addi x11, x9, 0 /* ptr_c */
 
   addi x4, x0, 4
-  lw   a5, 344(sp)
-  bne  a5, x4, _handle_kn4_dv
+  lw   x15, 344(x2)
+  bne  x15, x4, _handle_kn4_dv
 
 _handle_k4_dv:
   addi   x4, x0, 17
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   /* group 0 -> w15 */
   loopi 16, 2
     bn.rshi w15, w17, w15 >> 16
@@ -2889,7 +2856,7 @@ _handle_k4_dv:
     bn.rshi w17, w31, w17 >> 5
   endloop
   bn.rshi w12, w17, w12 >> 1
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w12, w17, w12 >> 15
   bn.rshi w17, w31, w17 >> 4
   loopi 12, 2
@@ -2912,7 +2879,7 @@ _handle_k4_dv:
     bn.rshi w17, w31, w17 >> 5
   endloop
   bn.rshi w9, w17, w9 >> 2
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w9, w17, w9 >> 14
   bn.rshi w17, w31, w17 >> 3
   loopi 9, 2
@@ -2935,7 +2902,7 @@ _handle_k4_dv:
     bn.rshi w17, w31, w17 >> 5
   endloop
   bn.rshi w6, w17, w6 >> 3
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w6, w17, w6 >> 13
   bn.rshi w17, w31, w17 >> 2
   loopi 6, 2
@@ -2958,7 +2925,7 @@ _handle_k4_dv:
     bn.rshi w17, w31, w17 >> 5
   endloop
   bn.rshi w3, w17, w3 >> 4
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w3, w17, w3 >> 12
   bn.rshi w17, w31, w17 >> 1
   loopi 3, 2
@@ -2982,12 +2949,12 @@ _handle_k4_dv:
   endloop
   jal x1, _bitslice_transpose
 
-  addi    s1, x0, 5
+  addi    x9, x0, 5
   beq     x0, x0, _handle_common_dv
 
 _handle_kn4_dv:
   addi x4, x0, 17
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   /* group 0 -> w15 */
   loopi 16, 2
     bn.rshi w15, w17, w15 >> 16
@@ -3008,7 +2975,7 @@ _handle_kn4_dv:
     bn.rshi w12, w17, w12 >> 16
     bn.rshi w17, w31, w17 >> 4
   endloop
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   /* group 4 -> w11 */
   loopi 16, 2
     bn.rshi w11, w17, w11 >> 16
@@ -3029,7 +2996,7 @@ _handle_kn4_dv:
     bn.rshi w8, w17, w8 >> 16
     bn.rshi w17, w31, w17 >> 4
   endloop
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   /* group 8 -> w7 */
   loopi 16, 2
     bn.rshi w7, w17, w7 >> 16
@@ -3050,7 +3017,7 @@ _handle_kn4_dv:
     bn.rshi w4, w17, w4 >> 16
     bn.rshi w17, w31, w17 >> 4
   endloop
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   /* group 12 -> w3 */
   loopi 16, 2
     bn.rshi w3, w17, w3 >> 16
@@ -3073,63 +3040,63 @@ _handle_kn4_dv:
   endloop
   jal x1, _bitslice_transpose
 
-  addi    s1, x0, 4
+  addi    x9, x0, 4
 
 _handle_common_dv:
-  /* t[0] ^= c ^ ((1 << N) - 1):  c-planes are now w0..w3 if s1 != 4 else w0..w4. */
+  /* t[0] ^= c ^ ((1 << N) - 1):  c-planes are now w0..w3 if x9 != 4 else w0..w4. */
   bn.subi w15, w31, 1
-  addi    t0, sp, 0 /* ptr_t */
+  addi    x5, x2, 0 /* ptr_t */
 
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   bn.xor  w0, w0, w15
   bn.xor  w17, w17, w0
-  bn.sid  x4, 0(t0++)
+  bn.sid  x4, 0(x5++)
 
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   bn.xor  w1, w1, w15
   bn.xor  w17, w17, w1
-  bn.sid  x4, 0(t0++)
+  bn.sid  x4, 0(x5++)
 
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   bn.xor  w2, w2, w15
   bn.xor  w17, w17, w2
-  bn.sid  x4, 0(t0++)
+  bn.sid  x4, 0(x5++)
 
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   bn.xor  w3, w3, w15
   bn.xor  w17, w17, w3
-  bn.sid  x4, 0(t0++)
+  bn.sid  x4, 0(x5++)
 
-  addi    t1, x0, 4
-  beq     s1, t1, _skip_bit_4
+  addi    x6, x0, 4
+  beq     x9, x6, _skip_bit_4
 
-  bn.lid  x4, 0(t0)
+  bn.lid  x4, 0(x5)
   bn.xor  w4, w4, w15
   bn.xor  w17, w17, w4
-  bn.sid  x4, 0(t0++)
+  bn.sid  x4, 0(x5++)
 
 _skip_bit_4:
   /* Compute r = secand(r, t). */
-  addi a1, x0, 32
-  addi a2, sp, 0 /* ptr_t */
-  addi a3, s2, 0 /* share_str */
-  addi a6, x0, 32 /* output share_str */
+  addi x11, x0, 32
+  addi x12, x2, 0 /* ptr_t */
+  addi x13, x18, 0 /* share_str */
+  addi x16, x0, 32 /* output share_str */
   /* After the secand, the input and output pointers will point to
    * next bit so we don't have to pass all the arguments above to secand again. */
-  loop s1, 4
-    addi a0, s4, 0 /* ptr_r */
-    addi a5, s4, 0 /* ptr_r */
+  loop x9, 4
+    addi x10, x20, 0 /* ptr_r */
+    addi x15, x20, 0 /* ptr_r */
     jal  x1, secand
     nop
   endloop
 
   /* Restore registers. */
-  lw   s0, 324(sp)
-  lw   s1, 328(sp)
-  lw   s2, 332(sp)
-  lw   s4, 340(sp)
-  lw   a5, 344(sp)
-  addi sp, sp, 352
+  lw   x8, 324(x2)
+  lw   x9, 328(x2)
+  lw   x18, 332(x2)
+  lw   x20, 340(x2)
+  lw   x15, 344(x2)
+  addi x2, x2, 352
   ret
 
 
@@ -3155,36 +3122,36 @@ _skip_bit_4:
 .type poly_masked_compare_du, @function
 poly_masked_compare_du:
   /* Allocate t scratch (2 shares * 352 B, du = 11 worst case) + saves. */
-  addi sp, sp, -736
-  sw   s0, 708(sp)
-  sw   s1, 712(sp)
-  sw   s2, 716(sp)
-  sw   s4, 724(sp)
-  sw   a5, 728(sp)
+  addi x2, x2, -736
+  sw   x8, 708(x2)
+  sw   x9, 712(x2)
+  sw   x18, 716(x2)
+  sw   x20, 724(x2)
+  sw   x15, 728(x2)
 
   /* Save input/output addresses. */
-  addi s0, a0, 0
-  addi s1, a1, 0
-  addi s2, a2, 0
-  addi s4, a4, 0
+  addi x8, x10, 0
+  addi x9, x11, 0
+  addi x18, x12, 0
+  addi x20, x14, 0
 
   /* Compute t = poly_hocompress(cprime). */
-  addi a0, s0, 0 /* ptr_cprime */
-  addi a2, sp, 0 /* ptr_t */
-  addi a3, a5, 0 /* k */
+  addi x10, x8, 0 /* ptr_cprime */
+  addi x12, x2, 0 /* ptr_t */
+  addi x13, x15, 0 /* k */
   jal  x1, polyvec_hocompress
 
   /* Decode + bitslice c. */
-  addi a1, s1, 0 /* ptr_c */
+  addi x11, x9, 0 /* ptr_c */
 
   addi x4, x0, 4
-  lw   a5, 728(sp)
-  bne  a5, x4, _handle_kn4_du
+  lw   x15, 728(x2)
+  bne  x15, x4, _handle_kn4_du
 
 _handle_k4_du:
   /* group 0 -> w15 */
   addi   x4, x0, 17
-  bn.lid x4, 0(a1++)
+  bn.lid x4, 0(x11++)
   loopi 16, 2
     bn.rshi w15, w17, w15 >> 16
     bn.rshi w17, w31, w17 >> 11
@@ -3196,7 +3163,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w14, w17, w14 >> 3
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w14, w17, w14 >> 13
   bn.rshi w17, w31, w17 >> 8
   loopi 8, 2
@@ -3210,7 +3177,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w13, w17, w13 >> 6
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w13, w17, w13 >> 10
   bn.rshi w17, w31, w17 >> 5
   bn.rshi w13, w17, w13 >> 16
@@ -3228,7 +3195,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w11, w17, w11 >> 9
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w11, w17, w11 >> 7
   bn.rshi w17, w31, w17 >> 2
   loopi 10, 2
@@ -3242,7 +3209,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w10, w17, w10 >> 1
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w10, w17, w10 >> 15
   bn.rshi w17, w31, w17 >> 10
   loopi 2, 2
@@ -3262,7 +3229,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w8, w17, w8 >> 4
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w8, w17, w8 >> 12
   bn.rshi w17, w31, w17 >> 7
   loopi 11, 2
@@ -3276,7 +3243,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w7, w17, w7 >> 7
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w7, w17, w7 >> 9
   bn.rshi w17, w31, w17 >> 4
   loopi 4, 2
@@ -3296,7 +3263,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w5, w17, w5 >> 10
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w5, w17, w5 >> 6
   bn.rshi w17, w31, w17 >> 1
   loopi 13, 2
@@ -3310,7 +3277,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w4, w17, w4 >> 2
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w4, w17, w4 >> 14
   bn.rshi w17, w31, w17 >> 9
   loopi 5, 2
@@ -3328,7 +3295,7 @@ _handle_k4_du:
   bn.rshi w2, w17, w2 >> 16
   bn.rshi w17, w31, w17 >> 11
   bn.rshi w2, w17, w2 >> 5
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w2, w17, w2 >> 11
   bn.rshi w17, w31, w17 >> 6
   loopi 14, 2
@@ -3342,7 +3309,7 @@ _handle_k4_du:
     bn.rshi w17, w31, w17 >> 11
   endloop
   bn.rshi w1, w17, w1 >> 8
-  bn.lid  x4, 0(a1++)
+  bn.lid  x4, 0(x11++)
   bn.rshi w1, w17, w1 >> 8
   bn.rshi w17, w31, w17 >> 3
   loopi 7, 2
@@ -3357,22 +3324,22 @@ _handle_k4_du:
   endloop
   jal x1, _bitslice_transpose
   
-  addi s1, x0, 11 /* du */
+  addi x9, x0, 11 /* du */
   beq  x0, x0, _handle_common_du
 
 _handle_kn4_du:
   addi x4, x0, 17
-  addi t0, x0, 15
-  addi t1, x0, 18
+  addi x5, x0, 15
+  addi x6, x0, 18
   loopi 2, 69
     /* group i + 0 */
-    bn.lid x4, 0(a1++)
+    bn.lid x4, 0(x11++)
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 1 */
     loopi 9, 2
@@ -3380,23 +3347,23 @@ _handle_kn4_du:
       bn.rshi w17, w31, w17 >> 10
     endloop
     bn.rshi w18, w17, w18 >> 6
-    bn.lid  x4, 0(a1++)
+    bn.lid  x4, 0(x11++)
     bn.rshi w18, w17, w18 >> 10
     bn.rshi w17, w31, w17 >> 4
     loopi 6, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 2 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 3 */
     loopi 3, 2
@@ -3404,15 +3371,15 @@ _handle_kn4_du:
       bn.rshi w17, w31, w17 >> 10
     endloop
     bn.rshi w18, w17, w18 >> 2
-    bn.lid  x4, 0(a1++)
+    bn.lid  x4, 0(x11++)
     bn.rshi w18, w17, w18 >> 14
     bn.rshi w17, w31, w17 >> 8
     loopi 12, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 4 */
     loopi 12, 2
@@ -3420,23 +3387,23 @@ _handle_kn4_du:
       bn.rshi w17, w31, w17 >> 10
     endloop
     bn.rshi w18, w17, w18 >> 8
-    bn.lid  x4, 0(a1++)
+    bn.lid  x4, 0(x11++)
     bn.rshi w18, w17, w18 >> 8
     bn.rshi w17, w31, w17 >> 2
     loopi 3, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 5 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 6 */
     loopi 6, 2
@@ -3444,113 +3411,113 @@ _handle_kn4_du:
       bn.rshi w17, w31, w17 >> 10
     endloop
     bn.rshi w18, w17, w18 >> 4
-    bn.lid  x4, 0(a1++)
+    bn.lid  x4, 0(x11++)
     bn.rshi w18, w17, w18 >> 12
     bn.rshi w17, w31, w17 >> 6
     loopi 9, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
     
     /* group i + 7 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr t0, t1
-    addi    t0, t0, -1
+    bn.movr x5, x6
+    addi    x5, x5, -1
   endloop
   jal x1, _bitslice_transpose
     
-  addi s1, x0, 10 /* du */
+  addi x9, x0, 10 /* du */
 
 _handle_common_du:
   /* t[0] ^= c ^ ((1 << N) - 1):  c-planes are now w0..w9. */
   bn.subi w15, w31, 1
-  addi    t0, sp, 0 /* ptr_t */
+  addi    x5, x2, 0 /* ptr_t */
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w0, w0, w15
   bn.xor w17, w17, w0
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w1, w1, w15
   bn.xor w17, w17, w1
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w2, w2, w15
   bn.xor w17, w17, w2
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w3, w3, w15
   bn.xor w17, w17, w3
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w4, w4, w15
   bn.xor w17, w17, w4
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w5, w5, w15
   bn.xor w17, w17, w5
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w6, w6, w15
   bn.xor w17, w17, w6
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w7, w7, w15
   bn.xor w17, w17, w7
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w8, w8, w15
   bn.xor w17, w17, w8
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w9, w9, w15
   bn.xor w17, w17, w9
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
-  addi   t1, x0, 10
-  beq    s1, t1, _skip_bit_10
+  addi   x6, x0, 10
+  beq    x9, x6, _skip_bit_10
 
-  bn.lid x4, 0(t0)
+  bn.lid x4, 0(x5)
   bn.xor w10, w10, w15
   bn.xor w17, w17, w10
-  bn.sid x4, 0(t0++)
+  bn.sid x4, 0(x5++)
 
 _skip_bit_10:
   /* Compute r = secand(r, t). */
-  addi a1, x0, 32
-  addi a2, sp, 0 /* ptr_t */
-  addi a3, s2, 0 /* share_str */
-  addi a6, x0, 32 /* output share_str */
+  addi x11, x0, 32
+  addi x12, x2, 0 /* ptr_t */
+  addi x13, x18, 0 /* share_str */
+  addi x16, x0, 32 /* output share_str */
   /* After the secand, the input and output pointers will point to
    * next bit so we don't have to pass all the arguments above to secand again. */
-  loop s1, 4
-    addi a0, s4, 0 /* ptr_r */
-    addi a5, s4, 0 /* ptr_r */
+  loop x9, 4
+    addi x10, x20, 0 /* ptr_r */
+    addi x15, x20, 0 /* ptr_r */
     jal  x1, secand
     nop
   endloop
 
   /* Restore registers. */
-  lw   s0, 708(sp)
-  lw   s1, 712(sp)
-  lw   s2, 716(sp)
-  lw   s4, 724(sp)
-  lw   a5, 728(sp)
-  addi sp, sp, 736
+  lw   x8, 708(x2)
+  lw   x9, 712(x2)
+  lw   x18, 716(x2)
+  lw   x20, 724(x2)
+  lw   x15, 728(x2)
+  addi x2, x2, 736
   ret
 
 /*
@@ -3570,190 +3537,190 @@ _skip_bit_10:
 .globl finalize_cmp
 .type finalize_cmp, @function
 finalize_cmp:
-  /* Allocate t scratch (2 shares * 32 B) and save s0. */
-  addi sp, sp, -96
-  sw s0, 68(sp)
+  /* Allocate t scratch (2 shares * 32 B) and save x8. */
+  addi x2, x2, -96
+  sw x8, 68(x2)
 
   /* Save the in/out address. */
-  addi s0, a0, 0
+  addi x8, x10, 0
 
   /* Compute x &= (x >> 128). */
   /* Compute t = x >> 128. */
   addi x4, x0, 1
-  addi t0, sp, 0 /* ptr_t */
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 128
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  addi a1, x0, 32
-  addi a2, sp, 0
-  addi a3, x0, 32
-  addi a5, s0, 0
-  addi a6, x0, 32
+  addi x10, x8, 0
+  addi x11, x0, 32
+  addi x12, x2, 0
+  addi x13, x0, 32
+  addi x15, x8, 0
+  addi x16, x0, 32
   jal  x1, secand
 
   /* Compute x &= (x >> 64). */
   /* Compute t = x >> 64. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 64
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 32). */
   /* Compute t = x >> 32. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 32
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 16). */
   /* Compute t = x >> 16. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 16
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 8). */
   /* Compute t = x >> 8. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 8
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 4). */
   /* Compute t = x >> 4. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 4
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 2). */
   /* Compute t = x >> 2. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 2
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
   /* Compute x &= (x >> 1). */
   /* Compute t = x >> 1. */
   addi x4, x0, 1
-  addi a0, s0, 0
-  addi t0, sp, 0 /* ptr_t */
+  addi x10, x8, 0
+  addi x5, x2, 0 /* ptr_t */
   loopi 2, 5
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    bn.lid  x0, 0(a0++)
+    bn.lid  x0, 0(x10++)
     bn.rshi w1, w31, w0 >> 1
-    bn.sid  x4, 0(t0++)
+    bn.sid  x4, 0(x5++)
   endloop
   /* Compute x &= t. */
-  addi a0, s0, 0
-  /* a1 is still 32. */
-  addi a2, sp, 0
-  /* a3 is still 32. */
-  addi a5, s0, 0
-  /* a6 is still 32. */
+  addi x10, x8, 0
+  /* x11 is still 32. */
+  addi x12, x2, 0
+  /* x13 is still 32. */
+  addi x15, x8, 0
+  /* x16 is still 32. */
   jal  x1, secand
 
-  /* Restore s0. */
-  lw s0, 68(sp)
+  /* Restore x8. */
+  lw x8, 68(x2)
 
-  addi sp, sp, 96
+  addi x2, x2, 96
   ret
