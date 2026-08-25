@@ -182,7 +182,7 @@ poly_sub:
  * @param[in,out] x10: dmem pointer to x
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10, w0 to w1, acc, acch
+ * clobbered registers: x4 to x5, x10, w0 to w1, acch, acc
  * clobbered flag groups: none
  */
 

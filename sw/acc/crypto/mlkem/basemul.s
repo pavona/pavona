@@ -34,7 +34,7 @@
  * @param[in]  w31: all-zero register
  * @param[in]  mod: 2q
  *
- * clobbered registers: x4, x10 to x13, w0 to w15, w17 to w26, acc, acch
+ * clobbered registers: x4, x10 to x13, w0 to w15, w17 to w26, acch, acc
  * clobbered flag groups: none
  */
 
@@ -85,7 +85,7 @@ basemul:
  * @param[in]     w31: all-zero register
  * @param[in]     mod: 2q
  *
- * clobbered registers: x4, x10 to x13, w0 to w15, w17 to w26, acc, acch
+ * clobbered registers: x4, x10 to x13, w0 to w15, w17 to w26, acch, acc
  * clobbered flag groups: none
  */
 

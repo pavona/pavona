@@ -98,7 +98,7 @@ poly_tobytes:
  * @param[out] x11: dmem pointer to the output polynomial
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10 to x11, w0 to w2
+ * clobbered registers: x4, x10 to x11, w0 to w2
  * clobbered flag groups: FG0
  */
 

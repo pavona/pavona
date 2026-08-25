@@ -27,7 +27,7 @@
  * @param[in]  w31: all-zero register
  * @param[in]  mod: 2q
  *
- * clobbered registers: x4, x10, x12, w0 to w15, w17 to w25, acc, acch, mod
+ * clobbered registers: x4, x10, x12, w0 to w15, w17 to w25, mod, acch, acc
  * clobbered flag groups: none
  */
 

@@ -28,7 +28,7 @@
  * @param[in]  x12: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10 to x11, w0 to w3, acc, acch
+ * clobbered registers: x4, x10 to x11, w0 to w3, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -199,7 +199,7 @@ _handle_k4_poly_decompress:
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x0008)^16
  *
- * clobbered registers: w1, acc, acch
+ * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
  */
 
@@ -229,8 +229,8 @@ poly_decompress_k4:
  * @param[in]  x12: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x10 to x11, w0 to w3, acc, acch
- * clobbered flag groups: none
+ * clobbered registers: x4, x10 to x11, w0 to w3, acch, acc
+ * clobbered flag groups: FG0
  */
 
 .globl poly_polyvec_decompress
@@ -557,7 +557,7 @@ _handle_k4_polyvec_decompress:
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x00008000)^8
  *
- * clobbered registers: w1, acc, acch
+ * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
  */
 
@@ -579,7 +579,7 @@ polyvec_decompress_kn4:
  *                    is overwritten with the 16 16-bit output coefficients
  * @param[in]     w2: (0x00008000)^8
  *
- * clobbered registers: w1, acc, acch
+ * clobbered registers: w1, acch, acc
  * clobbered flag groups: none
  */
 
