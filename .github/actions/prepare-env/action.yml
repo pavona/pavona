@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 name: Prepare environment
 description: Install dependencies and prepare environment needed for OpenTitan
-
 inputs:
   verible-version:
     description: Verible version to install
@@ -52,7 +51,6 @@ inputs:
   vivado-lab-version:
     description: Vivado Lab Edition version for FPGA bootstrapping, if required.
     default: '2024.2'
-
 runs:
   using: composite
   steps:
@@ -81,7 +79,6 @@ runs:
         fi
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-
     - name: Install UTF-8 language pack
       run: |
         if command -v apt > /dev/null; then
@@ -98,15 +95,13 @@ runs:
           echo "LANGUAGE=en.UTF-8" >> "$GITHUB_ENV"
         fi
       shell: bash
-
     - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       with:
-        version: '0.7.14'
+        version: '0.8.4'
         enable-cache: true
         cache-dependency-glob: |
           ${{ inputs.working-directory }}/pyproject.toml
           ${{ inputs.working-directory }}/python-requirements.txt
-
     - name: Install Python
       shell: bash
       run: |
@@ -117,13 +112,11 @@ runs:
         echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
         echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
       working-directory: ${{ inputs.working-directory }}
-
     - name: Install Python dependencies
       shell: bash
       run: |
         uv pip install -r python-requirements.txt --require-hashes
       working-directory: ${{ inputs.working-directory }}
-
     - name: Install Verible
       if: inputs.install-verible == 'true'
       run: |
@@ -138,7 +131,6 @@ runs:
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-
     # Log into Google Cloud using workload_identity_provider.
     - id: auth
       name: Authenticate to Google Cloud
@@ -148,7 +140,6 @@ runs:
       with:
         workload_identity_provider: projects/877782468570/locations/global/workloadIdentityPools/github-actions-pool/providers/${{ github.event.repository.name }}
         service_account: ${{ github.event.repository.name }}-gh-actions-sa@pavona-caches-430f6d3b.iam.gserviceaccount.com
-
     # The above action creates a credential file in workspace and it doesn't provide a way to configure
     # it. This influences with a few scripts that assume clean workspace, and introduce security risk
     # that it may be exposed when uploading to buckets.
@@ -163,10 +154,8 @@ runs:
         echo "GOOGLE_GHA_CREDS_PATH=$TARGET" >> $GITHUB_ENV
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-
     - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
       if: github.event_name != 'pull_request'
-
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
       run: |
@@ -186,7 +175,6 @@ runs:
         fi
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-
     - name: Install merge-junit
       run: |
         MERGE_JUNIT_PATH="/tools/merge-junit"
@@ -210,7 +198,6 @@ runs:
         rm "$RUNNER_TEMP/${MERGE_JUNIT_TAR}"
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-
     # Setup FPGA, if requested.
     - name: FPGA setup
       run: |
@@ -224,22 +211,21 @@ runs:
     - name: Run FPGA set-pll and clear bitstream
       if: inputs.fpga == 'cw310' || inputs.fpga == 'cw340'
       run: |
-         # Run set-pll command for FPGA.
-         ./bazelisk.sh run //sw/host/opentitantool -- --interface=${{ inputs.fpga }} --logging debug fpga set-pll || true
-         # Clear FPGA bitstream.
-         ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${{ inputs.fpga }} fpga clear-bitstream
+        # Run set-pll command for FPGA.
+        ./bazelisk.sh run //sw/host/opentitantool -- --interface=${{ inputs.fpga }} --logging debug fpga set-pll || true
+        # Clear FPGA bitstream.
+        ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${{ inputs.fpga }} fpga clear-bitstream
       shell: bash
-
     # Setup Vivado, if requested.
     - name: Vivado setup
       if: inputs.vivado-version != ''
       run: |
-         # Install dependencies
-         sudo apt install -y libudev-dev jq
-         # Link ld to what Xilinx expects
-         sudo ln /lib64/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
-         # Add Vivado binary directory to path
-         echo "/tools/Xilinx/Vivado/${{ inputs.vivado-version }}/bin" >> $GITHUB_PATH
+        # Install dependencies
+        sudo apt install -y libudev-dev jq
+        # Link ld to what Xilinx expects
+        sudo ln /lib64/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
+        # Add Vivado binary directory to path
+        echo "/tools/Xilinx/Vivado/${{ inputs.vivado-version }}/bin" >> $GITHUB_PATH
       shell: bash
     - name: Set environment variable for license server
       if: inputs.vivado-version != ''
@@ -251,8 +237,6 @@ runs:
           echo "XILINXD_LICENSE_FILE=${{ inputs.xilinx-license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
         fi
       shell: bash
-
-
     # Setup Synopsys VCS, if requested
     - name: VCS Setup
       if: inputs.vcs-version != ''
