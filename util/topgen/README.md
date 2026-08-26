@@ -330,10 +330,10 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/type"></a>**`type`** *(string, required)*: whether the signal is unidirectional or part of a request-response pair.
 - <a id="properties/act"></a>**`act`** *(string, required)*: whether it is a request (req) or a response (rsp).
 - <a id="properties/inst_name"></a>**`inst_name`** *(string)*: the instance this signal connects to.
-- <a id="properties/width"></a>**`width`**: the number of items of the signal for arrays.
-- <a id="properties/default"></a>**`default`** *(string)*
-- <a id="properties/end_idx"></a>**`end_idx`** *(integer)*
-- <a id="properties/top_signame"></a>**`top_signame`** *(string)*
+- <a id="properties/width"></a>**`width`** *(['integer', 'string'], required)*: the number of items of the signal for arrays.
+- <a id="properties/default"></a>**`default`** *(string)*: TODO.
+- <a id="properties/end_idx"></a>**`end_idx`** *(integer)*: TODO.
+- <a id="properties/top_signame"></a>**`top_signame`** *(string)*: TODO.
 - <a id="properties/index"></a>**`index`** *(integer)*: the index when this is connected to an array.
 
 ### Interrupt
