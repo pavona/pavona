@@ -13,6 +13,7 @@ on:
       - .github/actions/prepare-env/**
       - util/container/**
       - apt-requirements.txt
+      - Brewfile
       - python-requirements.txt
       - pyproject.toml
       - MODULE.bazel
@@ -67,6 +68,38 @@ jobs:
             //sw/device/tests:uart_smoketest_sim_verilator
       - name: Run ACC ISS test
         run: make -C hw/ip/acc/dv/accsim test
+
+  macos_verilator_smoketest:
+    name: macOS Verilator smoketest (${{ matrix.runner }})
+    if: ${{ !github.event.repository.private }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - macos-15
+          - macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: brew bundle install --file=Brewfile
+      - name: Install Python dependencies
+        run: |
+          python3 -m venv ~/.local/share/venv
+          echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
+          ~/.local/share/venv/bin/pip install -r python-requirements.txt --require-hashes
+      - name: Build device software
+        run: bazelisk build //sw/device/examples/hello_world:hello_world_sim_dv
+      - name: Run UART smoketest on Verilator
+        run: |
+          bazelisk test \
+            --build_tests_only=true \
+            --test_timeout=2400,2400,4000,-1 \
+            --test_output=errors \
+            --//hw:verilator_options=--threads,1 \
+            //sw/device/tests:uart_smoketest_sim_verilator
+      - name: Run ACC ISS test
+        run: make -C hw/ip/acc/dv/accsim test bazel=bazelisk
 
   container_verilator_smoketest:
     name: Container Verilator smoketest (${{ matrix.image }}, ${{ matrix.runner }})
