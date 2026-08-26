@@ -36,7 +36,7 @@ jobs:
       board: cw310
       interface: hyper310
       tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf"
-      timeout: 90
+      timeout: 150
 
   execute_rom_ext_fpga_tests_cw310:
     name: CW310 ROM_EXT Tests

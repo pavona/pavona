@@ -20,7 +20,7 @@ jobs:
     name: Check for cached bitstream
     runs-on:
       group: pavona-basic
-    timeout-minutes: 20
+    timeout-minutes: 30
     outputs:
       bitstreamStrategy: ${{ steps.strategy.outputs.bitstreamStrategy }}
     steps:
