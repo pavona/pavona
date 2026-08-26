@@ -29,6 +29,7 @@ py_library(
         "__init__.py",
         "lib.py",
     ],
+    data = ["//util/reggen/schemas"],
     imports = [".."],
 )
 
