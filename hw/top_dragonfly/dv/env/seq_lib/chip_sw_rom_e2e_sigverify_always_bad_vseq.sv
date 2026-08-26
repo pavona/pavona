@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq extends
+class chip_sw_rom_e2e_sigverify_always_bad_vseq extends
   chip_sw_rom_e2e_base_vseq;
-  `uvm_object_utils(chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq)
+  `uvm_object_utils(chip_sw_rom_e2e_sigverify_always_bad_vseq)
   `uvm_object_new
 
   lc_ctrl_state_pkg::lc_state_e lc_state;
@@ -21,4 +21,4 @@ class chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq extends
     rom_e2e_test_boot_fault_success();
   endtask
 
-endclass : chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+endclass : chip_sw_rom_e2e_sigverify_always_bad_vseq
