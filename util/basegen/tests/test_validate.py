@@ -5,7 +5,7 @@ from basegen.lib import REPO_TOP, import_hjson
 from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 
-from basegen.validate import validate_schema, create_validator
+from basegen.validate import validate_schema, create_validator, all_validation_errors
 
 
 # test_topcfg_validation
@@ -87,3 +87,13 @@ def test_nested_schemas():
             continue
         raise Exception("nested schema failed to catch bad dataset:"
                         f"\n\t{bad}")
+
+
+def test_all_validation_errors():
+    bad_data = {}  # this is empty, so each required field should be a separate error
+    validator = create_validator("urn:topgen:topcfg")
+    required_keys = validator.schema["required"]
+
+    all_errors = all_validation_errors(bad_data, validator)
+
+    assert len(all_errors) == len(required_keys)
