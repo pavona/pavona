@@ -4,8 +4,11 @@
 
 import jsonschema
 from jsonschema.validators import Draft202012Validator
+from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 from referencing import Resource
+
+import logging as log
 import jsonschema2md
 
 from typing import Any, TextIO
@@ -50,6 +53,27 @@ def create_validator(schema: dict[str, Any] | str | Resource,
     """Create a Validator object for validating schemas (metaschema 2020-12)."""
     schema = _resolve_schema(schema, registry)
     return Draft202012Validator(schema, registry=registry)
+
+
+# validation method here can be schema or validator
+def all_validation_errors(data: dict[str, Any],
+                          validation: dict[str, Any] | str | Resource | Draft202012Validator,
+                          prefix: str | None = None,
+                          registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY,
+                          log_errors: bool = True) -> list[ValidationError]:
+    if not isinstance(validation, Draft202012Validator):
+        validation = create_validator(validation, registry)
+
+    errors = list(validation.iter_errors(data))
+    if log_errors:
+        for err in errors:
+            validation_path = err.absolute_path
+            if prefix is not None:
+                validation_path.appendleft(prefix)
+            log.error(f"(validation error, {'.'.join(str(part) for part in validation_path)})"
+                      f" {err.message}")
+
+    return errors
 
 
 def document_schema(outfile: TextIO | None,

@@ -4,7 +4,7 @@
 import logging as log
 from typing import Any, Dict, List, Optional, Tuple
 
-from basegen.validate import create_validator
+from basegen.validate import create_validator, all_validation_errors
 from basegen.lib import cast_hjson_values
 
 from .item import Node, Host, Device, AsyncFifo, Socket1N, SocketM1
@@ -230,11 +230,6 @@ def validate_hjson(obj: Dict[Any, Any]) -> bool:
         log.error("Component has no name. Aborting.")
         return False
 
-    validation_errors = list(XBAR_VALIDATOR.iter_errors(cast_hjson_values(obj)))
-    for err in validation_errors:
-        validation_path = err.absolute_path
-        validation_path.appendleft("xbar")
-        log.error(f"(validation error, {'.'.join(validation_path)})"
-                  f" {err.message}")
+    validation_errors = all_validation_errors(cast_hjson_values(obj), XBAR_VALIDATOR, "xbar")
 
     return len(validation_errors) == 0
