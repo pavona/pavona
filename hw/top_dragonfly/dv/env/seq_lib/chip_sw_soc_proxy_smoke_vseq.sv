@@ -8,11 +8,16 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   // Duration of the external reset request. The filter in `soc_proxy` swallows anything shorter
-  // than five AON clock cycles
+  // than five AON clock cycles, but the floor here is higher than that. The power manager drives
+  // the reset requests it reports combinationally from the live request, while the reset cause
+  // beside them is registered, so the pair is only true together for as long as the request
+  // outlasts the fast FSM reaching `FastPwrStateResetPrep`. Checks on that pair sample on the AON
+  // clock, and a request that only just clears the filter holds the pair together for less than
+  // one of its periods, which can fall between two edges and never be seen.
   rand int unsigned rst_req_clks;
 
   constraint rst_req_clks_c {
-    rst_req_clks inside {[5:18]};
+    rst_req_clks inside {[8:18]};
   }
 
   virtual task body();
@@ -38,7 +43,7 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     fork
       begin
         `uvm_info(`gfn, $sformatf("Applying SoC reset request for %0d cycle(s)", rst_req_clks),
-                  UVM_MEDIUM)
+                  UVM_LOW)
         apply_soc_reset_request(rst_req_clks);
       end
     join_none
