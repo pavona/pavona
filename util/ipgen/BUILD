@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "ipgen",
     srcs = glob(["*.py"]),
+    data = ["//util/ipgen/schemas"],
     deps = [
         "//util/basegen",
         "//util/reggen:countermeasure",
