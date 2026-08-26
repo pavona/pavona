@@ -11,8 +11,11 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "reggen",
     srcs = glob(["**/*.py"]),
+    data = [":tpl_files"],
     imports = [".."],
     deps = [
+        "//util/basegen",
+        "//util/reggen/systemrdl:udp",
         requirement("hjson"),
         requirement("semantic_version"),
         requirement("mako"),
@@ -29,7 +32,11 @@ py_library(
         "__init__.py",
         "lib.py",
     ],
+    data = ["//util/reggen/schemas"],
     imports = [".."],
+    deps = [
+        "//util/basegen",
+    ],
 )
 
 py_library(
