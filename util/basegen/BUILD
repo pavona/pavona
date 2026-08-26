@@ -18,6 +18,7 @@ py_library(
     data = [
         "//util/basegen/schemas",
         "//util/ipgen/schemas",
+        "//util/raclgen/schemas",
         "//util/reggen/schemas",
         "//util/tlgen/schemas",
         "//util/topgen/schemas",

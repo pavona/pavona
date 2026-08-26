@@ -12,8 +12,10 @@ py_library(
         "__init__.py",
         "lib.py",
     ],
+    data = ["//util/raclgen/schemas"],
     imports = [".."],
     deps = [
+        "//util/basegen",
         "//util/reggen:ip_block",
         "//util/reggen:md_helpers",
         "//util/reggen:multi_register",
