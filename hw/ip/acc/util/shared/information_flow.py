@@ -27,7 +27,8 @@ SPECIAL_REG_NAMES = ['mod', 'acc', 'acch', 'kmac_core', 'rnd', 'urnd']
 ISR_REMAPPING = {
     'fg0': ['fg0-' + x for x in FLAG_NAMES],
     'fg1': ['fg1-' + x for x in FLAG_NAMES],
-    'flags': ['fg0-' + x for x in FLAG_NAMES] + ['fg1-' + x for x in FLAG_NAMES],
+    'flags':
+    ['fg0-' + x for x in FLAG_NAMES] + ['fg1-' + x for x in FLAG_NAMES],
     'mod0': ['mod'],
     'mod1': ['mod'],
     'mod2': ['mod'],
@@ -49,6 +50,7 @@ class InformationFlowNode:
     A node is anything that can hold information; it can be a register, flag, or
     memory location.
     '''
+
     def __init__(self, name: str):
         self.name = name
 
@@ -61,7 +63,9 @@ class InformationFlowNode:
         '''Returns true if self and other refer to the same underlying location.'''
         return self == other
 
-    def intersection(self, other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
+    def intersection(
+            self,
+            other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
         '''Returns a new node which is the intersection of the two nodes.
 
         Returns None if the nodes do not overlap.
@@ -70,7 +74,8 @@ class InformationFlowNode:
             return None
         return InformationFlowNode(self.name)
 
-    def subtract(self, other: 'InformationFlowNode') -> List['InformationFlowNode']:
+    def subtract(self,
+                 other: 'InformationFlowNode') -> List['InformationFlowNode']:
         '''Returns a new node with the intersection of self and other removed.
 
         Returns self if self and other do not overlap and None if they are equal.
@@ -79,10 +84,25 @@ class InformationFlowNode:
             return [self]
         return []
 
-    def union(self, other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
+    def union(self,
+              other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
         '''Try to merge self and other.'''
         if self.overlaps(other):
             return self
+        return None
+
+    def starts_at(self) -> Optional[int]:
+        '''Provide the start address of a node which can span a range of
+        addresses.
+
+        Used to ensure that overlapping sets of nodes of the same type can be
+        unioned in order; this prevents needing to check all pairs of nodes
+        for overlap, and instead allows a simple fold after sorting by start
+        address.
+
+        Returns None if this node is not of a type that can span a range of
+        addresses, meaning the 'start address' of the node isn't important.
+        '''
         return None
 
     def pretty(self, dmem_symbols: Dict[str, int]) -> List[str]:
@@ -95,6 +115,7 @@ class InformationFlowNode:
 
 class DmemInformationFlowNode(InformationFlowNode):
     '''Represents a memory range.'''
+
     def __init__(self, start: int, end: int):
         super().__init__(f'dmem:{start:#06x}-{end:#06x}')
         assert start < end
@@ -108,15 +129,19 @@ class DmemInformationFlowNode(InformationFlowNode):
             return True
         return other.start <= self.start and other.end > self.start
 
-    def intersection(self, other: InformationFlowNode) -> Optional[InformationFlowNode]:
-        if not isinstance(other, DmemInformationFlowNode) or not self.overlaps(other):
+    def intersection(
+            self, other: InformationFlowNode) -> Optional[InformationFlowNode]:
+        if not isinstance(other,
+                          DmemInformationFlowNode) or not self.overlaps(other):
             return None
         start = max(self.start, other.start)
         end = min(self.end, other.end)
         return DmemInformationFlowNode(start, end)
 
-    def subtract(self, other: InformationFlowNode) -> List[InformationFlowNode]:
-        if not isinstance(other, DmemInformationFlowNode) or not self.overlaps(other):
+    def subtract(self,
+                 other: InformationFlowNode) -> List[InformationFlowNode]:
+        if not isinstance(other,
+                          DmemInformationFlowNode) or not self.overlaps(other):
             return [self]
         out: List[InformationFlowNode] = []
         if self.start < other.start:
@@ -125,18 +150,25 @@ class DmemInformationFlowNode(InformationFlowNode):
             out.append(DmemInformationFlowNode(other.end, self.end))
         return out
 
-    def union(self, other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
+    def starts_at(self) -> Optional[int]:
+        return self.start
+
+    def union(self,
+              other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
         '''Try to merge self and other.'''
         if not isinstance(other, DmemInformationFlowNode):
             return None
         if other.start <= self.start <= other.end:
-            return DmemInformationFlowNode(other.start, max(self.end, other.end))
+            return DmemInformationFlowNode(other.start,
+                                           max(self.end, other.end))
         elif self.start <= other.start <= self.end:
-            return DmemInformationFlowNode(self.start, max(other.end, self.end))
+            return DmemInformationFlowNode(self.start,
+                                           max(other.end, self.end))
         return None
 
     def pretty(self, dmem_symbols: Dict[str, int] = {}) -> List[str]:
-        labels = [([k], v) for k, v in dmem_symbols.items() if self.start <= v < self.end]
+        labels = [([k], v) for k, v in dmem_symbols.items()
+                  if self.start <= v < self.end]
         if not labels:
             return [self.name]
         labels.sort(key=lambda x: x[1])
@@ -164,7 +196,9 @@ class DmemInformationFlowNode(InformationFlowNode):
                 label_str = names[0]
             result.append(f'{label_str}[:{lengths[i]}]')
         if labels[0][1] != self.start:
-            result.insert(0, DmemInformationFlowNode(self.start, labels[0][1]).name)
+            result.insert(
+                0,
+                DmemInformationFlowNode(self.start, labels[0][1]).name)
         return result
 
 
@@ -192,7 +226,9 @@ class InformationFlowGraph:
     means the sink is overwritten with a constant value, and information is not
     flowing to it from any nodes (including its own previous value).
     '''
-    def __init__(self, flow: Dict[InformationFlowNode, Set[InformationFlowNode]],
+
+    def __init__(self,
+                 flow: Dict[InformationFlowNode, Set[InformationFlowNode]],
                  exists: bool = True):
         self.flow = flow
 
@@ -266,14 +302,16 @@ class InformationFlowGraph:
         '''Returns all sinks in the graph.'''
         return set(self.flow.keys())
 
-    def sources_for_any(self, sinks: Iterable[str]) -> Set[InformationFlowNode]:
+    def sources_for_any(self,
+                        sinks: Iterable[str]) -> Set[InformationFlowNode]:
         '''Returns all nodes that are a source for any of the given sinks.
 
         Important: this does not handle partial overlap of e.g. DMEM ranges! It
         only returns sources for the sinks exactly.
         '''
         out: Set[InformationFlowNode] = set()
-        return out.union(*(self.sources(InformationFlowNode(s)) for s in sinks))
+        return out.union(*(self.sources(InformationFlowNode(s))
+                           for s in sinks))
 
     def remove_source(self, node: str) -> None:
         '''Removes the node from the graph anywhere it appears as a source.
@@ -299,7 +337,24 @@ class InformationFlowGraph:
     def simplify(self) -> None:
         '''Merge adjacent nodes in the graph (e.g. DMEM ranges).'''
         for sink in self.flow.keys():
-            sources = list(self.flow[sink])
+            # Split out the keys with "starts at" values, as these need to be
+            # combined in starting order for the below to work
+            #
+            # TODO: potentially make .starts_at() return a tuple with a domain
+            # separation enum value alongside the start address, to allow
+            # for multiple ranged information flow node types (e.g. not just
+            # DmemInformationFlowNode)
+            start_sources: List[Tuple[int, InformationFlowNode]] = []
+            non_start_sources: List[InformationFlowNode] = []
+            for s in self.flow[sink]:
+                start = s.starts_at()
+                if start is None:
+                    non_start_sources.append(s)
+                else:
+                    start_sources.append((start, s))
+            sources = [
+                s for _, s in sorted(start_sources, key=lambda p: p[0])
+            ] + non_start_sources
             i = 0
             while i < len(sources):
                 node1 = sources[i]
@@ -578,11 +633,14 @@ class InformationFlowGraph:
         regs += [_stringify_range('w', r) for r in w_ranges]
         regs += special
         regs_line = '* clobbered registers: ' + ', '.join(regs)
-        flags_str = 'none' if len(flag_groups) == 0 else ', '.join(sorted(list(flag_groups)))
+        flags_str = 'none' if len(flag_groups) == 0 else ', '.join(
+            sorted(list(flag_groups)))
         flags_line = '* clobbered flag groups: ' + flags_str
         return regs_line + '\n' + flags_line
 
-    def pretty(self, indent: int = 0, dmem_symbols: Dict[str, int] = {}) -> str:
+    def pretty(self,
+               indent: int = 0,
+               dmem_symbols: Dict[str, int] = {}) -> str:
         '''Return a human-readable representation of the graph.'''
         prefix = ' ' * indent
         if not self.exists:
@@ -592,14 +650,16 @@ class InformationFlowGraph:
         for sink in self.flow:
             for sink_name in sink.pretty(dmem_symbols):
                 assert sink_name not in flow_strings
-                flow_strings[sink_name] = [x for s in self.flow[sink]
-                                           for x in s.pretty(dmem_symbols)]
+                flow_strings[sink_name] = [
+                    x for s in self.flow[sink] for x in s.pretty(dmem_symbols)
+                ]
         max_sink_chars = max([len(s) for s in flow_strings.keys()], default=0)
         lines = []
         for sink_str in sorted(flow_strings.keys()):
             sources_str = ', '.join(sorted(flow_strings[sink_str]))
             padding = ' ' * (max_sink_chars - len(sink_str))
-            lines.append('{}{}{} <- {}'.format(prefix, sink_str, padding, sources_str))
+            lines.append('{}{}{} <- {}'.format(prefix, sink_str, padding,
+                                               sources_str))
         return '\n'.join(lines)
 
     def __eq__(self, other: object) -> bool:
@@ -616,6 +676,7 @@ class InformationFlowGraph:
 class InsnInformationFlowNode:
     '''Represents an information flow node whose value may depend on operands.
     '''
+
     def required_constants(self, op_vals: Dict[str, int],
                            coarse_dmem: bool) -> Set[str]:
         '''Returns the names of regs that must be constant for `evaluate()`.
@@ -633,8 +694,7 @@ class InsnInformationFlowNode:
     def is_read_only(self, op_vals: Dict[str, int]) -> bool:
         return False
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         '''Determines information flow graph for the instruction.
 
@@ -648,6 +708,7 @@ class InsnInformationFlowNode:
 
 class InsnRegOperandNode(InsnInformationFlowNode):
     '''Represents a specific register operand for an instruction.'''
+
     def __init__(self, op: Operand):
         if not isinstance(op.op_type, RegOperandType):
             raise ValueError(
@@ -664,8 +725,7 @@ class InsnRegOperandNode(InsnInformationFlowNode):
         # x0 is the only read-only register
         return self._get_reg_name(op_vals) == 'x0'
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         if self.op.name not in op_vals:
             raise ValueError(
@@ -676,6 +736,7 @@ class InsnRegOperandNode(InsnInformationFlowNode):
 
 class InsnIsrOperandNode(InsnInformationFlowNode):
     '''Represents an ISR operand for an instruction.'''
+
     def __init__(self, op: Operand):
         if not isinstance(op.op_type, IsrOperandType):
             raise ValueError(
@@ -696,8 +757,7 @@ class InsnIsrOperandNode(InsnInformationFlowNode):
             return True
         return isr.read_only
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         if self.op.name not in op_vals:
             raise ValueError(
@@ -707,7 +767,9 @@ class InsnIsrOperandNode(InsnInformationFlowNode):
         if isr is None:
             return []
         if isr.name in ISR_REMAPPING:
-            return [InformationFlowNode(name) for name in ISR_REMAPPING[isr.name]]
+            return [
+                InformationFlowNode(name) for name in ISR_REMAPPING[isr.name]
+            ]
         return [InformationFlowNode(isr.name)]
 
 
@@ -716,6 +778,7 @@ class InsnDmemOperandNode(InsnInformationFlowNode):
 
     The dmem location consists of a GPR operand and an offset.
     '''
+
     def __init__(self, addr_op: Operand, offset_op: Operand, width: int):
         if not isinstance(addr_op.op_type, RegOperandType):
             raise ValueError(
@@ -731,15 +794,15 @@ class InsnDmemOperandNode(InsnInformationFlowNode):
         self.offset_op = offset_op
         self.width = width
 
-    def required_constants(self, op_vals: Dict[str, int], coarse_dmem: bool) -> Set[str]:
+    def required_constants(self, op_vals: Dict[str, int],
+                           coarse_dmem: bool) -> Set[str]:
         if coarse_dmem:
             return set()
         addr_reg_val = op_vals[self.addr_op.name]
         addr_reg_name = self.addr_op.op_type.op_val_to_str(addr_reg_val, None)
         return set([addr_reg_name])
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         if coarse_dmem:
             return [InformationFlowNode('dmem')]
@@ -760,10 +823,13 @@ class InsnDmemOperandNode(InsnInformationFlowNode):
                 'regs are: {})'.format(addr_reg_name, constant_regs.keys()))
         addr = constant_regs[addr_reg_name]
         offset = op_vals[self.offset_op.name]
-        return [DmemInformationFlowNode(addr + offset, addr + offset + self.width)]
+        return [
+            DmemInformationFlowNode(addr + offset, addr + offset + self.width)
+        ]
 
 
-def _eval_indirect_wdr(gpr: str, constant_regs: Dict[str, int]) -> InformationFlowNode:
+def _eval_indirect_wdr(gpr: str,
+                       constant_regs: Dict[str, int]) -> InformationFlowNode:
     if gpr not in constant_regs:
         raise RuntimeError(
             'Cannot analyze information flow; cannot determine which '
@@ -776,6 +842,7 @@ def _eval_indirect_wdr(gpr: str, constant_regs: Dict[str, int]) -> InformationFl
 
 class InsnIndirectWDRNode(InsnInformationFlowNode):
     '''Represents an indirect reference to a WDR via a GPR.'''
+
     def __init__(self, op: Operand):
         if not isinstance(op.op_type, RegOperandType):
             raise ValueError(
@@ -796,7 +863,8 @@ class InsnIndirectWDRNode(InsnInformationFlowNode):
                     self.op.name, op_vals.keys()))
         return self.op.op_type.op_val_to_str(op_vals[self.op.name], None)
 
-    def required_constants(self, op_vals: Dict[str, int], coarse_dmem: bool) -> Set[str]:
+    def required_constants(self, op_vals: Dict[str, int],
+                           coarse_dmem: bool) -> Set[str]:
         # In coarse mode (instruction-count analysis) the specific WDR touched
         # by an indirect reference does not affect control flow, so do not
         # require the index register to be a compile-time constant.
@@ -804,8 +872,7 @@ class InsnIndirectWDRNode(InsnInformationFlowNode):
             return set()
         return {self._get_gpr_name(op_vals)}
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         gpr = self._get_gpr_name(op_vals)
         if coarse_dmem and gpr not in constant_regs:
@@ -819,6 +886,7 @@ class InsnIndirectWDRNode(InsnInformationFlowNode):
 
 class InsnGroupFlagNode(InsnInformationFlowNode):
     '''Represents a flag node whose group depends on the flag_group operand.'''
+
     def __init__(self, flag: str):
         flag = flag.lower()
         if flag not in FLAG_NAMES:
@@ -828,8 +896,7 @@ class InsnGroupFlagNode(InsnInformationFlowNode):
         self.flag = flag
         self.constant_dependent = False
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         if 'flag_group' not in op_vals:
             raise ValueError(
@@ -841,12 +908,12 @@ class InsnGroupFlagNode(InsnInformationFlowNode):
 
 class InsnConstantNode(InsnInformationFlowNode):
     '''Represents instruction node whose value does not depend on operands.'''
+
     def __init__(self, name: str):
         self.name = name
         self.constant_dependent = False
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         return [InformationFlowNode(self.name)]
 
@@ -909,7 +976,8 @@ def _parse_iflow_nodes(
         fields = node.split('-')
         if len(fields) != 3:
             raise RuntimeError(
-                'Invalid dmem information-flow reference format: {}'.format(node))
+                'Invalid dmem information-flow reference format: {}'.format(
+                    node))
         _, gpr, width = fields
         if not width.isnumeric():
             raise RuntimeError(
@@ -922,8 +990,7 @@ def _parse_iflow_nodes(
                 offset = op
         if offset is None:
             raise RuntimeError(
-                'No offset operand found for DMEM reference: {}'
-                .format(node))
+                'No offset operand found for DMEM reference: {}'.format(node))
         for op in operands:
             if gpr == op.name:
                 if not (isinstance(op.op_type, RegOperandType) and
@@ -966,6 +1033,7 @@ def _parse_iflow_nodes(
 
 class InsnInformationFlowTest:
     '''Wrapper class for tests for information-flow rules.'''
+
     def __init__(self, as_string: str, operand: str, value: Any):
         self.as_string = as_string
         self.operand = operand
@@ -987,30 +1055,35 @@ class InsnInformationFlowTest:
 
 class EqTest(InsnInformationFlowTest):
     '''Tests that the operand is equal to the value.'''
+
     def check(self, op_vals: Dict[str, int]) -> bool:
         return op_vals[self.operand] == self.get_value(op_vals)
 
 
 class NotEqTest(InsnInformationFlowTest):
     '''Tests that the operand is not equal to the value.'''
+
     def check(self, op_vals: Dict[str, int]) -> bool:
         return not (op_vals[self.operand] == self.get_value(op_vals))
 
 
 class GeqTest(InsnInformationFlowTest):
     '''Tests that the operand is greater than or equal to the value.'''
+
     def check(self, op_vals: Dict[str, int]) -> bool:
         return op_vals[self.operand] >= self.get_value(op_vals)
 
 
 class LeqTest(InsnInformationFlowTest):
     '''Tests that the operand is less than or equal to the value.'''
+
     def check(self, op_vals: Dict[str, int]) -> bool:
         return op_vals[self.operand] <= self.get_value(op_vals)
 
 
 class MultiTest(InsnInformationFlowTest):
     '''Combination of multiple tests.'''
+
     def __init__(self, tests: List[InsnInformationFlowTest]):
         self.tests = tests
 
@@ -1070,6 +1143,7 @@ def _parse_iflow_test(test_yml: object, what: str,
 class InsnInformationFlowRule:
     '''A rule describing a single step of information flowing to one or more
        nodes from one or more nodes.'''
+
     def __init__(self, flows_to: Sequence[InsnInformationFlowNode],
                  flows_from: Sequence[InsnInformationFlowNode],
                  test: InsnInformationFlowTest):
@@ -1077,7 +1151,8 @@ class InsnInformationFlowRule:
         self.flows_from = flows_from
         self.test = test
 
-    def required_constants(self, op_vals: Dict[str, int], coarse_dmem: bool) -> Set[str]:
+    def required_constants(self, op_vals: Dict[str, int],
+                           coarse_dmem: bool) -> Set[str]:
         '''Returns the names of regs that must be constant for `evaluate()`.'''
         if not self.test.check(op_vals):
             # Rule is not triggered
@@ -1089,19 +1164,20 @@ class InsnInformationFlowRule:
             out.update(node.required_constants(op_vals, coarse_dmem))
         return out
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> InformationFlowGraph:
         if not self.test.check(op_vals):
             # Rule is not triggered
             return InformationFlowGraph.nonexistent()
         sources = set()
         for insn_node in self.flows_from:
-            for node in insn_node.evaluate(op_vals, constant_regs, coarse_dmem):
+            for node in insn_node.evaluate(op_vals, constant_regs,
+                                           coarse_dmem):
                 sources.add(node)
         flow = {}
         for insn_node in self.flows_to:
-            for node in insn_node.evaluate(op_vals, constant_regs, coarse_dmem):
+            for node in insn_node.evaluate(op_vals, constant_regs,
+                                           coarse_dmem):
                 if not insn_node.is_read_only(op_vals):
                     assert node not in flow
                     flow[node] = sources.copy()
@@ -1147,10 +1223,12 @@ class InsnInformationFlowRule:
 
 class InsnInformationFlow:
     '''Represents information flow for a single instruction.'''
+
     def __init__(self, rules: List[InsnInformationFlowRule]) -> None:
         self.rules = rules
 
-    def required_constants(self, op_vals: Dict[str, int], coarse_dmem: bool) -> Set[str]:
+    def required_constants(self, op_vals: Dict[str, int],
+                           coarse_dmem: bool) -> Set[str]:
         '''Returns the names of regs that must be constant for `evaluate()`.'''
         return {
             const
@@ -1158,8 +1236,7 @@ class InsnInformationFlow:
             for const in rule.required_constants(op_vals, coarse_dmem)
         }
 
-    def evaluate(self, op_vals: Dict[str, int],
-                 constant_regs: Dict[str, int],
+    def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> InformationFlowGraph:
         graph = InformationFlowGraph.nonexistent()
         for rule in self.rules:

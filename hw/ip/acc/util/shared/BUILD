@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -86,7 +86,10 @@ py_library(
 
 py_library(
     name = "encoding",
-    srcs = ["encoding.py"],
+    srcs = [
+        "__init__.py",
+        "encoding.py",
+    ],
     imports = [".."],
     deps = [
         ":bool_literal",
@@ -97,7 +100,10 @@ py_library(
 
 py_library(
     name = "encoding_scheme",
-    srcs = ["encoding_scheme.py"],
+    srcs = [
+        "__init__.py",
+        "encoding_scheme.py",
+    ],
     imports = [".."],
     deps = [
         ":bit_ranges",
@@ -108,7 +114,10 @@ py_library(
 
 py_library(
     name = "information_flow",
-    srcs = ["information_flow.py"],
+    srcs = [
+        "__init__.py",
+        "information_flow.py",
+    ],
     imports = [".."],
     deps = [
         ":operand",
@@ -118,7 +127,10 @@ py_library(
 
 py_library(
     name = "information_flow_analysis",
-    srcs = ["information_flow_analysis.py"],
+    srcs = [
+        "__init__.py",
+        "information_flow_analysis.py",
+    ],
     imports = [".."],
     deps = [
         ":cache",
@@ -133,7 +145,10 @@ py_library(
 
 py_library(
     name = "isr",
-    srcs = ["isr.py"],
+    srcs = [
+        "__init__.py",
+        "isr.py",
+    ],
     imports = [".."],
     deps = [
         "//util/serialize:parse_helpers",
@@ -142,7 +157,10 @@ py_library(
 
 py_library(
     name = "insn_yaml",
-    srcs = ["insn_yaml.py"],
+    srcs = [
+        "__init__.py",
+        "insn_yaml.py",
+    ],
     data = ["//hw/ip/acc/data:all_files"],
     imports = [".."],
     deps = [
@@ -170,7 +188,10 @@ py_library(
 
 py_library(
     name = "lsu_desc",
-    srcs = ["lsu_desc.py"],
+    srcs = [
+        "__init__.py",
+        "lsu_desc.py",
+    ],
     imports = [".."],
     deps = [
         "//util/serialize:parse_helpers",
@@ -189,7 +210,10 @@ py_library(
 
 py_library(
     name = "operand",
-    srcs = ["operand.py"],
+    srcs = [
+        "__init__.py",
+        "operand.py",
+    ],
     imports = [".."],
     deps = [
         ":encoding",
@@ -246,4 +270,18 @@ py_library(
     name = "toolchain",
     srcs = ["toolchain.py"],
     imports = [".."],
+)
+
+py_test(
+    name = "information_flow_test",
+    srcs = [
+        "__init__.py",
+        "information_flow_test.py",
+    ],
+    imports = [".."],
+    deps = [
+        "//hw/ip/acc/util/shared:information_flow",
+        "//hw/ip/acc/util/shared:insn_yaml",
+        "//util/serialize:parse_helpers",
+    ],
 )
