@@ -113,8 +113,8 @@ fn run_mlkem_testcase(
             let out = CryptotestMlkemKeygenOutput::recv(spi_console, opts.timeout, false, false)?;
             MlkemOutputs {
                 success: out.success,
-                ek: out.ek[..out.ek_len].to_vec(),
-                dk: out.dk[..out.dk_len].to_vec(),
+                ek: out.ek.to_vec(),
+                dk: out.dk.to_vec(),
                 ..Default::default()
             }
         }
@@ -136,8 +136,8 @@ fn run_mlkem_testcase(
                 CryptotestMlkemKeygenDecapsOutput::recv(spi_console, opts.timeout, false, false)?;
             MlkemOutputs {
                 success: out.success,
-                ek: out.ek[..out.ek_len].to_vec(),
-                k: out.k[..out.k_len].to_vec(),
+                ek: out.ek.to_vec(),
+                k: out.k.to_vec(),
                 ..Default::default()
             }
         }
@@ -158,8 +158,8 @@ fn run_mlkem_testcase(
             let out = CryptotestMlkemEncapsOutput::recv(spi_console, opts.timeout, false, false)?;
             MlkemOutputs {
                 success: out.success,
-                c: out.c[..out.c_len].to_vec(),
-                k: out.k[..out.k_len].to_vec(),
+                c: out.c.to_vec(),
+                k: out.k.to_vec(),
                 ..Default::default()
             }
         }
@@ -180,7 +180,7 @@ fn run_mlkem_testcase(
             let out = CryptotestMlkemDecapsOutput::recv(spi_console, opts.timeout, false, false)?;
             MlkemOutputs {
                 success: out.success,
-                k: out.k[..out.k_len].to_vec(),
+                k: out.k.to_vec(),
                 ..Default::default()
             }
         }

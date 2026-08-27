@@ -138,8 +138,8 @@ fn run_mldsa_testcase(
             let out = CryptotestMldsaKeygenOutput::recv(spi_console, opts.timeout, false, false)?;
             MldsaOutputs {
                 success: out.success,
-                pk: out.pk[..out.pk_len].to_vec(),
-                sk: out.sk[..out.sk_len].to_vec(),
+                pk: out.pk.to_vec(),
+                sk: out.sk.to_vec(),
                 ..Default::default()
             }
         }
@@ -170,8 +170,8 @@ fn run_mldsa_testcase(
                 CryptotestMldsaKeygenSignOutput::recv(spi_console, opts.timeout, false, false)?;
             MldsaOutputs {
                 success: out.success,
-                pk: out.pk[..out.pk_len].to_vec(),
-                signature: out.signature[..out.signature_len].to_vec(),
+                pk: out.pk.to_vec(),
+                signature: out.signature.to_vec(),
                 ..Default::default()
             }
         }
@@ -201,7 +201,7 @@ fn run_mldsa_testcase(
             let out = CryptotestMldsaSiggenOutput::recv(spi_console, opts.timeout, false, false)?;
             MldsaOutputs {
                 success: out.success,
-                signature: out.signature[..out.signature_len].to_vec(),
+                signature: out.signature.to_vec(),
                 ..Default::default()
             }
         }
