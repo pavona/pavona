@@ -6,6 +6,7 @@
 
 #include <stdbool.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -85,8 +86,7 @@ status_t test_chip_specific_startup(ujson_t *uj) {
   TRY(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR),
                        &lc));
   TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR),

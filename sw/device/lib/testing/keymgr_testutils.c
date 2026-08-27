@@ -202,8 +202,7 @@ status_t keymgr_testutils_init_nvm_then_reset(void) {
 
     TRY(dif_flash_ctrl_init_state(
         &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
-    TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+    TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
 
     bool secret2_computed = false;
     TRY(dif_otp_ctrl_is_digest_computed(&otp_ctrl, kOtpPartitionSecret2,

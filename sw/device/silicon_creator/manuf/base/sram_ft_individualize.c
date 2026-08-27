@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -67,8 +68,7 @@ static status_t peripheral_handles_init(void) {
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
   TRY(dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();

@@ -4,13 +4,13 @@
 
 #include <stdbool.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -60,8 +60,7 @@ size_t compare_dword(const uint64_t *actual_arr, uint32_t part_idx,
 bool test_main(void) {
   dif_otp_ctrl_t otp_ctrl;
 
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
 
   // Number of 64-bit words that differ from the expected value; used to
   // determine overall test pass or failure.

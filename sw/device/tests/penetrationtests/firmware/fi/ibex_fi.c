@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/ibex_fi.h"
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
@@ -4837,8 +4838,7 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
 
   // Init OTP.
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
 
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;

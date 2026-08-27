@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -69,8 +70,7 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
   // OTP
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   // Rstmgr
   CHECK_DIF_OK(dif_rstmgr_init(

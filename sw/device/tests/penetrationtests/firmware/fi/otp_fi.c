@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/otp_fi.h"
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -16,7 +17,6 @@
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_otp_ctrl_t otp;
 
@@ -175,8 +175,7 @@ status_t handle_otp_fi_init(ujson_t *uj) {
                    kPentestPeripheralAes | kPentestPeripheralHmac |
                    kPentestPeripheralKmac | kPentestPeripheralAcc);
 
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
 
   init_otp_mem_dump_buffers();
 
