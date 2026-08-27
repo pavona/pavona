@@ -4,6 +4,7 @@
 
 #include <stdbool.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -47,8 +48,7 @@ static void print_otp_sw_cfg_digests(void) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -41,8 +42,7 @@ typedef struct partition_data {
 } partition_data_t;
 
 static void peripheral_handles_init(void) {
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
 }

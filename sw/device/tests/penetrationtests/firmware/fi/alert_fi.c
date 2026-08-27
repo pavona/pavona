@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/alert_fi.h"
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -155,8 +156,7 @@ static status_t init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR);
   TRY(dif_acc_init(base_addr, &acc));
 
-  base_addr = mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR);
-  TRY(dif_otp_ctrl_init(base_addr, &otp_ctrl));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_EGRET_PATTGEN_BASE_ADDR);
   TRY(dif_pattgen_init(base_addr, &pattgen));
