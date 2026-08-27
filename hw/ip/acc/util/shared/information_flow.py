@@ -12,8 +12,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from serialize.parse_helpers import check_keys, check_list, check_str
 
-from .isr import Isr
-from .operand import ImmOperandType, IsrOperandType, Operand, RegOperandType
+from shared.isr import Isr
+from shared.operand import ImmOperandType, IsrOperandType, Operand, RegOperandType
 
 FLAG_NAMES = ['c', 'm', 'l', 'z']
 
@@ -85,6 +85,13 @@ class InformationFlowNode:
             return self
         return None
 
+    def starts_at(self) -> bool:
+        '''Try to determine if this node can be ordered with another node.
+
+        Returns None if the two nodes cannot be ordered.
+        '''
+        return None
+
     def pretty(self, dmem_symbols: Dict[str, int]) -> List[str]:
         '''Pretty-print the node. May return multiple names.'''
         return [self.name]
@@ -124,6 +131,9 @@ class DmemInformationFlowNode(InformationFlowNode):
         if other.end < self.end:
             out.append(DmemInformationFlowNode(other.end, self.end))
         return out
+
+    def starts_at(self) -> Optional[int]:
+        return self.start
 
     def union(self, other: 'InformationFlowNode') -> Optional['InformationFlowNode']:
         '''Try to merge self and other.'''
@@ -299,7 +309,16 @@ class InformationFlowGraph:
     def simplify(self) -> None:
         '''Merge adjacent nodes in the graph (e.g. DMEM ranges).'''
         for sink in self.flow.keys():
-            sources = list(self.flow[sink])
+            # Split out the keys with "starts at" values, as these need to be
+            # combined in starting order for the below to work
+            #
+            # TODO: potentially make .starts_at() return a tuple with a domain
+            # separation enum value alongside the start address, to allow
+            # for multiple ranged information flow node types (e.g. not just
+            # DmemInformationFlowNode)
+            start_sources = [s for s in self.flow[sink] if s.starts_at() is not None]
+            non_start_sources = [s for s in self.flow[sink] if s not in start_sources]
+            sources = sorted(start_sources, key=lambda n: n.starts_at()) + non_start_sources
             i = 0
             while i < len(sources):
                 node1 = sources[i]
