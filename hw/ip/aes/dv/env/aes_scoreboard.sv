@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -99,9 +100,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
     input_item.clean();
     input_item.start_item = 1;
-    if (input_item.sideload_en) begin
-      exp_clear = 1;
-    end
+    exp_clear = input_item.sideload_en;
   endfunction
 
   function void on_ctrl_gcm_shadowed_write(logic [31:0] wdata);
@@ -903,6 +902,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     // if split is set before reset make sure to cancel
     input_item.split_item = 0;
     split_pending = 0;
+    exp_clear = 0;
     // reset compare task to start
     reset_rebuilding = 1;
   endfunction
