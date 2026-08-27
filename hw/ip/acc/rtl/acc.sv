@@ -829,8 +829,8 @@ module acc
     dmem_sec_wipe = 1'b0;
     imem_sec_wipe = 1'b0;
 
-    // Can only start a new command when idle.
-    if (status_q == StatusIdle) begin
+    // Can only start a new command when idle and not locking.
+    if (status_q == StatusIdle && !locking) begin
       if (reg2hw.cmd.qe) begin
         unique case (reg2hw.cmd.q)
           CmdExecute:     start_d       = 1'b1;

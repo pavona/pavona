@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,6 +34,7 @@ module acc_bind;
 
     .status_q_i(status_q),
     .busy_secure_wipe,
+    .locking_i(locking),
 
     .imem_rdata_bus(imem_rdata_bus),
     .dmem_rdata_bus(dmem_rdata_bus)
