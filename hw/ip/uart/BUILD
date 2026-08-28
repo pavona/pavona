@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/uart/data:all_files",
+        "//hw/ip/uart/rtl:all_files",
     ],
 )
 

@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/sram_ctrl/data:all_files",
+        "//hw/ip/sram_ctrl/rtl:all_files",
     ],
 )
 

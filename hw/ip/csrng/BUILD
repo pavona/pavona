@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/csrng/data:all_files",
+        "//hw/ip/csrng/rtl:all_files",
     ],
 )
 
