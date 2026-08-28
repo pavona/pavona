@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_egret/ip_autogen/pinmux/rtl:all_files"],
 )
 
 filegroup(
