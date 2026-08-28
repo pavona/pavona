@@ -86,6 +86,9 @@ def gen_masked_poly_getnoise_test(
     reta1_e3 = pack(getnoise(coins, nonce, 3))
     reta2 = pack(getnoise(coins, nonce, 2))
 
+    # Check if w16 has the correct value at the end of the test.
+    w16 = int.to_bytes(Q | (3327 << 32), byteorder="little", length=32)
+
     # Write input values.
     inputs = {
         'seed': seed_bytes,
@@ -94,8 +97,8 @@ def gen_masked_poly_getnoise_test(
     }
     write_test_data(inputs, data_file)
 
-    # Write expected register values (none).
-    write_test_exp({}, exp_file)
+    # Write expected register values.
+    write_test_exp({'w16': w16}, exp_file)
 
     # Write expected dmem values.
     write_test_dexp({'reta_1_e2': reta1_e2, 'reta_1_e3': reta1_e3,
