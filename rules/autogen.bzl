@@ -79,6 +79,74 @@ def pavona_completecfg(name, top, seed, data = [], **kwargs):
         **kwargs
     )
 
+def _pavona_ip_reg_rtl_impl(ctx):
+    outputs = [
+        ctx.actions.declare_file("{}_reg_pkg.sv".format(ctx.attr.ip)),
+        ctx.actions.declare_file("{}_reg_top.sv".format(ctx.attr.ip)),
+    ]
+    outdir = "/".join(outputs[0].path.split("/")[:-1])  # RTL directory of IP
+
+    arguments = [
+        "-r",
+        "--outdir",
+        outdir,
+        ctx.file.hjson.path,
+    ]
+    inputs = [ctx.file.hjson]
+
+    if ctx.file.alias:
+        alias = ctx.file.alias
+        arguments.extend([
+            "--alias",
+            alias.path,
+        ])
+        inputs.append(alias)
+
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
+        executable = ctx.executable._regtool,
+    )
+
+    return [DefaultInfo(files = depset(outputs))]
+
+pavona_ip_reg_rtl_rule = rule(
+    implementation = _pavona_ip_reg_rtl_impl,
+    doc = "Generate an IP's register RTL (reg_pkg and reg_top) with regtool",
+    attrs = {
+        "ip": attr.string(mandatory = True, doc = "Name of the IP"),
+        "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
+        "alias": attr.label(
+            mandatory = False,
+            allow_single_file = True,
+            doc = "A path to an alias file",
+            default = None,
+        ),
+        "_regtool": attr.label(
+            default = "//util:regtool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def pavona_ip_reg_rtl(name, ip, hjson = None, target_compatible_with = [], **kwargs):
+    """
+    Macro around `pavona_ip_reg_rtl_rule` which generates register RTL from an IP
+    block description.
+
+    Generates `<ip>_reg_pkg.sv` and `<ip>_reg_top.sv` using regtool. Alias file
+    optional.
+    """
+    pavona_ip_reg_rtl_rule(
+        name = name,
+        ip = ip,
+        hjson = hjson or pavona_select_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + pavona_require_ip_attr(ip, "hjson"),
+        **kwargs
+    )
+
 def _pavona_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
 
