@@ -8,7 +8,7 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* dmem[rbs] <= poly_to_bitsliced(dmem[xa]) */
+  /* rbs <- poly_to_bitsliced(xa). */
   la  x10, xa
   la  x11, rbs
   jal x1, poly_to_bitsliced

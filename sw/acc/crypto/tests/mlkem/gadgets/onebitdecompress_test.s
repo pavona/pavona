@@ -2,9 +2,6 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-#define NSHARES 2
-#define N_WDR 16
-#define NB_POLY 512
 #define STACK_SIZE 20000
 
 .section .text.start
@@ -13,41 +10,35 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* Load stack pointer */
-  la x2, stack_end
-
-  /* Load R || Q to mod. */
-  addi    x4, x0, 0
+  /* mod = qinv | q. */
+  add     x4, x0, x0
   la      x5, modulus_bn
   bn.lid  x4++, 0(x5)
   bn.rshi w0, w31, w0 >> 240
   la      x5, modulus_inv
   bn.lid  x4, 0(x5)
-  bn.or   w0, w0, w1 << 32 /* mod = R | Q */
+  bn.or   w0, w0, w1 << 32
   bn.wsrw mod, w0
 
-  /* dmem[ra] <= onebitdecompress(dmem[xb]) */
+  /* ra <- onebitdecompress(xb). */
   bn.wsrr w16, mod
+  la      x2, stack_end
   la      x10, xb
   la      x12, ra
   jal     x1, onebitdecompress
 
-  /* Compute r */
+  /* r <- unmask(ra). */
   la   x2, ra
-  la   x3, r
+  addi x3, x2, 512
+  la   x5, r
   li   x4, 1
-  li   x5, NSHARES
-  addi x5, x5, -1
-  loopi N_WDR, 7
-    addi   x6, x2, NB_POLY
-    bn.lid x0, 0(x2++)
-    loop x5, 3
-      bn.lid       x4, 0(x6)
-      bn.addvm.16h w0, w0, w1
-      addi         x6, x6, NB_POLY
-    endloop
-    bn.sid x0, 0(x3++)
+  loopi 16, 4
+    bn.lid       x0, 0(x2++)
+    bn.lid       x4, 0(x3++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
   endloop
+
   ecall
 
 .data
@@ -57,4 +48,4 @@ stack:
 stack_end:
 
 r:
-  .zero 512 * NSHARES
+  .zero 512
