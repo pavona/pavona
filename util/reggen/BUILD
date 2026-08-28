@@ -11,8 +11,10 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "reggen",
     srcs = glob(["**/*.py"]),
+    data = [":tpl_files"],
     imports = [".."],
     deps = [
+        "//util/reggen/systemrdl:udp",
         requirement("hjson"),
         requirement("semantic_version"),
         requirement("mako"),
