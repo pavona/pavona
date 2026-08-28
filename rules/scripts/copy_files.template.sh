@@ -31,5 +31,9 @@ fi
 
 # Copy the files from the source (e.g. bazel-out) to the destination.
 for f in "${FILES[@]}"; do
-  cp --no-preserve=mode "$f" "$WORKSPACE/$DEST"
+    if [[ -d "$f" ]]; then
+        cp --no-preserve=mode "$f"/* "$WORKSPACE/$DEST"
+    else
+        cp --no-preserve=mode "$f" "$WORKSPACE/$DEST"
+    fi
 done
