@@ -595,7 +595,7 @@ module pinmux
   logic [AlignedMuxSize-1:0] dio_wkup_mux;
   logic [AlignedMuxSize-1:0] mio_wkup_mux;
   assign dio_wkup_mux = AlignedMuxSize'(dio_wkup_no_scan);
-  // The two constants that are concatenated here make sure tha the selection
+  // The two constants that are concatenated here make sure that the selection
   // indices used to index this array are the same as the ones used to index
   // the mio_mux array above, where positions 0 and 1 select constant 0 and
   // 1, respectively.
