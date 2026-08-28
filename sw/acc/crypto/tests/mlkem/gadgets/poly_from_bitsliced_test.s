@@ -7,17 +7,17 @@
 .section .text.start
 
 main:
-    /* All-zero register. */
-    bn.xor w31, w31, w31
+  /* All-zero register. */
+  bn.xor w31, w31, w31
 
-    /* dmem[rn] <= poly_from_bitsliced(dmem[rbs]) */
-    la  x10, rbs
-    la  x11, rn
-    jal x1, poly_from_bitsliced
+  /* dmem[rn] <= poly_from_bitsliced(dmem[rbs]) */
+  la  x10, rbs
+  la  x11, rn
+  jal x1, poly_from_bitsliced
 
-    ecall
+  ecall
 
 .data
 .balign 32
 rn:
-    .zero NB_POLY
+  .zero NB_POLY
