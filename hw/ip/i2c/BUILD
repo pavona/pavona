@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/i2c/data:all_files",
+        "//hw/ip/i2c/rtl:all_files",
     ],
 )
 

@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/dma/data:all_files",
+        "//hw/ip/dma/rtl:all_files",
     ],
 )
 

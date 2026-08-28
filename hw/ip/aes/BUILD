@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/aes/data:all_files",
+        "//hw/ip/aes/rtl:all_files",
     ],
 )
 

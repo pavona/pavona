@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/usbdev/data:all_files",
+        "//hw/ip/usbdev/rtl:all_files",
     ],
 )
 
