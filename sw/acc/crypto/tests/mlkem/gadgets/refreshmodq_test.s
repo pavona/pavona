@@ -10,46 +10,47 @@
 .section .text.start
 
 main:
-    /* All-zero register. */
-    bn.xor w31, w31, w31
+  /* All-zero register. */
+  bn.xor w31, w31, w31
 
-    /* MOD <= dmem[modulus] = KYBER_Q */
-    la      x6, modulus_bn
-    bn.lid  x0, 0(x6)
-    bn.rshi w0, w31, w0 >> 240
-    bn.wsrw mod, w0
+  /* MOD <= dmem[modulus] = KYBER_Q */
+  la      x6, modulus_bn
+  bn.lid  x0, 0(x6)
+  bn.rshi w0, w31, w0 >> 240
+  bn.wsrw mod, w0
 
-    /* Load stack pointer. */
-    la  x2, stack_end
+  /* Load stack pointer. */
+  la  x2, stack_end
 
-    /* dmem[ra] <= refreshmodq(dmem[xa]) */
-    bn.wsrr w16, mod
-    la      x10, xa
-    la      x12, ra
-    jal     x1, refreshmodq
+  /* dmem[ra] <= refreshmodq(dmem[xa]) */
+  bn.wsrr w16, mod
+  la      x10, xa
+  la      x12, ra
+  jal     x1, refreshmodq
 
-    /* Compute r */
-    la   x2, ra
-    la   x3, r
-    li   x4, 1
-    li   x5, NSHARES
-    addi x5, x5, -1
-    loopi N_WDR, 7
-        addi   x6, x2, NB_POLY
-        bn.lid x0, 0(x2++)
-        loop x5, 3
-            bn.lid       x4, 0(x6)
-            bn.addvm.16h w0, w0, w1
-            addi         x6, x6, NB_POLY
-        endloop
-        bn.sid x0, 0(x3++)
+  /* Compute r */
+  la   x2, ra
+  la   x3, r
+  li   x4, 1
+  li   x5, NSHARES
+  addi x5, x5, -1
+  loopi N_WDR, 7
+    addi   x6, x2, NB_POLY
+    bn.lid x0, 0(x2++)
+    loop x5, 3
+      bn.lid       x4, 0(x6)
+      bn.addvm.16h w0, w0, w1
+      addi         x6, x6, NB_POLY
     endloop
-    ecall
+    bn.sid x0, 0(x3++)
+  endloop
+  ecall
 
 .data
 .balign 32
 stack:
-    .zero STACK_SIZE
+  .zero STACK_SIZE
 stack_end:
+
 r:
-    .zero 32 * N_WDR
+  .zero 32 * N_WDR
