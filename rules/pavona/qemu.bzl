@@ -265,7 +265,7 @@ sim_qemu = rule(
         "otp_sv": attr.label(
             allow_single_file = True,
             # TODO: should we really use Egret as the default?
-            default = Label("//hw/top_egret/ip_autogen/otp_ctrl:rtl/otp_ctrl_part_pkg.sv"),
+            default = Label("//hw/top_egret/ip_autogen/otp_ctrl/rtl:otp_ctrl_part_pkg.sv"),
         ),
         "lc_sv": attr.label(
             allow_single_file = True,

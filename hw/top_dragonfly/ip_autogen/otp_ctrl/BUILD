@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_dragonfly/ip_autogen/otp_ctrl/rtl:all_files"],
 )
 
 filegroup(
