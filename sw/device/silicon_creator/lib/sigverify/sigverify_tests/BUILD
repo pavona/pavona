@@ -4,6 +4,7 @@
 
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load("@ot_python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
 load(
     "//rules/pavona:defs.bzl",
     "fpga_params",

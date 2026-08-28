@@ -4,6 +4,8 @@
 
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 load("@ot_python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
 
 package(default_visibility = ["//visibility:public"])

@@ -5,6 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
 
 py_binary(
     name = "rsa_3072_verify_parse_testvectors",

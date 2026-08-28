@@ -6,6 +6,9 @@
 common --enable_bzlmod
 common --enable_workspace=no
 
+# Require explicit `load()` statements, as Bazel 9 does by default.
+common --incompatible_autoload_externally=
+
 # Share extracted external repositories (e.g. the LLVM toolchain) across pavona checkouts.
 common --repo_contents_cache=~/.cache/pavona-repo-contents-cache
 

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_python//python:defs.bzl", "py_library")
 load("//rules/pavona:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",

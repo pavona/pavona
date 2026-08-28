@@ -4,6 +4,7 @@
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EGRET_SKUS",
