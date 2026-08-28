@@ -20,6 +20,9 @@ FLAG_NAMES = ['c', 'm', 'l', 'z']
 # Deliberately invalid CSR address used by unimp.
 UNIMP_CSR_ADDR = 3072
 
+# Number of wide data registers.
+NUM_WDRS = 32
+
 # Registers that can be involved in information flow without being an operand
 SPECIAL_REG_NAMES = ['mod', 'acc', 'acch', 'kmac_core', 'rnd', 'urnd']
 
@@ -694,6 +697,22 @@ class InsnInformationFlowNode:
     def is_read_only(self, op_vals: Dict[str, int]) -> bool:
         return False
 
+    def is_may_write(self, op_vals: Dict[str, int],
+                     constant_regs: Dict[str, int], coarse_dmem: bool) -> bool:
+        '''True if this sink may be written rather than certainly written.
+
+        A may-write sink depends on itself as well as on the rule's sources,
+        since the write need not have covered it. Only an indirect WDR
+        reference with a non-constant index and a coarse DMEM node qualify.
+        '''
+        return False
+
+    def extra_sources(self, op_vals: Dict[str, int],
+                      constant_regs: Dict[str, int],
+                      coarse_dmem: bool) -> List[InformationFlowNode]:
+        '''Nodes the flow depends on besides the ones evaluate() names.'''
+        return []
+
     def evaluate(self, op_vals: Dict[str, int], constant_regs: Dict[str, int],
                  coarse_dmem: bool) -> List[InformationFlowNode]:
         '''Determines information flow graph for the instruction.
@@ -827,6 +846,12 @@ class InsnDmemOperandNode(InsnInformationFlowNode):
             DmemInformationFlowNode(addr + offset, addr + offset + self.width)
         ]
 
+    def is_may_write(self, op_vals: Dict[str, int],
+                     constant_regs: Dict[str, int],
+                     coarse_dmem: bool) -> bool:
+        # The coarse "dmem" node covers far more than the access.
+        return coarse_dmem
+
 
 def _eval_indirect_wdr(gpr: str,
                        constant_regs: Dict[str, int]) -> InformationFlowNode:
@@ -877,11 +902,23 @@ class InsnIndirectWDRNode(InsnInformationFlowNode):
         gpr = self._get_gpr_name(op_vals)
         if coarse_dmem and gpr not in constant_regs:
             # The index is not statically known (e.g. a loop-carried WDR index
-            # in a variable-count loop). Fall back to a single conservative node
-            # standing in for the referenced WDR; the exact WDR is irrelevant to
-            # instruction counting.
-            return [InformationFlowNode('wref-{}'.format(gpr))]
+            # in a variable-count loop), so any WDR may be the one referenced.
+            return [InformationFlowNode('w{}'.format(i)) for i in range(NUM_WDRS)]
         return [_eval_indirect_wdr(gpr, constant_regs)]
+
+    def is_may_write(self, op_vals: Dict[str, int],
+                     constant_regs: Dict[str, int],
+                     coarse_dmem: bool) -> bool:
+        return coarse_dmem and self._get_gpr_name(op_vals) not in constant_regs
+
+    def extra_sources(self, op_vals: Dict[str, int],
+                      constant_regs: Dict[str, int],
+                      coarse_dmem: bool) -> List[InformationFlowNode]:
+        # The index selects which WDR, so it feeds whatever comes out.
+        gpr = self._get_gpr_name(op_vals)
+        if coarse_dmem and gpr not in constant_regs:
+            return [InformationFlowNode(gpr)]
+        return []
 
 
 class InsnGroupFlagNode(InsnInformationFlowNode):
@@ -1150,6 +1187,10 @@ class InsnInformationFlowRule:
         self.flows_to = flows_to
         self.flows_from = flows_from
         self.test = test
+        # Only these node types can be may-writes or name extra sources.
+        partial = (InsnDmemOperandNode, InsnIndirectWDRNode)
+        self.has_partial_refs = any(
+            isinstance(n, partial) for n in list(flows_to) + list(flows_from))
 
     def required_constants(self, op_vals: Dict[str, int],
                            coarse_dmem: bool) -> Set[str]:
@@ -1174,18 +1215,25 @@ class InsnInformationFlowRule:
             for node in insn_node.evaluate(op_vals, constant_regs,
                                            coarse_dmem):
                 sources.add(node)
+        if self.has_partial_refs:
+            # An unresolved reference also depends on whatever selects it.
+            for insn_node in self.flows_from:
+                sources.update(
+                    insn_node.extra_sources(op_vals, constant_regs, coarse_dmem))
+            for insn_node in self.flows_to:
+                sources.update(
+                    insn_node.extra_sources(op_vals, constant_regs, coarse_dmem))
         flow = {}
         for insn_node in self.flows_to:
+            may_write = self.has_partial_refs and insn_node.is_may_write(
+                op_vals, constant_regs, coarse_dmem)
             for node in insn_node.evaluate(op_vals, constant_regs,
                                            coarse_dmem):
                 if not insn_node.is_read_only(op_vals):
                     assert node not in flow
                     flow[node] = sources.copy()
-            if coarse_dmem and isinstance(insn_node, InsnDmemOperandNode):
-                # if we are doing coarse dmem tracking, then the single "dmem"
-                # node should not get overwritten by writes; it should always
-                # inherit its own previous value as well.
-                flow[node].add(node)
+                    if may_write:
+                        flow[node].add(node)
         return InformationFlowGraph(flow)
 
     @staticmethod
