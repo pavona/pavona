@@ -21,10 +21,11 @@ main:
   bn.wsrw mod, w0
 
   /* ra <- secb2amodq(xb). */
-  la  x2, stack_end
-  la  x10, xb
-  la  x12, ra
-  jal x1, secb2amodq
+  bn.wsrr w16, mod
+  la      x2, stack_end
+  la      x10, xb
+  la      x12, ra
+  jal     x1, secb2amodq
 
   /* r <- unmask(ra). */
   la   x2, ra
