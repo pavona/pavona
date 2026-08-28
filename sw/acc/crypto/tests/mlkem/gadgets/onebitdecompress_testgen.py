@@ -52,6 +52,9 @@ def gen_onebitdecompress_test(
     r_int = sum(r[coeff] << (coeff * 16) for coeff in range(N))
     r_bytes = int.to_bytes(r_int, byteorder='little', length=512)
 
+    # Check if w16 has the correct value at the end of the test.
+    w16 = int.to_bytes(Q | (3327 << 32), byteorder='little', length=32)
+
     # Write input values.
     inputs = {
         'xb': x_bytes,
@@ -59,8 +62,8 @@ def gen_onebitdecompress_test(
     }
     write_test_data(inputs, data_file)
 
-    # Write expected register values (none).
-    write_test_exp({}, exp_file)
+    # Write expected register values.
+    write_test_exp({'w16': w16}, exp_file)
 
     # Write expected dmem values.
     write_test_dexp({'r': r_bytes}, dexp_file)

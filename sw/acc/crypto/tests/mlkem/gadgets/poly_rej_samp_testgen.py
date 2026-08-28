@@ -40,6 +40,9 @@ def gen_poly_rej_samp_test(
     for c in coeffs:
         r_bytes += int.to_bytes(c, byteorder="little", length=2)
 
+    # Check if w16 has the correct value at the end of the test.
+    w16 = int.to_bytes(Q | (3327 << 32), byteorder="little", length=32)
+
     # Write input values (output buffer zero-initialized).
     inputs = {
         'rand_in': rand_in,
@@ -47,8 +50,8 @@ def gen_poly_rej_samp_test(
     }
     write_test_data(inputs, data_file)
 
-    # Write expected register values (none).
-    write_test_exp({}, exp_file)
+    # Write expected register values.
+    write_test_exp({'w16': w16}, exp_file)
 
     # Write expected dmem values.
     write_test_dexp({'r': r_bytes}, dexp_file)
