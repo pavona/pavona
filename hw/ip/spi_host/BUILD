@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/spi_host/data:all_files",
+        "//hw/ip/spi_host/rtl:all_files",
     ],
 )
 
