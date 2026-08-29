@@ -1290,9 +1290,8 @@ secb2amodq:
   /* zp = x2 + 32 */
 
   /* Sample r_0 = rand, then compute zp = q - rand. */
-  bn.wsrr w16, mod
   add     x10, x12, x0
-  jal x1, poly_rej_samp
+  jal     x1, poly_rej_samp
   addi    x4, x0, 1
   la      x5, modulus_bn
   bn.lid  x4, 0(x5)
