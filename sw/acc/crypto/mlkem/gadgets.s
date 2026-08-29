@@ -53,6 +53,8 @@
  *
  * Source: Alg.2 [CS20]
  *
+ * On return, x10, x12 and x15 are unchanged.
+ *
  * @param[in]  x10: dmem pointer to Boolean shares of x
  * @param[in]  x11: share stride of x
  * @param[in]  x12: dmem pointer to Boolean shares of y
@@ -115,10 +117,6 @@ secand:
   bn.xor w3, w31, w31
   bn.xor w6, w31, w31
 
-  /* Advance x10, x12, x15 to the next bit. */
-  addi x10, x10, 32
-  addi x12, x12, 32
-  addi x15, x15, 32
   ret
 
 /**
@@ -132,6 +130,8 @@ secand:
  *   cout <- x ^ secand(a, x ^ cin)  (carry bit)
  *
  * Source: Alg.5 [BC22]
+ *
+ * On return, x10, x12, x15, x17, x30 are unchanged.
  *
  * @param[in]  x10: dmem pointer to Boolean shares of x
  * @param[in]  x11: share stride of x
@@ -232,10 +232,6 @@ secfulladder:
   bn.xor  w6, w31, w31
   bn.xor  w7, w31, w31
 
-  /* Advance x10, x12, x15 to the next bit. */
-  addi x10, x10, 32
-  addi x12, x12, 32
-  addi x15, x15, 32
   ret
 
 /**
@@ -282,9 +278,11 @@ secadd:
   add  x30, x2, x0
   addi x31, x0, 32
   /* Handle bit i = 0..k - 2. */
-  loop x8, 2
+  loop x8, 4
     jal  x1, secfulladder
-    nop
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
   endloop
 
   /* Handle bit k - 1. */
@@ -1064,9 +1062,11 @@ seca2bmodq:
   addi x29, x0, 32
   addi x30, x2, 832
   addi x31, x0, 32
-  loopi 12, 2
-    jal x1, secfulladder
-    nop
+  loopi 12, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
   endloop
 
   addi x4, x0, 1
@@ -1109,9 +1109,11 @@ seca2bmodq:
   addi x29, x0, 32
   addi x30, x2, 832
   addi x31, x0, 32
-  loopi 11, 2
-    jal x1, secfulladder
-    nop
+  loopi 11, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
   endloop
 
   addi x4, x0, 1
@@ -1334,9 +1336,11 @@ secb2amodq:
   addi x29, x0, 416
   addi x30, x9, 384
   addi x31, x0, 416
-  loopi 12, 2
+  loopi 12, 4
     jal  x1, secfulladder
-    nop
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
   endloop
   /* Bit i = k is already a[k] ^ x[k] ^ cout = cout
    * since a[k] = x[k] = 0. */
@@ -1364,26 +1368,32 @@ secb2amodq:
   addi x31, x0, 32
 
   /* Bits 0..7: p[i] = 1. */
-  loopi 8, 2
+  loopi 8, 3
     jal  x1, secfulladder
-    addi x10, x10, -32
+    addi x12, x12, 32
+    addi x15, x15, 32
   endloop
   /* Bit 8: p[i] = 0. */
-  bn.xor  w0, w31, w31
-  bn.sid  x0, 0(x10)
-  jal     x1, secfulladder
-  addi    x10, x10, -32
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x10)
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
   /* Bit 9: p[i] = 1. */
   bn.subi w0, w31, 1
   bn.sid  x0, 0(x10)
   jal     x1, secfulladder
-  addi    x10, x10, -32
+  addi    x12, x12, 32
+  addi    x15, x15, 32
   /* Bits 10..11: p[i] = 0. */
-  bn.xor  w0, w31, w31
-  bn.sid  x0, 0(x10)
-  jal     x1, secfulladder
-  addi    x10, x10, -32
-  jal     x1, secfulladder
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x10)
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
   /* Bit 12: p[i] = 1. */
   addi   x4, x0, 1
   /* s[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
@@ -2039,11 +2049,10 @@ masked_cbd:
   addi x29, x0, 32
   add  x30, x8, x0
   add  x31, x5, x0
-  loop x18, 5
+  loop x18, 4
     jal  x1, secfulladder
-    addi x10, x10, 32  /* s[2 * (j + 1)] */
-    addi x12, x12, 32  /* s[2 * (j + 1) + 1] */
-    addi x15, x15, -32 /* a */
+    addi x10, x10, 64  /* s[2 * (j + 1)] */
+    addi x12, x12, 64  /* s[2 * (j + 1) + 1] */
     addi x30, x30, 32  /* s[j + 1] */
   endloop
 
@@ -2994,12 +3003,10 @@ _skip_bit_4:
   lw   x13, 324(x2)
   add  x15, x10, x0
   addi x16, x0, 32
-  /* After the secand, the input and output pointers will point to
-   * next bit so we don't have to pass all the arguments above to secand again. */
-  loop x8, 3
+  /* r is accumulated in place, so only t advances to the next bit. */
+  loop x8, 2
     jal  x1, secand
-    addi x10, x10, -32
-    addi x15, x15, -32
+    addi x12, x12, 32
   endloop
 
   /* Restore registers. */
@@ -3404,12 +3411,10 @@ _skip_bit_10:
   lw   x13, 712(x2)
   add  x15, x10, x0
   addi x16, x0, 32
-  /* After the secand, the input and output pointers will point to
-   * next bit so we don't have to pass all the arguments above to secand again. */
-  loop x8, 3
+  /* r is accumulated in place, so only t advances to the next bit. */
+  loop x8, 2
     jal  x1, secand
-    addi x10, x10, -32
-    addi x15, x15, -32
+    addi x12, x12, 32
   endloop
 
   /* Restore registers. */
@@ -3459,8 +3464,6 @@ finalize_cmp:
   add  x15, x10, x0
   addi x16, x0, 32
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 64). */
   /* Compute t = r >> 64. */
@@ -3474,15 +3477,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 32). */
   /* Compute t = r >> 32. */
@@ -3496,15 +3491,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 16). */
   /* Compute t = r >> 16. */
@@ -3518,15 +3505,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 8). */
   /* Compute t = r >> 8. */
@@ -3540,15 +3519,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 4). */
   /* Compute t = r >> 4. */
@@ -3562,15 +3533,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 2). */
   /* Compute t = r >> 2. */
@@ -3584,15 +3547,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   /* Compute r &= (r >> 1). */
   /* Compute t = r >> 1. */
@@ -3606,15 +3561,7 @@ finalize_cmp:
     bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  /* x10 already points to r. */
-  /* x11 is still 32. */
-  add  x12, x2, x0
-  /* x13 is still 32. */
-  /* x15 already points to r. */
-  /* x16 is still 32. */
   jal  x1, secand
-  addi x10, x10, -32
-  addi x15, x15, -32
 
   addi x2, x2, 64
   ret
