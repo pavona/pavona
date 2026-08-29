@@ -10,15 +10,15 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* mod = qinv | q. */
-  add     x4, x0, x0
+  /* w16 = mod = qinv | q. */
+  addi    x4, x0, 16
   la      x5, modulus_bn
   bn.lid  x4++, 0(x5)
-  bn.rshi w0, w31, w0 >> 240
+  bn.rshi w16, w31, w16 >> 240
   la      x5, modulus_inv
   bn.lid  x4, 0(x5)
-  bn.or   w0, w0, w1 << 32
-  bn.wsrw mod, w0
+  bn.or   w16, w16, w17 << 32
+  bn.wsrw mod, w16
 
   /* ra <- masked_poly_getnoise_eta_1(seed, nonce, eta = 2). */
   la  x2, stack_end
@@ -26,10 +26,9 @@ main:
   la  x11, nonce
   jal x1, masked_poly_getnoise_eta_init
 
-  bn.wsrr w16, mod
-  li      x10, 2
-  la      x11, ra
-  jal     x1, masked_poly_getnoise_eta_1
+  li  x10, 2
+  la  x11, ra
+  jal x1, masked_poly_getnoise_eta_1
 
   /* reta_1_e2 <- unmask(ra). */
   la     x2, ra
@@ -49,10 +48,9 @@ main:
   la  x11, nonce
   jal x1, masked_poly_getnoise_eta_init
 
-  bn.wsrr w16, mod
-  li      x10, 3
-  la      x11, ra
-  jal     x1, masked_poly_getnoise_eta_1
+  li  x10, 3
+  la  x11, ra
+  jal x1, masked_poly_getnoise_eta_1
 
   /* reta_1_e3 <- unmask(ra). */
   la     x2, ra
@@ -72,10 +70,9 @@ main:
   la  x11, nonce
   jal x1, masked_poly_getnoise_eta_init
 
-  bn.wsrr w16, mod
-  li      x10, 2
-  la      x11, ra
-  jal     x1, masked_poly_getnoise_eta_2
+  li  x10, 2
+  la  x11, ra
+  jal x1, masked_poly_getnoise_eta_2
 
   /* reta_2 <- unmask(ra). */
   la     x2, ra

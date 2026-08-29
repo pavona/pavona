@@ -8,20 +8,19 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* mod = qinv | q. */
-  add     x4, x0, x0
+  /* w16 = mod = qinv | q. */
+  addi    x4, x0, 16
   la      x5, modulus_bn
   bn.lid  x4++, 0(x5)
-  bn.rshi w0, w31, w0 >> 240
+  bn.rshi w16, w31, w16 >> 240
   la      x5, modulus_inv
   bn.lid  x4, 0(x5)
-  bn.or   w0, w0, w1 << 32
-  bn.wsrw mod, w0
+  bn.or   w16, w16, w17 << 32
+  bn.wsrw mod, w16
 
   /* r <- poly_rej_samp(rand_in). */
-  bn.wsrr w16, mod
-  la      x10, r
-  la      x11, rand_in
-  jal     x1, poly_rej_samp
+  la  x10, r
+  la  x11, rand_in
+  jal x1, poly_rej_samp
 
   ecall
