@@ -10,22 +10,21 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* mod = qinv | q. */
-  add     x4, x0, x0
+  /* w16 = mod = qinv | q. */
+  addi    x4, x0, 16
   la      x5, modulus_bn
   bn.lid  x4++, 0(x5)
-  bn.rshi w0, w31, w0 >> 240
+  bn.rshi w16, w31, w16 >> 240
   la      x5, modulus_inv
   bn.lid  x4, 0(x5)
-  bn.or   w0, w0, w1 << 32
-  bn.wsrw mod, w0
+  bn.or   w16, w16, w17 << 32
+  bn.wsrw mod, w16
 
   /* ra <- seconebitb2amodq(xb). */
-  la      x2, stack_end
-  bn.wsrr w16, mod
-  la      x10, xb
-  la      x12, ra
-  jal     x1, seconebitb2amodq
+  la  x2, stack_end
+  la  x10, xb
+  la  x12, ra
+  jal x1, seconebitb2amodq
 
   /* r <- unmask(ra). */
   la   x2, ra
