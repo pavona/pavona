@@ -5,26 +5,26 @@
 .section .text.start
 
 main:
-    la  x2, stack_end
-    bn.xor w31, w31, w31
+  la  x2, stack_end
+  bn.xor w31, w31, w31
 
-    /* kbits = 23 */
-    la  x10, r23
-    la  x11, in23
-    li  x12, 32
-    jal x1, bitslice
+  /* kbits = 23 */
+  la  x10, r23
+  la  x11, in23
+  li  x12, 32
+  jal x1, bitslice
 
-    /* kbits = 32 */
-    la  x10, r32
-    la  x11, in32
-    li  x12, 32
-    jal x1, bitslice_k32
+  /* kbits = 32 */
+  la  x10, r32
+  la  x11, in32
+  li  x12, 32
+  jal x1, bitslice_k32
 
-    ecall
+  ecall
 
 .data
 .balign 32
 stack:
-    .zero 2048
+  .zero 2048
 stack_end:
-    .byte 0
+  .byte 0

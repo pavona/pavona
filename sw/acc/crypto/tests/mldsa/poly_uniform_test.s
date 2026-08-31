@@ -13,7 +13,7 @@ main:
   bn.xor w31, w31, w31
 
   /* Set up the SHAKE128 configuration for poly_uniform. */
-  addi  x2, zero, 34
+  addi  x2, x0, 34
   slli  x2, x2, 5
   addi  x2, x2, 0x2 /* SHAKE128 */
   csrrw x0, kmac_cfg, x2

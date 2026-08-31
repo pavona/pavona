@@ -5,18 +5,18 @@
 .section .text.start
 
 main:
-    la  x2, stack_end
-    bn.xor w31, w31, w31
+  la  x2, stack_end
+  bn.xor w31, w31, w31
 
-    la  x10, r
-    la  x11, rand
-    jal x1, poly_rej_samp_bitsliced
+  la  x10, r
+  la  x11, rand
+  jal x1, poly_rej_samp_bitsliced
 
-    ecall
+  ecall
 
 .data
 .balign 32
 stack:
-    .zero 1024
+  .zero 1024
 stack_end:
-    .byte 0
+  .byte 0
