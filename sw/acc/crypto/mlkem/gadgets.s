@@ -1707,8 +1707,10 @@ _du_params_done:
   addi       x4, x0, 17
   la         x5, const_m_du
   bn.lid     x4++, 0(x5)
-  la         x5, const_1664
+  la         x5, modulus_bn
   bn.lid     x4, 0(x5)
+  bn.shv.8s  w18, w18 >> 17 /* 0x680 in 8 32-bit lanes. */
+  bn.trn1.8s w18, w18, w31  /* 0x680 in 4 64-bit lanes. */
 
   add x6, x2, x0 /* z */
 

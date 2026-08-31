@@ -122,17 +122,6 @@ const_m_du:
   .word 0x680bb055
   .word 0x0013afb7
 
-.globl const_1664
-const_1664:
-  .word 0x00000680
-  .word 0x00000000
-  .word 0x00000680
-  .word 0x00000000
-  .word 0x00000680
-  .word 0x00000000
-  .word 0x00000680
-  .word 0x00000000
-
 .globl cbd2_const
 cbd2_const:
   /* const1 */
