@@ -799,20 +799,14 @@ _compute_k4_consts:
 
 _continue:
   /* Adjust stack for comparison result r. */
-  addi x6, x0, NSHARES
-  slli x5, x6, 5
-  sub  x2, x2, x5
+  addi x2, x2, -64
 
   /* The first share of r is (1 << N) - 1. The other shares are 0. */
   add     x5, x2, x0
-  bn.xor  w0, w0, w0
-  bn.subi w0, w0, 1
+  bn.subi w0, w31, 1
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0
-  addi    x6, x6, -1 /* nshares - 1 */
-  loop x6, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.xor  w0, w31, w31
+  bn.sid  x0, 0(x5++)
 
   /*** Step 1: kpoly = onebitdecompress(m). ***/
   /* x10 already points to m. */
@@ -1566,13 +1560,9 @@ _finalize_compare:
   /* Unmask comparison result. */
   add    x10, x2, x0
   bn.lid x0, 0(x10++)
-  addi   x5, x0, NSHARES
-  addi   x5, x5, -1 /* nshares - 1 */
   addi   x4, x0, 1
-  loop x5, 2
-    bn.lid x4, 0(x10++)
-    bn.xor w0, w0, w1
-  endloop
+  bn.lid x4, 0(x10++)
+  bn.xor w0, w0, w1
 
   add  x2, x3, x0
   lw   x3, 0(x2)

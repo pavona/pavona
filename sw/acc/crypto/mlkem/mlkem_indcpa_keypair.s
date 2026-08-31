@@ -604,7 +604,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 109
+  loop x19, 105
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -737,17 +737,12 @@ _continue:
     /* Unmask pk. */
     addi x4, x0, 1
     add  x5, x26, x0
-    addi x6, x0, NSHARES
-    addi x6, x6, -1
-    loopi 16, 7
-      addi   x7, x5, 512
-      bn.lid x0, 0(x5)
-      loop x6, 3
-        bn.lid       x4, 0(x7)
-        bn.addvm.16h w0, w0, w1
-        addi         x7, x7, 512
-      endloop
-      bn.sid x0, 0(x5++)
+    addi x6, x5, 512
+    loopi 16, 4
+      bn.lid       x0, 0(x5)
+      bn.lid       x4, 0(x6++)
+      bn.addvm.16h w0, w0, w1
+      bn.sid       x0, 0(x5++)
     endloop
 
     bn.wsrw mod, w16
@@ -883,17 +878,12 @@ _continue:
   /* Unmask pk. */
   addi x4, x0, 1
   add  x5, x26, x0
-  addi x6, x0, NSHARES
-  addi x6, x6, -1
-  loopi 16, 7
-    addi   x7, x5, 512
-    bn.lid x0, 0(x5)
-    loop x6, 3
-      bn.lid       x4, 0(x7)
-      bn.addvm.16h w0, w0, w1
-      addi         x7, x7, 512
-    endloop
-    bn.sid x0, 0(x5++)
+  addi x6, x5, 512
+  loopi 16, 4
+    bn.lid       x0, 0(x5)
+    bn.lid       x4, 0(x6++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
   endloop
 
   bn.wsrw mod, w16
