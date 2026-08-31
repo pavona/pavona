@@ -317,103 +317,103 @@ twiddles_fwd:
 .balign 32
 .globl reduce32_const
 reduce32_const:
-    .word 0x1
-    .word 0x1
-    .word 0x1
-    .word 0x1
-    .word 0x1
-    .word 0x1
-    .word 0x1
-    .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
+  .word 0x1
 
 /* Unused in hardened builds; poly_power2round uses the preprocessed form. */
 #ifndef HARDENED
 .balign 32
 .globl power2round_D
 power2round_D:
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
-    .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
+  .word 0xd
 #endif
 
 .balign 32
 .globl power2round_D_preprocessed
 power2round_D_preprocessed:
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
-    .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
+  .word 0xfff
 
 #ifndef HARDENED
 .balign 32
 .globl eta_2
 eta_2:
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
 
 .balign 32
 .globl eta_4
 eta_4:
-    .word 4
-    .word 4
-    .word 4
-    .word 4
-    .word 4
-    .word 4
-    .word 4
-    .word 4
+  .word 4
+  .word 4
+  .word 4
+  .word 4
+  .word 4
+  .word 4
+  .word 4
+  .word 4
 
 #endif
 .balign 32
 .globl polyt0_pack_const
 polyt0_pack_const:
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
-    .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
+  .word 0x1000
 
 .balign 32
 .globl decompose_const_88
 decompose_const_88:
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
-    .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
+  .word 0x00002c0b
 
 .balign 32
 .globl decompose_const_32
 decompose_const_32:
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
-    .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
+  .word 1025
 
 /* In hardened builds polyz_pack/poly_use_hint use the runtime-broadcast
  * gamma1_vec_const/gamma2_vec_const; the per-K tables are aliased to those in
@@ -422,218 +422,218 @@ decompose_const_32:
 .balign 32
 .globl gamma1_vec_const_17
 gamma1_vec_const_17:
-    .word 131072
-    .word 131072
-    .word 131072
-    .word 131072
-    .word 131072
-    .word 131072
-    .word 131072
-    .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
+  .word 131072
 
 .balign 32
 .globl gamma1_vec_const_19
 gamma1_vec_const_19:
-    .word 524288
-    .word 524288
-    .word 524288
-    .word 524288
-    .word 524288
-    .word 524288
-    .word 524288
-    .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
+  .word 524288
 
 .balign 32
 .globl gamma2_vec_const_88
 gamma2_vec_const_88:
-    .word 95232
-    .word 95232
-    .word 95232
-    .word 95232
-    .word 95232
-    .word 95232
-    .word 95232
-    .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
+  .word 95232
 
 .balign 32
 .globl gamma2_vec_const_32
 gamma2_vec_const_32:
-    .word 261888
-    .word 261888
-    .word 261888
-    .word 261888
-    .word 261888
-    .word 261888
-    .word 261888
-    .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
+  .word 261888
 #endif
 
 .balign 32
 .globl qm1half_const
 qm1half_const:
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
-    .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
+  .word 0x003ff000
 
 .balign 32
 .globl decompose_127_const
 decompose_127_const:
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
-    .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
+  .word 0x0000007f
 
 .balign 32
 .globl decompose_43_const_88
 decompose_43_const_88:
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
-    .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
+  .word 0x0000002b
 
 .balign 32
 .globl decompose_43_const_32
 decompose_43_const_32:
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
-    .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
+  .word 0x000000f
 
 #ifndef HARDENED
 .balign 32
 .globl polyeta_unpack_mask_eta_2
 polyeta_unpack_mask_eta_2:
-    .word 0x07
-    .word 0x07
-    .word 0x07
-    .word 0x07
-    .word 0x07
-    .word 0x07
-    .word 0x07
-    .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
+  .word 0x07
 
 .balign 32
 .globl polyeta_unpack_mask_eta_4
 polyeta_unpack_mask_eta_4:
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
-    .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
+  .word 0x0f
 
 #endif
 .balign 32
 .globl polyt1_unpack_mask
 polyt1_unpack_mask:
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
-    .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
+  .word 0x3ff
 
 .balign 32
 .globl polyt0_unpack_mask
 polyt0_unpack_mask:
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
-    .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
+  .word 0x1fff
 
 /* Aliased to polyz_unpack_mask in run_mldsa.s for hardened builds. */
 #ifndef HARDENED
 .balign 32
 .globl polyz_unpack_mask_17
 polyz_unpack_mask_17:
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
-    .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
+  .word 0x3ffff
 
 .balign 32
 .globl polyz_unpack_mask_19
 polyz_unpack_mask_19:
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
-    .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
+  .word 0xfffff
 #endif
 
 #ifndef HARDENED
 .balign 32
 .globl poly_uniform_eta_205
 poly_uniform_eta_205:
-    .word 205
-    .word 205
-    .word 205
-    .word 205
-    .word 205
-    .word 205
-    .word 205
-    .word 205
+  .word 205
+  .word 205
+  .word 205
+  .word 205
+  .word 205
+  .word 205
+  .word 205
+  .word 205
 
 .balign 32
 .globl poly_uniform_eta_2
 poly_uniform_eta_2:
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
-    .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
+  .word 2
 
 .balign 32
 .globl poly_uniform_eta_5
 poly_uniform_eta_5:
-    .word 5
-    .word 5
-    .word 5
-    .word 5
-    .word 5
-    .word 5
-    .word 5
-    .word 5
+  .word 5
+  .word 5
+  .word 5
+  .word 5
+  .word 5
+  .word 5
+  .word 5
+  .word 5
 
 #endif
 .globl poly_wdr2gpr
 poly_wdr2gpr:
-    .zero 32
+  .zero 32
 
 /* Mode-derived parameters. Caller (test harness or driver) writes the
    active mode's values here before calling any mldsa entry point.
@@ -653,4 +653,4 @@ poly_wdr2gpr:
 .balign 32
 .globl mldsa_params
 mldsa_params:
-    .zero 64
+  .zero 64

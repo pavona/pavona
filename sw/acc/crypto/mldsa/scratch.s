@@ -8,4 +8,4 @@
 .balign 32
 .globl scratch
 scratch:
-    .zero 1024
+  .zero 1024

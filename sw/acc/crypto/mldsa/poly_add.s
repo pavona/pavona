@@ -29,13 +29,13 @@
 .global poly_add
 .type poly_add, @function
 poly_add:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 4
-        bn.lid      x0, 0(x10++)
-        bn.lid      x4, 0(x11++)
-        bn.addvm.8S w0, w0, w1
-        bn.sid      x0, 0(x12++)
-    endloop
-    ret
+  loopi 32, 4
+    bn.lid      x0, 0(x10++)
+    bn.lid      x4, 0(x11++)
+    bn.addvm.8S w0, w0, w1
+    bn.sid      x0, 0(x12++)
+  endloop
+  ret

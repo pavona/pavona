@@ -39,12 +39,12 @@ keccak_send_message:
   beq  x5, x0, _no_full_wdr
 
   loop x5, 2
-      /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
-         x10 <= x10 + 32 */
-      bn.lid  x0, 0(x10++)
-      /* Write to the KECCAK_MSG wide special register (index 9).
-         KECCAK_MSG <= w0 */
-      bn.wsrw kmac_msg, w0
+    /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
+       x10 <= x10 + 32 */
+    bn.lid  x0, 0(x10++)
+    /* Write to the KECCAK_MSG wide special register (index 9).
+       KECCAK_MSG <= w0 */
+    bn.wsrw kmac_msg, w0
   endloop
 
 _no_full_wdr:
