@@ -148,14 +148,14 @@ _continue_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpolyvec_sp
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
 
   /* Compute v = ek_pke[0] * sp[0]. */
   la      x10, poly_pk
   la      x11, mpolyvec_sp
-  la      x12, twiddles_basemul
+  la      x12, const_tw_basemul
   la      x13, mpoly_v
   jal     x1, basemul
   add     x24, x11, x0
@@ -201,14 +201,14 @@ _handle_k4_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
 
   /* Compute v += ek_pke[1] * sp[1]. */
   la      x10, poly_pk
   add     x11, x24, x0
-  la      x12, twiddles_basemul
+  la      x12, const_tw_basemul
   la      x13, mpoly_v
   jal     x1, basemul_acc
   add     x24, x11, x0
@@ -238,14 +238,14 @@ _handle_k3_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
 
   /* Compute v += ek_pke[2] * sp[2]. */
   la      x10, poly_pk
   add     x11, x24, x0
-  la      x12, twiddles_basemul
+  la      x12, const_tw_basemul
   la      x13, mpoly_v
   jal     x1, basemul_acc
   add     x24, x11, x0
@@ -268,7 +268,7 @@ _handle_k2_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
 
@@ -281,13 +281,13 @@ _handle_k2_compute_v:
   /* Compute v += ek_pke[3] * sp[3]. */
   la  x10, poly_pk
   add x11, x24, x0
-  la  x12, twiddles_basemul
+  la  x12, const_tw_basemul
   la  x13, mpoly_v
   jal x1, basemul_acc
 
   /* Compute v = intt(v). */
   la      x10, mpoly_v
-  la      x11, twiddles_intt
+  la      x11, const_tw_intt
   add     x12, x10, x0
   jal     x1, intt
   bn.wsrw mod, w16
@@ -404,7 +404,7 @@ _handle_k2_compute_v:
     bn.wsrw    mod, w0
     la         x10, poly_at
     la         x11, mpolyvec_sp
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     jal        x1, basemul
     add        x24, x11, x0
@@ -428,7 +428,7 @@ _handle_k2_compute_v:
       bn.wsrw    mod, w0
       la         x10, poly_at
       add        x11, x24, x0
-      la         x12, twiddles_basemul
+      la         x12, const_tw_basemul
       la         x13, mpoly_b
       jal        x1, basemul_acc
       add        x24, x11, x0
@@ -444,13 +444,13 @@ _handle_k2_compute_v:
     bn.wsrw    mod, w0
     la         x10, poly_at
     add        x11, x24, x0
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     jal        x1, basemul_acc
 
     /* Compute b = intt(b). */
     la      x10, mpoly_b
-    la      x11, twiddles_intt
+    la      x11, const_tw_intt
     add     x12, x10, x0
     jal     x1, intt
     bn.wsrw mod, w16
@@ -525,7 +525,7 @@ _handle_k2_compute_v:
   bn.wsrw    mod, w0
   la         x10, poly_at
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul
   add        x24, x11, x0
@@ -549,7 +549,7 @@ _handle_k2_compute_v:
     bn.wsrw    mod, w0
     la         x10, poly_at
     add        x11, x24, x0
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     jal        x1, basemul_acc
     add        x24, x11, x0
@@ -565,13 +565,13 @@ _handle_k2_compute_v:
   bn.wsrw    mod, w0
   la         x10, poly_at
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul_acc
 
   /* Compute b = intt(b). */
   la      x10, mpoly_b
-  la      x11, twiddles_intt
+  la      x11, const_tw_intt
   add     x12, x10, x0
   jal     x1, intt
   bn.wsrw mod, w16
@@ -631,7 +631,7 @@ _handle_k2_compute_b:
   bn.wsrw    mod, w0
   la         x10, poly_at
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul
   add        x24, x11, x0
@@ -646,13 +646,13 @@ _handle_k2_compute_b:
   bn.wsrw    mod, w0
   la         x10, poly_at
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul_acc
 
   /* Compute b = intt(b). */
   la      x10, mpoly_b
-  la      x11, twiddles_intt
+  la      x11, const_tw_intt
   add     x12, x10, x0
   jal     x1, intt
   bn.wsrw mod, w16
@@ -724,7 +724,7 @@ _handle_k2_compute_b:
   bn.wsrw    mod, w0
   la         x10, poly_at
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul
   add        x24, x11, x0
@@ -739,13 +739,13 @@ _handle_k2_compute_b:
   bn.wsrw    mod, w0
   la         x10, poly_at
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   jal        x1, basemul_acc
 
   /* Compute b = intt(b). */
   la      x10, mpoly_b
-  la      x11, twiddles_intt
+  la      x11, const_tw_intt
   add     x12, x10, x0
   jal     x1, intt
   bn.wsrw mod, w16
@@ -863,7 +863,7 @@ _continue_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpolyvec_sp
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -875,7 +875,7 @@ _continue_compute_v:
   la  x8, poly_pk
   add x10, x8, x0
   la  x11, mpolyvec_sp
-  la  x12, twiddles_basemul
+  la  x12, const_tw_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
     jal x1, whitening
@@ -924,7 +924,7 @@ _handle_k4_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -936,7 +936,7 @@ _handle_k4_compute_v:
   la  x8, poly_pk
   add x10, x8, x0
   add x11, x24, x0
-  la  x12, twiddles_basemul
+  la  x12, const_tw_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
     jal x1, whitening
@@ -970,7 +970,7 @@ _handle_k3_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -982,7 +982,7 @@ _handle_k3_compute_v:
   la  x8, poly_pk
   add x10, x8, x0
   add x11, x24, x0
-  la  x12, twiddles_basemul
+  la  x12, const_tw_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
     jal x1, whitening
@@ -1009,7 +1009,7 @@ _handle_k2_compute_v:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   add        x10, x24, x0
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -1027,7 +1027,7 @@ _handle_k2_compute_v:
   la  x8, poly_pk
   add x10, x8, x0
   add x11, x24, x0
-  la  x12, twiddles_basemul
+  la  x12, const_tw_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
     jal x1, whitening
@@ -1037,7 +1037,7 @@ _handle_k2_compute_v:
 
   /* Compute v = intt(v). */
   la  x10, mpoly_v
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -1153,7 +1153,7 @@ _handle_k2_compute_v:
     la         x22, poly_at
     add        x10, x22, x0
     la         x11, mpolyvec_sp
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
       jal x1, whitening
@@ -1182,7 +1182,7 @@ _handle_k2_compute_v:
       la         x22, poly_at
       add        x10, x22, x0
       add        x11, x24, x0
-      la         x12, twiddles_basemul
+      la         x12, const_tw_basemul
       la         x13, mpoly_b
       loopi NSHARES, 3
         jal x1, whitening
@@ -1203,7 +1203,7 @@ _handle_k2_compute_v:
     la         x22, poly_at
     add        x10, x22, x0
     add        x11, x24, x0
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
       jal x1, whitening
@@ -1213,7 +1213,7 @@ _handle_k2_compute_v:
 
     /* Compute b = intt(b). */
     la  x10, mpoly_b
-    la  x11, twiddles_intt
+    la  x11, const_tw_intt
     add x12, x10, x0
     loopi NSHARES, 3
       jal x1, whitening
@@ -1283,7 +1283,7 @@ _handle_k2_compute_v:
   la         x22, poly_at
   add        x10, x22, x0
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1312,7 +1312,7 @@ _handle_k2_compute_v:
     la         x22, poly_at
     add        x10, x22, x0
     add        x11, x24, x0
-    la         x12, twiddles_basemul
+    la         x12, const_tw_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
       jal x1, whitening
@@ -1333,7 +1333,7 @@ _handle_k2_compute_v:
   la         x22, poly_at
   add        x10, x22, x0
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1343,7 +1343,7 @@ _handle_k2_compute_v:
 
   /* Compute b = intt(b). */
   la  x10, mpoly_b
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -1393,7 +1393,7 @@ _handle_k2_compute_b:
   la         x22, poly_at
   add        x10, x22, x0
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1413,7 +1413,7 @@ _handle_k2_compute_b:
   la         x22, poly_at
   add        x10, x22, x0
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1423,7 +1423,7 @@ _handle_k2_compute_b:
 
   /* Compute b = intt(b). */
   la  x10, mpoly_b
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -1490,7 +1490,7 @@ _handle_k2_compute_b:
   la         x22, poly_at
   add        x10, x22, x0
   la         x11, mpolyvec_sp
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1510,7 +1510,7 @@ _handle_k2_compute_b:
   la         x22, poly_at
   add        x10, x22, x0
   add        x11, x24, x0
-  la         x12, twiddles_basemul
+  la         x12, const_tw_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
     jal x1, whitening
@@ -1520,7 +1520,7 @@ _handle_k2_compute_b:
 
   /* Compute b = intt(b). */
   la  x10, mpoly_b
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening

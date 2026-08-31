@@ -88,7 +88,7 @@ poly_gen_matrix:
 
   /* Load modulus. */
   li      x4, 3
-  la      x6, modulus_bn
+  la      x6, const_q
   bn.lid  x4, 0(x6)
   bn.rshi mod, w31, mod >> 240 /* Only keep mod in lowest word */
 
