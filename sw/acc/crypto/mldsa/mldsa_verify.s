@@ -105,9 +105,11 @@ _ctilde_unpack_65:
     sw x28, 0(x6)
     addi x5, x5, 4
     addi x6, x6, 4
+  endloop
   loopi 4, 2
     sw x0, 0(x6)
     addi x6, x6, 4
+  endloop
 _ctilde_unpack_done:
 
   /* z is not 32-byte aligned for ML-DSA-65: GPR-copy it into w1_polyvec and
@@ -127,6 +129,7 @@ _ctilde_unpack_done:
     sw   x7, 0(x10)
     addi x25, x25, 4
     addi x10, x10, 4
+  endloop
 
   /* s9 now points at the hint region. Unpack z from the aligned copy. */
   la   x11, w1_polyvec
@@ -136,6 +139,7 @@ _ctilde_unpack_done:
   loop x5, 2
     jal x1, polyz_unpack
     nop
+  endloop
 
   /* reduce32(z) for central representation */
   la x10, z_polyvec
@@ -144,6 +148,7 @@ _ctilde_unpack_done:
   loop x5, 2
     jal x1, poly_reduce32
     nop
+  endloop
 
   /* chknorm */
   lw   x11, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x27)   /* GAMMA1 - BETA */
@@ -154,6 +159,7 @@ _ctilde_unpack_done:
   loop x5, 2
     jal x1, poly_chknorm
     or  x18, x18, x12
+  endloop
   bne x18, x0, _fail_crypto_sign_verify_internal /* Raise error */
 
   /* External mu: dmem[mu] is supplied by the caller. */
@@ -190,6 +196,7 @@ _ctilde_unpack_done:
 #endif
     jal  x1, ntt
     addi x11, x11, -1024
+  endloop
 
   /* Initialize the nonce for matrix expansion. This value should be
        byte(i) || byte(j)
@@ -276,6 +283,7 @@ _ctilde_unpack_done:
       addi x12, x18, 0
       jal  x1, poly_pointwise_acc
       addi x8, x8, 1024
+    endloop
     /* Reset input vector pointer */
     sub  x8, x8, x19
     addi x18, x18, 1024
@@ -284,6 +292,7 @@ _ctilde_unpack_done:
     lw x5, MLDSA_PARAM_L_OFFSET(x27)
     loop x5, 1
       bn.subi w23, w23, 1
+    endloop
     /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
     csrrw     x0, kmac_cfg, x20
     bn.lid    x0, 0(x21)
@@ -291,6 +300,7 @@ _ctilde_unpack_done:
     addi      x5, x0, 2
     csrrw     x0, kmac_partial_write, x5
     bn.wsrw   kmac_msg, w23
+  endloop
 
   /* Call random oracle and verify challenge */
   /* Initialize a SHAKE256 operation. */
@@ -299,6 +309,7 @@ _ctilde_unpack_done:
   lw x14, MLDSA_PARAM_K_OFFSET(x27)
   loop x14, 1
     add x11, x11, x5
+  endloop
   slli  x5, x11, 5
   addi  x5, x5, SHAKE256_CFG
   csrrw x0, KECCAK_CFG_REG, x5
@@ -335,6 +346,7 @@ _ctilde_unpack_done:
   loopi 32, 2
     bn.lid x7, 0(x5++)
     bn.sid x7, 0(x6++)
+  endloop
   jal    x1, _inv_transform
 #endif
   lw  x14, MLDSA_PARAM_K_OFFSET(x27)
@@ -354,6 +366,7 @@ _ctilde_unpack_done:
       bn.lid    x0, 0(x6)
       bn.shv.8s w0, w0 << D
       bn.sid    x0, 0(x6++)
+    endloop
     /* Compute ntt(t1) in place. */
     addi x10, x19, 0
     addi x12, x19, 0
@@ -404,6 +417,7 @@ _ctilde_unpack_done:
     lw   x11, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x27)
     jal  x1, keccak_send_message
     addi x9, x9, 1024 /* increment *w1 */
+  endloop
 
   bn.wsrr w8, 0xA /* KECCAK_DIGEST */
 
