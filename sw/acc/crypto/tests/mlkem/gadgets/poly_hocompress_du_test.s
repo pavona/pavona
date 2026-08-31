@@ -10,38 +10,38 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* dv = 4 (k = 2): rbv <- poly_hocompress(xa). */
+  /* du = 10 (k = 2): rbu <- poly_hocompress_du(xa). */
   la  x2, stack_end
   la  x10, xa
-  la  x12, rbv
+  la  x12, rbu
   li  x13, 2
-  jal x1, poly_hocompress
+  jal x1, poly_hocompress_du
 
-  /* rv4 <- unmask(rbv). */
-  la     x2, rbv
-  addi   x3, x2, 128
-  la     x5, rv4
+  /* ru10 <- unmask(rbu). */
+  la     x2, rbu
+  addi   x3, x2, 320
+  la     x5, ru10
   li     x4, 1
-  loopi 4, 4
+  loopi 10, 4
     bn.lid x0, 0(x2++)
     bn.lid x4, 0(x3++)
     bn.xor w0, w0, w1
     bn.sid x0, 0(x5++)
   endloop
 
-  /* dv = 5 (k = 4): rbv <- poly_hocompress(xa). */
+  /* du = 11 (k = 4): rbu <- poly_hocompress_du(xa). */
   la  x2, stack_end
   la  x10, xa
-  la  x12, rbv
+  la  x12, rbu
   li  x13, 4
-  jal x1, poly_hocompress
+  jal x1, poly_hocompress_du
 
-  /* rv5 <- unmask(rbv). */
-  la     x2, rbv
-  addi   x3, x2, 160
-  la     x5, rv5
+  /* ru11 <- unmask(rbu). */
+  la     x2, rbu
+  addi   x3, x2, 352
+  la     x5, ru11
   li     x4, 1
-  loopi 5, 4
+  loopi 11, 4
     bn.lid x0, 0(x2++)
     bn.lid x4, 0(x3++)
     bn.xor w0, w0, w1
@@ -56,8 +56,8 @@ stack:
   .zero STACK_SIZE
 stack_end:
 
-rv4:
-  .zero 32 * 4
+ru10:
+  .zero 32 * 10
 
-rv5:
-  .zero 32 * 5
+ru11:
+  .zero 32 * 11

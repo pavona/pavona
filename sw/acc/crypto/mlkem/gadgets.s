@@ -1494,9 +1494,9 @@ secb2amodq:
  * clobbered flag groups: FG0
  */
 
-.globl poly_hocompress
-.type poly_hocompress, @function
-poly_hocompress:
+.globl poly_hocompress_dv
+.type poly_hocompress_dv, @function
+poly_hocompress_dv:
   /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
   addi x2, x2, -1024
   add  x7, x2, x0 /* t */
@@ -1676,9 +1676,9 @@ _dv_params_done:
  * clobbered flag groups: FG0
  */
 
-.globl polyvec_hocompress
-.type polyvec_hocompress, @function
-polyvec_hocompress:
+.globl poly_hocompress_du
+.type poly_hocompress_du, @function
+poly_hocompress_du:
   /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
   addi x2, x2, -1024
   add  x7, x2, x0 /* t */
@@ -2741,11 +2741,11 @@ poly_masked_compare_dv:
   sw   x15, 332(x2)
   sw   x8, 336(x2)
 
-  /* Compute t = poly_hocompress(c'). */
+  /* Compute t = poly_hocompress_dv(c'). */
   /* x10 already points to c'. */
   add x12, x2, x0
   add x13, x15, x0
-  jal x1, poly_hocompress
+  jal x1, poly_hocompress_dv
 
   /* Decode + bitslice c. */
   lw     x11, 320(x2)
@@ -3045,11 +3045,11 @@ poly_masked_compare_du:
   sw   x15, 720(x2)
   sw   x8, 724(x2)
 
-  /* Compute t = polyvec_hocompress(c'). */
+  /* Compute t = poly_hocompress_du(c'). */
   /* x10 already points to c'. */
   add x12, x2, x0
   add x13, x15, x0
-  jal x1, polyvec_hocompress
+  jal x1, poly_hocompress_du
 
   /* Decode + bitslice c. */
   lw   x11, 708(x2)

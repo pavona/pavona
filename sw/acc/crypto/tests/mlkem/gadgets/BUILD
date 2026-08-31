@@ -109,10 +109,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# poly_hocompress
+# poly_hocompress_dv
 py_binary(
-    name = "poly_hocompress_testgen",
-    srcs = ["poly_hocompress_testgen.py"],
+    name = "poly_hocompress_dv_testgen",
+    srcs = ["poly_hocompress_dv_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -123,14 +123,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "poly_hocompress_test{}".format(
+        name = "poly_hocompress_dv_test{}".format(
             str(i),
         ),
-        srcs = ["poly_hocompress_test.s"],
+        srcs = ["poly_hocompress_dv_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":poly_hocompress_testgen",
+        testgen = ":poly_hocompress_dv_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
@@ -139,10 +139,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# polyvec_hocompress
+# poly_hocompress_du
 py_binary(
-    name = "polyvec_hocompress_testgen",
-    srcs = ["polyvec_hocompress_testgen.py"],
+    name = "poly_hocompress_du_testgen",
+    srcs = ["poly_hocompress_du_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -153,14 +153,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "polyvec_hocompress_test{}".format(
+        name = "poly_hocompress_du_test{}".format(
             str(i),
         ),
-        srcs = ["polyvec_hocompress_test.s"],
+        srcs = ["poly_hocompress_du_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":polyvec_hocompress_testgen",
+        testgen = ":poly_hocompress_du_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
