@@ -97,18 +97,22 @@ poly_gen_matrix:
 
   /* Loop until 256 coefficients have been written to the output. */
 _rej_sample_loop:
-  /* With one SHAKE squeeze, we get 32 bytes of data. From this, we can try to
-   * build 20 coefficients with 3 bytes each two (3 bytes --> 2 coeffs) and are left with 2 bytes
-   * remainder. We then take the two remaining bytes and one byte from the
-   * next squeeze operation and try to get another 2 coefficient, leaving us
-   * with 31 bytes from which we can, again, try to read 20 coefficients and
-   * are left with 1 byte remainder. From the next 32 bytes, we take 2 bytes
-   * and try to build 2 coefficients with the remaining 1 byte. Finally, we
-   * are left with 30 bytes which we can try to turn into 20 coefficients
-   * without any remainder. lcm(3, 32) = 96, meaning we use 96 bytes of SHAKE
-   * output each (full) iteration of the main loop. In case we reach the
-   * target amount of coefficients, we jump to _end_rej_sample_loop and exit. */
-
+  /* Each candidate coefficient is 12 bits wide, so 3 bytes yield 2
+   * candidates, while one SHAKE squeeze yields 32 bytes. Since 3 does not
+   * divide 32, the split of a squeeze into candidates shifts by one byte
+   * every time, and the pattern only repeats after lcm(3, 32) = 96 bytes.
+   * One full iteration of this loop therefore consumes three squeezes and
+   * produces 96 / 3 * 2 = 64 candidates:
+   *
+   *   squeeze 1: 30 bytes                    -> 20 candidates, 2 bytes left
+   *   carry:      2 bytes + 1 byte of next   ->  2 candidates
+   *   squeeze 2: 30 of the remaining 31      -> 20 candidates, 1 byte left
+   *   carry:      1 byte  + 2 bytes of next  ->  2 candidates
+   *   squeeze 3: the remaining 30 bytes      -> 20 candidates, none left
+   *
+   * A candidate is only accepted if it is smaller than q, so the number of
+   * coefficients actually written out is smaller and varies. As soon as 256
+   * coefficients have been written, we leave via _end_rej_sample_loop. */
   bn.wsrr    shake_reg, kmac_digest
   jal        x1, _poly_uniform_inner_loop
   beq        x11, x5, _end_rej_sample_loop
