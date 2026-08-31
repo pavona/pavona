@@ -48,6 +48,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -76,6 +77,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -104,6 +106,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -134,6 +137,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -164,6 +168,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -194,6 +199,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -224,6 +230,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets_rej_sample_test",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -254,6 +261,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -306,6 +314,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -358,6 +367,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -389,6 +399,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -419,6 +430,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -449,6 +461,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -478,6 +491,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -508,6 +522,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -538,6 +553,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -568,6 +584,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -598,6 +615,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -628,6 +646,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -658,6 +677,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)
@@ -688,6 +708,7 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)

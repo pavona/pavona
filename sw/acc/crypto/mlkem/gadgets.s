@@ -583,25 +583,7 @@ poly_to_bitsliced:
     addi   x4, x4, 1
   endloop
 
-  /* Whitening. */
-  bn.xor w0, w31, w31
-  bn.xor w1, w31, w31
-  bn.xor w2, w31, w31
-  bn.xor w3, w31, w31
-  bn.xor w4, w31, w31
-  bn.xor w5, w31, w31
-  bn.xor w6, w31, w31
-  bn.xor w7, w31, w31
-  bn.xor w8, w31, w31
-  bn.xor w9, w31, w31
-  bn.xor w10, w31, w31
-  bn.xor w11, w31, w31
-  bn.xor w12, w31, w31
-  bn.xor w13, w31, w31
-  bn.xor w14, w31, w31
-  bn.xor w15, w31, w31
-  bn.xor w28, w31, w31
-  bn.xor w29, w31, w31
+  jal x1, whitening_bitslice_transpose
   ret
 
 /**
@@ -646,25 +628,7 @@ poly_from_bitsliced:
     addi   x4, x4, -1
   endloop
 
-  /* Whitening. */
-  bn.xor w0, w31, w31
-  bn.xor w1, w31, w31
-  bn.xor w2, w31, w31
-  bn.xor w3, w31, w31
-  bn.xor w4, w31, w31
-  bn.xor w5, w31, w31
-  bn.xor w6, w31, w31
-  bn.xor w7, w31, w31
-  bn.xor w8, w31, w31
-  bn.xor w9, w31, w31
-  bn.xor w10, w31, w31
-  bn.xor w11, w31, w31
-  bn.xor w12, w31, w31
-  bn.xor w13, w31, w31
-  bn.xor w14, w31, w31
-  bn.xor w15, w31, w31
-  bn.xor w28, w31, w31
-  bn.xor w29, w31, w31
+  jal x1, whitening_bitslice_transpose
   ret
 
 /**
@@ -682,209 +646,209 @@ poly_from_bitsliced:
 
 _bitslice_transpose:
   /* Stage d=8. */
-  bn.not     w28, w31
-  bn.shv.16h w28, w28 >> 8      /* 0x00ff */
-  bn.shv.16h w29, w0 >> 8
-  bn.xor     w29, w29, w8
-  bn.and     w29, w29, w28
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 8
-  bn.xor     w29, w29, w9
-  bn.and     w29, w29, w28
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w2 >> 8
-  bn.xor     w29, w29, w10
-  bn.and     w29, w29, w28
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w3 >> 8
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w4 >> 8
-  bn.xor     w29, w29, w12
-  bn.and     w29, w29, w28
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w5 >> 8
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w6 >> 8
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w7 >> 8
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w7, w7, w29
+  bn.not     w24, w31
+  bn.shv.16h w24, w24 >> 8      /* 0x00ff */
+  bn.shv.16h w25, w0 >> 8
+  bn.xor     w25, w25, w8
+  bn.and     w25, w25, w24
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 8
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 8
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 8
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w4 >> 8
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 8
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w6 >> 8
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w7 >> 8
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w7, w7, w25
   /* Stage d=4. */
-  bn.shv.16h w29, w28 << 4
-  bn.xor     w28, w28, w29      /* 0x0f0f */
-  bn.shv.16h w29, w0 >> 4
-  bn.xor     w29, w29, w4
-  bn.and     w29, w29, w28
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 4
-  bn.xor     w29, w29, w5
-  bn.and     w29, w29, w28
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w2 >> 4
-  bn.xor     w29, w29, w6
-  bn.and     w29, w29, w28
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w3 >> 4
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w8 >> 4
-  bn.xor     w29, w29, w12
-  bn.and     w29, w29, w28
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w9 >> 4
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w10 >> 4
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w11 >> 4
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w11, w11, w29
+  bn.shv.16h w25, w24 << 4
+  bn.xor     w24, w24, w25      /* 0x0f0f */
+  bn.shv.16h w25, w0 >> 4
+  bn.xor     w25, w25, w4
+  bn.and     w25, w25, w24
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 4
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 4
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 4
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w8 >> 4
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 4
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w10 >> 4
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w11 >> 4
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w11, w11, w25
   /* Stage d=2. */
-  bn.shv.16h w29, w28 << 2
-  bn.xor     w28, w28, w29      /* 0x3333 */
-  bn.shv.16h w29, w0 >> 2
-  bn.xor     w29, w29, w2
-  bn.and     w29, w29, w28
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 2
-  bn.xor     w29, w29, w3
-  bn.and     w29, w29, w28
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w4 >> 2
-  bn.xor     w29, w29, w6
-  bn.and     w29, w29, w28
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w5 >> 2
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w8 >> 2
-  bn.xor     w29, w29, w10
-  bn.and     w29, w29, w28
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w9 >> 2
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w12 >> 2
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w13 >> 2
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w13, w13, w29
+  bn.shv.16h w25, w24 << 2
+  bn.xor     w24, w24, w25      /* 0x3333 */
+  bn.shv.16h w25, w0 >> 2
+  bn.xor     w25, w25, w2
+  bn.and     w25, w25, w24
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 2
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w4 >> 2
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 2
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w8 >> 2
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 2
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w12 >> 2
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w13 >> 2
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w13, w13, w25
   /* Stage d=1. */
-  bn.shv.16h w29, w28 << 1
-  bn.xor     w28, w28, w29      /* 0x5555 */
-  bn.shv.16h w29, w0 >> 1
-  bn.xor     w29, w29, w1
-  bn.and     w29, w29, w28
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w2 >> 1
-  bn.xor     w29, w29, w3
-  bn.and     w29, w29, w28
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w4 >> 1
-  bn.xor     w29, w29, w5
-  bn.and     w29, w29, w28
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w6 >> 1
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w8 >> 1
-  bn.xor     w29, w29, w9
-  bn.and     w29, w29, w28
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w10 >> 1
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w12 >> 1
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w14 >> 1
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w14, w14, w29
+  bn.shv.16h w25, w24 << 1
+  bn.xor     w24, w24, w25      /* 0x5555 */
+  bn.shv.16h w25, w0 >> 1
+  bn.xor     w25, w25, w1
+  bn.and     w25, w25, w24
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w2 >> 1
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w4 >> 1
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w6 >> 1
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w8 >> 1
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w10 >> 1
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w12 >> 1
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w14 >> 1
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w14, w14, w25
   ret
 
 /**
@@ -1557,25 +1521,25 @@ poly_hocompress_dv:
   sw   x9, 1160(x2)
 
   /* Load all constants. */
-  addi      x4, x0, 17
+  addi      x4, x0, 20
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
   la        x5, modulus_over_2
   bn.lid    x4++, 0(x5)
-  bn.shv.8s w18, w18 >> 16
+  bn.shv.8s w21, w21 >> 16
 
   /* Create 2^(alpha - 1). */
-  bn.subi   w19, w31, 1
-  bn.shv.8s w19, w19 >> 31
-  bn.shv.8s w19, w19 << 12
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
 
-  /* Select alpha-dependent parameters: w19 = 2^(alpha - 1), x8 = the
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
    * extraction byte offset alpha * 32, x9 = dv. */
   addi      x4, x0, 4
   addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
   addi      x9, x0, 5
   beq       x13, x4, _dv_params_done
-  bn.shv.8s w19, w19 << 1
+  bn.shv.8s w22, w22 << 1
   addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
   addi      x9, x0, 4
 
@@ -1593,28 +1557,28 @@ _dv_params_done:
    *  - x >>= s
    *  - x &= ((1 << (dv + alpha)) - 1).
    */
-  loopi 2, 56
+  loopi 2, 37
     addi x4, x0, 15
     loopi 16, 18
       bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 18
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w21, w19, w20 >> 8
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
       /* Handle odd-positioned coeffs. */
-      bn.trn2.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 18
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w20, w19, w20 >> 8
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
       /* Combine the results before bitslicing. */
-      bn.trn2.16h        w0, w21, w20
+      bn.trn2.16h        w0, w18, w17
       bn.sid             x0, 0(x7++)
-      bn.trn1.16h        w0, w21, w20
+      bn.trn1.16h        w0, w18, w17
       bn.movr            x4, x0
       addi               x4, x4, -1
     endloop
@@ -1644,31 +1608,11 @@ _dv_params_done:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w19 holds 2^(alpha - 1).
-     * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w31, w31
+    jal x1, whitening_dv
 
-    /* Whitening. */
-    bn.xor w0, w31, w31
-    bn.xor w1, w31, w31
-    bn.xor w2, w31, w31
-    bn.xor w3, w31, w31
-    bn.xor w4, w31, w31
-    bn.xor w5, w31, w31
-    bn.xor w6, w31, w31
-    bn.xor w7, w31, w31
-    bn.xor w8, w31, w31
-    bn.xor w9, w31, w31
-    bn.xor w10, w31, w31
-    bn.xor w11, w31, w31
-    bn.xor w12, w31, w31
-    bn.xor w13, w31, w31
-    bn.xor w14, w31, w31
-    bn.xor w15, w31, w31
-    bn.xor w20, w31, w31
-    bn.xor w21, w31, w31
-    bn.xor w28, w31, w31
-    bn.xor w29, w31, w31
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = dv + alpha = 18, share bytes = 576. */
@@ -1739,29 +1683,29 @@ poly_hocompress_du:
   sw   x9, 1544(x2)
 
   /* Create 2^(alpha - 1). */
-  bn.subi   w30, w31, 1
-  bn.shv.8s w30, w30 >> 31
-  bn.shv.8s w30, w30 << 12
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
 
-  /* Select alpha-dependent parameters: w30 = 2^(alpha - 1), x8 = the
-   * extraction byte offset alpha * 32, x9 = dv. */
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
+   * extraction byte offset alpha * 32, x9 = du. */
   addi      x4, x0, 4
   addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
   addi      x9, x0, 11
   beq       x13, x4, _du_params_done
-  bn.shv.8s w30, w30 << 1
+  bn.shv.8s w22, w22 << 1
   addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
   addi      x9, x0, 10
 
 _du_params_done:
   /* Load all constants. */
-  addi       x4, x0, 17
+  addi       x4, x0, 20
   la         x5, const_m_du
   bn.lid     x4++, 0(x5)
   la         x5, modulus_bn
   bn.lid     x4, 0(x5)
-  bn.shv.8s  w18, w18 >> 17 /* 0x680 in 8 32-bit lanes. */
-  bn.trn1.8s w18, w18, w31  /* 0x680 in 4 64-bit lanes. */
+  bn.shv.8s  w21, w21 >> 17 /* 0x680 in 8 32-bit lanes. */
+  bn.trn1.8s w21, w21, w31  /* 0x680 in 4 64-bit lanes. */
 
   add x6, x2, x0 /* z */
 
@@ -1776,63 +1720,63 @@ _du_params_done:
    *  - x >>= s
    *  - x &= ((1 << (du + alpha)) - 1).
    */
-  loopi 2, 83
+  loopi 2, 63
     addi x4, x0, 15
     loopi 16, 44
       bn.lid          x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h      w19, w0, w31
+      bn.trn1.16h     w17, w0, w31
       /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
-      bn.trn1.8s      w20, w19, w31
-      bn.rshi         w20, w20, w31 >> 232
-      bn.add          w20, w20, w18
-      bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-      bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-      bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-      bn.trn2.4d      w20, w21, w20
+      bn.trn1.8s      w18, w17, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
       /* Handle coeff[2] - coeff[6] - coeff[10] - coeff[14]. */
-      bn.trn2.8s      w19, w19, w31
-      bn.rshi         w19, w19, w31 >> 232
-      bn.add          w19, w19, w18
-      bn.mulqacc.so.z w21.l, w19.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w19.2, w17.0, 0
-      bn.mulqacc.so.z w19.l, w19.1, w17.0, 0
-      bn.mulqacc.so.z w19.u, w19.3, w17.0, 0
-      bn.trn2.4d      w19, w21, w19
+      bn.trn2.8s      w17, w17, w31
+      bn.rshi         w17, w17, w31 >> 232
+      bn.add          w17, w17, w21
+      bn.mulqacc.so.z w19.l, w17.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w17.2, w20.0, 0
+      bn.mulqacc.so.z w17.l, w17.1, w20.0, 0
+      bn.mulqacc.so.z w17.u, w17.3, w20.0, 0
+      bn.trn2.4d      w17, w19, w17
       /* Combine the result. */
-      bn.trn1.8s      w19, w20, w19
+      bn.trn1.8s      w17, w18, w17
 
       /* Handle odd-positioned coeffs. */
       bn.trn2.16h     w0, w0, w31
       /* Handle coeff[1] - coeff[5] - coeff[9] - coeff[13]. */
-      bn.trn1.8s      w20, w0, w31
-      bn.rshi         w20, w20, w31 >> 232
-      bn.add          w20, w20, w18
-      bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-      bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-      bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-      bn.trn2.4d      w20, w21, w20
+      bn.trn1.8s      w18, w0, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
       /* Handle coeff[3] - coeff[7] - coeff[11] - coeff[15]. */
       bn.trn2.8s      w0, w0, w31
       bn.rshi         w0, w0, w31 >> 232
-      bn.add          w0, w0, w18
-      bn.mulqacc.so.z w21.l, w0.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w0.2, w17.0, 0
-      bn.mulqacc.so.z w0.l, w0.1, w17.0, 0
-      bn.mulqacc.so.z w0.u, w0.3, w17.0, 0
-      bn.trn2.4d      w0, w21, w0
+      bn.add          w0, w0, w21
+      bn.mulqacc.so.z w19.l, w0.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w0.2, w20.0, 0
+      bn.mulqacc.so.z w0.l, w0.1, w20.0, 0
+      bn.mulqacc.so.z w0.u, w0.3, w20.0, 0
+      bn.trn2.4d      w0, w19, w0
       /* Combine the result. */
-      bn.trn1.8s      w20, w20, w0
+      bn.trn1.8s      w18, w18, w0
 
       /* Compute + 2^(alpha - 1) for the 1st share or 0 for the 2nd share. */
-      bn.addv.8s      w19, w19, w30
-      bn.addv.8s      w20, w20, w30
+      bn.addv.8s      w17, w17, w22
+      bn.addv.8s      w18, w18, w22
       /* Combine the results before bitslicing. */
-      bn.trn2.16h     w0, w19, w20
+      bn.trn2.16h     w0, w17, w18
       bn.sid          x0, 0(x7++)
-      bn.trn1.16h     w0, w19, w20
+      bn.trn1.16h     w0, w17, w18
       bn.movr         x4, x0
       addi            x4, x4, -1
     endloop
@@ -1862,32 +1806,11 @@ _du_params_done:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w30 holds 2^(alpha - 1).
-     * After that, we clear w30 for the 2nd share. */
-    bn.xor w30, w31, w31
+    jal x1, whitening_du
 
-    /* Whitening. */
-    bn.xor w0, w31, w31
-    bn.xor w1, w31, w31
-    bn.xor w2, w31, w31
-    bn.xor w3, w31, w31
-    bn.xor w4, w31, w31
-    bn.xor w5, w31, w31
-    bn.xor w6, w31, w31
-    bn.xor w7, w31, w31
-    bn.xor w8, w31, w31
-    bn.xor w9, w31, w31
-    bn.xor w10, w31, w31
-    bn.xor w11, w31, w31
-    bn.xor w12, w31, w31
-    bn.xor w13, w31, w31
-    bn.xor w14, w31, w31
-    bn.xor w15, w31, w31
-    bn.xor w19, w31, w31
-    bn.xor w20, w31, w31
-    bn.xor w21, w31, w31
-    bn.xor w28, w31, w31
-    bn.xor w29, w31, w31
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 for the 2nd share. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = du + alpha = 24, share bytes = 768. */
@@ -2338,63 +2261,63 @@ masked_poly_getnoise_eta_1:
   bn.wsrr w17, kmac_digest
   bn.wsrr w23, kmac_digest1
   bn.wsrr w18, kmac_digest
-  bn.wsrr w24, kmac_digest1
+  bn.wsrr w26, kmac_digest1
   bn.wsrr w19, kmac_digest
-  bn.wsrr w25, kmac_digest1
+  bn.wsrr w27, kmac_digest1
 
   bn.wsrr w20, kmac_digest
-  bn.wsrr w26, kmac_digest1
+  bn.wsrr w28, kmac_digest1
   bn.wsrr w21, kmac_digest
-  bn.wsrr w27, kmac_digest1
+  bn.wsrr w29, kmac_digest1
   bn.wsrr w22, kmac_digest
   bn.wsrr w30, kmac_digest1
 
   jal x1, _bitslice_eta_3
 
   bn.mov w17, w23
-  bn.mov w18, w24
-  bn.mov w19, w25
-  bn.mov w20, w26
-  bn.mov w21, w27
+  bn.mov w18, w26
+  bn.mov w19, w27
+  bn.mov w20, w28
+  bn.mov w21, w29
   bn.mov w22, w30
 
   jal x1, _bitslice_eta_3
 
   /* Whitening. */
   bn.xor w23, w31, w31
-  bn.xor w24, w31, w31
-  bn.xor w25, w31, w31
   bn.xor w26, w31, w31
   bn.xor w27, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
   bn.xor w30, w31, w31
 
   beq  x0, x0, _getnoise_common
 
 _getnoise_eta_2:
-  bn.wsrr w17, kmac_digest
-  bn.wsrr w21, kmac_digest1
-  bn.wsrr w18, kmac_digest
-  bn.wsrr w22, kmac_digest1
-  bn.wsrr w19, kmac_digest
-  bn.wsrr w23, kmac_digest1
-  bn.wsrr w20, kmac_digest
-  bn.wsrr w24, kmac_digest1
+  bn.wsrr w24, kmac_digest
+  bn.wsrr w20, kmac_digest1
+  bn.wsrr w23, kmac_digest
+  bn.wsrr w19, kmac_digest1
+  bn.wsrr w22, kmac_digest
+  bn.wsrr w18, kmac_digest1
+  bn.wsrr w21, kmac_digest
+  bn.wsrr w17, kmac_digest1
 
-  addi x5, x0, 17
-  addi x6, x0, 17
-  loopi 2, 37
+  addi x5, x0, 24
+  addi x6, x0, 24
+  loopi 2, 20
     addi x4, x0, 15
     loopi 4, 8
       bn.movr x5, x6
       loopi 4, 5
         loopi 16, 2
-          bn.rshi w0, w17, w0 >> 16
-          bn.rshi w17, w31, w17 >> 4
+          bn.rshi w0, w24, w0 >> 16
+          bn.rshi w24, w31, w24 >> 4
         endloop
         bn.movr x4, x0
         addi    x4, x4, -1
       endloop
-      addi x6, x6, 1
+      addi x6, x6, -1
     endloop
 
     jal x1, _bitslice_transpose
@@ -2407,36 +2330,18 @@ _getnoise_eta_2:
     addi   x4, x4, 1
     bn.sid x4, 0(x11++)
 
-    /* Whitening. */
-    bn.xor w0, w31, w31
-    bn.xor w1, w31, w31
-    bn.xor w2, w31, w31
-    bn.xor w3, w31, w31
-    bn.xor w4, w31, w31
-    bn.xor w5, w31, w31
-    bn.xor w6, w31, w31
-    bn.xor w7, w31, w31
-    bn.xor w8, w31, w31
-    bn.xor w9, w31, w31
-    bn.xor w10, w31, w31
-    bn.xor w11, w31, w31
-    bn.xor w12, w31, w31
-    bn.xor w13, w31, w31
-    bn.xor w14, w31, w31
-    bn.xor w15, w31, w31
-    bn.xor w17, w31, w31
-    bn.xor w28, w31, w31
-    bn.xor w29, w31, w31
+    jal x1, whitening_getnoise_eta_e2
+    nop
   endloop
 
   /* Whitening. */
+  bn.xor w17, w31, w31
   bn.xor w18, w31, w31
   bn.xor w19, w31, w31
   bn.xor w20, w31, w31
   bn.xor w21, w31, w31
   bn.xor w22, w31, w31
   bn.xor w23, w31, w31
-  bn.xor w24, w31, w31
 
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
@@ -2594,31 +2499,7 @@ _bitslice_eta_3:
     addi   x4, x4, 1
   endloop
 
-  /* Whitening. */
-  bn.xor w0, w31, w31
-  bn.xor w1, w31, w31
-  bn.xor w2, w31, w31
-  bn.xor w3, w31, w31
-  bn.xor w4, w31, w31
-  bn.xor w5, w31, w31
-  bn.xor w6, w31, w31
-  bn.xor w7, w31, w31
-  bn.xor w8, w31, w31
-  bn.xor w9, w31, w31
-  bn.xor w10, w31, w31
-  bn.xor w11, w31, w31
-  bn.xor w12, w31, w31
-  bn.xor w13, w31, w31
-  bn.xor w14, w31, w31
-  bn.xor w15, w31, w31
-  bn.xor w17, w31, w31
-  bn.xor w18, w31, w31
-  bn.xor w19, w31, w31
-  bn.xor w20, w31, w31
-  bn.xor w21, w31, w31
-  bn.xor w22, w31, w31
-  bn.xor w28, w31, w31
-  bn.xor w29, w31, w31
+  jal x1, whitening_getnoise_eta_e3
   ret
 
 /* Undefine gadget-local macros. */
@@ -2659,17 +2540,17 @@ masked_poly_tomsg:
   sw   x12, 1028(x2)
 
   /* Load all constants. */
-  addi      x4, x0, 17
+  addi      x4, x0, 20
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
   la        x5, modulus_over_2
   bn.lid    x4++, 0(x5)
-  bn.shv.8s w18, w18 >> 16
+  bn.shv.8s w21, w21 >> 16
 
   /* Create 2^(alpha - 1), alpha = 15. */
-  bn.subi    w19, w31, 1
-  bn.shv.8s  w19, w19 >> 31
-  bn.shv.8s  w19, w19 << 14
+  bn.subi    w22, w31, 1
+  bn.shv.8s  w22, w22 >> 31
+  bn.shv.8s  w22, w22 << 14
 
   /* Compute z_0 = Compressq(x_0, 1 + alpha) + 2^(alpha - 1),
    *         z_1 = Compressq(x_1, 1 + alpha).
@@ -2684,26 +2565,26 @@ masked_poly_tomsg:
    */
   add  x6, x2, x0 /* z */
 
-  loopi 2, 44
+  loopi 2, 25
     addi x4, x0, 15
     loopi 16, 16
       bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 16
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w21, w19, w20 >> 8
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
       /* Handle odd-positioned coeffs. */
-      bn.trn2.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 16
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w20, w19, w20 >> 8
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
       /* Combine results. */
-      bn.trn1.16h        w0, w21, w20
+      bn.trn1.16h        w0, w18, w17
       bn.movr            x4, x0
       addi               x4, x4, -1
     endloop
@@ -2716,31 +2597,11 @@ masked_poly_tomsg:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w19 holds 2^(alpha - 1).
-     * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w31, w31
+    jal x1, whitening_dv
 
-    /* Whitening. */
-    bn.xor w0, w31, w31
-    bn.xor w1, w31, w31
-    bn.xor w2, w31, w31
-    bn.xor w3, w31, w31
-    bn.xor w4, w31, w31
-    bn.xor w5, w31, w31
-    bn.xor w6, w31, w31
-    bn.xor w7, w31, w31
-    bn.xor w8, w31, w31
-    bn.xor w9, w31, w31
-    bn.xor w10, w31, w31
-    bn.xor w11, w31, w31
-    bn.xor w12, w31, w31
-    bn.xor w13, w31, w31
-    bn.xor w14, w31, w31
-    bn.xor w15, w31, w31
-    bn.xor w20, w31, w31
-    bn.xor w21, w31, w31
-    bn.xor w28, w31, w31
-    bn.xor w29, w31, w31
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = 1 + alpha = 16, share bytes = 512. */
