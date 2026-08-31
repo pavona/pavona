@@ -26,7 +26,7 @@
  *
  * clobbered registers: x4-x6, w2-w4
  */
-.global poly_add
+.globl poly_add
 .type poly_add, @function
 poly_add:
   /* Set up constants for input/state */

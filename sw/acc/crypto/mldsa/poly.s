@@ -47,7 +47,7 @@
  * clobbered registers: a0-a1, t0-t2
  */
 
-.global polyt1_unpack
+.globl polyt1_unpack
 .type polyt1_unpack, @function
 polyt1_unpack:
 
@@ -145,7 +145,7 @@ _inner_polyt1_unpack:
  *
  * clobbered registers: a0-a1, t0-t6
  */
-.global polyz_unpack
+.globl polyz_unpack
 .type polyz_unpack, @function
 polyz_unpack:
   /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
@@ -153,7 +153,7 @@ polyz_unpack:
   beq x14, x5, polyz_unpack_17
   jal x0, polyz_unpack_19
 
-.global polyz_unpack_17
+.globl polyz_unpack_17
 .type polyz_unpack_17, @function
 polyz_unpack_17:
   /* Load gamma1 as a vector into w4 */
@@ -247,7 +247,7 @@ _inner_polyz_unpack_17:
   bn.sid     x7, 0(x10++)
   ret
 
-.global polyz_unpack_19
+.globl polyz_unpack_19
 .type polyz_unpack_19, @function
 polyz_unpack_19:
   /* Load gamma1 as a vector into w4 */
@@ -334,7 +334,7 @@ _inner_polyz_unpack_19:
  *
  * clobbered registers: a0, a2, t0-t2, w0-w4
  */
-  .global poly_chknorm
+.globl poly_chknorm
 .type poly_chknorm, @function
 poly_chknorm:
   /* Load the bound into a wide register. */
@@ -408,7 +408,7 @@ poly_chknorm:
  *
  * clobbered registers: a0-a5, t0-t4, w0-w3
  */
-.global poly_challenge
+.globl poly_challenge
 .type poly_challenge, @function
 poly_challenge:
   /* save output pointer */
@@ -545,7 +545,7 @@ _loop_inner_skip_load_poly_challenge:
  *
  * clobbered registers: a0-a3, t0-t6, w0, w8-w15, w21
  */
-.global poly_uniform
+.globl poly_uniform
 .type poly_uniform, @function
 poly_uniform:
   /* Define temporary registers. */
@@ -1192,7 +1192,7 @@ poly_uniform_mask_and_check_vectors:
  * clobbered registers: a1, a3-a5, w8-w15, w20, t0-t6
  */
 #ifndef HARDENED
-.global poly_uniform_eta
+.globl poly_uniform_eta
 .type poly_uniform_eta, @function
 poly_uniform_eta:
   /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
@@ -1200,7 +1200,7 @@ poly_uniform_eta:
   beq x14, x5, poly_uniform_eta_eta_4
   jal x0, poly_uniform_eta_eta_2
 
-.global poly_uniform_eta_eta_2
+.globl poly_uniform_eta_eta_2
 .type poly_uniform_eta_eta_2, @function
 poly_uniform_eta_eta_2:
   /* Save nonce to memory (use poly tmp buffer). */
@@ -1296,7 +1296,7 @@ _rej_eta_sample_loop_continue_eta_2:
 
   ret
 
-.global poly_uniform_eta_eta_4
+.globl poly_uniform_eta_eta_4
 .type poly_uniform_eta_eta_4, @function
 poly_uniform_eta_eta_4:
   /* Save nonce to memory (use poly tmp buffer). */
@@ -1437,7 +1437,7 @@ _poly_uniform_eta_arithmetic_eta_4:
  * clobbered registers: a0-a2, t0-t1, w0-w15, w30
  */
 #endif
-.global poly_use_hint
+.globl poly_use_hint
 .type poly_use_hint, @function
 poly_use_hint:
   /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
@@ -1445,7 +1445,7 @@ poly_use_hint:
   beq x14, x5, poly_use_hint_88
   jal x0, poly_use_hint_32
 
-.global poly_use_hint_88
+.globl poly_use_hint_88
 .type poly_use_hint_88, @function
 poly_use_hint_88:
   la x5, decompose_127_const
@@ -1498,7 +1498,7 @@ poly_use_hint_88:
 
   ret
 
-.global poly_use_hint_32
+.globl poly_use_hint_32
 .type poly_use_hint_32, @function
 poly_use_hint_32:
   la x5, decompose_127_const
@@ -1565,7 +1565,7 @@ poly_use_hint_32:
  *
  * clobbered registers: a0-a1, t0-t2
  */
-.global polyt1_pack
+.globl polyt1_pack
 .type polyt1_pack, @function
 polyt1_pack:
   li x6, 1
@@ -1668,7 +1668,7 @@ _inner_polyt1_pack:
  * clobbered registers: a0-a1, t0-t3, w1, w2
  */
 #ifndef HARDENED
-.global polyeta_pack
+.globl polyeta_pack
 .type polyeta_pack, @function
 polyeta_pack:
   /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
@@ -1676,7 +1676,7 @@ polyeta_pack:
   beq x14, x5, polyeta_pack_eta_4
   jal x0, polyeta_pack_eta_2
 
-.global polyeta_pack_eta_2
+.globl polyeta_pack_eta_2
 .type polyeta_pack_eta_2, @function
 polyeta_pack_eta_2:
   /* Compute ETA - coeff */
@@ -1750,7 +1750,7 @@ _inner_polyeta_pack_eta_2:
     .endr
   ret
 
-.global polyeta_pack_eta_4
+.globl polyeta_pack_eta_4
 .type polyeta_pack_eta_4, @function
 polyeta_pack_eta_4:
   /* Compute ETA - coeff */
@@ -1805,7 +1805,7 @@ _inner_polyeta_pack_eta_4:
  * clobbered registers: a0-a1, t0-t3, w1, w2
  */
 #endif
-.global polyt0_pack
+.globl polyt0_pack
 .type polyt0_pack, @function
 polyt0_pack:
   /* Compute (1 << (D-1)) - coeff */
@@ -1932,7 +1932,7 @@ _inner_polyt0_pack:
  *
  * clobbered registers: a0, t0, w0-w4
  */
-.global poly_nonzero_encode
+.globl poly_nonzero_encode
 .type poly_nonzero_encode, @function
 poly_nonzero_encode:
   /* Initialize accumulator to zero. */
@@ -1976,7 +1976,7 @@ poly_nonzero_encode:
  *
  * clobbered registers: a0-a1, t0-t2
  */
-.global polyw1_pack
+.globl polyw1_pack
 .type polyw1_pack, @function
 polyw1_pack:
   /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
@@ -1984,7 +1984,7 @@ polyw1_pack:
   beq x14, x5, polyw1_pack_88
   jal x0, polyw1_pack_32
 
-.global polyw1_pack_88
+.globl polyw1_pack_88
 .type polyw1_pack_88, @function
 polyw1_pack_88:
 
@@ -2024,7 +2024,7 @@ _inner_polyw1_pack_88:
                                WDR */
   ret
 
-.global polyw1_pack_32
+.globl polyw1_pack_32
 .type polyw1_pack_32, @function
 polyw1_pack_32:
 
@@ -2060,7 +2060,7 @@ _inner_polyw1_pack_32:
  * clobbered registers: a0-a1, t0-t2, w1-w2
  */
 #ifndef HARDENED
-.global polyeta_unpack
+.globl polyeta_unpack
 .type polyeta_unpack, @function
 polyeta_unpack:
   /* Dispatch on x14 (K): K==6 means ETA=4, otherwise ETA=2. */
@@ -2068,7 +2068,7 @@ polyeta_unpack:
   beq x14, x5, polyeta_unpack_eta_4
   jal x0, polyeta_unpack_eta_2
 
-.global polyeta_unpack_eta_2
+.globl polyeta_unpack_eta_2
 .type polyeta_unpack_eta_2, @function
 polyeta_unpack_eta_2:
   /* Setup WDR */
@@ -2133,7 +2133,7 @@ _inner_polyeta_unpack_eta_2:
     bn.sid x7, 0(x10++)
   ret
 
-.global polyeta_unpack_eta_4
+.globl polyeta_unpack_eta_4
 .type polyeta_unpack_eta_4, @function
 polyeta_unpack_eta_4:
   /* Setup WDR */
@@ -2215,7 +2215,7 @@ _inner_polyeta_unpack_eta_4:
  * clobbered registers: a0-a7, t0-t6
  */
 #endif
-.global poly_decode_h
+.globl poly_decode_h
 .type poly_decode_h, @function
 poly_decode_h:
   /* Initialize h[i] to zero */
@@ -2355,7 +2355,7 @@ _ret1_decode_h:
  *
  * clobbered registers: a0-a1, t2, t3, t5, t6, w1-w2
  */
-.global polyt0_unpack
+.globl polyt0_unpack
 .type polyt0_unpack, @function
 polyt0_unpack:
   /* Load (1 << (D-1)) as a vector into w4 */
@@ -2483,7 +2483,7 @@ _inner_polyt0_unpack:
  * clobbered registers: a1, t0-t3, w1-w6
  */
 #ifndef HARDENED
-.global poly_uniform_gamma_1
+.globl poly_uniform_gamma_1
 .type poly_uniform_gamma_1, @function
 poly_uniform_gamma_1:
   /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
@@ -2491,7 +2491,7 @@ poly_uniform_gamma_1:
   beq x14, x5, poly_uniform_gamma_1_17
   jal x0, poly_uniform_gamma_1_19
 
-.global poly_uniform_gamma_1_17
+.globl poly_uniform_gamma_1_17
 .type poly_uniform_gamma_1_17, @function
 poly_uniform_gamma_1_17:
   /* copy output pointer */
@@ -2612,7 +2612,7 @@ _inner_poly_uniform_gamma_1_17:
   bn.sid     x7, 0(x6++)
   ret
 
-.global poly_uniform_gamma_1_19
+.globl poly_uniform_gamma_1_19
 .type poly_uniform_gamma_1_19, @function
 poly_uniform_gamma_1_19:
   /* copy output pointer */
@@ -2722,7 +2722,7 @@ _inner_poly_uniform_gamma_1_19:
  *
  * clobbered registers: w0-w11, a0-a2, t0-t4
  */
-.global poly_decompose
+.globl poly_decompose
 .type poly_decompose, @function
 poly_decompose:
   /* Dispatch on x14 (K): K==4 means GAMMA2=(Q-1)/88, otherwise (Q-1)/32. */
@@ -2730,7 +2730,7 @@ poly_decompose:
   beq x14, x5, poly_decompose_88
   jal x0, poly_decompose_32
 
-.global poly_decompose_88
+.globl poly_decompose_88
 .type poly_decompose_88, @function
 poly_decompose_88:
   la x5, decompose_127_const
@@ -2773,7 +2773,7 @@ poly_decompose_88:
 
   ret
 
-.global poly_decompose_32
+.globl poly_decompose_32
 .type poly_decompose_32, @function
 poly_decompose_32:
   la x5, decompose_127_const
@@ -2837,7 +2837,7 @@ poly_decompose_32:
  * clobbered registers: t0-t2, t5-t6, a0-a2, a4-a7
  */
 #endif
-.global poly_make_hint
+.globl poly_make_hint
 .type poly_make_hint, @function
 poly_make_hint:
   li   x7, 0
@@ -2905,7 +2905,7 @@ _loop_end_poly_make_hint:
  *
  * clobbered registers: a0-a1, t0-t2, w0-w1
  */
-.global polyz_pack
+.globl polyz_pack
 .type polyz_pack, @function
 polyz_pack:
   /* Dispatch on x14 (K): K==4 means GAMMA1=2^17, otherwise 2^19. */
@@ -2913,7 +2913,7 @@ polyz_pack:
   beq x14, x5, polyz_pack_17
   jal x0, polyz_pack_19
 
-.global polyz_pack_17
+.globl polyz_pack_17
 .type polyz_pack_17, @function
 polyz_pack_17:
   la x6, gamma1_vec_const_17
@@ -3069,7 +3069,7 @@ _inner_polyz_pack_17:
                                WDR */
   ret
 
-.global polyz_pack_19
+.globl polyz_pack_19
 .type polyz_pack_19, @function
 polyz_pack_19:
   la x6, gamma1_vec_const_19
@@ -3140,7 +3140,7 @@ _inner_polyz_pack_19:
  *
  * clobbered registers: a1-a2, t0-t6
  */
-.global poly_encode_h
+.globl poly_encode_h
 .type poly_encode_h, @function
 poly_encode_h:
   /* Masking constant for alignment */
@@ -3249,7 +3249,7 @@ poly_reduce32:
  *
  * clobbered registers: x4-x7, w2-w4
  */
-.global poly_power2round
+.globl poly_power2round
 .type poly_power2round, @function
 poly_power2round:
   #define D 13
