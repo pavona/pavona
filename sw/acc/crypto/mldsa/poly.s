@@ -42,7 +42,8 @@
  * @param[in]  x11: pointer to input byte array with POLYT1_PACKEDBYTES bytes
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x10-x11, x5-x7
+ * clobbered registers: x6 to x7, x10 to x11, x28 to x31, w1 to w2, w5 to w6
+ * clobbered flag groups: FG0
  */
 
 .globl polyt1_unpack
@@ -110,6 +111,9 @@ polyt1_unpack:
  * Inner part of unpacking function to reduce the code size.
  * Do not call from anywhere but polyeta_unpack.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x10, w1 to w2
+ * clobbered flag groups: FG0
  */
 _inner_polyt1_unpack:
   /* Unpack 16 coefficients in one go */
@@ -141,7 +145,8 @@ _inner_polyt1_unpack:
  * @param[in]  x14: K (used by polyz_unpack dispatcher only)
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x10-x11, x5-x31
+ * clobbered registers: x5, x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered flag groups: FG0
  */
 .globl polyz_unpack
 .type polyz_unpack, @function
@@ -332,7 +337,8 @@ _inner_polyz_unpack_19:
  * @param[inout] x10: pointer to polynomial
  * @param[out]   x12: 0 on success, 1 on failure
  *
- * clobbered registers: x10, x12, x5-x7, w0-w4
+ * clobbered registers: x5 to x7, x10, x12, w0 to w4
+ * clobbered flag groups: FG0
  */
 .globl poly_chknorm
 .type poly_chknorm, @function
@@ -403,7 +409,8 @@ poly_chknorm:
  * @param[in]  x12: CTILDEBYTES
  * @param[in]  x13: TAU
  *
- * clobbered registers: x10-x15, x5-x29, w0-w3
+ * clobbered registers: x5 to x7, x10 to x16, x28 to x29, w0 to w3
+ * clobbered flag groups: FG0
  */
 .globl poly_challenge
 .type poly_challenge, @function
@@ -540,7 +547,8 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  x11: dmem pointer to polynomial
  * @param[out] dmem[x11]: freshly sampled polynomial
  *
- * clobbered registers: x10-x13, x5-x31, w0, w8-w15, w21
+ * clobbered registers: x5 to x7, x11, x13, x28 to x29, x31, w0, w8, w10 to w15, w21
+ * clobbered flag groups: FG0
  */
 .globl poly_uniform
 .type poly_uniform, @function
@@ -1158,7 +1166,8 @@ _poly_uniform_recompute_first_bad_index:
  * @param[inout] w14: index, either current index or first bad index if found
  * @param[inout] w15: incrementer, 1 if bad index not found yet otherwise 0
  *
- * clobbered registers: w10, w21
+ * clobbered registers: x28, w10, w14 to w15, w21, wref-x31
+ * clobbered flag groups: FG0
  */
 .type poly_uniform_mask_and_check_vectors, @function
 poly_uniform_mask_and_check_vectors:
@@ -1186,7 +1195,8 @@ poly_uniform_mask_and_check_vectors:
  * @param[in]  x11: dmem pointer to polynomial
  * @param[in]  x14: K (used by poly_uniform_eta dispatcher only)
  *
- * clobbered registers: x11, x13-x15, w8-w15, w20, x5-x31
+ * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1, w8 to w9, w12 to w14, w20 to w21
+ * clobbered flag groups: FG0
  */
 #ifndef HARDENED
 .globl poly_uniform_eta
@@ -1429,7 +1439,8 @@ _poly_uniform_eta_arithmetic_eta_4:
  * @param[out] x12: input hint poly pointer
  * @param[in]  x14: K (used by poly_use_hint dispatcher only)
  *
- * clobbered registers: x10-x12, x5-x6, w0-w15, w30
+ * clobbered registers: x5 to x6, x10 to x12, w0 to w13, w15, w30, mod
+ * clobbered flag groups: FG0
  */
 #endif
 .globl poly_use_hint
@@ -1558,7 +1569,8 @@ poly_use_hint_32:
                    POLYT1_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x10-x11, x5-x7
+ * clobbered registers: x6, x10 to x11, x29, w1 to w2, w4
+ * clobbered flag groups: none
  */
 .globl polyt1_pack
 .type polyt1_pack, @function
@@ -1658,7 +1670,8 @@ _inner_polyt1_pack:
  * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyeta_pack dispatcher only)
  *
- * clobbered registers: x10-x11, x5-x28, w1, w2
+ * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered flag groups: none
  */
 #ifndef HARDENED
 .globl polyeta_pack
@@ -1735,6 +1748,9 @@ polyeta_pack_eta_2:
  * Inner part of packing function to reduce the code size. Could be inlined.
  * Do not call from anywhere but polyeta_pack_eta_2.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x11, w1 to w2, wref-x6
+ * clobbered flag groups: none
  */
 _inner_polyeta_pack_eta_2:
   loopi 10, 18
@@ -1778,6 +1794,9 @@ polyeta_pack_eta_4:
  * Inner part of packing function to reduce the code size. Could be inlined.
  * Do not call from anywhere but polyeta_pack_eta_4.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x11, w1 to w2, wref-x6
+ * clobbered flag groups: none
  */
 _inner_polyeta_pack_eta_4:
   loopi 8, 18
@@ -1799,7 +1818,8 @@ _inner_polyeta_pack_eta_4:
                    POLYETA_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x10-x11, x5-x28, w1, w2
+ * clobbered registers: x5 to x7, x10 to x11, x28 to x29, w1 to w4
+ * clobbered flag groups: none
  */
 #endif
 .globl polyt0_pack
@@ -1927,7 +1947,8 @@ _inner_polyt0_pack:
  * @param[in]  x10: pointer to input polynomial
  * @param[out] w0: Representative of nonzero coefficients.
  *
- * clobbered registers: x10, x5, w0-w4
+ * clobbered registers: x5, x10, w0 to w4
+ * clobbered flag groups: FG0
  */
 .globl poly_nonzero_encode
 .type poly_nonzero_encode, @function
@@ -1971,7 +1992,8 @@ poly_nonzero_encode:
  * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyw1_pack dispatcher only)
  *
- * clobbered registers: x10-x11, x5-x7
+ * clobbered registers: x5 to x7, x10 to x11, x29, w1 to w2, w4
+ * clobbered flag groups: none
  */
 .globl polyw1_pack
 .type polyw1_pack, @function
@@ -2058,7 +2080,8 @@ _inner_polyw1_pack_32:
  * @param[in]  x14: K (used by polyeta_unpack dispatcher only)
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x10-x11, x5-x7, w1-w2
+ * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w6
+ * clobbered flag groups: FG0
  */
 #ifndef HARDENED
 .globl polyeta_unpack
@@ -2113,6 +2136,9 @@ polyeta_unpack_eta_2:
  * Inner part of unpacking function to reduce the code size.
  * Do not call from anywhere but polyeta_unpack_eta_2.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x10, w1 to w2
+ * clobbered flag groups: FG0
  */
 _inner_polyeta_unpack_eta_2:
   /* Unpack 64 coefficients in one go */
@@ -2174,6 +2200,9 @@ polyeta_unpack_eta_4:
  * Inner part of unpacking function to reduce the code size.
  * Do not call from anywhere but polyeta_unpack_eta_4.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x10, w1 to w2
+ * clobbered flag groups: FG0
  */
 _inner_polyeta_unpack_eta_4:
   /* Unpack 64 coefficients in one go */
@@ -2213,7 +2242,8 @@ _inner_polyeta_unpack_eta_4:
  * @param[in]  x15: K, number of polynomials in h
  * @param[in]  x29: OMEGA
  *
- * clobbered registers: x10-x17, x5-x31
+ * clobbered registers: x5 to x7, x12 to x17, x28, x30 to x31
+ * clobbered flag groups: none
  */
 #endif
 .globl poly_decode_h
@@ -2353,7 +2383,8 @@ _ret1_decode_h:
                    POLYETA_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x10-x11, x7, x28, x30, x31, w1-w2
+ * clobbered registers: x7, x10 to x11, x28, x31, w1 to w6
+ * clobbered flag groups: FG0
  */
 .globl polyt0_unpack
 .type polyt0_unpack, @function
@@ -2442,6 +2473,9 @@ polyt0_unpack:
  * Inner part of unpacking function to reduce the code size.
  * Do not call from anywhere but polyt0_unpack.
  * Does not adhere to calling convention.
+ *
+ * clobbered registers: x10, w1 to w2
+ * clobbered flag groups: FG0
  */
 _inner_polyt0_unpack:
   /* Unpack 16 coefficients in one go */
@@ -2479,7 +2513,8 @@ _inner_polyt0_unpack:
  * @param[in]  x13: pointer to gamma1_vec_const
  * @param[in]  x14: K (used by poly_uniform_gamma_1 dispatcher only)
  *
- * clobbered registers: x11, x5-x28, w1-w6
+ * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered flag groups: FG0
  */
 #ifndef HARDENED
 .globl poly_uniform_gamma_1
@@ -2721,7 +2756,8 @@ _inner_poly_uniform_gamma_1_19:
  * @param[in]  x12: *a, pointer to input polynomial
  * @param[in]  x14: K (used by poly_decompose dispatcher only)
  *
- * clobbered registers: w0-w11, x10-x12, x5-x29
+ * clobbered registers: x5 to x7, x10 to x12, w0 to w11, w30
+ * clobbered flag groups: FG0
  */
 .globl poly_decompose
 .type poly_decompose, @function
@@ -2837,7 +2873,8 @@ poly_decompose_32:
  * @param[in]  x12: GAMMA2
  * @param[in]  w0: 256b representative of nonzero values in high part of polynomial
  *
- * clobbered registers: x5-x7, x30-x31, x10-x12, x14-x17
+ * clobbered registers: x5, x7, x10 to x11, x16 to x17, x28 to x31, w0
+ * clobbered flag groups: FG0
  */
 #endif
 .globl poly_make_hint
@@ -2905,7 +2942,8 @@ _loop_end_poly_make_hint:
  * @param[out] x10: pointer to output byte array with at least
  *                  POLYZ_PACKEDBYTES bytes
  *
- * clobbered registers: x10-x11, x5-x7, w0-w1
+ * clobbered registers: x5 to x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered flag groups: none
  */
 .globl polyz_pack
 .type polyz_pack, @function
@@ -3141,7 +3179,8 @@ _inner_polyz_pack_19:
  * @param[in]  x14: OMEGA
  * @param[out] x10: pointer to the start of all signature hint bytes
  *
- * clobbered registers: x11-x12, x5-x31
+ * clobbered registers: x5, x7, x11 to x12, x28 to x31
+ * clobbered flag groups: none
  */
 .globl poly_encode_h
 .type poly_encode_h, @function
@@ -3195,7 +3234,8 @@ _skip_store_poly_encode_h:
  * @param[in]  w31: all-zero
  * @param[out] x11: dmem pointer to result
  *
- * clobbered registers: x4-x7, x10-x11, w2-w6
+ * clobbered registers: x5 to x7, x10 to x11, x28, w2, w4 to w6
+ * clobbered flag groups: none
  */
 .globl poly_reduce32
 .type poly_reduce32, @function
@@ -3248,7 +3288,8 @@ poly_reduce32:
  * @param[in]  x12: a1, dmem pointer to output polynomial with coefficients c1
  * @param[in]  w31: all-zero
  *
- * clobbered registers: x4-x7, w2-w4
+ * clobbered registers: x5 to x7, x10 to x12, x28, w4 to w7
+ * clobbered flag groups: none
  */
 .globl poly_power2round
 .type poly_power2round, @function

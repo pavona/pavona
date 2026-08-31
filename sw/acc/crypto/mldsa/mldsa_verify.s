@@ -63,6 +63,9 @@
  * @param[in]  dmem[mldsa_params]: active mode parameters
  * @param[in]  dmem[pk]: public key
  * @param[out] dmem[result]: HARDENED_BOOL_TRUE if valid, HARDENED_BOOL_FALSE otherwise
+ *
+ * clobbered registers: x4 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl crypto_sign_verify_internal
 .type crypto_sign_verify_internal, @function

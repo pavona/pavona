@@ -25,8 +25,8 @@
  * @param[in]  w31: all-zero
  * @param[in]  dmem[dptr_msg..dptr_msg+len]: msg, hash function input
  *
- * clobbered registers: x5, x11, w0
- * clobbered flag groups: None
+ * clobbered registers: x5, x10, w0
+ * clobbered flag groups: none
  */
 .globl keccak_send_message
 .type keccak_send_message, @function

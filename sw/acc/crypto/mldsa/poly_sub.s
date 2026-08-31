@@ -22,8 +22,8 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4 to x5
- *                      w2 to w3
+ * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered flag groups: none
  */
 .globl poly_sub
 .type poly_sub, @function

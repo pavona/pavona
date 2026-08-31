@@ -50,7 +50,7 @@
  *
  * Preserves x10, x11, x12.
  *
- * clobbered registers: x5 to x7, w0, w17, w24 to w27, w30, acc, acch
+ * clobbered registers: x5 to x7, w0, w17, w24 to w27, w30, acch, acc
  * clobbered flag groups: none
  */
 .globl gen_twiddles_fwd

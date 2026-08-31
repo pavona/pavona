@@ -26,7 +26,8 @@
  * decompose_const, reduce32_const, decompose_43_const, gamma2_vec_const,
  * qm1half_const, modulus
  *
- * clobbered registers: w1-w4, w30
+ * clobbered registers: w1 to w4, w30
+ * clobbered flag groups: FG0
  */
 .globl decompose_88
 .type decompose_88, @function
