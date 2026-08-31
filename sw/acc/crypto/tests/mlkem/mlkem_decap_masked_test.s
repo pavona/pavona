@@ -19,12 +19,12 @@
 main:
   bn.xor  w31, w31, w31
 
-  /* mod = qinv | q. */
+  /* mod = mqinv | q. */
   li      x5, 16
-  la      x6, modulus_bn
+  la      x6, const_q
   bn.lid  x5++, 0(x6)
   bn.rshi w16, w31, w16 >> 240
-  la      x6, modulus_inv
+  la      x6, const_mqinv
   bn.lid  x5, 0(x6)
   bn.or   w16, w16, w17 << 32
   bn.wsrw mod, w16

@@ -183,7 +183,7 @@ poly_frombytes:
 .type check_pk, @function
 check_pk:
   /* Load q into all 16 lanes. */
-  la      x5, modulus_bn
+  la      x5, const_q
   bn.lid  x0, 0(x5)
 
   /* Load a vectorized 1 for comparison. */
