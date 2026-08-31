@@ -26,7 +26,7 @@
  * bytes for k = 2, 3 and cv = 160 and cu = 352 bytes for k = 4. The input
  * ciphertext is laid out as c = u || v, with u in c[0 : k * cu] and v in
  * c[k * cu : k * cu + cv].
- *  Step 1: kpoly = poly_frommsg(m)       // onebitdecompress(m) when d > 1
+ *  Step 1: kpoly = poly_frommsg(m)       // masked_poly_frommsg(m) when d > 1
  *  Step 2: recompute v and compare it against c[k * cu : k * cu + cv].
  *          for i = 0..k - 1:
  *            ek_pke[i] = poly_frombytes(ek_pke[384 * i : 384 * (i + 1)])
@@ -807,10 +807,10 @@ _continue:
   bn.xor  w0, w31, w31
   bn.sid  x0, 32(x2)
 
-  /*** Step 1: kpoly = onebitdecompress(m). ***/
+  /*** Step 1: kpoly = masked_poly_frommsg(m). ***/
   /* x10 already points to m. */
   la   x12, mpoly_k
-  jal  x1, onebitdecompress
+  jal  x1, masked_poly_frommsg
 
   /*** Step 2: recompute v and compare it against c[k * cu : k * cu + cv]. ***/
   /* The following block will:
@@ -1102,7 +1102,7 @@ _handle_k2_compute_v:
   add x12, x26, x0
   add x14, x2, x0
   add x15, x21, x0
-  jal x1, poly_masked_compare_dv
+  jal x1, masked_poly_compare_dv
   /**************************************************************************/
 
 
@@ -1261,7 +1261,7 @@ _handle_k2_compute_v:
     add  x12, x27, x0
     add  x14, x2, x0
     addi x15, x21, 2
-    jal  x1, poly_masked_compare_du
+    jal  x1, masked_poly_compare_du
     add  x19, x19, x27
   endloop
 
@@ -1370,7 +1370,7 @@ _handle_k2_compute_v:
   add  x12, x27, x0
   add  x14, x2, x0
   addi x15, x21, 2
-  jal  x1, poly_masked_compare_du
+  jal  x1, masked_poly_compare_du
   /**************************************************************************/
   beq  x0, x0, _finalize_compare
 
@@ -1470,7 +1470,7 @@ _handle_k2_compute_b:
   addi x12, x0, 320
   add  x14, x2, x0
   add  x15, x21, x0
-  jal  x1, poly_masked_compare_du
+  jal  x1, masked_poly_compare_du
 
   /* Generate at[1][0]. */
   la  x11, poly_at
@@ -1547,7 +1547,7 @@ _handle_k2_compute_b:
   addi x12, x0, 320
   add  x14, x2, x0
   add  x15, x21, x0
-  jal  x1, poly_masked_compare_du
+  jal  x1, masked_poly_compare_du
   /**************************************************************************/
 
   /*** Step 4: w0 = acc, reduced by finalize_cmp and unmasked. ***/
