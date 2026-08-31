@@ -22,7 +22,8 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4-x6, w2-w4
+ * clobbered registers: x4, x10 to x12, w0 to w1, acch, acc
+ * clobbered flag groups: none
  */
 .globl poly_pointwise
 .type poly_pointwise, @function
@@ -60,7 +61,8 @@ poly_pointwise:
  * @param[in]    w16: sw0, where sw0.0 = Q and sw0.1 = Q^-1 mod 2^32
  * @param[inout] x12: dmem pointer to result
  *
- * clobbered registers: x4-x6, w2-w4
+ * clobbered registers: x4, x10 to x12, w0 to w1, acch, acc
+ * clobbered flag groups: none
  */
 .globl poly_pointwise_acc
 .type poly_pointwise_acc, @function

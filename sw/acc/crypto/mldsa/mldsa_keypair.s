@@ -42,7 +42,8 @@
  * @param[out] dmem[pk]: public key
  * @param[out] dmem[sk]: secret key
  *
- * clobbered registers: x10-x16, x5-x30, x9, w0-w30
+ * clobbered registers: x2, x4 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl crypto_sign_keypair
 .type crypto_sign_keypair, @function

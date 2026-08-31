@@ -168,7 +168,8 @@ _mldsa_verify_common:
  *
  * @param[in]  x10: pointer to source mldsa_params_* table
  *
- * clobbered registers: x11, x5, w0
+ * clobbered registers: x5, x11, w0
+ * clobbered flag groups: none
  */
 _setup_params:
   la     x11, mldsa_params

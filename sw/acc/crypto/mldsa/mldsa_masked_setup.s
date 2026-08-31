@@ -18,7 +18,8 @@
  * c_z/c_r need all 8 lanes written for DMEM integrity (secboundcheck reads
  * only lane 0).
  *
- * clobbered registers: x10, x11, x5-x28
+ * clobbered registers: x5 to x7, x10 to x11, x28
+ * clobbered flag groups: none
  */
 .globl _setup_masked_vectors
 _setup_masked_vectors:

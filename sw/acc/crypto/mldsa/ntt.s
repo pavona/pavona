@@ -22,7 +22,8 @@
  * @param[in]  w31: all-zero register
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x5-x7, x10-x12, w0-w15, w17-w19, w24-w30
+ * clobbered registers: x5 to x7, x10 to x12, w0 to w15, w17 to w19, w24 to w31, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl ntt
 .type ntt, @function

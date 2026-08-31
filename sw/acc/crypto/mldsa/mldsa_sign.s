@@ -62,6 +62,9 @@
  * @param[out] x10: 0 (success)
  * @param[out] x11: siglen
  * @param[out] dmem[*sig]: signature
+ *
+ * clobbered registers: x2, x4 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl crypto_sign_signature_internal
 .type crypto_sign_signature_internal, @function
@@ -161,6 +164,9 @@ crypto_sign_signature_internal:
  * z (z-loop), h (hint loop), z pack; restarts in place on rejection.
  * Inputs are taken from caller-set state (sign_gamma1_buf, sk, etc.); on
  * success returns x10 = 0, x11 = CRYPTO_BYTES.
+ *
+ * clobbered registers: x2, x4 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl sign_attempt
 .type sign_attempt, @function
@@ -259,6 +265,9 @@ sign_attempt:
  *
  * In/out: advances the nonce counter in x27 by L (each gamma1 call uses
  * it).  Restores MOD = R|Q.
+ *
+ * clobbered registers: x2, x4 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl sign_w
 .type sign_w, @function
@@ -478,6 +487,9 @@ _sign_w_gamma1_a_5:
  * @param[scratch] x14: dptr_w1_tmp, 1 KiB temporary for decompose's w1
  *                      output and Keccak interim.
  * @param[scratch] x15: dptr_seca2b_scratch, 1.5 KiB (decompose internal).
+ *
+ * clobbered registers: x2, x4 to x25, x28 to x31, w0 to w30, mod
+ * clobbered flag groups: FG0
  */
 .globl sign_w0_w1_ctilde
 .type sign_w0_w1_ctilde, @function
@@ -623,6 +635,9 @@ _sign_pack_ctilde_done:
  * @param[in]  x11: dptr_ctilde, 32-byte aligned source of c~.
  *
  * Restores MOD = R|Q.
+ *
+ * clobbered registers: x5 to x8, x10 to x16, x28 to x29, w0 to w15, w17 to w19, w24 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl sign_c
 .type sign_c, @function
@@ -678,6 +693,9 @@ sign_c:
  * @param[in]  x11: src bitsliced shares (share 0 @ +0, share 1 @ +POLYETA).
  * @param[in]  x12: seca2b scratch.
  * @param[in]  x13: b2a Boolean buffer.
+ *
+ * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w27
+ * clobbered flag groups: FG0
  */
 _masked_eta_from_shares:
   addi x2, x2, -32
@@ -770,6 +788,9 @@ _masked_eta_from_shares:
  * s1 is loaded from `s1s2_shares` in-loop.
  *
  * Returns x10 = 0 on success, x10 = 1 on rejection.
+ *
+ * clobbered registers: x2, x4 to x26, x28 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl sign_z_pack
 .type sign_z_pack, @function
@@ -1012,6 +1033,9 @@ _sign_z_reject:
  * Scratch: sign_c_poly_shares, sign_hint_b2a, sign_y, sign_tmp.
  *
  * Returns x10 = 0 on success, x10 = 1 on rejection.
+ *
+ * clobbered registers: x2, x4 to x26, x28 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
  */
 .globl sign_h_check
 .type sign_h_check, @function
