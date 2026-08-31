@@ -448,6 +448,26 @@ Public (encapsulation) keys are unblinded keys; secret (decapsulation) keys and 
 Each operation takes a caller-allocated work buffer sized by the `kOtcryptoMlkem*WorkBuffer*Words` constants in `mlkem.h`.
 The `keygen` and `encapsulate` functions sample randomness internally; the `_derand` variants instead take caller-supplied randomness and are intended only for testing.
 
+The cryptolib ML-KEM implementation supports three different backends: a side-channel-unprotected ACC backend, a side-channel-hardened ACC backend, and a side-channel-unprotected software backend.
+This last backend is intended for use when ACC is instantiated without the PQC ISA extensions necessary for ML-KEM.
+It does not use ACC, but it does use the KMAC block for Keccak.
+Selection of the unprotected and hardened ACC backends in cryptolib can be done at compile time via the `acc_has_pqc` and `acc_pqc_hardened` Bazel configuration settings; the hardened backend requires both to be set.
+The ACC backends also require an ACC instantiated with `AccPQCEn`, which the `fpga_cw340_pqc_test_rom` execution environment provides.
+For instance, to run the ML-KEM known-answer tests with the unprotected ACC backend, one can run:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mlkem_kat_fpga_cw340_pqc_test_rom --test_output=streamed --define=acc_has_pqc=true
+```
+
+To run the known-answer tests with the hardened ACC backend, one can instead run:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mlkem_kat_fpga_cw340_pqc_test_rom --test_output=streamed --define=acc_has_pqc=true --define=acc_pqc_hardened=true
+```
+
+To run the known-answer tests with the software backend, both configuration settings are omitted and the default bitstream is used:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mlkem_kat_fpga_cw340_test_rom --test_output=streamed
+```
+
 ### ML-KEM-512
 
 {{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem512_keygen }}
@@ -480,6 +500,26 @@ Public keys are unblinded keys and secret keys are blinded keys.
 Signing and verification take an optional context string (which may be empty) and a signature mode selected with **otcrypto\_mldsa\_sign\_mode\_t**; currently only pure ML-DSA is supported (HashML-DSA is not yet integrated).
 Each operation takes a caller-allocated work buffer sized by the `kOtcryptoMldsa*WorkBuffer*Words` constants in `mldsa.h`.
 The `keygen` and `sign` functions sample randomness internally; the `_derand` variants instead take caller-supplied randomness and are intended only for testing.
+
+The cryptolib ML-DSA implementation supports three different backends: a side-channel-unprotected ACC backend, a side-channel-hardened ACC backend, and a side-channel-unprotected software backend.
+This last backend is intended for use when ACC is instantiated without the PQC ISA extensions necessary for ML-DSA.
+It does not use ACC, but it does use the KMAC block for Keccak.
+Selection of the unprotected and hardened ACC backends in cryptolib can be done at compile time via the `acc_has_pqc` and `acc_pqc_hardened` Bazel configuration settings; the hardened backend requires both to be set.
+The ACC backends also require an ACC instantiated with `AccPQCEn`, which the `fpga_cw340_pqc_test_rom` execution environment provides.
+For instance, to run the ML-DSA known-answer tests with the unprotected ACC backend, one can run:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mldsa_kat_fpga_cw340_pqc_test_rom --test_output=streamed --define=acc_has_pqc=true
+```
+
+To run the known-answer tests with the hardened ACC backend, one can instead run:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mldsa_kat_fpga_cw340_pqc_test_rom --test_output=streamed --define=acc_has_pqc=true --define=acc_pqc_hardened=true
+```
+
+To run the known-answer tests with the software backend, both configuration settings are omitted and the default bitstream is used:
+```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:mldsa_kat_fpga_cw340_test_rom --test_output=streamed
+```
 
 ### ML-DSA-44
 
