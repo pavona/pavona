@@ -114,44 +114,44 @@ poly_frombytes:
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
     bn.sid x4, 0(x11++)
 
     loopi 5, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.rshi w1, w0, w1 >> 4
     bn.lid  x0, 0(x10++)
     bn.rshi w1, w0, w1 >> 12
-    bn.rshi w0, w0, w0 >> 8
+    bn.rshi w0, w31, w0 >> 8
     loopi 10, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
     bn.sid x4, 0(x11++)
 
     loopi 10, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.rshi w1, w0, w1 >> 8
     bn.lid  x0, 0(x10++)
     bn.rshi w1, w0, w1 >> 8
-    bn.rshi w0, w0, w0 >> 4
+    bn.rshi w0, w31, w0 >> 4
     loopi 5, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
     bn.sid x4, 0(x11++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
-      bn.rshi w0, w0, w0 >> 12
+      bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
     bn.sid x4, 0(x11++)
