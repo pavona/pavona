@@ -37,7 +37,7 @@ def random_shared_poly() -> Tuple[bytes, List[int]]:
     return shares, r
 
 
-def gen_poly_masked_compare_dv_test(
+def gen_masked_poly_compare_dv_test(
         seed: Optional[int],
         data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     if seed is not None:
@@ -81,5 +81,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
-        gen_poly_masked_compare_dv_test(args.seed, args.data, args.exp,
+        gen_masked_poly_compare_dv_test(args.seed, args.data, args.exp,
                                         args.dexp)
