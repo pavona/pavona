@@ -9,7 +9,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
-.equ x5, t0
 
 /**
  * Send a variable-length message to the Keccak core.
@@ -34,12 +33,12 @@
 keccak_send_message:
   /* Compute the number of full 256-bit message chunks.
   t0 <= x11 >> 5 = floor(len / 32) */
-  srli t0, x11, 5
+  srli x5, x11, 5
 
   /* Write all full 256-bit sections of the test message. */
-  beq  t0, zero, _no_full_wdr
+  beq  x5, x0, _no_full_wdr
 
-  loop t0, 2
+  loop x5, 2
       /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
          x10 <= x10 + 32 */
       bn.lid  x0, 0(x10++)
@@ -51,18 +50,18 @@ keccak_send_message:
 _no_full_wdr:
   /* Compute the remaining message length.
        t0 <= x11 & 31 = len mod 32 */
-  andi t0, x11, 31
+  andi x5, x11, 31
 
   /* If the remaining length is zero, return early. */
-  beq t0, x0, _keccak_send_message_end
+  beq x5, x0, _keccak_send_message_end
 
   /* Send a partial-word write. */
-  csrrw   x0, kmac_partial_write, t0
+  csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x10)
   bn.wsrw kmac_msg, w0
 
   /* Increment the source pointer to reflect the partial write. */
-  add     x10, x10, t0
+  add     x10, x10, x5
 
   _keccak_send_message_end:
   ret

@@ -7,14 +7,6 @@
  * mldsa_params.
  */
 
-.equ x1, ra
-.equ x5, t0
-.equ x6, t1
-.equ x7, t2
-.equ x10, a0
-.equ x11, a1
-.equ x28, t3
-
 #define MLDSA_PARAM_K_OFFSET 0
 #define MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET 16
 #define MLDSA_PARAM_GAMMA2_OFFSET 28
@@ -30,95 +22,95 @@
  */
 .globl _setup_masked_vectors
 _setup_masked_vectors:
-    la   a0, mldsa_params
+    la   x10, mldsa_params
 
     /* gamma2_vec_const = broadcast(GAMMA2) */
-    lw   t0, MLDSA_PARAM_GAMMA2_OFFSET(a0)
-    la   a1, gamma2_vec_const
+    lw   x5, MLDSA_PARAM_GAMMA2_OFFSET(x10)
+    la   x11, gamma2_vec_const
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
     /* lambda0_z_vec = broadcast(GAMMA1_MINUS_BETA - 1) */
-    lw   t0, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(a0)
-    addi t0, t0, -1
-    la   a1, lambda0_z_vec
+    lw   x5, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x10)
+    addi x5, x5, -1
+    la   x11, lambda0_z_vec
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
     /* lambda0_r_vec = broadcast(GAMMA2_MINUS_BETA - 1) */
-    lw   t0, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(a0)
-    addi t0, t0, -1
-    la   a1, lambda0_r_vec
+    lw   x5, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(x10)
+    addi x5, x5, -1
+    la   x11, lambda0_r_vec
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
     /* c_z_const = broadcast((1<<24) - 2*(GAMMA1_MINUS_BETA - 1) - 1) */
-    lw   t0, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(a0)
-    addi t0, t0, -1
-    slli t0, t0, 1
-    li   t1, 0x1000000
-    sub  t1, t1, t0
-    addi t1, t1, -1
-    la   a1, c_z_const
+    lw   x5, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x10)
+    addi x5, x5, -1
+    slli x5, x5, 1
+    li   x6, 0x1000000
+    sub  x6, x6, x5
+    addi x6, x6, -1
+    la   x11, c_z_const
     loopi 8, 2
-        sw   t1, 0(a1)
-        addi a1, a1, 4
+        sw   x6, 0(x11)
+        addi x11, x11, 4
     endloop
 
     /* c_r_const = broadcast((1<<24) - 2*(GAMMA2_MINUS_BETA - 1) - 1) */
-    lw   t0, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(a0)
-    addi t0, t0, -1
-    slli t0, t0, 1
-    li   t1, 0x1000000
-    sub  t1, t1, t0
-    addi t1, t1, -1
-    la   a1, c_r_const
+    lw   x5, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(x10)
+    addi x5, x5, -1
+    slli x5, x5, 1
+    li   x6, 0x1000000
+    sub  x6, x6, x5
+    addi x6, x6, -1
+    la   x11, c_r_const
     loopi 8, 2
-        sw   t1, 0(a1)
-        addi a1, a1, 4
+        sw   x6, 0(x11)
+        addi x11, x11, 4
     endloop
 
     /* K selects the remaining vectors: gamma1 (2^17 for K==4 else 2^19),
      * polyz unpack mask, and eta (4 for K==6 else 2). */
-    lw   t2, MLDSA_PARAM_K_OFFSET(a0)
+    lw   x7, MLDSA_PARAM_K_OFFSET(x10)
 
-    li   t0, 524288
-    li   t3, 4
-    bne  t2, t3, _smv_gamma_done
-    li   t0, 131072
+    li   x5, 524288
+    li   x28, 4
+    bne  x7, x28, _smv_gamma_done
+    li   x5, 131072
 _smv_gamma_done:
-    la   a1, gamma1_vec_const
+    la   x11, gamma1_vec_const
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
-    li   t0, 0xfffff
-    li   t3, 4
-    bne  t2, t3, _smv_polyz
-    li   t0, 0x3ffff
+    li   x5, 0xfffff
+    li   x28, 4
+    bne  x7, x28, _smv_polyz
+    li   x5, 0x3ffff
 _smv_polyz:
-    la   a1, polyz_unpack_mask
+    la   x11, polyz_unpack_mask
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
-    li   t0, 2
-    li   t3, 6
-    bne  t2, t3, _smv_eta
-    li   t0, 4
+    li   x5, 2
+    li   x28, 6
+    bne  x7, x28, _smv_eta
+    li   x5, 4
 _smv_eta:
-    la   a1, eta
+    la   x11, eta
     loopi 8, 2
-        sw   t0, 0(a1)
-        addi a1, a1, 4
+        sw   x5, 0(x11)
+        addi x11, x11, 4
     endloop
 
     ret
