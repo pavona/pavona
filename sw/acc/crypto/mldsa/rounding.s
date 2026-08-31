@@ -6,8 +6,6 @@
 
 .text
 
-.equ w31, bn0
-
 /**
  * decompose_88 / decompose_32
  *
@@ -45,7 +43,7 @@ decompose_88:
     bn.shv.8S  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */
     bn.subv.8S w3, w8, w2         /* 43 - "a1" */
     bn.shv.8S w30, w3 >> 31
-    bn.subv.8S w30, bn0, w30 /* Build mask from MSBs */
+    bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
     bn.and w3, w2, w30           /* ((43 - "a1") >> 31) & "a1" */
     bn.xor w2, w2, w3            /* "a1" ^= ((43 - "a1") >> 31) & "a1" */
 
@@ -56,7 +54,7 @@ decompose_88:
     bn.subv.8S w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
     bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */
     bn.shv.8S  w30, w4 >> 31
-    bn.subv.8S w30, bn0, w30 /* Build mask from MSBs */
+    bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
     bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */
     bn.subv.8S w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
 
@@ -84,7 +82,7 @@ decompose_32:
     bn.subv.8S w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
     bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */
     bn.shv.8S  w30, w4 >> 31
-    bn.subv.8S w30, bn0, w30 /* Build mask from MSBs */
+    bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
     bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */
     bn.subv.8S w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
 

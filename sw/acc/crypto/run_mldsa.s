@@ -17,19 +17,6 @@
 #define NSHARES 1
 #endif
 
-/* Register aliases */
-.equ x1, ra
-.equ x2, sp
-.equ x5, t0
-.equ x6, t1
-.equ x7, t2
-.equ x10, a0
-.equ x11, a1
-.equ x12, a2
-.equ x28, t3
-.equ x29, t4
-.equ w31, bn0
-
 /* Offsets into mldsa_params (see mldsa_consts.s). */
 #define MLDSA_PARAM_K_OFFSET 0
 #define MLDSA_PARAM_L_OFFSET 4
@@ -121,15 +108,15 @@ start:
     unimp
 
 _mldsa_keygen_44:
-    la   a0, mldsa_params_44
+    la   x10, mldsa_params_44
     jal  x1, _setup_params
     jal  x0, _mldsa_keygen_common
 _mldsa_keygen_65:
-    la   a0, mldsa_params_65
+    la   x10, mldsa_params_65
     jal  x1, _setup_params
     jal  x0, _mldsa_keygen_common
 _mldsa_keygen_87:
-    la   a0, mldsa_params_87
+    la   x10, mldsa_params_87
     jal  x1, _setup_params
 _mldsa_keygen_common:
 #ifdef HARDENED
@@ -139,41 +126,41 @@ _mldsa_keygen_common:
     ecall
 
 _mldsa_sign_44:
-    la   a0, mldsa_params_44
+    la   x10, mldsa_params_44
     jal  x1, _setup_params
     jal  x0, _mldsa_sign_common
 _mldsa_sign_65:
-    la   a0, mldsa_params_65
+    la   x10, mldsa_params_65
     jal  x1, _setup_params
     jal  x0, _mldsa_sign_common
 _mldsa_sign_87:
-    la   a0, mldsa_params_87
+    la   x10, mldsa_params_87
     jal  x1, _setup_params
 _mldsa_sign_common:
 #ifdef HARDENED
     jal  x1, _setup_masked_vectors
 #endif
-    la   a0, sig
+    la   x10, sig
     jal  x1, crypto_sign_signature_internal
     ecall
 
 _mldsa_verify_44:
-    la   a0, mldsa_params_44
+    la   x10, mldsa_params_44
     jal  x1, _setup_params
     jal  x0, _mldsa_verify_common
 _mldsa_verify_65:
-    la   a0, mldsa_params_65
+    la   x10, mldsa_params_65
     jal  x1, _setup_params
     jal  x0, _mldsa_verify_common
 _mldsa_verify_87:
-    la   a0, mldsa_params_87
+    la   x10, mldsa_params_87
     jal  x1, _setup_params
 _mldsa_verify_common:
 #ifdef HARDENED
     /* Populate the broadcast vectors that polyz_unpack/poly_use_hint read. */
     jal  x1, _setup_masked_vectors
 #endif
-    la   a0, sig
+    la   x10, sig
     jal  x1, crypto_sign_verify_internal
     ecall
 
@@ -185,14 +172,13 @@ _mldsa_verify_common:
  * clobbered registers: a1, t0, w0
  */
 _setup_params:
-    la     a1, mldsa_params
-    li     t0, 0
-    bn.lid t0, 0(a0)
-    bn.sid t0, 0(a1)
-    bn.lid t0, 32(a0)
-    bn.sid t0, 32(a1)
+    la     x11, mldsa_params
+    li     x5, 0
+    bn.lid x5, 0(x10)
+    bn.sid x5, 0(x11)
+    bn.lid x5, 32(x10)
+    bn.sid x5, 32(x11)
     ret
-
 
 .section .data
 
