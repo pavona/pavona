@@ -21,7 +21,7 @@ main:
   la     x6, montg_R
   bn.lid x5, 0(x6)
   bn.rshi   w16, w3, w2 >> 224
-  bn.shv.8S w22, w16 << 1
+  bn.shv.8s w22, w16 << 1
   bn.wsrw   0x0, w22
 
   jal x1, gen_twiddles_fwd
