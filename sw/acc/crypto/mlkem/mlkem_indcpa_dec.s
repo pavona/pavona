@@ -287,17 +287,12 @@ indcpa_dec:
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
-  addi   x5, x0, NSHARES
-  addi   x5, x5, -1
+  /* Whitening. */
   bn.xor w0, w0, w0
-  loop x5, 5
-    loopi 16, 3
-      bn.lid       x0, 0(x11)
-      bn.subvm.16h w0, w31, w0
-      bn.sid       x0, 0(x11++)
-    endloop
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loopi 16, 3
+    bn.lid       x0, 0(x11)
+    bn.subvm.16h w0, w31, w0
+    bn.sid       x0, 0(x11++)
   endloop
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/
