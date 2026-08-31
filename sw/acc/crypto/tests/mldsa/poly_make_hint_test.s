@@ -24,7 +24,7 @@ main:
   li     x12, GAMMA2
   la     x2, high_bits
   bn.lid x0, 0(x2)
-  jal x1, poly_make_hint
+  jal    x1, poly_make_hint
 
   ecall
 

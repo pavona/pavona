@@ -12,7 +12,7 @@ main:
   bn.xor w31, w31, w31
 
   /* Load stack pointer. */
-  la  x2, stack_end
+  la x2, stack_end
 
   /* dmem[rb5] <= secadd(dmem[xb5], dmem[yb5]), k = 5 */
   la  x10, xb5
@@ -39,11 +39,11 @@ main:
   jal x1, secadd
 
   /* Recombine each result: r[i] = rb[i] ^ rb[i + k]. */
-  li     x4, 1
+  li x4, 1
 
-  la     x2, rb5
-  la     x3, r5
-  li     x6, 5
+  la x2, rb5
+  la x3, r5
+  li x6, 5
   loop x6, 5
     addi   x7, x2, 160
     bn.lid x0, 0(x2++)
@@ -52,9 +52,9 @@ main:
     bn.sid x0, 0(x3++)
   endloop
 
-  la     x2, rb24
-  la     x3, r24
-  li     x6, 24
+  la x2, rb24
+  la x3, r24
+  li x6, 24
   loop x6, 5
     addi   x7, x2, 768
     bn.lid x0, 0(x2++)
@@ -63,9 +63,9 @@ main:
     bn.sid x0, 0(x3++)
   endloop
 
-  la     x2, rb32
-  la     x3, r32
-  li     x6, 32
+  la x2, rb32
+  la x3, r32
+  li x6, 32
   loop x6, 5
     addi   x7, x2, 1024
     bn.lid x0, 0(x2++)

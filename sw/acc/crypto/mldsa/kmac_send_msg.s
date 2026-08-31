@@ -36,7 +36,7 @@ keccak_send_message:
   srli x5, x11, 5
 
   /* Write all full 256-bit sections of the test message. */
-  beq  x5, x0, _no_full_wdr
+  beq x5, x0, _no_full_wdr
 
   loop x5, 2
     /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
@@ -61,7 +61,7 @@ _no_full_wdr:
   bn.wsrw kmac_msg, w0
 
   /* Increment the source pointer to reflect the partial write. */
-  add     x10, x10, x5
+  add x10, x10, x5
 
   _keccak_send_message_end:
   ret

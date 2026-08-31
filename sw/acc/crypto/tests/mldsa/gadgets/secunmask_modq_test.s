@@ -9,7 +9,7 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   /* MOD <= R | Q for bn.addvm.8s / bn.subvm.8s inside the gadget. */

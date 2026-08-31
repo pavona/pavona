@@ -7,7 +7,7 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   /* MOD = R | Q (low half = q) for bn.addvm/subvm. */
@@ -29,17 +29,17 @@ main:
   la  x15, eta_buf
   jal x1, secb2amodq_eta
 
-  la  x10, out_k3
-  la  x11, r_k3
-  li  x5, 0
-  li  x6, 1
+  la x10, out_k3
+  la x11, r_k3
+  li x5, 0
+  li x6, 1
   loopi 32, 6
-    bn.lid x5, 0(x10)
-    addi   x4, x10, 1024
-    bn.lid x6, 0(x4)
+    bn.lid      x5, 0(x10)
+    addi        x4, x10, 1024
+    bn.lid      x6, 0(x4)
     bn.addvm.8s w0, w0, w1
-    bn.sid x5, 0(x11++)
-    addi   x10, x10, 32
+    bn.sid      x5, 0(x11++)
+    addi        x10, x10, 32
   endloop
 
   /* k = 4 (eta = 4). */
@@ -51,17 +51,17 @@ main:
   la  x15, eta_buf
   jal x1, secb2amodq_eta
 
-  la  x10, out_k4
-  la  x11, r_k4
-  li  x5, 0
-  li  x6, 1
+  la x10, out_k4
+  la x11, r_k4
+  li x5, 0
+  li x6, 1
   loopi 32, 6
-    bn.lid x5, 0(x10)
-    addi   x4, x10, 1024
-    bn.lid x6, 0(x4)
+    bn.lid      x5, 0(x10)
+    addi        x4, x10, 1024
+    bn.lid      x6, 0(x4)
     bn.addvm.8s w0, w0, w1
-    bn.sid x5, 0(x11++)
-    addi   x10, x10, 32
+    bn.sid      x5, 0(x11++)
+    addi        x10, x10, 32
   endloop
 
   ecall

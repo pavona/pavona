@@ -19,10 +19,10 @@ main:
   csrrw x0, kmac_cfg, x2
 
   /* Send the input (34 zero bytes) */
-  bn.wsrw   kmac_msg, w31
-  li        x2, 2
-  csrrw     x0, kmac_partial_write, x2
-  bn.wsrw   kmac_msg, w31
+  bn.wsrw kmac_msg, w31
+  li      x2, 2
+  csrrw   x0, kmac_partial_write, x2
+  bn.wsrw kmac_msg, w31
 
   /* Call poly_uniform. */
   la  x11, result

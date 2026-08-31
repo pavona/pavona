@@ -11,7 +11,7 @@ main:
   bn.xor w31, w31, w31
 
   /* Load stack pointer. */
-  la  x2, stack_end
+  la x2, stack_end
 
   /* dmem[z] <= secadd_immd_d1(dmem[xb]), kbits = 23 (output 24 words) */
   la  x10, xb

@@ -11,17 +11,17 @@ main:
   bn.xor w31, w31, w31
 
   /* Load stack pointer. */
-  la  x2, stack_end
+  la x2, stack_end
 
   /* dmem[spb] <= secadd_constant_bmsk(dmem[spb]) (in place) */
   la  x10, spb
   jal x1, secadd_constant_bmsk
 
   /* Recombine the in-place output: z[j] = spb[j] ^ spb[j + (k+1)]. */
-  la     x2, spb
-  la     x3, z
-  li     x4, 1
-  li     x6, 24
+  la x2, spb
+  la x3, z
+  li x4, 1
+  li x6, 24
   loop x6, 5
     addi   x7, x2, 768
     bn.lid x0, 0(x2++)

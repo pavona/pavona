@@ -70,46 +70,46 @@
 .globl crypto_sign_verify_internal
 .type crypto_sign_verify_internal, @function
 crypto_sign_verify_internal:
-  la   x27, mldsa_params
+  la x27, mldsa_params
 
   /* Save signature pointer. */
-  la  x5, dptr_sig
-  sw  x10, 0(x5)
+  la x5, dptr_sig
+  sw x10, 0(x5)
 
   /* Unpack sig */
 
   /* Unpack ctilde. CTILDEBYTES depends on K (= K*8 bytes). */
-  la  x5, dptr_sig
-  lw  x5, 0(x5)
-  la  x6, ctilde
-  lw  x7, MLDSA_PARAM_K_OFFSET(x27)
-  li  x28, 4
-  beq x7, x28, _ctilde_unpack_44
-  li  x28, 6
-  beq x7, x28, _ctilde_unpack_65
+  la     x5, dptr_sig
+  lw     x5, 0(x5)
+  la     x6, ctilde
+  lw     x7, MLDSA_PARAM_K_OFFSET(x27)
+  li     x28, 4
+  beq    x7, x28, _ctilde_unpack_44
+  li     x28, 6
+  beq    x7, x28, _ctilde_unpack_65
   /* ML-DSA-87 (K=8, CTILDEBYTES=64): two 32B copies. */
   bn.lid x0, 0(x5++)
   bn.sid x0, 0(x6++)
   bn.lid x0, 0(x5++)
   bn.sid x0, 0(x6++)
-  jal x0, _ctilde_unpack_done
+  jal    x0, _ctilde_unpack_done
 _ctilde_unpack_44:
   /* ML-DSA-44 (K=4, CTILDEBYTES=32): one 32B copy. */
   bn.lid x0, 0(x5++)
   bn.sid x0, 0(x6++)
-  jal x0, _ctilde_unpack_done
+  jal    x0, _ctilde_unpack_done
 _ctilde_unpack_65:
   /* ML-DSA-65 (K=6, CTILDEBYTES=48): the signature is not 32-byte aligned,
      so copy using GPRs. Zero-pad the remaining 16B to avoid bignum load
      errors at the later compare. */
   loopi 12, 4
-    lw x28, 0(x5)
-    sw x28, 0(x6)
+    lw   x28, 0(x5)
+    sw   x28, 0(x6)
     addi x5, x5, 4
     addi x6, x6, 4
   endloop
   loopi 4, 2
-    sw x0, 0(x6)
+    sw   x0, 0(x6)
     addi x6, x6, 4
   endloop
 _ctilde_unpack_done:
@@ -118,13 +118,13 @@ _ctilde_unpack_done:
      unpack from there. z_bytes = CRYPTO_BYTES - CTILDEBYTES - OMEGA - K. */
   lw   x6, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x27)
   lw   x7, MLDSA_PARAM_K_OFFSET(x27)
-  slli x28, x7, 3   /* CTILDEBYTES = K*8 */
+  slli x28, x7, 3 /* CTILDEBYTES = K*8 */
   sub  x6, x6, x28
   lw   x28, MLDSA_PARAM_OMEGA_OFFSET(x27)
   sub  x6, x6, x28
-  sub  x6, x6, x7  /* z_bytes (multiple of 4) */
+  sub  x6, x6, x7 /* z_bytes (multiple of 4) */
   srli x6, x6, 2
-  addi x25, x5, 0   /* walk the sig z-region; ends at the hint */
+  addi x25, x5, 0 /* walk the sig z-region; ends at the hint */
   la   x10, w1_polyvec
   loop x6, 4
     lw   x7, 0(x25)
@@ -134,10 +134,10 @@ _ctilde_unpack_done:
   endloop
 
   /* x25 now points at the hint region. Unpack z from the aligned copy. */
-  la   x11, w1_polyvec
-  la   x10, z_polyvec
-  lw   x14, MLDSA_PARAM_K_OFFSET(x27)
-  lw   x5, MLDSA_PARAM_L_OFFSET(x27)
+  la x11, w1_polyvec
+  la x10, z_polyvec
+  lw x14, MLDSA_PARAM_K_OFFSET(x27)
+  lw x5, MLDSA_PARAM_L_OFFSET(x27)
   loop x5, 2
     jal x1, polyz_unpack
     nop
@@ -146,18 +146,18 @@ _ctilde_unpack_done:
   /* reduce32(z) for central representation */
   la x10, z_polyvec
   la x11, w1_polyvec
-  lw   x5, MLDSA_PARAM_L_OFFSET(x27)
+  lw x5, MLDSA_PARAM_L_OFFSET(x27)
   loop x5, 2
     jal x1, poly_reduce32
     nop
   endloop
 
   /* chknorm */
-  lw   x11, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x27)   /* GAMMA1 - BETA */
-  la   x10, w1_polyvec
-  li   x18, 0
+  lw x11, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x27) /* GAMMA1 - BETA */
+  la x10, w1_polyvec
+  li x18, 0
 
-  lw   x5, MLDSA_PARAM_L_OFFSET(x27)
+  lw x5, MLDSA_PARAM_L_OFFSET(x27)
   loop x5, 2
     jal x1, poly_chknorm
     or  x18, x18, x12
@@ -166,16 +166,16 @@ _ctilde_unpack_done:
 
   /* External mu: dmem[mu] is supplied by the caller. */
 
-  la  x10, c_poly
-  la  x11, ctilde
+  la   x10, c_poly
+  la   x11, ctilde
   lw   x5, MLDSA_PARAM_K_OFFSET(x27)
-  slli x12, x5, 3   /* CTILDEBYTES = K * 8 */
+  slli x12, x5, 3 /* CTILDEBYTES = K * 8 */
   lw   x13, MLDSA_PARAM_TAU_OFFSET(x27)
-  jal x1, poly_challenge
+  jal  x1, poly_challenge
 
   /* Prepare modulus */
   #define mod_x2 w22
-  bn.wsrr   w16, 0x0 /* w16 = R | Q */
+  bn.wsrr   w16, 0x0         /* w16 = R | Q */
   bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
@@ -183,16 +183,16 @@ _ctilde_unpack_done:
   /* Stage the forward twiddle table once.  Nothing in verify clobbers
    * scratch, so it stays resident for NTT(z), NTT(c) and every per-row
    * ntt(t1). */
-  jal  x1, gen_twiddles_fwd
+  jal     x1, gen_twiddles_fwd
 #endif
   /* NTT(z) */
-  la   x10, z_polyvec
-  addi x12, x10, 0 /* inplace */
+  la      x10, z_polyvec
+  addi    x12, x10, 0 /* inplace */
 
   lw x5, MLDSA_PARAM_L_OFFSET(x27)
 #ifdef HARDENED
   loop x5, 4
-    la   x11, scratch
+    la x11, scratch
 #else
   loop x5, 2
 #endif
@@ -206,18 +206,18 @@ _ctilde_unpack_done:
   bn.xor w23, w23, w23
 
   /* Precompute the SHAKE128 configuration for poly_uniform. */
-  addi  x20, x0, 34
-  slli  x20, x20, 5
-  addi  x20, x20, SHAKE128_CFG
+  addi x20, x0, 34
+  slli x20, x20, 5
+  addi x20, x20, SHAKE128_CFG
 
   /* Start the SHAKE computation for A[0][0] ahead of NTT for performance. */
-  csrrw     x0, kmac_cfg, x20
-  la        x10, pk
-  bn.lid    x0, 0(x10)
-  bn.wsrw   kmac_msg, w0
-  addi      x5, x0, 2
-  csrrw     x0, kmac_partial_write, x5
-  bn.wsrw   kmac_msg, w23
+  csrrw   x0, kmac_cfg, x20
+  la      x10, pk
+  bn.lid  x0, 0(x10)
+  bn.wsrw kmac_msg, w0
+  addi    x5, x0, 2
+  csrrw   x0, kmac_partial_write, x5
+  bn.wsrw kmac_msg, w23
 
   /* After NTT(z), w16 is still R | Q and MOD is still 2*R | 2*Q */
   /* NTT(c) */
@@ -231,11 +231,11 @@ _ctilde_unpack_done:
   /* After NTT(c), w16 is still R | Q and MOD is still 2*R | 2*Q */
 
   /* Load source pointers for matrix-vector multiplication. */
-  la  x8, z_polyvec
-  la  x9, tmp_poly
+  la x8, z_polyvec
+  la x9, tmp_poly
 
   /* Load destination pointer for matrix-vector multiplication. */
-  la  x18, w1_polyvec
+  la x18, w1_polyvec
 
   lw   x5, MLDSA_PARAM_L_OFFSET(x27)
   slli x19, x5, 10
@@ -247,61 +247,61 @@ _ctilde_unpack_done:
   lw x14, MLDSA_PARAM_K_OFFSET(x27)
   loop x14, 43
     /* Compute A[i][0]. */
-    addi x11, x9, 0
-    jal  x1, poly_uniform
+    addi    x11, x9, 0
+    jal     x1, poly_uniform
     /* Increment the matrix nonce. */
     bn.addi w23, w23, 1
     /* Start the SHAKE128 operation for poly_uniform for A[i][1]. */
-    csrrw     x0, kmac_cfg, x20
-    bn.lid    x0, 0(x21)
-    bn.wsrw   kmac_msg, w0
-    addi      x5, x0, 2
-    csrrw     x0, kmac_partial_write, x5
-    bn.wsrw   kmac_msg, w23
+    csrrw   x0, kmac_cfg, x20
+    bn.lid  x0, 0(x21)
+    bn.wsrw kmac_msg, w0
+    addi    x5, x0, 2
+    csrrw   x0, kmac_partial_write, x5
+    bn.wsrw kmac_msg, w23
     /* Compute A[i][0] * z[0] and set the output at index i. */
-    addi x10, x8, 0
-    addi x11, x9, 0
-    addi x12, x18, 0
-    jal  x1, poly_pointwise
-    addi x8, x8, 1024
-    lw x5, MLDSA_PARAM_L_OFFSET(x27)
-    addi x5, x5, -1
+    addi    x10, x8, 0
+    addi    x11, x9, 0
+    addi    x12, x18, 0
+    jal     x1, poly_pointwise
+    addi    x8, x8, 1024
+    lw      x5, MLDSA_PARAM_L_OFFSET(x27)
+    addi    x5, x5, -1
     loop x5, 14
       /* Compute A[i][j]. */
-      addi x11, x9, 0
-      jal  x1, poly_uniform
+      addi    x11, x9, 0
+      jal     x1, poly_uniform
       /* Increment the matrix nonce. */
       bn.addi w23, w23, 1
       /* Start the SHAKE128 operation for poly_uniform for A[i][j+1]. */
-      csrrw     x0, kmac_cfg, x20
-      bn.lid    x0, 0(x21)
-      bn.wsrw   kmac_msg, w0
-      addi      x5, x0, 2
-      csrrw     x0, kmac_partial_write, x5
-      bn.wsrw   kmac_msg, w23
+      csrrw   x0, kmac_cfg, x20
+      bn.lid  x0, 0(x21)
+      bn.wsrw kmac_msg, w0
+      addi    x5, x0, 2
+      csrrw   x0, kmac_partial_write, x5
+      bn.wsrw kmac_msg, w23
       /* Compute A[i][j] * z[j] and add it to the output at index i. */
-      addi x10, x8, 0
-      addi x11, x9, 0
-      addi x12, x18, 0
-      jal  x1, poly_pointwise_acc
-      addi x8, x8, 1024
+      addi    x10, x8, 0
+      addi    x11, x9, 0
+      addi    x12, x18, 0
+      jal     x1, poly_pointwise_acc
+      addi    x8, x8, 1024
     endloop
     /* Reset input vector pointer */
-    sub  x8, x8, x19
-    addi x18, x18, 1024
+    sub     x8, x8, x19
+    addi    x18, x18, 1024
     /* Adjust the matrix nonce to reset the column and increment the row. */
     bn.addi w23, w23, 256
-    lw x5, MLDSA_PARAM_L_OFFSET(x27)
+    lw      x5, MLDSA_PARAM_L_OFFSET(x27)
     loop x5, 1
       bn.subi w23, w23, 1
     endloop
     /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
-    csrrw     x0, kmac_cfg, x20
-    bn.lid    x0, 0(x21)
-    bn.wsrw   kmac_msg, w0
-    addi      x5, x0, 2
-    csrrw     x0, kmac_partial_write, x5
-    bn.wsrw   kmac_msg, w23
+    csrrw   x0, kmac_cfg, x20
+    bn.lid  x0, 0(x21)
+    bn.wsrw kmac_msg, w0
+    addi    x5, x0, 2
+    csrrw   x0, kmac_partial_write, x5
+    bn.wsrw kmac_msg, w23
   endloop
 
   /* Call random oracle and verify challenge */
@@ -326,30 +326,30 @@ _ctilde_unpack_done:
   addi x22, x22, 32
 
   /* Initialize the counters for poly_decode_h. */
-  li   x23, 0
-  li   x24, 0
+  li x23, 0
+  li x24, 0
 
   /* Initialize failure buffer (0 on success, -1 on failure) */
-  li   x26, 0
+  li x26, 0
 
   /* This loop computes w1 polynomials and sends them to the Keccak core
      incrementally. This way, we avoid ever storing the entire w1 on the
      stack. */
-  la  x9, w1_polyvec
-  la  x19, tmp_poly
-  la  x20, c_poly
+  la x9, w1_polyvec
+  la x19, tmp_poly
+  la x20, c_poly
 #ifdef HARDENED
   /* z_polyvec is dead after the A*z matmul: copy the resident forward table
    * there, then turn scratch into the inverse table.  The per-row loop runs
    * ntt(t1) from z_polyvec and intt from scratch with no regeneration. */
-  la     x5, scratch
-  la     x6, z_polyvec
-  li     x7, 0
+  la x5, scratch
+  la x6, z_polyvec
+  li x7, 0
   loopi 32, 2
     bn.lid x7, 0(x5++)
     bn.sid x7, 0(x6++)
   endloop
-  jal    x1, _inv_transform
+  jal x1, _inv_transform
 #endif
   lw  x14, MLDSA_PARAM_K_OFFSET(x27)
 #ifdef HARDENED
@@ -385,7 +385,7 @@ _ctilde_unpack_done:
     addi x10, x9, 0
     addi x11, x19, 0
     addi x12, x9, 0
-    jal x1, poly_sub
+    jal  x1, poly_sub
     /* Inverse NTT on w_approx (stored in w1 buffer). */
     addi x10, x9, 0
 #ifdef HARDENED
@@ -399,7 +399,7 @@ _ctilde_unpack_done:
     addi x13, x24, 0
     lw   x15, MLDSA_PARAM_K_OFFSET(x27)
     lw   x29, MLDSA_PARAM_OMEGA_OFFSET(x27)
-    jal x1, poly_decode_h
+    jal  x1, poly_decode_h
     addi x25, x11, 0
     addi x23, x12, 0
     addi x24, x13, 0
@@ -450,14 +450,14 @@ _ctilde_unpack_done:
   beq x6, x0, _fail_crypto_sign_verify_internal
 
   /* If CTILDEBYTES == 32 (K=4), one 32B compare suffices. */
-  lw   x6, MLDSA_PARAM_K_OFFSET(x27)
-  li   x28, 4
-  beq  x6, x28, _success_crypto_sign_verify_internal
+  lw  x6, MLDSA_PARAM_K_OFFSET(x27)
+  li  x28, 4
+  beq x6, x28, _success_crypto_sign_verify_internal
 
   bn.wsrr w8, 0xA /* KECCAK_DIGEST */
   /* Remove upper 16B from digest in the case of CTILDEBYTES == 48 (K=6). */
-  li   x28, 6
-  bne  x6, x28, _skip_mask_ctilde
+  li      x28, 6
+  bne     x6, x28, _skip_mask_ctilde
   bn.rshi w8, w8, w31 >> 128
   bn.rshi w8, w31, w8 >> 128
 _skip_mask_ctilde:
@@ -481,13 +481,13 @@ _skip_mask_ctilde:
   addi x2, x3, 0
 _success_crypto_sign_verify_internal:
   addi x10, x0, HARDENED_BOOL_TRUE
-  la x11, result
-  sw x10, 0(x11)
+  la   x11, result
+  sw   x10, 0(x11)
   ret
 
 _fail_crypto_sign_verify_internal:
   addi x10, x0, HARDENED_BOOL_FALSE
-  la x11, result
-  sw x10, 0(x11)
+  la   x11, result
+  sw   x10, 0(x11)
   /*unimp*/
   ret

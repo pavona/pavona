@@ -9,24 +9,24 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
-  la  x10, zb
-  la  x11, xb
-  la  x12, yb
-  jal x1, secaddmodq
+  la     x10, zb
+  la     x11, xb
+  la     x12, yb
+  jal    x1, secaddmodq
 
   /* Reconstruct r per bit-plane.  zb[share s][bit b] @ s*SHARE_STR + b*32. */
-  la   x10, zb              /* per-bit-0 base */
-  la   x11, r               /* r write ptr */
-  li   x12, SHARE_STR       /* share stride */
-  li   x13, Q_KBITS         /* bit count */
+  la   x10, zb        /* per-bit-0 base */
+  la   x11, r         /* r write ptr */
+  li   x12, SHARE_STR /* share stride */
+  li   x13, Q_KBITS   /* bit count */
   li   x14, NSHARES
-  addi x14, x14, -1         /* d - 1 inner iters */
+  addi x14, x14, -1   /* d - 1 inner iters */
   li   x4, 1
   li   x5, 0
   loop x13, 9
-    addi x28, x10, 0
+    addi   x28, x10, 0
     bn.lid x5, 0(x28)
     loop x14, 3
       add    x28, x28, x12
@@ -34,8 +34,8 @@ main:
       bn.xor w0, w0, w1
     endloop
     bn.sid x5, 0(x11)
-    addi x10, x10, 32
-    addi x11, x11, 32
+    addi   x10, x10, 32
+    addi   x11, x11, 32
   endloop
 
   ecall

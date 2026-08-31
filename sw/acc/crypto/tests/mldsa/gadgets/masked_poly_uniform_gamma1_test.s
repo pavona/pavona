@@ -5,7 +5,7 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   /* MOD <= R | Q for bn.addvm.8s unmasking. */
@@ -19,14 +19,14 @@ main:
   bn.wsrw 0x0, w2
 
   /* ===== mode 2 (POLYZ_BITS = 18, gamma1 = 2^17) ===== */
-  la   x6, nonce_m2
-  lw   x12, 0(x6)
-  la   x10, y_m2
-  la   x11, rho_m2
-  la   x13, seca2b_scratch
-  la   x14, gamma1_buf
-  li   x15, 2
-  jal  x1, masked_poly_uniform_gamma_1
+  la  x6, nonce_m2
+  lw  x12, 0(x6)
+  la  x10, y_m2
+  la  x11, rho_m2
+  la  x13, seca2b_scratch
+  la  x14, gamma1_buf
+  li  x15, 2
+  jal x1, masked_poly_uniform_gamma_1
 
   la   x10, y_m2
   addi x11, x10, 1024
@@ -34,21 +34,21 @@ main:
   li   x4, 1
   li   x5, 2
   loopi 32, 4
-    bn.lid x4, 0(x10++)
-    bn.lid x5, 0(x11++)
+    bn.lid      x4, 0(x10++)
+    bn.lid      x5, 0(x11++)
     bn.addvm.8s w1, w1, w2
-    bn.sid x4, 0(x12++)
+    bn.sid      x4, 0(x12++)
   endloop
 
   /* ===== mode 3 (POLYZ_BITS = 20, gamma1 = 2^19) ===== */
-  la   x6, nonce_m3
-  lw   x12, 0(x6)
-  la   x10, y_m3
-  la   x11, rho_m3
-  la   x13, seca2b_scratch
-  la   x14, gamma1_buf
-  li   x15, 3
-  jal  x1, masked_poly_uniform_gamma_1
+  la  x6, nonce_m3
+  lw  x12, 0(x6)
+  la  x10, y_m3
+  la  x11, rho_m3
+  la  x13, seca2b_scratch
+  la  x14, gamma1_buf
+  li  x15, 3
+  jal x1, masked_poly_uniform_gamma_1
 
   la   x10, y_m3
   addi x11, x10, 1024
@@ -56,10 +56,10 @@ main:
   li   x4, 1
   li   x5, 2
   loopi 32, 4
-    bn.lid x4, 0(x10++)
-    bn.lid x5, 0(x11++)
+    bn.lid      x4, 0(x10++)
+    bn.lid      x5, 0(x11++)
     bn.addvm.8s w1, w1, w2
-    bn.sid x4, 0(x12++)
+    bn.sid      x4, 0(x12++)
   endloop
 
   ecall
