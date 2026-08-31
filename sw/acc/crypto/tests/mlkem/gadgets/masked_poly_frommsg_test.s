@@ -20,11 +20,11 @@ main:
   bn.or   w16, w16, w17 << 32
   bn.wsrw mod, w16
 
-  /* ra <- onebitdecompress(xb). */
+  /* ra <- masked_poly_frommsg(xb). */
   la  x2, stack_end
   la  x10, xb
   la  x12, ra
-  jal x1, onebitdecompress
+  jal x1, masked_poly_frommsg
 
   /* r <- unmask(ra). */
   la   x2, ra
