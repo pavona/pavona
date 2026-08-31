@@ -2730,9 +2730,9 @@ masked_poly_tomsg:
  * clobbered flag groups: FG0
  */
 
-.globl poly_masked_compare_dv
-.type poly_masked_compare_dv, @function
-poly_masked_compare_dv:
+.globl masked_poly_compare_dv
+.type masked_poly_compare_dv, @function
+masked_poly_compare_dv:
   /* Allocate t scratch (2 shares * 160 B, dv = 5 worst case) + saves. */
   addi x2, x2, -352
   sw   x11, 320(x2)
@@ -3034,9 +3034,9 @@ _skip_bit_4:
  * clobbered flag groups: FG0
  */
 
-.globl poly_masked_compare_du
-.type poly_masked_compare_du, @function
-poly_masked_compare_du:
+.globl masked_poly_compare_du
+.type masked_poly_compare_du, @function
+masked_poly_compare_du:
   /* Allocate t scratch (2 shares * 352 B, du = 11 worst case) + saves. */
   addi x2, x2, -736
   sw   x11, 708(x2)
