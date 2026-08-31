@@ -64,7 +64,7 @@
  * @param[out] dmem[*sig]: signature
  *
  */
-.global crypto_sign_signature_internal
+.globl crypto_sign_signature_internal
 .type crypto_sign_signature_internal, @function
 crypto_sign_signature_internal:
 #ifdef HARDENED
@@ -159,7 +159,7 @@ crypto_sign_signature_internal:
  * z (z-loop), h (hint loop), z pack; restarts in place on rejection.
  * Inputs are taken from caller-set state (sign_gamma1_buf, sk, etc.); on
  * success returns a0 = 0, a1 = CRYPTO_BYTES. */
-.global sign_attempt
+.globl sign_attempt
 .type sign_attempt, @function
 sign_attempt:
   /* sign_w params: w_out, rho, rho_prime, y_staging, A_staging,
@@ -254,7 +254,7 @@ sign_attempt:
  * In/out: advances nonce counter in s11 by L (each gamma1 call uses it).
  * Clobbers a/t regs, s0-s10, w16/w22/w23.  Restores MOD = R|Q.
  */
-.global sign_w
+.globl sign_w
 .type sign_w, @function
 sign_w:
   /* Park pointer args in s-regs so internal jals can clobber a-regs. */
@@ -472,7 +472,7 @@ _sign_w_gamma1_a_5:
  *
  * Clobbers: a/t regs, s0-s9.
  */
-.global sign_w0_w1_ctilde
+.globl sign_w0_w1_ctilde
 .type sign_w0_w1_ctilde, @function
 sign_w0_w1_ctilde:
   /* Park pointer args.  s7 holds mu just long enough for the
@@ -614,7 +614,7 @@ _sign_pack_ctilde_done:
  *
  * Clobbers: t-regs, a-regs, s0.  Restores MOD = R|Q.
  */
-.global sign_c
+.globl sign_c
 .type sign_c, @function
 sign_c:
   addi x8, x10, 0            /* park ntt_c_out across poly_challenge */
@@ -752,14 +752,14 @@ _masked_eta_from_shares:
  *
  * Returns a0 = 0 on success, a0 = 1 on rejection.
  */
-.global sign_z_pack
+.globl sign_z_pack
 .type sign_z_pack, @function
 sign_z_pack:
   addi x21, x0, UNMASK
   addi x25, x13, 0            /* sig_z write ptr (advances per polyz_pack) */
   beq  x0, x0, _sign_z_park
 
-.global sign_z_check
+.globl sign_z_check
 .type sign_z_check, @function
 sign_z_check:
   addi x21, x0, CHECK
@@ -991,13 +991,13 @@ _sign_z_reject:
  *
  * Returns a0 = 0 on success, a0 = 1 on rejection.
  */
-.global sign_h_check
+.globl sign_h_check
 .type sign_h_check, @function
 sign_h_check:
   addi x22, x0, CHECK
   beq  x0, x0, _sign_h_park
 
-.global sign_h
+.globl sign_h
 .type sign_h, @function
 sign_h:
   addi x22, x0, UNMASK
