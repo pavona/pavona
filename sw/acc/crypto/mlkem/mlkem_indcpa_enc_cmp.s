@@ -26,7 +26,7 @@
  * bytes for k = 2, 3 and cv = 160 and cu = 352 bytes for k = 4. The input
  * ciphertext is laid out as c = u || v, with u in c[0 : k * cu] and v in
  * c[k * cu : k * cu + cv].
- *  Step 1: kpoly = poly_frommsg(m)       // onebitdecompress(m) when d > 1
+ *  Step 1: kpoly = poly_frommsg(m)       // masked_poly_frommsg(m) when d > 1
  *  Step 2: recompute v and compare it against c[k * cu : k * cu + cv].
  *          for i = 0..k - 1:
  *            ek_pke[i] = poly_frombytes(ek_pke[384 * i : 384 * (i + 1)])
@@ -808,10 +808,10 @@ _continue:
   bn.xor  w0, w31, w31
   bn.sid  x0, 0(x5++)
 
-  /*** Step 1: kpoly = onebitdecompress(m). ***/
+  /*** Step 1: kpoly = masked_poly_frommsg(m). ***/
   /* x10 already points to m. */
   la   x12, mpoly_k
-  jal  x1, onebitdecompress
+  jal  x1, masked_poly_frommsg
 
   /*** Step 2: recompute v and compare it against c[k * cu : k * cu + cv]. ***/
   /* The following block will:

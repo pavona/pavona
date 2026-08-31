@@ -380,10 +380,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# onebitdecompress
+# masked_poly_frommsg
 py_binary(
-    name = "onebitdecompress_testgen",
-    srcs = ["onebitdecompress_testgen.py"],
+    name = "masked_poly_frommsg_testgen",
+    srcs = ["masked_poly_frommsg_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -394,14 +394,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "onebitdecompress_test{}".format(
+        name = "masked_poly_frommsg_test{}".format(
             str(i),
         ),
-        srcs = ["onebitdecompress_test.s"],
+        srcs = ["masked_poly_frommsg_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":onebitdecompress_testgen",
+        testgen = ":masked_poly_frommsg_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",

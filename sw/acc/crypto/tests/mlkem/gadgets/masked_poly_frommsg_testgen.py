@@ -22,7 +22,7 @@ def frommsg(a: int, q: int) -> List[int]:
     return r
 
 
-def gen_onebitdecompress_test(
+def gen_masked_poly_frommsg_test(
         seed: Optional[int],
         data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     if seed is not None:
@@ -87,4 +87,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
-        gen_onebitdecompress_test(args.seed, args.data, args.exp, args.dexp)
+        gen_masked_poly_frommsg_test(args.seed, args.data, args.exp, args.dexp)

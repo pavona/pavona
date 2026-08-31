@@ -1889,9 +1889,9 @@ _du_params_done:
  * clobbered flag groups: FG0
  */
 
-.globl onebitdecompress
-.type onebitdecompress, @function
-onebitdecompress:
+.globl masked_poly_frommsg
+.type masked_poly_frommsg, @function
+masked_poly_frommsg:
   /* Save the output base pointer; reused as scratch across the call. */
   addi x2, x2, -32
   sw   x8, 0(x2)
