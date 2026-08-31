@@ -20,26 +20,26 @@ main:
   /* Note: if details of poly_uniform change, this setup might also need to change. */
 
   /* Load the mask. */
-  li      x11, 11
-  la      x2, mask23
-  bn.lid  x11, 0(x2)
+  li     x11, 11
+  la     x2, mask23
+  bn.lid x11, 0(x2)
 
   /* Load the vectorized modulus. */
-  li      x12, 12
-  la      x2, modulus
-  bn.lid  x12, 0(x2)
+  li     x12, 12
+  la     x2, modulus
+  bn.lid x12, 0(x2)
 
   /* Load the mask. */
-  li      x13, 13
-  la      x2, mask8
-  bn.lid  x13, 0(x2)
+  li     x13, 13
+  la     x2, mask8
+  bn.lid x13, 0(x2)
 
   /* Load the temp reg pointer. */
-  li      x31, 21
+  li x31, 21
 
   /* Set up a SHAKE128 operation with an empty input (just so there's digest to read). */
-  li      x2, 0x2
-  csrrw   x0, kmac_cfg, x2
+  li    x2, 0x2
+  csrrw x0, kmac_cfg, x2
 
   /* Run the first test. */
   la      x11, result1
@@ -49,8 +49,8 @@ main:
   jal     x1, _poly_uniform_postprocess_test_entrypoint
 
   /* Reset SHAKE128 operation. */
-  li      x2, 0x2
-  csrrw   x0, kmac_cfg, x2
+  li    x2, 0x2
+  csrrw x0, kmac_cfg, x2
 
   /* Run the second test. */
   la      x11, result2

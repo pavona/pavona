@@ -5,7 +5,7 @@
 .section .text.start
 
 main:
-  la      x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   /* MOD <= R | Q for bn.subvm.8s / bn.addvm.8s inside the gadget. */
@@ -19,30 +19,30 @@ main:
   bn.wsrw 0x0, w2
 
   /* lambda case 0: b <- secboundcheck(x_arith0), C = c_wdr0; store b. */
-  li      x5, 17
-  la      x6, c_wdr0
-  bn.lid  x5, 0(x6)
-  la      x10, x_arith0
-  la      x12, lambda0_vec0
-  la      x13, seca2b_scratch
-  la      x14, secboundcheck_buf
-  jal     x1, secboundcheck
-  la      x10, y_out0
-  li      x11, 0
-  bn.sid  x11, 0(x10)
+  li     x5, 17
+  la     x6, c_wdr0
+  bn.lid x5, 0(x6)
+  la     x10, x_arith0
+  la     x12, lambda0_vec0
+  la     x13, seca2b_scratch
+  la     x14, secboundcheck_buf
+  jal    x1, secboundcheck
+  la     x10, y_out0
+  li     x11, 0
+  bn.sid x11, 0(x10)
 
   /* lambda case 1: b <- secboundcheck(x_arith1), C = c_wdr1; store b. */
-  li      x5, 17
-  la      x6, c_wdr1
-  bn.lid  x5, 0(x6)
-  la      x10, x_arith1
-  la      x12, lambda0_vec1
-  la      x13, seca2b_scratch
-  la      x14, secboundcheck_buf
-  jal     x1, secboundcheck
-  la      x10, y_out1
-  li      x11, 0
-  bn.sid  x11, 0(x10)
+  li     x5, 17
+  la     x6, c_wdr1
+  bn.lid x5, 0(x6)
+  la     x10, x_arith1
+  la     x12, lambda0_vec1
+  la     x13, seca2b_scratch
+  la     x14, secboundcheck_buf
+  jal    x1, secboundcheck
+  la     x10, y_out1
+  li     x11, 0
+  bn.sid x11, 0(x10)
 
   ecall
 

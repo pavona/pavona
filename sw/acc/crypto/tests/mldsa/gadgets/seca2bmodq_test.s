@@ -9,12 +9,12 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
-  la  x10, zb
-  la  x11, xa
-  la  x13, seca2b_scratch
-  jal x1, seca2bmodq
+  la     x10, zb
+  la     x11, xa
+  la     x13, seca2b_scratch
+  jal    x1, seca2bmodq
 
   /* Reconstruct r per bit-plane.  zb[share s][bit b] @ s*SHARE_STR + b*32. */
   la   x10, zb
@@ -26,7 +26,7 @@ main:
   li   x4, 1
   li   x5, 0
   loop x13, 9
-    addi x28, x10, 0
+    addi   x28, x10, 0
     bn.lid x5, 0(x28)
     loop x29, 3
       add    x28, x28, x12
@@ -34,8 +34,8 @@ main:
       bn.xor w0, w0, w1
     endloop
     bn.sid x5, 0(x11)
-    addi x10, x10, 32
-    addi x11, x11, 32
+    addi   x10, x10, 32
+    addi   x11, x11, 32
   endloop
 
   ecall

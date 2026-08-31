@@ -18,13 +18,13 @@
  *           all 256 lanes, where j is the per-lane wrap count produced
  *           by the testgen's share split. */
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
-  la  x10, zb
-  la  x11, xa
-  la  x12, seccompress_scratch
-  la  x13, seccompress_b
-  jal x1, seccompress
+  la     x10, zb
+  la     x11, xa
+  la     x12, seccompress_scratch
+  la     x13, seccompress_b
+  jal    x1, seccompress
 
   /* XOR-collapse share-major layout: V' = bottom 6 stripes of seccompress
    * output Z's top-8 region.  V' share 0 at zb + 768; share 1 at zb + 1792. */

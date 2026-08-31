@@ -101,32 +101,32 @@ crypto_sign_signature_internal:
   /* Refresh and absorb the Boolean shares of K. */
   la      x5, K_shares
   bn.wsrr w2, urnd
-  bn.xor  w0, w0, w0            /* Whitening */
+  bn.xor  w0, w0, w0 /* Whitening */
   bn.lid  x0, 0(x5)
   bn.xor  w0, w0, w2
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0            /* Whitening */
+  bn.xor  w0, w0, w0 /* Whitening */
   bn.lid  x0, 32(x5)
   bn.xor  w0, w0, w2
   bn.wsrw kmac_msg1, w0
 
   /* Send rnd as (rnd, 0): public input trivially shared on share 0. */
-  la     x5, rnd
-  bn.lid x0, 0(x5)
+  la      x5, rnd
+  bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor w0, w0, w0             /* share 1 = 0 */
+  bn.xor  w0, w0, w0 /* share 1 = 0 */
   bn.wsrw kmac_msg1, w0
 
   /* Send mu (64B = 2 chunks) as (mu, 0). */
-  la     x5, mu
-  bn.lid x0, 0(x5)
+  la      x5, mu
+  bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor w0, w0, w0             /* share 1 = 0 */
+  bn.xor  w0, w0, w0 /* share 1 = 0 */
   bn.wsrw kmac_msg1, w0
-  la     x5, mu
-  bn.lid x0, 32(x5)
+  la      x5, mu
+  bn.lid  x0, 32(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor w0, w0, w0             /* share 1 = 0 */
+  bn.xor  w0, w0, w0 /* share 1 = 0 */
   bn.wsrw kmac_msg1, w0
 
   /* Read 64B masked digest into sign_gamma1_buf[0..127] in the
@@ -135,13 +135,13 @@ crypto_sign_signature_internal:
   la      x10, sign_gamma1_buf
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x10)
-  bn.xor  w0, w0, w0             /* Whitening */
+  bn.xor  w0, w0, w0 /* Whitening */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 64(x10)
-  bn.xor  w0, w0, w0             /* Whitening */
+  bn.xor  w0, w0, w0 /* Whitening */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 32(x10)
-  bn.xor  w0, w0, w0             /* Whitening */
+  bn.xor  w0, w0, w0 /* Whitening */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 96(x10)
 
@@ -149,12 +149,12 @@ crypto_sign_signature_internal:
 
   /* Prepare modulus */
   #define mod_x2 w22
-  bn.wsrr   w16, 0x0 /* w16 = MOD = R | Q */
+  bn.wsrr   w16, 0x0         /* w16 = MOD = R | Q */
   bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   li x27, 0 /* nonce */
 
-  jal  x1, sign_attempt
+  jal x1, sign_attempt
   ret
 
 /**
@@ -175,15 +175,15 @@ sign_attempt:
    * seca2b_scratch, gamma1_buf.  A_staging + gamma1_buf live in
    * dead sig during P1; c_poly (= NTT(c) post-P1) is now in overlay slack. */
   la   x10, W0_POLYVEC
-  la   x11, sk                        /* rho is sk[0..32) */
+  la   x11, sk  /* rho is sk[0..32) */
   la   x12, sign_gamma1_buf
   la   x13, sign_y
-  la   x14, sig                       /* A_staging at sig+1536 (after gamma1 buf) */
+  la   x14, sig /* A_staging at sig+1536 (after gamma1 buf) */
   addi x14, x14, 1536
-  la   x15, sig                       /* seca2b scratch at sig+2560 */
+  la   x15, sig /* seca2b scratch at sig+2560 */
   addi x15, x15, 1024
   addi x15, x15, 1536
-  la   x16, sig                       /* gamma1 bitslice buf at sig+0 */
+  la   x16, sig /* gamma1 bitslice buf at sig+0 */
   jal  x1, sign_w
 
   /* sign_w0_w1_ctilde params: w_polyvec, mu, w1_repvec, sig,
@@ -198,18 +198,18 @@ sign_attempt:
   addi x15, x15, 1536
   jal  x1, sign_w0_w1_ctilde
 
-  la   x10, c_poly                    /* ntt_c output */
-  la   x11, sign_tmp                /* aligned c~ stash */
-  jal  x1, sign_c
+  la  x10, c_poly   /* ntt_c output */
+  la  x11, sign_tmp /* aligned c~ stash */
+  jal x1, sign_c
 
-  la   x11, c_poly
-  la   x12, sign_gamma1_buf
-  la   x14, sign_c_poly_shares
-  la   x15, sign_tmp
-  la   x16, sign_y
-  la   x17, sign_hint_b2a
-  jal  x1, sign_z_check
-  bne  x10, x0, sign_attempt
+  la  x11, c_poly
+  la  x12, sign_gamma1_buf
+  la  x14, sign_c_poly_shares
+  la  x15, sign_tmp
+  la  x16, sign_y
+  la  x17, sign_hint_b2a
+  jal x1, sign_z_check
+  bne x10, x0, sign_attempt
 
   la   x10, sk
   addi x10, x10, 128
@@ -234,7 +234,7 @@ sign_attempt:
   la   x13, sig
   la   x5, mldsa_params
   lw   x5, MLDSA_PARAM_K_OFFSET(x5)
-  slli x5, x5, 3                     /* CTILDEBYTES = K * 8 */
+  slli x5, x5, 3 /* CTILDEBYTES = K * 8 */
   add  x13, x13, x5
   la   x14, sign_c_poly_shares
   la   x15, sign_tmp
@@ -242,9 +242,9 @@ sign_attempt:
   la   x17, sign_hint_b2a
   jal  x1, sign_z_pack
 
-  li   x10, 0
-  la   x5, mldsa_params
-  lw   x11, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
+  li  x10, 0
+  la  x5, mldsa_params
+  lw  x11, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
   ret
 
 /**
@@ -273,16 +273,16 @@ sign_attempt:
 .type sign_w, @function
 sign_w:
   /* Park pointer args in s-regs so internal jals can clobber a-regs. */
-  addi x9, x10, 0           /* w_out */
-  addi x8, x11, 0           /* rho */
-  addi x25, x12, 0           /* rho_prime */
-  addi x19, x13, 0           /* y_staging */
-  addi x26, x14, 0          /* A_staging */
-  addi x18, x15, 0           /* seca2b_scratch (was: rhoprime slot) */
-  addi x23, x16, 0           /* gamma1_buf (was: gamma1_vec_const slot) */
+  addi x9, x10, 0  /* w_out */
+  addi x8, x11, 0  /* rho */
+  addi x25, x12, 0 /* rho_prime */
+  addi x19, x13, 0 /* y_staging */
+  addi x26, x14, 0 /* A_staging */
+  addi x18, x15, 0 /* seca2b_scratch (was: rhoprime slot) */
+  addi x23, x16, 0 /* gamma1_buf (was: gamma1_vec_const slot) */
 
   /* Zero each share's polyvec; t1 walks the contiguous buffer. */
-  li x5, 31
+  li   x5, 31
   addi x6, x9, 0
   .rept NSHARES
   loopi W0_POLYS, 3
@@ -294,16 +294,16 @@ sign_w:
   .endr
 
   /* Per-column constants. */
-  li x22, W0_SHARE_STRIDE           /* stride between w shares */
-  bn.xor w23, w23, w23             /* matrix nonce = byte(i) || byte(j) */
+  li     x22, W0_SHARE_STRIDE /* stride between w shares */
+  bn.xor w23, w23, w23        /* matrix nonce = byte(i) || byte(j) */
 
   /* SHAKE128 cfg for poly_uniform (rho||i||j). */
   addi x20, x0, 34
   slli x20, x20, 5
   addi x20, x20, SHAKE128_CFG
 
-  la   x5, mldsa_params
-  lw   x5, MLDSA_PARAM_L_OFFSET(x5)
+  la x5, mldsa_params
+  lw x5, MLDSA_PARAM_L_OFFSET(x5)
   loop x5, 94
     addi x10, x19, 0
     addi x11, x25, 0
@@ -323,25 +323,25 @@ _sign_w_gamma1_a_5:
     addi x27, x27, 1
 
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
-    csrrw x0, kmac_cfg, x20
-    addi  x10, x8, 0
-    bn.lid    x0, 0(x10)
-    bn.wsrw   kmac_msg, w0
-    addi      x5, x0, 2
-    csrrw     x0, kmac_partial_write, x5
-    bn.wsrw   kmac_msg, w23
+    csrrw   x0, kmac_cfg, x20
+    addi    x10, x8, 0
+    bn.lid  x0, 0(x10)
+    bn.wsrw kmac_msg, w0
+    addi    x5, x0, 2
+    csrrw   x0, kmac_partial_write, x5
+    bn.wsrw kmac_msg, w23
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
     /* Stage forward twiddles once per column; both shares reuse them. */
-    jal  x1, gen_twiddles_fwd
+    jal     x1, gen_twiddles_fwd
     /* NTT each share of y[j] in place. */
-    addi x24, x19, 0
-    li   x30, NSHARES
+    addi    x24, x19, 0
+    li      x30, NSHARES
     loop x30, 34
-      la   x11, scratch
-      addi x10, x24, 0
-      addi x12, x24, 0
-      jal  x1, ntt
-      addi x24, x24, 1024
+      la     x11, scratch
+      addi   x10, x24, 0
+      addi   x12, x24, 0
+      jal    x1, ntt
+      addi   x24, x24, 1024
       /* Whitening */
       bn.xor w0, w0, w0
       bn.xor w1, w1, w1
@@ -372,33 +372,33 @@ _sign_w_gamma1_a_5:
       bn.xor w29, w29, w29
       bn.xor w30, w30, w30
     endloop
-    la   x5, mldsa_params
-    lw   x5, MLDSA_PARAM_K_OFFSET(x5)
+    la x5, mldsa_params
+    lw x5, MLDSA_PARAM_K_OFFSET(x5)
     loop x5, 23
       /* Compute A[i][j]. */
-      addi x11, x26, 0
-      jal  x1, poly_uniform
+      addi    x11, x26, 0
+      jal     x1, poly_uniform
       /* Increment the row index by 1. */
       bn.addi w23, w23, 256
       /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
-      csrrw x0, kmac_cfg, x20
-      addi  x10, x8, 0
-      bn.lid    x0, 0(x10)
-      bn.wsrw   kmac_msg, w0
-      addi      x5, x0, 2
-      csrrw     x0, kmac_partial_write, x5
-      bn.wsrw   kmac_msg, w23
+      csrrw   x0, kmac_cfg, x20
+      addi    x10, x8, 0
+      bn.lid  x0, 0(x10)
+      bn.wsrw kmac_msg, w0
+      addi    x5, x0, 2
+      csrrw   x0, kmac_partial_write, x5
+      bn.wsrw kmac_msg, w23
       /* For each share d:  w_d[i] += A[i][j] * y_d[j]. */
-      addi x24, x19, 0
-      addi x21, x9, 0
-      li   x30, NSHARES
+      addi    x24, x19, 0
+      addi    x21, x9, 0
+      li      x30, NSHARES
       loop x30, 8
-        addi x10, x24, 0
-        addi x11, x26, 0
-        addi x12, x21, 0
-        jal  x1, poly_pointwise_acc
-        addi x24, x24, 1024
-        add  x21, x21, x22
+        addi   x10, x24, 0
+        addi   x11, x26, 0
+        addi   x12, x21, 0
+        jal    x1, poly_pointwise_acc
+        addi   x24, x24, 1024
+        add    x21, x21, x22
         /* Whitening */
         bn.xor w0, w0, w0
         bn.xor w1, w1, w1
@@ -406,7 +406,7 @@ _sign_w_gamma1_a_5:
       addi x9, x9, 1024
     endloop
     /* Reset w pointer for next column. */
-    la   x9, W0_POLYVEC
+    la      x9, W0_POLYVEC
     /* Increment the column index in the nonce by one. */
     bn.addi w23, w23, 1
     /* Reset the row index in the nonce to zero. */
@@ -417,20 +417,20 @@ _sign_w_gamma1_a_5:
 
   bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
   /* Stage inverse twiddles once; all NSHARES*K transforms reuse them. */
-  jal x1, _inv_transform
+  jal     x1, _inv_transform
   /* Inverse NTT each share's K polys; shares are W0_SHARE_STRIDE apart. */
-  la  x9, W0_POLYVEC
+  la      x9, W0_POLYVEC
   loopi NSHARES, 39
     addi x10, x9, 0
     la   x5, mldsa_params
     lw   x5, MLDSA_PARAM_K_OFFSET(x5)
     loop x5, 4
-      la  x11, scratch
-      jal x1, intt
+      la   x11, scratch
+      jal  x1, intt
       addi x10, x10, 1024
     endloop
-    li  x5, W0_SHARE_STRIDE
-    add x9, x9, x5
+    li     x5, W0_SHARE_STRIDE
+    add    x9, x9, x5
     /* Whitening */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
@@ -496,19 +496,19 @@ _sign_w_gamma1_a_5:
 sign_w0_w1_ctilde:
   /* Park pointer args.  x23 holds mu just long enough for the
    * keccak_send_message; the K-loop later overwrites it with NSHARES. */
-  addi x8, x10, 0            /* w polyvec walker */
-  addi x23, x11, 0            /* mu (consumed below) */
-  addi x9, x12, 0            /* sign_w1_repvec walker */
-  addi x19, x13, 0            /* sig (for c~ writes) */
-  addi x18, x13, 0            /* decompose scratch base (sig, 32B aligned) */
-  addi x20, x14, 0            /* w1 tmp scratch */
-  addi x21, x15, 0            /* seca2b scratch */
+  addi x8, x10, 0  /* w polyvec walker */
+  addi x23, x11, 0 /* mu (consumed below) */
+  addi x9, x12, 0  /* sign_w1_repvec walker */
+  addi x19, x13, 0 /* sig (for c~ writes) */
+  addi x18, x13, 0 /* decompose scratch base (sig, 32B aligned) */
+  addi x20, x14, 0 /* w1 tmp scratch */
+  addi x21, x15, 0 /* seca2b scratch */
 
   /* Initialize a SHAKE256 operation. */
-  addi  x11, x0, CRHBYTES
-  la    x5, mldsa_params
-  lw    x7, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x5)
-  lw    x5, MLDSA_PARAM_K_OFFSET(x5)
+  addi x11, x0, CRHBYTES
+  la   x5, mldsa_params
+  lw   x7, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x5)
+  lw   x5, MLDSA_PARAM_K_OFFSET(x5)
   loop  x5, 1
     add x11, x11, x7
   endloop
@@ -520,7 +520,7 @@ sign_w0_w1_ctilde:
   li   x11, CRHBYTES
   addi x10, x23, 0
   jal  x1, keccak_send_message
-  li   x22, W0_SHARE_STRIDE  /* stride between w_in / packed b' shares */
+  li   x22, W0_SHARE_STRIDE /* stride between w_in / packed b' shares */
 
   /* Masked path: per poly, secdecompose produces an unmasked w1 (in
    * sign_tmp) and updates share 0 of w0 in place.  The K outer loop is
@@ -535,26 +535,26 @@ sign_w0_w1_ctilde:
    * in the consumed slot of their own share. */
   addi x25, x8, 0
 _decompose_loop:
-  addi   x10, x20, 0
-  addi   x11, x8, 0
-  addi   x14, x22, 0
+  addi x10, x20, 0
+  addi x11, x8, 0
+  addi x14, x22, 0
   /* secdecompose dispatches on x12 (2 = L2, else L35); set it + the matching
    * scratch off gamma2 (L2 = 95232). */
-  la     x5, mldsa_params
-  lw     x5, MLDSA_PARAM_GAMMA2_OFFSET(x5)
-  li     x6, 95232
-  bne    x5, x6, _decompose_l35
-  la     x13, sign_w0_l2_seccompress_scratch
-  la     x15, sign_w0_l2_b
-  la     x16, sign_w0_l2_t_packed
-  li     x12, 2
-  jal x0, _decompose_call
+  la   x5, mldsa_params
+  lw   x5, MLDSA_PARAM_GAMMA2_OFFSET(x5)
+  li   x6, 95232
+  bne  x5, x6, _decompose_l35
+  la   x13, sign_w0_l2_seccompress_scratch
+  la   x15, sign_w0_l2_b
+  la   x16, sign_w0_l2_t_packed
+  li   x12, 2
+  jal  x0, _decompose_call
 _decompose_l35:
-  addi   x13, x18, 0
-  addi   x15, x25, 0
-  add    x16, x25, x22
-  addi   x17, x21, 0
-  li     x12, 3
+  addi x13, x18, 0
+  addi x15, x25, 0
+  add  x16, x25, x22
+  addi x17, x21, 0
+  li   x12, 3
 _decompose_call:
   jal    x1, secdecompose
   /* Pack w1, send to Keccak, record nonzero bits.  Runtime polyw1_pack
@@ -584,40 +584,40 @@ _decompose_call:
   bn.wsrr w8, kmac_digest
 
   /* Get always-aligned temporary buffer. */
-  la   x5, sign_tmp
+  la      x5, sign_tmp
   /* c~ layout depends on CTILDEBYTES (= K*8): 32 (K=4), 48 (K=6), 64 (K=8). */
-  la   x28, mldsa_params
-  lw   x28, MLDSA_PARAM_K_OFFSET(x28)
-  li   x29, 4
-  beq  x28, x29, _sign_pack_ctilde_44
-  li   x29, 6
-  beq  x28, x29, _sign_pack_ctilde_65
+  la      x28, mldsa_params
+  lw      x28, MLDSA_PARAM_K_OFFSET(x28)
+  li      x29, 4
+  beq     x28, x29, _sign_pack_ctilde_44
+  li      x29, 6
+  beq     x28, x29, _sign_pack_ctilde_65
   /* ML-DSA-87 (K=8, CTILDEBYTES=64). */
   bn.sid  x6, 0(x5)
   bn.sid  x6, 0(x19)
   bn.wsrr w8, kmac_digest
   bn.sid  x6, 32(x5)
   bn.sid  x6, 32(x19)
-  jal x0, _sign_pack_ctilde_done
+  jal     x0, _sign_pack_ctilde_done
 _sign_pack_ctilde_44:
   /* ML-DSA-44 (K=4, CTILDEBYTES=32). */
-  bn.sid  x6, 0(x5)
-  bn.sid  x6, 0(x19)
-  jal x0, _sign_pack_ctilde_done
+  bn.sid x6, 0(x5)
+  bn.sid x6, 0(x19)
+  jal    x0, _sign_pack_ctilde_done
 _sign_pack_ctilde_65:
   /* ML-DSA-65 (K=6, CTILDEBYTES=48); signature unaligned, copy via GPRs. */
-  bn.sid  x6, 0(x5)
+  bn.sid x6, 0(x5)
   loopi 8, 4
-    lw x7, 0(x5)
-    sw x7, 0(x19)
+    lw   x7, 0(x5)
+    sw   x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
   endloop
   bn.wsrr w8, kmac_digest
   bn.sid  x6, 0(x5)
   loopi 4, 4
-    lw x7, 0(x5)
-    sw x7, 0(x19)
+    lw   x7, 0(x5)
+    sw   x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
   endloop
@@ -642,7 +642,7 @@ _sign_pack_ctilde_done:
 .globl sign_c
 .type sign_c, @function
 sign_c:
-  addi x8, x10, 0            /* park ntt_c_out across poly_challenge */
+  addi x8, x10, 0 /* park ntt_c_out across poly_challenge */
   /* Runtime poly_challenge takes x12 = CTILDEBYTES (= K*8), x13 = TAU; x10/x11
    * (output, c~) are already set by the caller. */
   la   x5, mldsa_params
@@ -652,11 +652,11 @@ sign_c:
   jal  x1, poly_challenge
 
   bn.wsrw 0x0, mod_x2
-  jal  x1, gen_twiddles_fwd
-  addi x10, x8, 0
-  addi x12, x10, 0
-  la   x11, scratch
-  jal  x1, ntt
+  jal     x1, gen_twiddles_fwd
+  addi    x10, x8, 0
+  addi    x12, x10, 0
+  la      x11, scratch
+  jal     x1, ntt
   bn.wsrw 0x0, w16
   ret
 
@@ -708,8 +708,8 @@ _masked_eta_from_shares:
   la   x28, eta
   lw   x28, 0(x28)
   srli x28, x28, 1
-  addi x28, x28, 2               /* x28 = ETA_KBITS (3 or 4) */
-  slli x29, x28, 5              /* x29 = POLYETA_PACKEDBYTES (96 or 128) */
+  addi x28, x28, 2 /* x28 = ETA_KBITS (3 or 4) */
+  slli x29, x28, 5 /* x29 = POLYETA_PACKEDBYTES (96 or 128) */
 
   /* Refresh shares. */
   addi x5, x11, 0
@@ -717,11 +717,11 @@ _masked_eta_from_shares:
   li   x7, 0
   loop x28, 9
     bn.wsrr w2, urnd
-    bn.xor  w0, w0, w0            /* Whitening */
+    bn.xor  w0, w0, w0 /* Whitening */
     bn.lid  x7, 0(x5)
     bn.xor  w0, w0, w2
     bn.sid  x7, 0(x5++)
-    bn.xor  w0, w0, w0            /* Whitening */
+    bn.xor  w0, w0, w0 /* Whitening */
     bn.lid  x7, 0(x6)
     bn.xor  w0, w0, w2
     bn.sid  x7, 0(x6++)
@@ -740,21 +740,21 @@ _masked_eta_from_shares:
   la     x5, eta
   li     x6, 4
   bn.lid x6, 0(x5)
-  lw   x10, 4(x2)
-  li   x5, 0
-  addi x6, x10, 0
+  lw     x10, 4(x2)
+  li     x5, 0
+  addi   x6, x10, 0
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w4, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
   bn.xor w0, w0, w0
-  lw   x10, 4(x2)
-  addi x6, x10, 1024
+  lw     x10, 4(x2)
+  addi   x6, x10, 1024
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w31, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
 
   lw   x1, 0(x2)
@@ -796,7 +796,7 @@ _masked_eta_from_shares:
 .type sign_z_pack, @function
 sign_z_pack:
   addi x21, x0, UNMASK
-  addi x25, x13, 0            /* sig_z write ptr (advances per polyz_pack) */
+  addi x25, x13, 0 /* sig_z write ptr (advances per polyz_pack) */
   beq  x0, x0, _sign_z_park
 
 .globl sign_z_check
@@ -805,19 +805,19 @@ sign_z_check:
   addi x21, x0, CHECK
 _sign_z_park:
   /* Park pointer args. */
-  li   x8, 0                /* ExpandS nonce: s1[j] uses nonce j */
-  addi x23, x11, 0            /* NTT(c) */
-  addi x20, x12, 0            /* rho_prime (gamma1 seed) */
-  addi x22, x14, 0            /* z staging */
-  addi x18, x15, 0            /* sign_tmp */
-  addi x19, x16, 0            /* c*s1 share 1 + bitslice buf */
-  addi x26, x17, 0           /* seca2b scratch (eta/gamma1/boundcheck) */
+  li   x8, 0       /* ExpandS nonce: s1[j] uses nonce j */
+  addi x23, x11, 0 /* NTT(c) */
+  addi x20, x12, 0 /* rho_prime (gamma1 seed) */
+  addi x22, x14, 0 /* z staging */
+  addi x18, x15, 0 /* sign_tmp */
+  addi x19, x16, 0 /* c*s1 share 1 + bitslice buf */
+  addi x26, x17, 0 /* seca2b scratch (eta/gamma1/boundcheck) */
 
   /* Per-iter gamma1 nonce starts at x27 - L (sign_w advanced x27 by L);
    * the loop runs until x24 climbs back to x27 (L iterations). */
-  la   x5, mldsa_params
-  lw   x5, MLDSA_PARAM_L_OFFSET(x5)
-  sub  x24, x27, x5
+  la  x5, mldsa_params
+  lw  x5, MLDSA_PARAM_L_OFFSET(x5)
+  sub x24, x27, x5
 
   /* This loop computes z = (cp * s1) = y one element at a time, and does
      rejection sampling on each element before packing it into the signature. */
@@ -844,33 +844,33 @@ _sz_done:
     addi x8, x8, 1
 
     /* gadget's b2a clobbered w16/w22; rebuild from MOD (still R|Q). */
-    bn.wsrr   w16, 0x0
+    bn.wsrr w16, 0x0
 
     bn.shv.8s mod_x2, w16 << 1
 
     /* c*s1 share 0 at x18 (sign_tmp), share 1 at x19; delta in x28
      * (survives ntt/intt/poly_pointwise; x5 to x7 don't). */
     bn.wsrw 0x0, mod_x2
-    addi x9, x22, 0
-    addi x31, x18, 0
-    sub  x28, x19, x18
-    li   x5, NSHARES
+    addi    x9, x22, 0
+    addi    x31, x18, 0
+    sub     x28, x19, x18
+    li      x5, NSHARES
     loop x5, 45
-      addi x10, x9, 0
-      addi x12, x31, 0
-      jal  x1, gen_twiddles_fwd
-      la   x11, scratch
-      jal  x1, ntt
-      addi x10, x31, 0
-      addi x11, x23, 0
-      addi x12, x31, 0
-      jal  x1, poly_pointwise
-      jal  x1, _inv_transform
-      addi x10, x31, 0
-      la   x11, scratch
-      jal  x1, intt
-      addi x9, x9, 1024
-      add  x31, x31, x28
+      addi   x10, x9, 0
+      addi   x12, x31, 0
+      jal    x1, gen_twiddles_fwd
+      la     x11, scratch
+      jal    x1, ntt
+      addi   x10, x31, 0
+      addi   x11, x23, 0
+      addi   x12, x31, 0
+      jal    x1, poly_pointwise
+      jal    x1, _inv_transform
+      addi   x10, x31, 0
+      la     x11, scratch
+      jal    x1, intt
+      addi   x9, x9, 1024
+      add    x31, x31, x28
       /* Whitening */
       bn.xor w0, w0, w0
       bn.xor w1, w1, w1
@@ -907,7 +907,7 @@ _sz_done:
     addi x10, x22, 0
     addi x11, x20, 0
     addi x12, x24, 0
-    addi x13, x26, 0           /* seca2b scratch */
+    addi x13, x26, 0 /* seca2b scratch */
     /* hint_b2a region is L5-sized (8192 B) for both params; gamma1
      * staging fits at scratch+1536. */
     addi x14, x26, 1536
@@ -929,12 +929,12 @@ _sign_z_gamma1_a_5:
     sub  x28, x19, x18
     li   x5, NSHARES
     loop x5, 8
-      addi x10, x9, 0
-      addi x11, x31, 0
-      addi x12, x9, 0
-      jal  x1, poly_add
-      addi x9, x9, 1024
-      add  x31, x31, x28
+      addi   x10, x9, 0
+      addi   x11, x31, 0
+      addi   x12, x9, 0
+      jal    x1, poly_add
+      addi   x9, x9, 1024
+      add    x31, x31, x28
       /* Whitening */
       bn.xor w0, w0, w0
       bn.xor w1, w1, w1
@@ -946,11 +946,11 @@ _sign_z_gamma1_a_5:
     li   x7, NSHARES
     loop x7, 5
       loopi 32, 3
-        bn.lid x6, 0(x5)
+        bn.lid      x6, 0(x5)
         bn.addvm.8s w0, w0, w31
-        bn.sid x6, 0(x5++)
+        bn.sid      x6, 0(x5++)
       endloop
-      bn.xor w0, w0, w0          /* Whitening */
+      bn.xor w0, w0, w0 /* Whitening */
     endloop
 
     addi x5, x0, UNMASK
@@ -962,20 +962,20 @@ _sign_z_gamma1_a_5:
     li     x5, 17
     la     x6, c_z_const
     bn.lid x5, 0(x6)
-    addi x10, x22, 0
-    la   x12, lambda0_z_vec
-    addi x13, x26, 0           /* seca2b scratch */
-    addi x14, x19, 0            /* boundcheck bitslice buf */
-    jal  x1, secboundcheck
+    addi   x10, x22, 0
+    la     x12, lambda0_z_vec
+    addi   x13, x26, 0 /* seca2b scratch */
+    addi   x14, x19, 0 /* boundcheck bitslice buf */
+    jal    x1, secboundcheck
 
     bn.not w0, w0
     bn.cmp w0, w31
-    csrrs x12, FG0, x0
-    andi x12, x12, 8
-    xori x12, x12, 8
+    csrrs  x12, FG0, x0
+    andi   x12, x12, 8
+    xori   x12, x12, 8
     /* Reject if ||z|| >= gamma1 - beta on any lane. */
-    bne  x12, x0, _sign_z_reject
-    beq  x0, x0, _sign_z_next
+    bne    x12, x0, _sign_z_reject
+    beq    x0, x0, _sign_z_next
 
 _sign_z_pack_poly:
     addi x10, x18, 0
@@ -993,7 +993,7 @@ _sign_z_pack_poly:
     addi x11, x18, 0
     la   x5, mldsa_params
     lw   x14, MLDSA_PARAM_K_OFFSET(x5)
-    jal x1, polyz_pack
+    jal  x1, polyz_pack
     sub  x5, x10, x18
     srli x5, x5, 2
     addi x11, x18, 0
@@ -1005,12 +1005,12 @@ _sign_z_pack_poly:
     endloop
 _sign_z_next:
     /* L iterations: loop until the gamma1 nonce x24 reaches x27. */
-    bne  x24, x27, _sign_z_loop
+    bne x24, x27, _sign_z_loop
 
-  li   x10, 0
+  li  x10, 0
   ret
 _sign_z_reject:
-  li   x10, 1
+  li  x10, 1
   ret
 
 /**
@@ -1049,39 +1049,39 @@ sign_h:
   addi x22, x0, UNMASK
 _sign_h_park:
   /* Park pointer args; preserve x27 (nonce counter) for sign_z's retry. */
-  addi x8, x10, 0            /* sk t0 walker */
-  la   x18, mldsa_params     /* ExpandS nonce: s2[i] uses nonce L+i */
+  addi x8, x10, 0        /* sk t0 walker */
+  la   x18, mldsa_params /* ExpandS nonce: s2[i] uses nonce L+i */
   lw   x18, MLDSA_PARAM_L_OFFSET(x18)
-  addi x23, x12, 0            /* NTT(c) */
-  addi x19, x13, 0            /* packed b' walker */
-  addi x21, x14, 0            /* sign_w1_repvec walker */
+  addi x23, x12, 0       /* NTT(c) */
+  addi x19, x13, 0       /* packed b' walker */
+  addi x21, x14, 0       /* sign_w1_repvec walker */
 
   /* Zero the hint region (sig + CRYPTO_BYTES - (OMEGA + K), length
      OMEGA + K), rounded up to a word. */
-  la    x5, mldsa_params
-  lw    x6, MLDSA_PARAM_OMEGA_OFFSET(x5)
-  lw    x7, MLDSA_PARAM_K_OFFSET(x5)
-  add   x6, x6, x7
-  lw    x25, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
-  sub   x25, x25, x6          /* sig hint write ptr */
-  la    x5, sig
-  add   x25, x25, x5
-  addi  x10, x25, 0
-  addi  x6, x6, 3
-  srli  x6, x6, 2
+  la   x5, mldsa_params
+  lw   x6, MLDSA_PARAM_OMEGA_OFFSET(x5)
+  lw   x7, MLDSA_PARAM_K_OFFSET(x5)
+  add  x6, x6, x7
+  lw   x25, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
+  sub  x25, x25, x6 /* sig hint write ptr */
+  la   x5, sig
+  add  x25, x25, x5
+  addi x10, x25, 0
+  addi x6, x6, 3
+  srli x6, x6, 2
   loop  x6, 2
     sw   x0, 0(x10)
     addi x10, x10, 4
   endloop
 
-  la   x26, sign_tmp
+  la x26, sign_tmp
 
   /* Initialize the coefficient sum for the hint for post-check. */
-  li  x20, 0
+  li x20, 0
 
   /* Hint loop counter. */
-  la  x24, mldsa_params
-  lw  x24, MLDSA_PARAM_K_OFFSET(x24)
+  la x24, mldsa_params
+  lw x24, MLDSA_PARAM_K_OFFSET(x24)
 
 _mldsa_sign_hint_loop:
 
@@ -1108,29 +1108,29 @@ _sh_done:
     addi x18, x18, 1
 
     /* b2a chain clobbered w16/w22; rebuild from MOD (still R|Q). */
-    bn.wsrr   w16, 0x0
+    bn.wsrr w16, 0x0
 
     bn.shv.8s mod_x2, w16 << 1
 
     /* Per-share NTT chain in place on sign_c_poly_shares -> c*s2. */
-    la   x9, sign_c_poly_shares
-    li   x5, NSHARES
+    la      x9, sign_c_poly_shares
+    li      x5, NSHARES
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
     loop x5, 45
-      addi x10, x9, 0
-      addi x12, x9, 0
-      jal  x1, gen_twiddles_fwd
-      la   x11, scratch
-      jal  x1, ntt
-      addi x10, x9, 0
-      addi x11, x23, 0
-      addi x12, x9, 0
-      jal  x1, poly_pointwise
-      jal  x1, _inv_transform
-      addi x10, x9, 0
-      la   x11, scratch
-      jal  x1, intt
-      addi x9, x9, 1024
+      addi   x10, x9, 0
+      addi   x12, x9, 0
+      jal    x1, gen_twiddles_fwd
+      la     x11, scratch
+      jal    x1, ntt
+      addi   x10, x9, 0
+      addi   x11, x23, 0
+      addi   x12, x9, 0
+      jal    x1, poly_pointwise
+      jal    x1, _inv_transform
+      addi   x10, x9, 0
+      la     x11, scratch
+      jal    x1, intt
+      addi   x9, x9, 1024
       nop
       /* Whitening */
       bn.xor w0, w0, w0
@@ -1165,16 +1165,16 @@ _sh_done:
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
     /* Reduce c*s2 shares to unsigned canonical [0, q). */
-    la   x5, sign_c_poly_shares
-    li   x6, 0
-    li   x7, NSHARES
+    la x5, sign_c_poly_shares
+    li x6, 0
+    li x7, NSHARES
     loop x7, 5
       loopi 32, 3
-        bn.lid x6, 0(x5)
+        bn.lid      x6, 0(x5)
         bn.addvm.8s w0, w0, w31
-        bn.sid x6, 0(x5++)
+        bn.sid      x6, 0(x5++)
       endloop
-      bn.xor w0, w0, w0          /* Whitening */
+      bn.xor w0, w0, w0 /* Whitening */
     endloop
 
     /* r-tilde reconstruction differs by gamma2 (matching secdecompose's
@@ -1192,21 +1192,21 @@ _sh_done:
     li   x7, 0
     li   x28, 2
     loopi 32, 4
-      bn.lid x7, 0(x30++)
-      bn.lid x28, 0(x29)
+      bn.lid      x7, 0(x30++)
+      bn.lid      x28, 0(x29)
       bn.subvm.8s w0, w0, w2
-      bn.sid x7, 0(x29++)
+      bn.sid      x7, 0(x29++)
     endloop
     /* Whitening */
     bn.xor w0, w0, w0
     bn.xor w2, w2, w2
-    li   x31, W0_SHARE_STRIDE
-    add  x30, x19, x31
+    li     x31, W0_SHARE_STRIDE
+    add    x30, x19, x31
     loopi 32, 4
-      bn.lid x7, 0(x30++)
-      bn.lid x28, 0(x29)
+      bn.lid      x7, 0(x30++)
+      bn.lid      x28, 0(x29)
       bn.subvm.8s w0, w0, w2
-      bn.sid x7, 0(x29++)
+      bn.sid      x7, 0(x29++)
     endloop
     jal x0, _sign_h_rtilde_done
 _sign_h_rtilde_l35:
@@ -1222,9 +1222,9 @@ _sign_h_rtilde_l35:
     loopi 5, 1
       bn.sid x28, 0(x5++)
     endloop
-    bn.xor w0, w0, w0              /* Whitening */
-    li   x6, W0_SHARE_STRIDE
-    add  x6, x19, x6
+    bn.xor w0, w0, w0 /* Whitening */
+    li     x6, W0_SHARE_STRIDE
+    add    x6, x19, x6
     loopi 19, 2
       bn.lid x7, 0(x6++)
       bn.sid x7, 0(x5++)
@@ -1252,11 +1252,11 @@ _sign_h_rtilde_l35:
     li     x7, 0
     li     x28, 2
     loopi 32, 5
-      bn.lid x7, 0(x29)
-      bn.lid x28, 0(x30++)
+      bn.lid      x7, 0(x29)
+      bn.lid      x28, 0(x30++)
       bn.addvm.8s w0, w0, w2
       bn.subvm.8s w0, w1, w0
-      bn.sid x7, 0(x29++)
+      bn.sid      x7, 0(x29++)
     endloop
 
     /* Whitening */
@@ -1280,23 +1280,23 @@ _sign_h_rtilde_l35:
     bn.xor w17, w17, w17
     bn.xor w18, w18, w18
     bn.xor w19, w19, w19
-    la   x10, sign_tmp
-    la   x11, sign_hint_b2a
-    addi x11, x11, 1536
-    addi x11, x11, 768
-    jal  x1, unbitslice
+    la     x10, sign_tmp
+    la     x11, sign_hint_b2a
+    addi   x11, x11, 1536
+    addi   x11, x11, 768
+    jal    x1, unbitslice
 
-    la     x29, sign_c_poly_shares
-    addi   x29, x29, 1024
-    la     x30, sign_tmp
-    li     x7, 0
-    li     x28, 2
+    la   x29, sign_c_poly_shares
+    addi x29, x29, 1024
+    la   x30, sign_tmp
+    li   x7, 0
+    li   x28, 2
     loopi 32, 5
-      bn.lid x7, 0(x29)
-      bn.lid x28, 0(x30++)
+      bn.lid      x7, 0(x29)
+      bn.lid      x28, 0(x30++)
       bn.addvm.8s w0, w0, w2
       bn.subvm.8s w0, w31, w0
-      bn.sid x7, 0(x29++)
+      bn.sid      x7, 0(x29++)
     endloop
 _sign_h_rtilde_done:
 
@@ -1312,25 +1312,25 @@ _sign_h_rtilde_done:
     li     x5, 17
     la     x6, c_r_const
     bn.lid x5, 0(x6)
-    la   x10, sign_c_poly_shares
-    la   x12, lambda0_r_vec
-    la   x13, sign_hint_b2a
-    la   x14, sign_y
-    jal  x1, secboundcheck
+    la     x10, sign_c_poly_shares
+    la     x12, lambda0_r_vec
+    la     x13, sign_hint_b2a
+    la     x14, sign_y
+    jal    x1, secboundcheck
 
     bn.not w0, w0
     bn.cmp w0, w31
-    csrrs x12, FG0, x0
-    andi x12, x12, 8
-    xori x12, x12, 8
+    csrrs  x12, FG0, x0
+    andi   x12, x12, 8
+    xori   x12, x12, 8
     /* Reject if ||rtilde|| >= gamma2 - beta on any lane. */
-    bne  x12, x0, _sign_h_reject
-    beq  x0, x0, _sign_h_next
+    bne    x12, x0, _sign_h_reject
+    beq    x0, x0, _sign_h_next
 
 _sign_h_hint_poly:
-    la   x10, sign_hint_b2a
-    la   x11, sign_c_poly_shares
-    jal  x1, secunmask_modq
+    la  x10, sign_hint_b2a
+    la  x11, sign_c_poly_shares
+    jal x1, secunmask_modq
 
     /* Restore w16 = MOD (secunmask_modq's contract leaves low32 = q). */
     bn.wsrr w16, 0x0
@@ -1346,11 +1346,11 @@ _sign_h_hint_poly:
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
 
     /* Compute ntt(t0[i]) in-place. */
-    jal x1, gen_twiddles_fwd
+    jal  x1, gen_twiddles_fwd
     addi x10, x26, 0
     addi x12, x10, 0
-    la  x11, scratch
-    jal x1, ntt
+    la   x11, scratch
+    jal  x1, ntt
 
     /* tmp = cp * t0 */
     addi x10, x26, 0
@@ -1359,10 +1359,10 @@ _sign_h_hint_poly:
     jal  x1, poly_pointwise
 
     /* Inverse NTT on tmp (reuse fwd table still in scratch). */
-    jal x1, _inv_transform
+    jal  x1, _inv_transform
     addi x10, x26, 0
-    la  x11, scratch
-    jal x1, intt
+    la   x11, scratch
+    jal  x1, intt
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
@@ -1396,8 +1396,8 @@ _sign_h_hint_poly:
     jal    x1, poly_make_hint
 
     /* Update the coefficient sum accumulator (saving previous value). */
-    add  x12, x20, 0
-    add  x20, x20, x10
+    add x12, x20, 0
+    add x20, x20, x10
 
     /* If the accumulator (# nonzero coeffs in h) is > omega, reject. */
     la   x5, mldsa_params
@@ -1427,7 +1427,7 @@ _sign_h_next:
     li   x6, 95232
     bne  x5, x6, _sign_h_stride_l35
     addi x19, x19, 1024
-    jal x0, _sign_h_stride_done
+    jal  x0, _sign_h_stride_done
 _sign_h_stride_l35:
     addi x19, x19, 608
 _sign_h_stride_done:
@@ -1435,10 +1435,10 @@ _sign_h_stride_done:
     addi x24, x24, -1
     bne  x24, x0, _mldsa_sign_hint_loop
 
-  li   x10, 0
+  li  x10, 0
   ret
 _sign_h_reject:
-  li   x10, 1
+  li  x10, 1
   ret
 #else
   /* Store pointer parameters. */
@@ -1459,7 +1459,7 @@ _sign_h_reject:
   li   x11, SEEDBYTES /* set message length to SEEDBYTES */
   la   x10, sk
   addi x10, x10, 32
-  jal x1, keccak_send_message
+  jal  x1, keccak_send_message
 
   /* Send rnd to the Keccak core. */
   li  x11, RNDBYTES /* set message length to RNDBYTES */
@@ -1475,16 +1475,16 @@ _sign_h_reject:
   li x6, 8
 
   la      x10, rhoprime
-  bn.wsrr w8, 0xA     /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xA      /* KECCAK_DIGEST */
   bn.sid  x6, 0(x10++) /* Store into rhoprime buffer */
-  bn.wsrr w8, 0xA     /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xA      /* KECCAK_DIGEST */
   bn.sid  x6, 0(x10++) /* Store into rhoprime buffer */
 
   /* Finish the SHAKE-256 operation. */
 
   /* Prepare modulus */
   #define mod_x2 w22
-  bn.wsrr   w16, 0x0 /* w16 = MOD = R | Q */
+  bn.wsrr   w16, 0x0         /* w16 = MOD = R | Q */
   bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   li x27, 0 /* nonce */
@@ -1496,10 +1496,10 @@ _rej_crypto_sign_signature_internal:
   la x9, w0_polyvec
 
   /* Initialize destination to 0. */
-  li x5, 31
+  li   x5, 31
   addi x6, x9, 0
-  la x7, mldsa_params
-  lw x28, MLDSA_PARAM_K_OFFSET(x7)
+  la   x7, mldsa_params
+  lw   x28, MLDSA_PARAM_K_OFFSET(x7)
   loop x28, 3
     loopi 32, 1
       bn.sid x5, 0(x6++)
@@ -1519,15 +1519,15 @@ _rej_crypto_sign_signature_internal:
   li x21, 31
 
   /* Load other pointers. */
-  la   x24, y_poly
-  la   x26, tmp_poly
-  la   x8, sk /* rho is the first 32B of sk */
-  la   x18, rhoprime
+  la x24, y_poly
+  la x26, tmp_poly
+  la x8, sk /* rho is the first 32B of sk */
+  la x18, rhoprime
 
   /* Precompute the SHAKE128 configuration for poly_uniform. */
-  addi  x20, x0, 34
-  slli  x20, x20, 5
-  addi  x20, x20, SHAKE128_CFG
+  addi x20, x0, 34
+  slli x20, x20, 5
+  addi x20, x20, SHAKE128_CFG
 
   /* Compute A * y, computing the values for A and y on the fly.
 
@@ -1543,57 +1543,57 @@ _rej_crypto_sign_signature_internal:
   lw x28, MLDSA_PARAM_L_OFFSET(x7)
   loop x28, 46
     /* Zero the buffer for y[j]. */
-    addi  x5, x24, 0
+    addi x5, x24, 0
     loopi 32, 1
       bn.sid x21, 0(x5++)
     endloop
     /* Compute y[j]. */
-    addi x10, x24, 0
-    addi x11, x18, 0
-    addi x12, x27, 0 /* y sampling nonce */
-    la x7, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x7)
-    jal  x1, poly_uniform_gamma_1
-    addi x27, x12, 1 /* x12 should be preserved after execution */
+    addi    x10, x24, 0
+    addi    x11, x18, 0
+    addi    x12, x27, 0 /* y sampling nonce */
+    la      x7, mldsa_params
+    lw      x14, MLDSA_PARAM_K_OFFSET(x7)
+    jal     x1, poly_uniform_gamma_1
+    addi    x27, x12, 1 /* x12 should be preserved after execution */
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
-    csrrw x0, kmac_cfg, x20
-    addi  x10, x8, 0
-    bn.lid    x0, 0(x10)
-    bn.wsrw   kmac_msg, w0
-    addi      x5, x0, 2
-    csrrw     x0, kmac_partial_write, x5
-    bn.wsrw   kmac_msg, w23
+    csrrw   x0, kmac_cfg, x20
+    addi    x10, x8, 0
+    bn.lid  x0, 0(x10)
+    bn.wsrw kmac_msg, w0
+    addi    x5, x0, 2
+    csrrw   x0, kmac_partial_write, x5
+    bn.wsrw kmac_msg, w23
     bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
     /* Compute ntt(y[j]). */
-    addi x10, x24, 0
-    addi x12, x24, 0
-    jal x1, ntt
-    la x7, mldsa_params
-    lw x28, MLDSA_PARAM_K_OFFSET(x7)
+    addi    x10, x24, 0
+    addi    x12, x24, 0
+    jal     x1, ntt
+    la      x7, mldsa_params
+    lw      x28, MLDSA_PARAM_K_OFFSET(x7)
     loop x28, 15
       /* Compute A[i][j]. */
-      addi x11, x26, 0
-      jal  x1, poly_uniform
+      addi    x11, x26, 0
+      jal     x1, poly_uniform
       /* Increment the row index by 1. */
       bn.addi w23, w23, 256
       /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
-      csrrw x0, kmac_cfg, x20
-      addi  x10, x8, 0
-      bn.lid    x0, 0(x10)
-      bn.wsrw   kmac_msg, w0
-      addi      x5, x0, 2
-      csrrw     x0, kmac_partial_write, x5
-      bn.wsrw   kmac_msg, w23
-      addi x10, x24, 0
-      addi x11, x26, 0
-      addi x12, x9, 0 /* *w[i] */
+      csrrw   x0, kmac_cfg, x20
+      addi    x10, x8, 0
+      bn.lid  x0, 0(x10)
+      bn.wsrw kmac_msg, w0
+      addi    x5, x0, 2
+      csrrw   x0, kmac_partial_write, x5
+      bn.wsrw kmac_msg, w23
+      addi    x10, x24, 0
+      addi    x11, x26, 0
+      addi    x12, x9, 0 /* *w[i] */
       /* Add A[i][j] * y[j] to w[i]. */
-      jal  x1, poly_pointwise_acc
+      jal     x1, poly_pointwise_acc
       /* Increment the w pointer. */
-      addi x9, x9, 1024
+      addi    x9, x9, 1024
     endloop
     /* Reset w pointer. */
-    sub  x9, x9, x22
+    sub     x9, x9, x22
     /* Increment the column index in the nonce by one. */
     bn.addi w23, w23, 1
     /* Reset the row index in the nonce to zero. */
@@ -1604,12 +1604,12 @@ _rej_crypto_sign_signature_internal:
 
   bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
   /* Inverse NTT on w */
-  la  x10, w0_polyvec
+  la      x10, w0_polyvec
 
   la x7, mldsa_params
   lw x28, MLDSA_PARAM_K_OFFSET(x7)
   loop x28, 2
-    jal x1, intt
+    jal  x1, intt
     /* Go to next input polynomial */
     addi x10, x10, 1024
   endloop
@@ -1618,9 +1618,9 @@ _rej_crypto_sign_signature_internal:
 
   /* Random oracle */
   /* Initialize a SHAKE256 operation. */
-  addi  x11, x0, CRHBYTES
-  la x7, mldsa_params
-  lw x29, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x7)
+  addi x11, x0, CRHBYTES
+  la   x7, mldsa_params
+  lw   x29, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x7)
   loop x28, 1
     add x11, x11, x29
   endloop
@@ -1634,17 +1634,17 @@ _rej_crypto_sign_signature_internal:
   jal x1, keccak_send_message
 
   /* Save some pointers for loop. */
-  la  x8, w0_polyvec
-  la  x9, w1_repvec
-  la  x20, tmp_poly
+  la x8, w0_polyvec
+  la x9, w1_repvec
+  la x20, tmp_poly
 
   /* Save the signature pointer (ctilde destination). */
-  la  x19, dptr_sig
-  lw  x19, 0(x19)
+  la x19, dptr_sig
+  lw x19, 0(x19)
   /* Pack w1 into c_poly: 32-byte aligned and free until poly_challenge. */
-  la  x18, c_poly
-  la   x5, mldsa_params
-  lw   x28, MLDSA_PARAM_K_OFFSET(x5)
+  la x18, c_poly
+  la x5, mldsa_params
+  lw x28, MLDSA_PARAM_K_OFFSET(x5)
 
   /* This loop:
        - decomposes each polynomial w[i] into w0[i] and w1[i]
@@ -1658,8 +1658,8 @@ _rej_crypto_sign_signature_internal:
     addi   x10, x8, 0
     addi   x11, x20, 0
     addi   x12, x8, 0
-    la x7, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x7)
+    la     x7, mldsa_params
+    lw     x14, MLDSA_PARAM_K_OFFSET(x7)
     jal    x1, poly_decompose
     /* Pack w1. */
     addi   x10, x18, 0
@@ -1667,15 +1667,15 @@ _rej_crypto_sign_signature_internal:
     jal    x1, polyw1_pack
     /* Send packed w1 to the Keccak core. */
     addi   x10, x18, 0
-    la x7, mldsa_params
-    lw x11, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x7)
+    la     x7, mldsa_params
+    lw     x11, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x7)
     jal    x1, keccak_send_message
     /* Calculate the coefficients of w1 that are nonzero mod q, and store them. */
     addi   x10, x20, 0
     jal    x1, poly_nonzero_encode
     bn.sid x0, 0(x9++)
     /* Increment w pointer. */
-    addi x8, x8, 1024
+    addi   x8, x8, 1024
   endloop
 
   /* Setup WDR */
@@ -1685,42 +1685,42 @@ _rej_crypto_sign_signature_internal:
   bn.wsrr w8, 0xA
 
   /* Get always-aligned temporary buffer. */
-  la   x5, tmp_poly
+  la x5, tmp_poly
 
   /* Pack ctilde into temp buffer and signature; layout depends on K. */
-  la   x28, mldsa_params
-  lw   x28, MLDSA_PARAM_K_OFFSET(x28)
-  li   x29, 4
-  beq  x28, x29, _sign_pack_ctilde_44
-  li   x29, 6
-  beq  x28, x29, _sign_pack_ctilde_65
+  la      x28, mldsa_params
+  lw      x28, MLDSA_PARAM_K_OFFSET(x28)
+  li      x29, 4
+  beq     x28, x29, _sign_pack_ctilde_44
+  li      x29, 6
+  beq     x28, x29, _sign_pack_ctilde_65
   /* ML-DSA-87 (K=8, CTILDEBYTES=64). */
   bn.sid  x6, 0(x5)
   bn.sid  x6, 0(x19)
   bn.wsrr w8, 0xA
   bn.sid  x6, 32(x5)
   bn.sid  x6, 32(x19)
-  jal x0, _sign_pack_ctilde_done
+  jal     x0, _sign_pack_ctilde_done
 _sign_pack_ctilde_44:
   /* ML-DSA-44 (K=4, CTILDEBYTES=32). */
-  bn.sid  x6, 0(x5)
-  bn.sid  x6, 0(x19)
-  jal x0, _sign_pack_ctilde_done
+  bn.sid x6, 0(x5)
+  bn.sid x6, 0(x19)
+  jal    x0, _sign_pack_ctilde_done
 _sign_pack_ctilde_65:
   /* ML-DSA-65 (K=6, CTILDEBYTES=48). The signature is not aligned, so
      copy via GPRs. */
-  bn.sid  x6, 0(x5)
+  bn.sid x6, 0(x5)
   loopi 8, 4
-    lw x7, 0(x5)
-    sw x7, 0(x19)
+    lw   x7, 0(x5)
+    sw   x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
   endloop
   bn.wsrr w8, 0xA
   bn.sid  x6, 0(x5)
   loopi 4, 4
-    lw x7, 0(x5)
-    sw x7, 0(x19)
+    lw   x7, 0(x5)
+    sw   x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
   endloop
@@ -1735,7 +1735,7 @@ _sign_pack_ctilde_done:
   la   x11, tmp_poly
   la   x5, mldsa_params
   lw   x6, MLDSA_PARAM_K_OFFSET(x5)
-  slli x12, x6, 3  /* CTILDEBYTES = K * 8 */
+  slli x12, x6, 3 /* CTILDEBYTES = K * 8 */
   lw   x13, MLDSA_PARAM_TAU_OFFSET(x5)
   jal  x1, poly_challenge
 
@@ -1743,7 +1743,7 @@ _sign_pack_ctilde_done:
 
   /* NTT(cp) */
   la   x10, c_poly /* Input */
-  addi x12, x10, 0  /* Output inplace */
+  addi x12, x10, 0 /* Output inplace */
   jal  x1, ntt
 
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
@@ -1753,9 +1753,9 @@ _sign_pack_ctilde_done:
   addi x8, x8, 128
 
   /* Reset the nonce for y and set up a constant for poly_uniform_gamma1. */
-  la   x5, mldsa_params
-  lw   x6, MLDSA_PARAM_L_OFFSET(x5)
-  sub  x24, x27, x6
+  la  x5, mldsa_params
+  lw  x6, MLDSA_PARAM_L_OFFSET(x5)
+  sub x24, x27, x6
 
   /* Save some pointers. */
   la   x18, tmp_poly
@@ -1764,8 +1764,8 @@ _sign_pack_ctilde_done:
   la   x25, dptr_sig
   lw   x25, 0(x25)
   lw   x6, MLDSA_PARAM_K_OFFSET(x5)
-  slli x6, x6, 3      /* CTILDEBYTES = K * 8 */
-  add  x25, x25, x6     /* c is already packed */
+  slli x6, x6, 3    /* CTILDEBYTES = K * 8 */
+  add  x25, x25, x6 /* c is already packed */
 
   /* This loop computes z = (cp * s1) = y one element at a time, and does
      rejection sampling on each element before packing it into the signature.
@@ -1775,9 +1775,9 @@ _rejsmpl_loop:
     /* Unpack the next polynomial from s1. */
     addi x10, x18, 0
     addi x11, x8, 0
-    la x7, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x7)
-    jal x1, polyeta_unpack
+    la   x7, mldsa_params
+    lw   x14, MLDSA_PARAM_K_OFFSET(x7)
+    jal  x1, polyeta_unpack
     /* Update the packed s1 pointer. */
     addi x8, x11, 0
 
@@ -1786,7 +1786,7 @@ _rejsmpl_loop:
     /* Compute ntt(s1). */
     addi x10, x18, 0
     addi x12, x18, 0
-    jal x1, ntt
+    jal  x1, ntt
     /* z = cp * s1 */
     addi x10, x18, 0
     addi x11, x23, 0
@@ -1796,7 +1796,7 @@ _rejsmpl_loop:
 
     /* Inverse NTT on z */
     addi x10, x18, 0
-    jal x1, intt
+    jal  x1, intt
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
@@ -1804,8 +1804,8 @@ _rejsmpl_loop:
     addi x10, x18, 0
     addi x11, x19, 0
     addi x12, x24, 0
-    la x7, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x7)
+    la   x7, mldsa_params
+    lw   x14, MLDSA_PARAM_K_OFFSET(x7)
     jal  x1, poly_uniform_gamma_1
 
     /* Update the nonce for y. */
@@ -1814,23 +1814,23 @@ _rejsmpl_loop:
     /* reduce32(z) to move to mod^{+-} for bound check */
     addi x10, x18, 0
     addi x11, x18, 0
-    jal x1, poly_reduce32
+    jal  x1, poly_reduce32
 
     /* chknorm */
     addi x10, x18, 0
     la   x7, mldsa_params
     lw   x11, MLDSA_PARAM_GAMMA1_MINUS_BETA_OFFSET(x7)
-    jal x1, poly_chknorm
+    jal  x1, poly_chknorm
 
     bne x12, x0, _rej_crypto_sign_signature_internal
 
     /* Pack z[i] in place, then GPR-copy into the unaligned sig slot. */
     addi x10, x18, 0
     addi x11, x18, 0
-    la x7, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x7)
-    jal x1, polyz_pack
-    sub  x5, x10, x18   /* POLYZ_PACKEDBYTES */
+    la   x7, mldsa_params
+    lw   x14, MLDSA_PARAM_K_OFFSET(x7)
+    jal  x1, polyz_pack
+    sub  x5, x10, x18 /* POLYZ_PACKEDBYTES */
     srli x5, x5, 2
     addi x11, x18, 0
     loop x5, 4
@@ -1840,20 +1840,20 @@ _rejsmpl_loop:
       addi x25, x25, 4
     endloop
   addi x20, x20, 1
-  la x5, mldsa_params
-  lw x6, MLDSA_PARAM_L_OFFSET(x5)
-  bne x20, x6, _rejsmpl_loop
+  la   x5, mldsa_params
+  lw   x6, MLDSA_PARAM_L_OFFSET(x5)
+  bne  x20, x6, _rejsmpl_loop
 
   /* get *sig + CTILDEBYTES + L*POLYZ_PACKEDBYTES */
   addi x10, x25, 0
 
   /* Set hint bytes at end of signature (length omega + k) to 0. Round to
      next word boundary. */
-  lw    x6, MLDSA_PARAM_OMEGA_OFFSET(x5)
-  lw    x7, MLDSA_PARAM_K_OFFSET(x5)
-  add   x6, x6, x7
-  addi  x6, x6, 3
-  srli  x6, x6, 2
+  lw   x6, MLDSA_PARAM_OMEGA_OFFSET(x5)
+  lw   x7, MLDSA_PARAM_K_OFFSET(x5)
+  add  x6, x6, x7
+  addi x6, x6, 3
+  srli x6, x6, 2
   loop  x6, 2
     sw   x0, 0(x10)
     addi x10, x10, 4
@@ -1862,34 +1862,34 @@ _rejsmpl_loop:
   addi x10, x25, 0
 
   /* Load pointers to packed S2 and T0 within sk. */
-  la   x8, sk
-  lw   x6, MLDSA_PARAM_SK_S2_OFFSET_OFFSET(x5)
-  add  x18, x8, x6
-  lw   x6, MLDSA_PARAM_SK_T0_OFFSET_OFFSET(x5)
-  add  x8, x8, x6
+  la  x8, sk
+  lw  x6, MLDSA_PARAM_SK_S2_OFFSET_OFFSET(x5)
+  add x18, x8, x6
+  lw  x6, MLDSA_PARAM_SK_T0_OFFSET_OFFSET(x5)
+  add x8, x8, x6
 
   /* Initialize some pointers for the loop. */
-  la  x19, w0_polyvec
-  la  x21, w1_repvec
-  la  x23, c_poly
-  la  x26, tmp_poly
+  la x19, w0_polyvec
+  la x21, w1_repvec
+  la x23, c_poly
+  la x26, tmp_poly
 
   /* Initialize the coefficient sum for the hint for post-check. */
-  li  x20, 0
+  li x20, 0
 
   /* Initialize the counter for the index in the hint vector. */
-  li  x22, 0
+  li x22, 0
 
   /* Initialize the register that says whether the checks failed. */
-  li  x24, 0
+  li x24, 0
 
   /* Normalize w0 to the [0, q) range (in-place). */
   addi   x10, x19, 0
   li     x6, 1
   la     x5, modulus
   bn.lid x6, 0(x5)
-  la x5, mldsa_params
-  lw x6, MLDSA_PARAM_K_OFFSET(x5)
+  la     x5, mldsa_params
+  lw     x6, MLDSA_PARAM_K_OFFSET(x5)
   loop x6, 6
     loopi 32, 4
       bn.lid      x0, 0(x10)
@@ -1923,13 +1923,13 @@ _rejsmpl_loop:
     /* If there was a failure, skip to the end of the
        loop body (because of architectural loop rules, we have to complete
        all iterations). */
-    bne  x24, x0, _mldsa_sign_hint_loop_end
+    bne x24, x0, _mldsa_sign_hint_loop_end
 
     /* Unpack the next polynomial from s2. */
     addi x10, x26, 0
     addi x11, x18, 0
-    la x5, mldsa_params
-    lw x14, MLDSA_PARAM_K_OFFSET(x5)
+    la   x5, mldsa_params
+    lw   x14, MLDSA_PARAM_K_OFFSET(x5)
     jal  x1, polyeta_unpack
     addi x10, x10, -1024
 
@@ -1940,7 +1940,7 @@ _rejsmpl_loop:
 
     /* Compute ntt(s2[i]) in-place. */
     addi x12, x10, 0
-    jal x1, ntt
+    jal  x1, ntt
 
     /* tmp = cp * s2 */
     addi x10, x26, 0
@@ -1950,7 +1950,7 @@ _rejsmpl_loop:
 
     /* Inverse NTT on tmp */
     addi x10, x26, 0
-    jal x1, intt
+    jal  x1, intt
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
@@ -1972,7 +1972,7 @@ _rejsmpl_loop:
     jal  x1, poly_chknorm
 
     /* Update the continuation register. */
-    or  x24, x24, x12
+    or x24, x24, x12
 
     /* Unpack the next polynomial from t0. */
     addi x10, x26, 0
@@ -1987,7 +1987,7 @@ _rejsmpl_loop:
     /* Compute ntt(t0[i]) in-place. */
     addi x10, x26, 0
     addi x12, x10, 0
-    jal x1, ntt
+    jal  x1, ntt
 
     /* tmp = cp * t0 */
     addi x10, x26, 0
@@ -1997,7 +1997,7 @@ _rejsmpl_loop:
 
     /* Inverse NTT on tmp */
     addi x10, x26, 0
-    jal x1, intt
+    jal  x1, intt
 
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
@@ -2019,7 +2019,7 @@ _rejsmpl_loop:
     jal  x1, poly_chknorm
 
     /* Update the continuation register. */
-    or  x24, x24, x12
+    or x24, x24, x12
 
     /* h[i] = make_hint(w0[i], w1[i]) */
     addi   x10, x26, 0
@@ -2030,8 +2030,8 @@ _rejsmpl_loop:
     jal    x1, poly_make_hint
 
     /* Update the coefficient sum accumulator (saving previous value). */
-    add  x12, x20, 0
-    add  x20, x20, x10
+    add x12, x20, 0
+    add x20, x20, x10
 
     /* If the accumulator (# nonzero coeffs in h) is > omega, reject. */
     la   x5, mldsa_params
@@ -2040,7 +2040,7 @@ _rejsmpl_loop:
     srli x5, x5, 31
 
     /* Update the continuation register. */
-    or  x24, x24, x5
+    or x24, x24, x5
 
     /* Skip encode in case of rejection. */
     bne  x24, x0, _mldsa_sign_hint_loop_end
@@ -2060,11 +2060,11 @@ _rejsmpl_loop:
   endloop
 
   /* Reject the signature if any conditions failed in the hint loop. */
-  bne  x24, x0, _rej_crypto_sign_signature_internal
+  bne x24, x0, _rej_crypto_sign_signature_internal
 
   /* Return success and signature length */
-  li x10, 0
-  la x5, mldsa_params
-  lw x11, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
+  li  x10, 0
+  la  x5, mldsa_params
+  lw  x11, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
   ret
 #endif

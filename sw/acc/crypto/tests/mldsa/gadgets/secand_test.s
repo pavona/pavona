@@ -12,7 +12,7 @@ main:
   bn.xor w31, w31, w31
 
   /* Load stack pointer. */
-  la  x2, stack_end
+  la x2, stack_end
 
   /* dmem[rb] <= secand(dmem[xb], dmem[yb]) */
   la  x10, xb

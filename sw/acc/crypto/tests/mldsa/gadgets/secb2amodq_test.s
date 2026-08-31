@@ -11,7 +11,7 @@
 /* Round-trip: za = secb2amodq(xb); zb2 = seca2bmodq(za); reconstruct.
  * Layouts: share-major bit-inner, share_str = (k+1)*32 = 768. */
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   la  x10, za
@@ -34,7 +34,7 @@ main:
   li   x4, 1
   li   x5, 0
   loop x13, 9
-    addi x28, x10, 0
+    addi   x28, x10, 0
     bn.lid x5, 0(x28)
     loop x29, 3
       add    x28, x28, x12
@@ -42,8 +42,8 @@ main:
       bn.xor w0, w0, w1
     endloop
     bn.sid x5, 0(x11)
-    addi x10, x10, 32
-    addi x11, x11, 32
+    addi   x10, x10, 32
+    addi   x11, x11, 32
   endloop
 
   ecall

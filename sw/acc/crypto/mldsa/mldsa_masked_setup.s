@@ -23,11 +23,11 @@
  */
 .globl _setup_masked_vectors
 _setup_masked_vectors:
-  la   x10, mldsa_params
+  la x10, mldsa_params
 
   /* gamma2_vec_const = broadcast(GAMMA2) */
-  lw   x5, MLDSA_PARAM_GAMMA2_OFFSET(x10)
-  la   x11, gamma2_vec_const
+  lw x5, MLDSA_PARAM_GAMMA2_OFFSET(x10)
+  la x11, gamma2_vec_const
   loopi 8, 2
     sw   x5, 0(x11)
     addi x11, x11, 4
@@ -79,36 +79,36 @@ _setup_masked_vectors:
 
   /* K selects the remaining vectors: gamma1 (2^17 for K==4 else 2^19),
    * polyz unpack mask, and eta (4 for K==6 else 2). */
-  lw   x7, MLDSA_PARAM_K_OFFSET(x10)
+  lw x7, MLDSA_PARAM_K_OFFSET(x10)
 
-  li   x5, 524288
-  li   x28, 4
-  bne  x7, x28, _smv_gamma_done
-  li   x5, 131072
+  li  x5, 524288
+  li  x28, 4
+  bne x7, x28, _smv_gamma_done
+  li  x5, 131072
 _smv_gamma_done:
-  la   x11, gamma1_vec_const
+  la x11, gamma1_vec_const
   loopi 8, 2
     sw   x5, 0(x11)
     addi x11, x11, 4
   endloop
 
-  li   x5, 0xfffff
-  li   x28, 4
-  bne  x7, x28, _smv_polyz
-  li   x5, 0x3ffff
+  li  x5, 0xfffff
+  li  x28, 4
+  bne x7, x28, _smv_polyz
+  li  x5, 0x3ffff
 _smv_polyz:
-  la   x11, polyz_unpack_mask
+  la x11, polyz_unpack_mask
   loopi 8, 2
     sw   x5, 0(x11)
     addi x11, x11, 4
   endloop
 
-  li   x5, 2
-  li   x28, 6
-  bne  x7, x28, _smv_eta
-  li   x5, 4
+  li  x5, 2
+  li  x28, 6
+  bne x7, x28, _smv_eta
+  li  x5, 4
 _smv_eta:
-  la   x11, eta
+  la x11, eta
   loopi 8, 2
     sw   x5, 0(x11)
     addi x11, x11, 4

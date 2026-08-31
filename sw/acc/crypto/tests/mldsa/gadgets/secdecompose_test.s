@@ -7,7 +7,7 @@
 .section .text.start
 
 main:
-  la  x2, stack_end
+  la     x2, stack_end
   bn.xor w31, w31, w31
 
   /* MOD <= R | Q for bn.subvm.8s / bn.addvm.8s inside the gadget. */
@@ -38,10 +38,10 @@ main:
   li   x4, 1
   li   x5, 2
   loopi 32, 4
-    bn.lid x4, 0(x10++)
-    bn.lid x5, 0(x11++)
+    bn.lid      x4, 0(x10++)
+    bn.lid      x5, 0(x11++)
     bn.addvm.8s w1, w1, w2
-    bn.sid x4, 0(x12++)
+    bn.sid      x4, 0(x12++)
   endloop
 
   /* ===== ML-DSA-65/87 (L35, a2 = 3): Boolean shares of U = gamma2 - w0. ===== */
@@ -56,10 +56,10 @@ main:
   jal x1, secdecompose
 
   /* Zero-pad 19-stripe packed shares to 24-stripe Boolean for b2a. */
-  li   x7, 0
-  li   x28, 31
-  la   x5, b2a_in
-  la   x6, w0_packed_share0
+  li x7, 0
+  li x28, 31
+  la x5, b2a_in
+  la x6, w0_packed_share0
   loopi 19, 2
     bn.lid x7, 0(x6++)
     bn.sid x7, 0(x5++)
@@ -68,7 +68,7 @@ main:
     bn.sid x28, 0(x5++)
   endloop
   bn.xor w0, w0, w0
-  la   x6, w0_packed_share1
+  la     x6, w0_packed_share1
   loopi 19, 2
     bn.lid x7, 0(x6++)
     bn.sid x7, 0(x5++)
@@ -83,9 +83,9 @@ main:
   la  x13, seca2b_scratch
   jal x1, secb2amodq
 
-  la   x10, u_share0
-  la   x11, b2a_out
-  jal  x1, unbitslice
+  la  x10, u_share0
+  la  x11, b2a_out
+  jal x1, unbitslice
 
   la   x10, u_share1
   la   x11, b2a_out
@@ -93,16 +93,16 @@ main:
   jal  x1, unbitslice
 
   /* u_unmasked[i] = u_share0[i] + u_share1[i] mod q. */
-  la   x10, u_share0
-  la   x11, u_share1
-  la   x12, u_unmasked
-  li   x4, 1
-  li   x5, 2
+  la x10, u_share0
+  la x11, u_share1
+  la x12, u_unmasked
+  li x4, 1
+  li x5, 2
   loopi 32, 4
-    bn.lid x4, 0(x10++)
-    bn.lid x5, 0(x11++)
+    bn.lid      x4, 0(x10++)
+    bn.lid      x5, 0(x11++)
     bn.addvm.8s w1, w1, w2
-    bn.sid x4, 0(x12++)
+    bn.sid      x4, 0(x12++)
   endloop
 
   ecall

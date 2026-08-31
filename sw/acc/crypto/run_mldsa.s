@@ -107,60 +107,60 @@ start:
   unimp
 
 _mldsa_keygen_44:
-  la   x10, mldsa_params_44
-  jal  x1, _setup_params
-  jal  x0, _mldsa_keygen_common
+  la  x10, mldsa_params_44
+  jal x1, _setup_params
+  jal x0, _mldsa_keygen_common
 _mldsa_keygen_65:
-  la   x10, mldsa_params_65
-  jal  x1, _setup_params
-  jal  x0, _mldsa_keygen_common
+  la  x10, mldsa_params_65
+  jal x1, _setup_params
+  jal x0, _mldsa_keygen_common
 _mldsa_keygen_87:
-  la   x10, mldsa_params_87
-  jal  x1, _setup_params
+  la  x10, mldsa_params_87
+  jal x1, _setup_params
 _mldsa_keygen_common:
 #ifdef HARDENED
-  jal  x1, _setup_masked_vectors
+  jal   x1, _setup_masked_vectors
 #endif
-  jal  x1, crypto_sign_keypair
+  jal   x1, crypto_sign_keypair
   ecall
 
 _mldsa_sign_44:
-  la   x10, mldsa_params_44
-  jal  x1, _setup_params
-  jal  x0, _mldsa_sign_common
+  la  x10, mldsa_params_44
+  jal x1, _setup_params
+  jal x0, _mldsa_sign_common
 _mldsa_sign_65:
-  la   x10, mldsa_params_65
-  jal  x1, _setup_params
-  jal  x0, _mldsa_sign_common
+  la  x10, mldsa_params_65
+  jal x1, _setup_params
+  jal x0, _mldsa_sign_common
 _mldsa_sign_87:
-  la   x10, mldsa_params_87
-  jal  x1, _setup_params
+  la  x10, mldsa_params_87
+  jal x1, _setup_params
 _mldsa_sign_common:
 #ifdef HARDENED
-  jal  x1, _setup_masked_vectors
+  jal   x1, _setup_masked_vectors
 #endif
-  la   x10, sig
-  jal  x1, crypto_sign_signature_internal
+  la    x10, sig
+  jal   x1, crypto_sign_signature_internal
   ecall
 
 _mldsa_verify_44:
-  la   x10, mldsa_params_44
-  jal  x1, _setup_params
-  jal  x0, _mldsa_verify_common
+  la  x10, mldsa_params_44
+  jal x1, _setup_params
+  jal x0, _mldsa_verify_common
 _mldsa_verify_65:
-  la   x10, mldsa_params_65
-  jal  x1, _setup_params
-  jal  x0, _mldsa_verify_common
+  la  x10, mldsa_params_65
+  jal x1, _setup_params
+  jal x0, _mldsa_verify_common
 _mldsa_verify_87:
-  la   x10, mldsa_params_87
-  jal  x1, _setup_params
+  la  x10, mldsa_params_87
+  jal x1, _setup_params
 _mldsa_verify_common:
 #ifdef HARDENED
   /* Populate the broadcast vectors that polyz_unpack/poly_use_hint read. */
-  jal  x1, _setup_masked_vectors
+  jal   x1, _setup_masked_vectors
 #endif
-  la   x10, sig
-  jal  x1, crypto_sign_verify_internal
+  la    x10, sig
+  jal   x1, crypto_sign_verify_internal
   ecall
 
 /**

@@ -51,7 +51,7 @@
 
 .globl main
 main:
-  bn.xor  w31, w31, w31
+  bn.xor w31, w31, w31
 
   /* MOD = R | Q. */
   li      x5, 2
@@ -91,9 +91,9 @@ main:
   bn.sid x0, 0(x6)
 
   /* Unmask s1/s2 shares, compacting in place. */
-  la   x28, s1s2_shares
-  la   x29, s1s2_shares
-  li   x30, NUM_ETA_POLYS
+  la x28, s1s2_shares
+  la x29, s1s2_shares
+  li x30, NUM_ETA_POLYS
 expsk_unmask_loop:
   addi x5, x28, 0
   addi x6, x28, POLYETA_PACKEDBYTES
