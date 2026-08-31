@@ -58,12 +58,11 @@
  * All input DMEM buffers must be 32-byte aligned and initialized up to the
  * next 32B boundary so wide-reads succeed.
  *
- * @param[in] x10: *sig, pointer to signature in DMEM
- * @param[in] dmem[mu]: externally computed mu (64B)
- * @param[in] dmem[mldsa_params]: active mode parameters
- * @param[in] dmem[pk]: public key
+ * @param[in]  x10: *sig, pointer to signature in DMEM
+ * @param[in]  dmem[mu]: externally computed mu (64B)
+ * @param[in]  dmem[mldsa_params]: active mode parameters
+ * @param[in]  dmem[pk]: public key
  * @param[out] dmem[result]: HARDENED_BOOL_TRUE if valid, HARDENED_BOOL_FALSE otherwise
- *
  */
 .globl crypto_sign_verify_internal
 .type crypto_sign_verify_internal, @function
@@ -131,7 +130,7 @@ _ctilde_unpack_done:
     addi x10, x10, 4
   endloop
 
-  /* s9 now points at the hint region. Unpack z from the aligned copy. */
+  /* x25 now points at the hint region. Unpack z from the aligned copy. */
   la   x11, w1_polyvec
   la   x10, z_polyvec
   lw   x14, MLDSA_PARAM_K_OFFSET(x27)

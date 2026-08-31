@@ -17,8 +17,6 @@
  *
  * This implements the base multiplication for Dilithium, where n=256,q=8380417.
  *
- * Flags: -
- *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero
@@ -56,13 +54,11 @@ poly_pointwise:
  * This implements the base multiplication for Dilithium, where n=256,q=8380417.
  * Accumulates onto the output polynomial.
  *
- * Flags: -
- *
- * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
- * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
- * @param[in]  w31: all-zero
- * @param[in]  w16: sw0, where s0.0 = Q and sw0.1 = Q^-1 mod 2^32
- * @param[in/out] x12: dmem pointer to result
+ * @param[in]    x10: dptr_input1, dmem pointer to first word of input1 polynomial
+ * @param[in]    x11: dptr_input2, dmem pointer to first word of input2 polynomial
+ * @param[in]    w31: all-zero
+ * @param[in]    w16: sw0, where sw0.0 = Q and sw0.1 = Q^-1 mod 2^32
+ * @param[inout] x12: dmem pointer to result
  *
  * clobbered registers: x4-x6, w2-w4
  */

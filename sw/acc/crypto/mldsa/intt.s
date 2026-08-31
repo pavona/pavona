@@ -17,8 +17,6 @@
  *
  * This implements the in-place INTT for Dilithium, where n=256, q=8380417.
  *
- * Flags: -
- *
  * @param[in]  x10: dptr_input, dmem pointer to first word of input polynomial
  * @param[in]  w31: all-zero register
  * @param[out] x10: dmem pointer to result

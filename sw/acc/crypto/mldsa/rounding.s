@@ -21,8 +21,8 @@
  *
  * Returns: output element vector "a0" in w1, output element vector "a1" in w2
  *
- * @param[in] w0: input element vector
- * @param[in] w5-w11: constants in the following order: decompose_127_const,
+ * @param[in]  w0: input element vector
+ * @param[in]  w5-w11: constants in the following order: decompose_127_const,
  * decompose_const, reduce32_const, decompose_43_const, gamma2_vec_const,
  * qm1half_const, modulus
  *

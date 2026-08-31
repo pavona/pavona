@@ -39,7 +39,10 @@
 
 .text
 
-/* gen_twiddles_fwd: regenerate the forward NTT twiddle table (256 words).
+/**
+ * gen_twiddles_fwd
+ *
+ * Regenerate the forward NTT twiddle table (256 words).
  *
  * @param[in]  w16: ... | -Q^-1 mod 2^32 | Q
  * @param[in]  w31: all-zero register
@@ -342,7 +345,10 @@ gen_twiddles_fwd:
   sw   x0, 60(x6)
   ret
 
-/* _inv_transform: in place, fwd twiddle table in `scratch` -> inverse table
+/**
+ * _inv_transform
+ *
+ * In place, fwd twiddle table in `scratch` -> inverse table
  *
  * @param[in]    w16: ... | -Q^-1 mod 2^32 | Q
  * @param[in]    w31: all-zero register

@@ -62,7 +62,6 @@
  * @param[out] x10: 0 (success)
  * @param[out] x11: siglen
  * @param[out] dmem[*sig]: signature
- *
  */
 .globl crypto_sign_signature_internal
 .type crypto_sign_signature_internal, @function
@@ -73,7 +72,7 @@ crypto_sign_signature_internal:
 #define W0_SHARE_STRIDE 8192
 #define W0_POLYVEC w0_polyvec_shares
 
-  /* Masked gadgets use sp for stack frames; init it once on entry. */
+  /* Masked gadgets use x2 for stack frames; init it once on entry. */
   la x2, mask_stack_end
   /* External-mu mode (FIPS 204 Algorithm 7, ML-DSA.Sign_internal):
    * caller pre-hashes the message and provides mu in dmem[mu].  The
@@ -155,10 +154,14 @@ crypto_sign_signature_internal:
   jal  x1, sign_attempt
   ret
 
-/* sign_attempt: rejection-retry body.  Computes w, w0/w1 + c~, c,
+/**
+ * sign_attempt
+ *
+ * Rejection-retry body.  Computes w, w0/w1 + c~, c,
  * z (z-loop), h (hint loop), z pack; restarts in place on rejection.
  * Inputs are taken from caller-set state (sign_gamma1_buf, sk, etc.); on
- * success returns a0 = 0, a1 = CRYPTO_BYTES. */
+ * success returns x10 = 0, x11 = CRYPTO_BYTES.
+ */
 .globl sign_attempt
 .type sign_attempt, @function
 sign_attempt:
@@ -238,21 +241,24 @@ sign_attempt:
   lw   x11, MLDSA_PARAM_CRYPTO_BYTES_OFFSET(x5)
   ret
 
-/* sign_w: matrix-vector multiplication w = A * y.  Column-wise loop over
+/**
+ * sign_w
+ *
+ * Matrix-vector multiplication w = A * y.  Column-wise loop over
  * j in [0, L): sample y[j] both shares via gamma1, NTT each share in place,
  * then for each i in [0, K): generate A[i][j] from rho and accumulate
  * A[i][j] * NTT(y[j])[d] into w[i][d].  Inverse-NTT w at the end.
  *
- * @param[out] a0: dptr_w, NSHARES * K * 1024 B accumulator (W0_POLYVEC).
- * @param[in]  a1: dptr_rho, 32 B (sk[0..32)).
- * @param[in]  a2: dptr_rho_prime, 128 B rho' seed (sign_gamma1_buf).
- * @param[in]  a3: dptr_y_staging, 2 KiB (y[j] both shares).
- * @param[in]  a4: dptr_A_staging, 1 KiB.
- * @param[in]  a5: dptr_seca2b_scratch, 1.5 KiB (forwarded to gamma1's b2a).
- * @param[in]  a6: dptr_gamma1_buf, 1.5 KiB bitslice-u staging.
+ * @param[out] x10: dptr_w, NSHARES * K * 1024 B accumulator (W0_POLYVEC).
+ * @param[in]  x11: dptr_rho, 32 B (sk[0..32)).
+ * @param[in]  x12: dptr_rho_prime, 128 B rho' seed (sign_gamma1_buf).
+ * @param[in]  x13: dptr_y_staging, 2 KiB (y[j] both shares).
+ * @param[in]  x14: dptr_A_staging, 1 KiB.
+ * @param[in]  x15: dptr_seca2b_scratch, 1.5 KiB (forwarded to gamma1's b2a).
+ * @param[in]  x16: dptr_gamma1_buf, 1.5 KiB bitslice-u staging.
  *
- * In/out: advances nonce counter in s11 by L (each gamma1 call uses it).
- * Clobbers a/t regs, s0-s10, w16/w22/w23.  Restores MOD = R|Q.
+ * In/out: advances the nonce counter in x27 by L (each gamma1 call uses
+ * it).  Restores MOD = R|Q.
  */
 .globl sign_w
 .type sign_w, @function
@@ -295,7 +301,7 @@ sign_w:
     addi x12, x27, 0
     addi x13, x18, 0
     addi x14, x23, 0
-    /* gamma_1 dispatches on a5 (2 => POLYZ_BITS = 18 for ML-DSA-44, else 20);
+    /* gamma_1 dispatches on x15 (2 => POLYZ_BITS = 18 for ML-DSA-44, else 20);
      * gamma2 == 95232 selects ML-DSA-44. */
     la   x5, mldsa_params
     lw   x5, MLDSA_PARAM_GAMMA2_OFFSET(x5)
@@ -450,7 +456,10 @@ _sign_w_gamma1_a_5:
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
   ret
 
-/* sign_w0_w1_ctilde: decompose w and derive c~, over K polys.
+/**
+ * sign_w0_w1_ctilde
+ *
+ * Decompose w and derive c~, over K polys.
  *
  *     (w1[i], b'[i]) = Decompose(w[i])      (b' overlays w in place)
  *     c~ = SHAKE256(mu || polyw1_pack(w1))
@@ -458,24 +467,22 @@ _sign_w_gamma1_a_5:
  * w1's nonzero positions are recorded in w1_repvec.  c~ is written to
  * sig[0..CTILDEBYTES) and, 32-byte aligned, to `sign_tmp` for sign_c.
  *
- * @param[inout] a0: dptr_w_polyvec.  Read as w (NSHARES*K*1024 B); the
- *                   K decompose iters overlay it in place with packed b'
- *                   (K*608 B per share at stride W0_SHARE_STRIDE).
- * @param[in]    a1: dptr_mu, 64 B (caller's mu).
- * @param[out]   a2: dptr_w1_repvec, K*32 B nonzero-summary of each w1[i].
- * @param[out]   a3: dptr_sig_ctilde, CTILDEBYTES at sig[0..).  Also
- *                   serves as decompose's scratch base (+16 for L3
- *                   alignment).
- * @param[scratch] a4: dptr_w1_tmp, 1 KiB temporary for decompose's w1
- *                   output and Keccak interim.
- * @param[scratch] a5: dptr_seca2b_scratch, 1.5 KiB (decompose internal).
- *
- * Clobbers: a/t regs, s0-s9.
+ * @param[inout]   x10: dptr_w_polyvec.  Read as w (NSHARES*K*1024 B); the
+ *                      K decompose iters overlay it in place with packed b'
+ *                      (K*608 B per share at stride W0_SHARE_STRIDE).
+ * @param[in]      x11: dptr_mu, 64 B (caller's mu).
+ * @param[out]     x12: dptr_w1_repvec, K*32 B nonzero-summary of each w1[i].
+ * @param[out]     x13: dptr_sig_ctilde, CTILDEBYTES at sig[0..).  Also
+ *                      serves as decompose's scratch base (+16 for L3
+ *                      alignment).
+ * @param[scratch] x14: dptr_w1_tmp, 1 KiB temporary for decompose's w1
+ *                      output and Keccak interim.
+ * @param[scratch] x15: dptr_seca2b_scratch, 1.5 KiB (decompose internal).
  */
 .globl sign_w0_w1_ctilde
 .type sign_w0_w1_ctilde, @function
 sign_w0_w1_ctilde:
-  /* Park pointer args.  s7 holds mu just long enough for the
+  /* Park pointer args.  x23 holds mu just long enough for the
    * keccak_send_message; the K-loop later overwrites it with NSHARES. */
   addi x8, x10, 0            /* w polyvec walker */
   addi x23, x11, 0            /* mu (consumed below) */
@@ -497,7 +504,7 @@ sign_w0_w1_ctilde:
   addi  x5, x5, SHAKE256_CFG
   csrrw x0, KECCAK_CFG_REG, x5
 
-  /* Send mu (parked in s7). */
+  /* Send mu (parked in x23). */
   li   x11, CRHBYTES
   addi x10, x23, 0
   jal  x1, keccak_send_message
@@ -519,7 +526,7 @@ _decompose_loop:
   addi   x10, x20, 0
   addi   x11, x8, 0
   addi   x14, x22, 0
-  /* secdecompose dispatches on a2 (2 = L2, else L35); set it + the matching
+  /* secdecompose dispatches on x12 (2 = L2, else L35); set it + the matching
    * scratch off gamma2 (L2 = 95232). */
   la     x5, mldsa_params
   lw     x5, MLDSA_PARAM_GAMMA2_OFFSET(x5)
@@ -539,8 +546,8 @@ _decompose_l35:
 _decompose_call:
   jal    x1, secdecompose
   /* Pack w1, send to Keccak, record nonzero bits.  Runtime polyw1_pack
-   * dispatches on a4 = K (selects the (Q-1)/88 vs (Q-1)/32 packing);
-   * secdecompose clobbered a4, so reload it. */
+   * dispatches on x14 = K (selects the (Q-1)/88 vs (Q-1)/32 packing);
+   * secdecompose clobbered x14, so reload it. */
   addi   x10, x18, 0
   addi   x11, x20, 0
   la     x5, mldsa_params
@@ -607,18 +614,21 @@ _sign_pack_ctilde_done:
   /* Finish the SHAKE-256 operation. */
   ret
 
-/* sign_c: sample challenge c from c~ (poly_challenge); NTT(c) in place.
+/**
+ * sign_c
  *
- * @param[out] a0: dptr_ntt_c, 1024 B buffer for NTT(c).
- * @param[in]  a1: dptr_ctilde, 32-byte aligned source of c~.
+ * Sample challenge c from c~ (poly_challenge); NTT(c) in place.
  *
- * Clobbers: t-regs, a-regs, s0.  Restores MOD = R|Q.
+ * @param[out] x10: dptr_ntt_c, 1024 B buffer for NTT(c).
+ * @param[in]  x11: dptr_ctilde, 32-byte aligned source of c~.
+ *
+ * Restores MOD = R|Q.
  */
 .globl sign_c
 .type sign_c, @function
 sign_c:
   addi x8, x10, 0            /* park ntt_c_out across poly_challenge */
-  /* Runtime poly_challenge takes a2 = CTILDEBYTES (= K*8), a3 = TAU; a0/a1
+  /* Runtime poly_challenge takes x12 = CTILDEBYTES (= K*8), x13 = TAU; x10/x11
    * (output, c~) are already set by the caller. */
   la   x5, mldsa_params
   lw   x6, MLDSA_PARAM_K_OFFSET(x5)
@@ -635,33 +645,39 @@ sign_c:
   bn.wsrw 0x0, w16
   ret
 
-/* sign_z_check / sign_z_pack: z = y + c * s1.  Loops over L polys: unpack/b2a
+/**
+ * sign_z_check / sign_z_pack
+ *
+ * Compute z = y + c * s1.  Loops over L polys: unpack/b2a
  * s1, NTT chain c*s1, sample y (gamma1), z = y + c*s1.  sign_z_check
  * bound-checks z and leaves it masked; sign_z_pack packs it to
  * sig[CTILDE..CTILDE+L*POLYZ_PACKEDBYTES).
  *
- * @param[in]   a1: dptr_ntt_c, 1 KiB.
- * @param[in]   a2: dptr_rho_prime, 128 B.
- * @param[in]   a3: dptr_sig_z_start (sig + CTILDEBYTES), sign_z_pack only.
- * @param[scratch] a4: dptr_z_staging, 3.3 KiB (sign_c_poly_shares-sized).
- * @param[scratch] a5: dptr_tmp_poly, 1 KiB (polyeta_unpack tgt + collapsed z).
- * @param[scratch] a6: dptr_cs1_share1, 1 KiB (also secb2amodq_eta/secboundcheck
- *                    bitslice buf).
- * @param[scratch] a7: dptr_seca2b_scratch, 3.3 KiB (forwarded to inner gadgets;
- *                    L5 also takes its +1536 as gamma1 staging).
+ * @param[in]      x11: dptr_ntt_c, 1 KiB.
+ * @param[in]      x12: dptr_rho_prime, 128 B.
+ * @param[in]      x13: dptr_sig_z_start (sig + CTILDEBYTES), sign_z_pack only.
+ * @param[scratch] x14: dptr_z_staging, 3.3 KiB (sign_c_poly_shares-sized).
+ * @param[scratch] x15: dptr_tmp_poly, 1 KiB (polyeta_unpack tgt + collapsed z).
+ * @param[scratch] x16: dptr_cs1_share1, 1 KiB (also secb2amodq_eta/secboundcheck
+ *                      bitslice buf).
+ * @param[scratch] x17: dptr_seca2b_scratch, 3.3 KiB (forwarded to inner gadgets;
+ *                      L5 also takes its +1536 as gamma1 staging).
  *
- * In/out: reads s11 (= nonce counter advanced by sign_w); uses
- * s11 - L as the per-iter gamma1 nonce base.
- * Returns a0 = 0 on success, a0 = 1 on rejection.
+ * In/out: reads x27 (= nonce counter advanced by sign_w); uses
+ * x27 - L as the per-iter gamma1 nonce base.
+ * Returns x10 = 0 on success, x10 = 1 on rejection.
  */
-/* Load one s1/s2 poly from the expanded sk: refresh the stored Boolean
+/**
+ * _masked_eta_from_shares
+ *
+ * Load one s1/s2 poly from the expanded sk: refresh the stored Boolean
  * bitsliced t-shares (t = eta - s) in place, B2A to arithmetic, coeff = eta - t.
  * Runtime ETA_KBITS = eta/2 + 2; POLYETA_PACKEDBYTES = ETA_KBITS * 32.
  *
- * @param[in]  a0: out (2 * 1024 B).
- * @param[in]  a1: src bitsliced shares (share 0 @ +0, share 1 @ +POLYETA).
- * @param[in]  a2: seca2b scratch.
- * @param[in]  a3: b2a Boolean buffer.
+ * @param[in]  x10: out (2 * 1024 B).
+ * @param[in]  x11: src bitsliced shares (share 0 @ +0, share 1 @ +POLYETA).
+ * @param[in]  x12: seca2b scratch.
+ * @param[in]  x13: b2a Boolean buffer.
  */
 _masked_eta_from_shares:
   addi x2, x2, -32
@@ -674,8 +690,8 @@ _masked_eta_from_shares:
   la   x28, eta
   lw   x28, 0(x28)
   srli x28, x28, 1
-  addi x28, x28, 2               /* t3 = ETA_KBITS (3 or 4) */
-  slli x29, x28, 5              /* t4 = POLYETA_PACKEDBYTES (96 or 128) */
+  addi x28, x28, 2               /* x28 = ETA_KBITS (3 or 4) */
+  slli x29, x28, 5              /* x29 = POLYETA_PACKEDBYTES (96 or 128) */
 
   /* Refresh shares. */
   addi x5, x11, 0
@@ -731,26 +747,29 @@ _masked_eta_from_shares:
 .equ CHECK,  0x3c9
 .equ UNMASK, 0x65e
 
-/* sign_z_check / sign_z_pack: per-poly z computation over L polys.
+/**
+ * sign_z_check / sign_z_pack
+ *
+ * Per-poly z computation over L polys.
  *
  *     z[j] = c*s1[j] + y[j]        (y[j] sampled via gamma1)
  *
  * sign_z_check bound-checks z and leaves it masked; sign_z_pack unmasks it
  * and polyz_packs it into the signature.
  *
- * @param[in]  a1: dptr_ntt_c, 1 KiB.
- * @param[in]  a2: dptr_rho_prime, rho' seed for gamma1.
- * @param[in]  a3: dptr_sig_z, z write pointer (sign_z_pack only).
- * @param[in]  a4: dptr_z_staging, z[j] both shares.
- * @param[in]  a5: dptr_tmp_poly.
- * @param[in]  a6: dptr_cs1_share1, c*s1 share 1 plus bitslice buffer.
- * @param[in]  a7: dptr_seca2b_scratch; gamma1 staging sits at +1536.
- * @param[in]  s11: gamma1 nonce counter, read only (the loop runs from
- *                  s11 - L up to s11).
+ * @param[in]  x11: dptr_ntt_c, 1 KiB.
+ * @param[in]  x12: dptr_rho_prime, rho' seed for gamma1.
+ * @param[in]  x13: dptr_sig_z, z write pointer (sign_z_pack only).
+ * @param[in]  x14: dptr_z_staging, z[j] both shares.
+ * @param[in]  x15: dptr_tmp_poly.
+ * @param[in]  x16: dptr_cs1_share1, c*s1 share 1 plus bitslice buffer.
+ * @param[in]  x17: dptr_seca2b_scratch; gamma1 staging sits at +1536.
+ * @param[in]  x27: gamma1 nonce counter, read only (the loop runs from
+ *                  x27 - L up to x27).
  *
  * s1 is loaded from `s1s2_shares` in-loop.
  *
- * Returns a0 = 0 on success, a0 = 1 on rejection.
+ * Returns x10 = 0 on success, x10 = 1 on rejection.
  */
 .globl sign_z_pack
 .type sign_z_pack, @function
@@ -773,8 +792,8 @@ _sign_z_park:
   addi x19, x16, 0            /* c*s1 share 1 + bitslice buf */
   addi x26, x17, 0           /* seca2b scratch (eta/gamma1/boundcheck) */
 
-  /* Per-iter gamma1 nonce starts at s11 - L (sign_w advanced s11 by L);
-   * the loop runs until s8 climbs back to s11 (L iterations). */
+  /* Per-iter gamma1 nonce starts at x27 - L (sign_w advanced x27 by L);
+   * the loop runs until x24 climbs back to x27 (L iterations). */
   la   x5, mldsa_params
   lw   x5, MLDSA_PARAM_L_OFFSET(x5)
   sub  x24, x27, x5
@@ -808,8 +827,8 @@ _sz_done:
 
     bn.shv.8s mod_x2, w16 << 1
 
-    /* c*s1 share 0 at s2 (sign_tmp), share 1 at s3; delta in t3
-     * (survives ntt/intt/poly_pointwise; t0-t2 don't). */
+    /* c*s1 share 0 at x18 (sign_tmp), share 1 at x19; delta in x28
+     * (survives ntt/intt/poly_pointwise; x5 to x7 don't). */
     bn.wsrw 0x0, mod_x2
     addi x9, x22, 0
     addi x31, x18, 0
@@ -871,7 +890,7 @@ _sz_done:
     /* hint_b2a region is L5-sized (8192 B) for both params; gamma1
      * staging fits at scratch+1536. */
     addi x14, x26, 1536
-    /* gamma_1 dispatches on a5 (2 => POLYZ_BITS = 18 for ML-DSA-44, else 20);
+    /* gamma_1 dispatches on x15 (2 => POLYZ_BITS = 18 for ML-DSA-44, else 20);
      * gamma2 == 95232 selects ML-DSA-44. */
     la   x5, mldsa_params
     lw   x5, MLDSA_PARAM_GAMMA2_OFFSET(x5)
@@ -883,7 +902,7 @@ _sign_z_gamma1_a_5:
     jal  x1, masked_poly_uniform_gamma_1
     addi x24, x24, 1
 
-    /* z = y + c*s1 per share; same s2 / s3 split as NTT. */
+    /* z = y + c*s1 per share; same x18 / x19 split as NTT. */
     addi x9, x22, 0
     addi x31, x18, 0
     sub  x28, x19, x18
@@ -947,8 +966,8 @@ _sign_z_pack_poly:
     addi x11, x18, 0
     jal  x1, poly_reduce32
 
-    /* Pack z[i] in place (aligned s2), then GPR-copy to the sig z-region
-     * (unaligned for K=6). Runtime polyz_pack takes a4 = K. */
+    /* Pack z[i] in place (aligned x18), then GPR-copy to the sig z-region
+     * (unaligned for K=6). Runtime polyz_pack takes x14 = K. */
     addi x10, x18, 0
     addi x11, x18, 0
     la   x5, mldsa_params
@@ -964,7 +983,7 @@ _sign_z_pack_poly:
       addi x25, x25, 4
     endloop
 _sign_z_next:
-    /* L iterations: loop until the gamma1 nonce s8 reaches s11. */
+    /* L iterations: loop until the gamma1 nonce x24 reaches x27. */
     bne  x24, x27, _sign_z_loop
 
   li   x10, 0
@@ -973,23 +992,26 @@ _sign_z_reject:
   li   x10, 1
   ret
 
-/* sign_h_check / sign_h: per-poly hint computation over K polys.
+/**
+ * sign_h_check / sign_h
+ *
+ * Per-poly hint computation over K polys.
  *
  *     r~[i] = w0[i] - c*s2[i]      (w0[i] unpacked from the packed b')
  *
  * sign_h_check bound-checks r~ and leaves it masked; sign_h unmasks it,
  * combines with c*t0, and runs poly_make_hint / encode_h into the sig tail.
  *
- * @param[in]  a0: dptr_sk_t0, K * POLYT0_PACKEDBYTES (packed t0).
- * @param[in]  a2: dptr_ntt_c, 1 KiB.
- * @param[in]  a3: dptr_packed_b (post-decompose b' share 0 base; share 1 at +W0_SHARE_STRIDE).
- * @param[in]  a4: dptr_w1_repvec, K * 32 B (nonzero summary written by sign_w0_w1_ctilde).
+ * @param[in]  x10: dptr_sk_t0, K * POLYT0_PACKEDBYTES (packed t0).
+ * @param[in]  x12: dptr_ntt_c, 1 KiB.
+ * @param[in]  x13: dptr_packed_b (post-decompose b' share 0 base; share 1 at +W0_SHARE_STRIDE).
+ * @param[in]  x14: dptr_w1_repvec, K * 32 B (nonzero summary written by sign_w0_w1_ctilde).
  *
  * s2 is loaded from `s1s2_shares` in-loop.
  *
  * Scratch: sign_c_poly_shares, sign_hint_b2a, sign_y, sign_tmp.
  *
- * Returns a0 = 0 on success, a0 = 1 on rejection.
+ * Returns x10 = 0 on success, x10 = 1 on rejection.
  */
 .globl sign_h_check
 .type sign_h_check, @function
@@ -1002,7 +1024,7 @@ sign_h_check:
 sign_h:
   addi x22, x0, UNMASK
 _sign_h_park:
-  /* Park pointer args; preserve s11 (nonce counter) for sign_z's retry. */
+  /* Park pointer args; preserve x27 (nonce counter) for sign_z's retry. */
   addi x8, x10, 0            /* sk t0 walker */
   la   x18, mldsa_params     /* ExpandS nonce: s2[i] uses nonce L+i */
   lw   x18, MLDSA_PARAM_L_OFFSET(x18)
@@ -1139,7 +1161,7 @@ _sh_done:
     li   x6, 95232
     bne  x5, x6, _sign_h_rtilde_l35
     /* L2: r-tilde_s = w0_s - c*s2_s (mod q) sharewise.  Arithmetic w0[i]
-     * lives in W0_POLYVEC (s3, shares W0_SHARE_STRIDE apart); c*s2 and the
+     * lives in W0_POLYVEC (x19, shares W0_SHARE_STRIDE apart); c*s2 and the
      * r-tilde dst are in sign_c_poly_shares (shares 1024 apart). */
     la   x29, sign_c_poly_shares
     addi x30, x19, 0
@@ -1261,7 +1283,7 @@ _sign_h_rtilde_done:
     addi x5, x0, UNMASK
     beq  x22, x5, _sign_h_hint_poly
 
-    /* secboundcheck on shared r-tilde, AND-reduce verdict into s8. */
+    /* secboundcheck on shared r-tilde, AND-reduce verdict into x24. */
     /* Load C_R into w17 lane 0 (gadget broadcasts lane 0 internally). */
     li     x5, 17
     la     x6, c_r_const
@@ -1341,7 +1363,7 @@ _sign_h_hint_poly:
     bne x12, x0, _sign_h_reject
 
     /* h[i] = make_hint(w0[i], w1[i]); runtime poly_make_hint takes
-     * a2 = GAMMA2. */
+     * x12 = GAMMA2. */
     addi   x10, x26, 0
     la     x11, sign_hint_b2a
     la     x12, mldsa_params
@@ -1363,7 +1385,7 @@ _sign_h_hint_poly:
     bne x5, x0, _sign_h_reject
 
     /* Encode h[i] into the signature; runtime poly_encode_h takes
-     * a3 = i (= K - s8) and a4 = OMEGA. */
+     * x13 = i (= K - x24) and x14 = OMEGA. */
     addi x10, x25, 0
     addi x11, x26, 0
     la   x13, mldsa_params
@@ -1508,7 +1530,7 @@ _rej_crypto_sign_signature_internal:
     la x7, mldsa_params
     lw x14, MLDSA_PARAM_K_OFFSET(x7)
     jal  x1, poly_uniform_gamma_1
-    addi x27, x12, 1 /* a2 should be preserved after execution */
+    addi x27, x12, 1 /* x12 should be preserved after execution */
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
     csrrw x0, kmac_cfg, x20
     addi  x10, x8, 0

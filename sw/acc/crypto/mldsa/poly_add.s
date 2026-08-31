@@ -17,8 +17,6 @@
  *
  * This implements the polynomial addition for e.g. Dilithium, where n=256.
  *
- * Flags: -
- *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero

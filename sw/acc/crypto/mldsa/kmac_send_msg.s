@@ -20,19 +20,19 @@
  * This function can be called repeatedly before reading the digest. On return,
  * dptr_msg is updated to point to the end of the source buffer.
  *
- * @param[in]   a1: len, byte-length of the message
- * @param[in]   a0: dptr_msg, pointer to message in DMEM
- * @param[in]   w31: all-zero
- * @param[in] dmem[dptr_msg..dptr_msg+len]: msg, hash function input
+ * @param[in]  x11: len, byte-length of the message
+ * @param[in]  x10: dptr_msg, pointer to message in DMEM
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[dptr_msg..dptr_msg+len]: msg, hash function input
  *
- * clobbered registers: t0, a1, w0
+ * clobbered registers: x5, x11, w0
  * clobbered flag groups: None
  */
 .globl keccak_send_message
 .type keccak_send_message, @function
 keccak_send_message:
   /* Compute the number of full 256-bit message chunks.
-  t0 <= x11 >> 5 = floor(len / 32) */
+  x5 <= x11 >> 5 = floor(len / 32) */
   srli x5, x11, 5
 
   /* Write all full 256-bit sections of the test message. */
@@ -49,7 +49,7 @@ keccak_send_message:
 
 _no_full_wdr:
   /* Compute the remaining message length.
-       t0 <= x11 & 31 = len mod 32 */
+       x5 <= x11 & 31 = len mod 32 */
   andi x5, x11, 31
 
   /* If the remaining length is zero, return early. */

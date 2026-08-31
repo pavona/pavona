@@ -17,8 +17,6 @@
  *
  * This implements the in-place NTT for Dilithium, where n=256, q=8380417.
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
  * @param[in]  x10: dptr_input, dmem pointer to first word of input polynomial
  * @param[in]  x11: (HARDENED only) dmem pointer to the forward twiddle table
  * @param[in]  w31: all-zero register
