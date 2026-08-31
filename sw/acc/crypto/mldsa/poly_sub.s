@@ -30,13 +30,13 @@
 .globl poly_sub
 .type poly_sub, @function
 poly_sub:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 4
-        bn.lid      x0, 0(x10++)
-        bn.lid      x4, 0(x11++)
-        bn.subvm.8S w0, w0, w1
-        bn.sid      x0, 0(x12++)
-    endloop
-    ret
+  loopi 32, 4
+    bn.lid      x0, 0(x10++)
+    bn.lid      x4, 0(x11++)
+    bn.subvm.8S w0, w0, w1
+    bn.sid      x0, 0(x12++)
+  endloop
+  ret

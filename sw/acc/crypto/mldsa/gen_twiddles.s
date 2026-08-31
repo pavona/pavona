@@ -53,294 +53,294 @@
 .globl gen_twiddles_fwd
 .type gen_twiddles_fwd, @function
 gen_twiddles_fwd:
-    la   x7, scratch              /* output base */
-    la   x6, gen_seed_lv0
-    li   x5, 24
-    bn.lid x5, 0(x6)
-    la   x6, gen_seed_lv3
-    li   x5, 27
-    bn.lid x5, 0(x6)
-    li   x5, 17
-    /* LV2=LV3^2 ; LV1=LV2^2 */
-    bn.mulv.8S.even.acc.z.lo   w26, w27, w27
-    bn.mulv.l.8S.even.lo       w26, w26, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w26, w26, sw0.0
-    bn.mulv.8S.odd.acc.z.lo    w26, w26, w27
-    bn.mulv.l.8S.odd.lo        w26, w26, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w26, w26, sw0.0
-    bn.mulv.8S.even.acc.z.lo   w25, w26, w26
-    bn.mulv.l.8S.even.lo       w25, w25, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w25, w25, sw0.0
-    bn.mulv.8S.odd.acc.z.lo    w25, w25, w26
-    bn.mulv.l.8S.odd.lo        w25, w25, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w25, w25, sw0.0
-    la   x6, gen_seed_scalars+0
-    bn.lid x5, 0(x6)              /* w17 = scalars[0..7] */
-    bn.mulv.l.8S.even.acc.z.lo w30, w24, sw1.0
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.1
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w25, sw1.2
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w26, sw1.5
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    la   x6, gen_seed_scalars+32
-    bn.lid x5, 0(x6)              /* w17 = scalars[8..15] */
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.0
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w27, sw1.1
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    la   x6, gen_seed_scalars+64
-    bn.lid x5, 0(x6)              /* w17 = scalars[16..23] */
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.0
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w25, sw1.1
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w26, sw1.4
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    la   x6, gen_seed_scalars+96
-    bn.lid x5, 0(x6)              /* w17 = scalars[24..31] */
-    bn.mulv.l.8S.even.acc.z.lo w30, w27, sw1.0
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.1
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
-    bn.mulv.l.8S.even.lo       w30, w30, sw0.1
-    bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
-    bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
-    bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
-    bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
-    bn.mov w0, w30
-    bn.sid x0, 0(x7++)
-    la   x6, scratch
-    sw   x0, 60(x6)
-    ret
+  la   x7, scratch              /* output base */
+  la   x6, gen_seed_lv0
+  li   x5, 24
+  bn.lid x5, 0(x6)
+  la   x6, gen_seed_lv3
+  li   x5, 27
+  bn.lid x5, 0(x6)
+  li   x5, 17
+  /* LV2=LV3^2 ; LV1=LV2^2 */
+  bn.mulv.8S.even.acc.z.lo   w26, w27, w27
+  bn.mulv.l.8S.even.lo       w26, w26, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w26, w26, sw0.0
+  bn.mulv.8S.odd.acc.z.lo    w26, w26, w27
+  bn.mulv.l.8S.odd.lo        w26, w26, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w26, w26, sw0.0
+  bn.mulv.8S.even.acc.z.lo   w25, w26, w26
+  bn.mulv.l.8S.even.lo       w25, w25, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w25, w25, sw0.0
+  bn.mulv.8S.odd.acc.z.lo    w25, w25, w26
+  bn.mulv.l.8S.odd.lo        w25, w25, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w25, w25, sw0.0
+  la   x6, gen_seed_scalars+0
+  bn.lid x5, 0(x6)              /* w17 = scalars[0..7] */
+  bn.mulv.l.8S.even.acc.z.lo w30, w24, sw1.0
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.1
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w25, sw1.2
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w26, sw1.5
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  la   x6, gen_seed_scalars+32
+  bn.lid x5, 0(x6)              /* w17 = scalars[8..15] */
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.0
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w27, sw1.1
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  la   x6, gen_seed_scalars+64
+  bn.lid x5, 0(x6)              /* w17 = scalars[16..23] */
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.0
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w25, sw1.1
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w26, sw1.4
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  la   x6, gen_seed_scalars+96
+  bn.lid x5, 0(x6)              /* w17 = scalars[24..31] */
+  bn.mulv.l.8S.even.acc.z.lo w30, w27, sw1.0
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.0
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.1
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.1
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.2
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.2
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.3
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.3
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.4
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.4
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.5
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.5
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.6
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.6
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  bn.mulv.l.8S.even.acc.z.lo w30, w0, sw1.7
+  bn.mulv.l.8S.even.lo       w30, w30, sw0.1
+  bn.mulv.l.8S.even.acc.hi   w30, w30, sw0.0
+  bn.mulv.l.8S.odd.acc.z.lo  w30, w30, sw1.7
+  bn.mulv.l.8S.odd.lo        w30, w30, sw0.1
+  bn.mulv.l.8S.odd.acc.hi    w30, w30, sw0.0
+  bn.mov w0, w30
+  bn.sid x0, 0(x7++)
+  la   x6, scratch
+  sw   x0, 60(x6)
+  ret
 
 /* _inv_transform: in place, fwd twiddle table in `scratch` -> inverse table
  *
@@ -355,82 +355,82 @@ gen_twiddles_fwd:
  */
 .globl _inv_transform
 _inv_transform:
-    bn.mov  w1, w22                /* preserve caller w22/w23 (e.g. mod_x2) */
-    bn.mov  w2, w23
-    bn.wsrw 0x0, w16               /* MOD = R|Q (low32 = q) for modular negate */
-    bn.xor  w23, w23, w23          /* minuend 0 */
-    la      x11, scratch
-    /* save fwd[240..255] (overwritten by the tail / inv[0..15] steps) */
-    li     x5, 28
-    addi   x6, x11, 960
+  bn.mov  w1, w22                /* preserve caller w22/w23 (e.g. mod_x2) */
+  bn.mov  w2, w23
+  bn.wsrw 0x0, w16               /* MOD = R|Q (low32 = q) for modular negate */
+  bn.xor  w23, w23, w23          /* minuend 0 */
+  la      x11, scratch
+  /* save fwd[240..255] (overwritten by the tail / inv[0..15] steps) */
+  li     x5, 28
+  addi   x6, x11, 960
+  bn.lid x5, 0(x6)
+  li     x5, 29
+  addi   x6, x11, 992
+  bn.lid x5, 0(x6)
+  /* pair-swap reverse-negate WDR2..WDR29: inv[i]=q-fwd[255-i], i=16..239 */
+  addi   x6, x11, 64
+  addi   x7, x11, 928
+  loopi 14, 22
+    li     x5, 20
     bn.lid x5, 0(x6)
-    li     x5, 29
-    addi   x6, x11, 992
-    bn.lid x5, 0(x6)
-    /* pair-swap reverse-negate WDR2..WDR29: inv[i]=q-fwd[255-i], i=16..239 */
-    addi   x6, x11, 64
-    addi   x7, x11, 928
-    loopi 14, 22
-        li     x5, 20
-        bn.lid x5, 0(x6)
-        li     x5, 19
-        bn.lid x5, 0(x7)
-        bn.rshi     w21, w20, w20 >> 32
-        bn.trn1.8S  w21, w21, w20
-        bn.rshi     w22, w21, w21 >> 64
-        bn.trn1.4D  w22, w22, w21
-        bn.rshi     w20, w22, w22 >> 128
-        bn.subvm.8S w20, w23, w20
-        li     x5, 20
-        bn.sid x5, 0(x7)
-        bn.rshi     w21, w19, w19 >> 32
-        bn.trn1.8S  w21, w21, w19
-        bn.rshi     w22, w21, w21 >> 64
-        bn.trn1.4D  w22, w22, w21
-        bn.rshi     w19, w22, w22 >> 128
-        bn.subvm.8S w19, w23, w19
-        li     x5, 19
-        bn.sid x5, 0(x6)
-        addi   x6, x6, 32
-        addi   x7, x7, -32
-    /* tail: inv[240..253] = q - fwd[14..1] (fwd[1..14] still in scratch[1..14]) */
-    addi x6, x11, 56              /* &fwd[14] */
-    addi x7, x11, 960            /* &inv[240] */
-    li   x5, 0x7fe001
-    loopi 14, 5
-        lw   x11, 0(x6)
-        sub  x11, x5, x11
-        sw   x11, 0(x7)
-        addi x6, x6, -4
-        addi x7, x7, 4
-    la   x11, scratch
-    li   x5, 0x003caa21          /* inv[254] = ninv * fwd[1] (Mont) */
-    sw   x5, 1016(x11)
-    li   x5, 0x0000a3fa          /* inv[255] = ninv (Mont) */
-    sw   x5, 1020(x11)
-    /* inv[0..7]=revneg(fwd[248..255]) ; inv[8..15]=revneg(fwd[240..247]) */
-    bn.rshi     w21, w29, w29 >> 32
-    bn.trn1.8S  w21, w21, w29
+    li     x5, 19
+    bn.lid x5, 0(x7)
+    bn.rshi     w21, w20, w20 >> 32
+    bn.trn1.8S  w21, w21, w20
     bn.rshi     w22, w21, w21 >> 64
     bn.trn1.4D  w22, w22, w21
-    bn.rshi     w29, w22, w22 >> 128
-    bn.subvm.8S w29, w23, w29
-    li     x5, 29
-    bn.sid x5, 0(x11)
-    bn.rshi     w21, w28, w28 >> 32
-    bn.trn1.8S  w21, w21, w28
+    bn.rshi     w20, w22, w22 >> 128
+    bn.subvm.8S w20, w23, w20
+    li     x5, 20
+    bn.sid x5, 0(x7)
+    bn.rshi     w21, w19, w19 >> 32
+    bn.trn1.8S  w21, w21, w19
     bn.rshi     w22, w21, w21 >> 64
     bn.trn1.4D  w22, w22, w21
-    bn.rshi     w28, w22, w22 >> 128
-    bn.subvm.8S w28, w23, w28
-    li     x5, 28
-    bn.sid x5, 32(x11)
-    /* restore MOD = 2R|2Q for the intt butterflies */
-    bn.shv.8S w19, w16 << 1
-    bn.wsrw 0x0, w19
-    bn.mov w22, w1                 /* restore caller w22/w23 */
-    bn.mov w23, w2
-    ret
+    bn.rshi     w19, w22, w22 >> 128
+    bn.subvm.8S w19, w23, w19
+    li     x5, 19
+    bn.sid x5, 0(x6)
+    addi   x6, x6, 32
+    addi   x7, x7, -32
+  /* tail: inv[240..253] = q - fwd[14..1] (fwd[1..14] still in scratch[1..14]) */
+  addi x6, x11, 56              /* &fwd[14] */
+  addi x7, x11, 960            /* &inv[240] */
+  li   x5, 0x7fe001
+  loopi 14, 5
+    lw   x11, 0(x6)
+    sub  x11, x5, x11
+    sw   x11, 0(x7)
+    addi x6, x6, -4
+    addi x7, x7, 4
+  la   x11, scratch
+  li   x5, 0x003caa21          /* inv[254] = ninv * fwd[1] (Mont) */
+  sw   x5, 1016(x11)
+  li   x5, 0x0000a3fa          /* inv[255] = ninv (Mont) */
+  sw   x5, 1020(x11)
+  /* inv[0..7]=revneg(fwd[248..255]) ; inv[8..15]=revneg(fwd[240..247]) */
+  bn.rshi     w21, w29, w29 >> 32
+  bn.trn1.8S  w21, w21, w29
+  bn.rshi     w22, w21, w21 >> 64
+  bn.trn1.4D  w22, w22, w21
+  bn.rshi     w29, w22, w22 >> 128
+  bn.subvm.8S w29, w23, w29
+  li     x5, 29
+  bn.sid x5, 0(x11)
+  bn.rshi     w21, w28, w28 >> 32
+  bn.trn1.8S  w21, w21, w28
+  bn.rshi     w22, w21, w21 >> 64
+  bn.trn1.4D  w22, w22, w21
+  bn.rshi     w28, w22, w22 >> 128
+  bn.subvm.8S w28, w23, w28
+  li     x5, 28
+  bn.sid x5, 32(x11)
+  /* restore MOD = 2R|2Q for the intt butterflies */
+  bn.shv.8S w19, w16 << 1
+  bn.wsrw 0x0, w19
+  bn.mov w22, w1                 /* restore caller w22/w23 */
+  bn.mov w23, w2
+  ret
 
 .data
 gen_seed_lv0:

@@ -64,105 +64,105 @@
 .globl start
 .type start, @function
 start:
-    /* All-zero register. */
-    bn.xor w31, w31, w31
+  /* All-zero register. */
+  bn.xor w31, w31, w31
 
-    /* MOD = R | Q. */
-    li      x5, 2
-    la      x6, modulus
-    bn.lid  x5, 0(x6)
-    li      x5, 3
-    la      x6, montg_R
-    bn.lid  x5, 0(x6)
-    bn.rshi w2, w3, w2 >> 224
-    bn.wsrw 0x0, w2
+  /* MOD = R | Q. */
+  li      x5, 2
+  la      x6, modulus
+  bn.lid  x5, 0(x6)
+  li      x5, 3
+  la      x6, montg_R
+  bn.lid  x5, 0(x6)
+  bn.rshi w2, w3, w2 >> 224
+  bn.wsrw 0x0, w2
 
-    /* Read mode and dispatch. */
-    la x5, mode
-    lw x5, 0(x5)
+  /* Read mode and dispatch. */
+  la x5, mode
+  lw x5, 0(x5)
 
-    addi x3, x0, MODE_KEYGEN_44
-    beq  x5, x3, _mldsa_keygen_44
-    addi x3, x0, MODE_KEYGEN_65
-    beq  x5, x3, _mldsa_keygen_65
-    addi x3, x0, MODE_KEYGEN_87
-    beq  x5, x3, _mldsa_keygen_87
+  addi x3, x0, MODE_KEYGEN_44
+  beq  x5, x3, _mldsa_keygen_44
+  addi x3, x0, MODE_KEYGEN_65
+  beq  x5, x3, _mldsa_keygen_65
+  addi x3, x0, MODE_KEYGEN_87
+  beq  x5, x3, _mldsa_keygen_87
 
-    addi x3, x0, MODE_SIGN_44
-    beq  x5, x3, _mldsa_sign_44
-    addi x3, x0, MODE_SIGN_65
-    beq  x5, x3, _mldsa_sign_65
-    addi x3, x0, MODE_SIGN_87
-    beq  x5, x3, _mldsa_sign_87
+  addi x3, x0, MODE_SIGN_44
+  beq  x5, x3, _mldsa_sign_44
+  addi x3, x0, MODE_SIGN_65
+  beq  x5, x3, _mldsa_sign_65
+  addi x3, x0, MODE_SIGN_87
+  beq  x5, x3, _mldsa_sign_87
 
-    addi x3, x0, MODE_VERIFY_44
-    beq  x5, x3, _mldsa_verify_44
-    addi x3, x0, MODE_VERIFY_65
-    beq  x5, x3, _mldsa_verify_65
-    addi x3, x0, MODE_VERIFY_87
-    beq  x5, x3, _mldsa_verify_87
+  addi x3, x0, MODE_VERIFY_44
+  beq  x5, x3, _mldsa_verify_44
+  addi x3, x0, MODE_VERIFY_65
+  beq  x5, x3, _mldsa_verify_65
+  addi x3, x0, MODE_VERIFY_87
+  beq  x5, x3, _mldsa_verify_87
 
-    /* Invalid mode. */
-    unimp
-    unimp
-    unimp
+  /* Invalid mode. */
+  unimp
+  unimp
+  unimp
 
 _mldsa_keygen_44:
-    la   x10, mldsa_params_44
-    jal  x1, _setup_params
-    jal  x0, _mldsa_keygen_common
+  la   x10, mldsa_params_44
+  jal  x1, _setup_params
+  jal  x0, _mldsa_keygen_common
 _mldsa_keygen_65:
-    la   x10, mldsa_params_65
-    jal  x1, _setup_params
-    jal  x0, _mldsa_keygen_common
+  la   x10, mldsa_params_65
+  jal  x1, _setup_params
+  jal  x0, _mldsa_keygen_common
 _mldsa_keygen_87:
-    la   x10, mldsa_params_87
-    jal  x1, _setup_params
+  la   x10, mldsa_params_87
+  jal  x1, _setup_params
 _mldsa_keygen_common:
 #ifdef HARDENED
-    jal  x1, _setup_masked_vectors
+  jal  x1, _setup_masked_vectors
 #endif
-    jal  x1, crypto_sign_keypair
-    ecall
+  jal  x1, crypto_sign_keypair
+  ecall
 
 _mldsa_sign_44:
-    la   x10, mldsa_params_44
-    jal  x1, _setup_params
-    jal  x0, _mldsa_sign_common
+  la   x10, mldsa_params_44
+  jal  x1, _setup_params
+  jal  x0, _mldsa_sign_common
 _mldsa_sign_65:
-    la   x10, mldsa_params_65
-    jal  x1, _setup_params
-    jal  x0, _mldsa_sign_common
+  la   x10, mldsa_params_65
+  jal  x1, _setup_params
+  jal  x0, _mldsa_sign_common
 _mldsa_sign_87:
-    la   x10, mldsa_params_87
-    jal  x1, _setup_params
+  la   x10, mldsa_params_87
+  jal  x1, _setup_params
 _mldsa_sign_common:
 #ifdef HARDENED
-    jal  x1, _setup_masked_vectors
+  jal  x1, _setup_masked_vectors
 #endif
-    la   x10, sig
-    jal  x1, crypto_sign_signature_internal
-    ecall
+  la   x10, sig
+  jal  x1, crypto_sign_signature_internal
+  ecall
 
 _mldsa_verify_44:
-    la   x10, mldsa_params_44
-    jal  x1, _setup_params
-    jal  x0, _mldsa_verify_common
+  la   x10, mldsa_params_44
+  jal  x1, _setup_params
+  jal  x0, _mldsa_verify_common
 _mldsa_verify_65:
-    la   x10, mldsa_params_65
-    jal  x1, _setup_params
-    jal  x0, _mldsa_verify_common
+  la   x10, mldsa_params_65
+  jal  x1, _setup_params
+  jal  x0, _mldsa_verify_common
 _mldsa_verify_87:
-    la   x10, mldsa_params_87
-    jal  x1, _setup_params
+  la   x10, mldsa_params_87
+  jal  x1, _setup_params
 _mldsa_verify_common:
 #ifdef HARDENED
-    /* Populate the broadcast vectors that polyz_unpack/poly_use_hint read. */
-    jal  x1, _setup_masked_vectors
+  /* Populate the broadcast vectors that polyz_unpack/poly_use_hint read. */
+  jal  x1, _setup_masked_vectors
 #endif
-    la   x10, sig
-    jal  x1, crypto_sign_verify_internal
-    ecall
+  la   x10, sig
+  jal  x1, crypto_sign_verify_internal
+  ecall
 
 /**
  * Copy 64 bytes from a0 to mldsa_params.
@@ -172,13 +172,13 @@ _mldsa_verify_common:
  * clobbered registers: a1, t0, w0
  */
 _setup_params:
-    la     x11, mldsa_params
-    li     x5, 0
-    bn.lid x5, 0(x10)
-    bn.sid x5, 0(x11)
-    bn.lid x5, 32(x10)
-    bn.sid x5, 32(x11)
-    ret
+  la     x11, mldsa_params
+  li     x5, 0
+  bn.lid x5, 0(x10)
+  bn.sid x5, 0(x11)
+  bn.lid x5, 32(x10)
+  bn.sid x5, 32(x11)
+  ret
 
 .section .data
 
@@ -186,54 +186,54 @@ _setup_params:
 .balign 32
 .globl mldsa_params_44
 mldsa_params_44:
-    .word 4         /* K */
-    .word 4         /* L */
-    .word 39        /* TAU */
-    .word 80        /* OMEGA */
-    .word 130994    /* GAMMA1 - BETA */
-    .word 192       /* POLYW1_PACKEDBYTES */
-    .word 1312      /* CRYPTO_PUBLICKEYBYTES */
-    .word 95232     /* GAMMA2 */
-    .word 95154     /* GAMMA2 - BETA */
-    .word 512       /* SK_S2_OFFSET */
-    .word 896       /* SK_T0_OFFSET */
-    .word 2420      /* CRYPTO_BYTES */
-    .zero 16
+  .word 4         /* K */
+  .word 4         /* L */
+  .word 39        /* TAU */
+  .word 80        /* OMEGA */
+  .word 130994    /* GAMMA1 - BETA */
+  .word 192       /* POLYW1_PACKEDBYTES */
+  .word 1312      /* CRYPTO_PUBLICKEYBYTES */
+  .word 95232     /* GAMMA2 */
+  .word 95154     /* GAMMA2 - BETA */
+  .word 512       /* SK_S2_OFFSET */
+  .word 896       /* SK_T0_OFFSET */
+  .word 2420      /* CRYPTO_BYTES */
+  .zero 16
 
 /* ML-DSA-65 parameters (K=6, L=5, ETA=4, GAMMA1=2^19, GAMMA2=(Q-1)/32). */
 .balign 32
 .globl mldsa_params_65
 mldsa_params_65:
-    .word 6
-    .word 5
-    .word 49
-    .word 55
-    .word 524092
-    .word 128
-    .word 1952
-    .word 261888
-    .word 261692
-    .word 768
-    .word 1536
-    .word 3309
-    .zero 16
+  .word 6
+  .word 5
+  .word 49
+  .word 55
+  .word 524092
+  .word 128
+  .word 1952
+  .word 261888
+  .word 261692
+  .word 768
+  .word 1536
+  .word 3309
+  .zero 16
 
 /* ML-DSA-87 parameters (K=8, L=7, ETA=2, GAMMA1=2^19, GAMMA2=(Q-1)/32). */
 .balign 32
 .globl mldsa_params_87
 mldsa_params_87:
-    .word 8
-    .word 7
-    .word 60
-    .word 75
-    .word 524168
-    .word 128
-    .word 2592
-    .word 261888
-    .word 261768
-    .word 800
-    .word 1568
-    .word 4627
-    .zero 16
+  .word 8
+  .word 7
+  .word 60
+  .word 75
+  .word 524168
+  .word 128
+  .word 2592
+  .word 261888
+  .word 261768
+  .word 800
+  .word 1568
+  .word 4627
+  .zero 16
 
 /* The .bss DMEM layout lives in mldsa_dmem.s. */

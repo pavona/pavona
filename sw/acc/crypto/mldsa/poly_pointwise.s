@@ -29,24 +29,24 @@
 .globl poly_pointwise
 .type poly_pointwise, @function
 poly_pointwise:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 9
-        bn.lid x0, 0(x10++)
-        bn.lid x4, 0(x11++)
+  loopi 32, 9
+    bn.lid x0, 0(x10++)
+    bn.lid x4, 0(x11++)
 
-        bn.mulv.8S.even.acc.z.lo w0, w0, w1
-        bn.mulv.l.8S.even.lo     w0, w0, sw0.1
-        bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
-        bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
-        bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
-        bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
+    bn.mulv.8S.even.acc.z.lo w0, w0, w1
+    bn.mulv.l.8S.even.lo     w0, w0, sw0.1
+    bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
+    bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
+    bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
+    bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
 
-        bn.sid x0, 0(x12++)
-    endloop
+    bn.sid x0, 0(x12++)
+  endloop
 
-    ret
+  ret
 
 /**
  * Constant Time Dilithium base multiplication (pointwise) with accumulation
@@ -69,25 +69,25 @@ poly_pointwise:
 .globl poly_pointwise_acc
 .type poly_pointwise_acc, @function
 poly_pointwise_acc:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 11
-        bn.lid x0, 0(x10++)
-        bn.lid x4, 0(x11++)
+  loopi 32, 11
+    bn.lid x0, 0(x10++)
+    bn.lid x4, 0(x11++)
 
-        bn.mulv.8S.even.acc.z.lo w0, w0, w1
-        bn.mulv.l.8S.even.lo     w0, w0, sw0.1
-        bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
-        bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
-        bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
-        bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
+    bn.mulv.8S.even.acc.z.lo w0, w0, w1
+    bn.mulv.l.8S.even.lo     w0, w0, sw0.1
+    bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
+    bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
+    bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
+    bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
 
-        /* Accumulate onto output polynomial */
-        bn.lid      x4, 0(x12)
-        bn.addvm.8S w0, w0, w1
+    /* Accumulate onto output polynomial */
+    bn.lid      x4, 0(x12)
+    bn.addvm.8S w0, w0, w1
 
-        bn.sid x0, 0(x12++)
-    endloop
+    bn.sid x0, 0(x12++)
+  endloop
 
-    ret
+  ret

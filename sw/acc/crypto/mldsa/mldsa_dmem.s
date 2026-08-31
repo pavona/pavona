@@ -23,14 +23,14 @@
 .globl mode
 .balign 4
 mode:
-    .zero 4
+  .zero 4
 
 /* Keygen seed: NSHARES boolean shares (2 x 32 B).  Dead during sign/verify,
  * where it hosts the rho'/ctilde scratch. */
 .globl zeta_shares
 .balign 32
 zeta_shares:
-    .zero 32 * NSHARES
+  .zero 32 * NSHARES
 .globl rhoprime
 .globl ctilde
 .set rhoprime, zeta_shares
@@ -41,7 +41,7 @@ zeta_shares:
 .globl pk
 .balign 32
 pk:
-    .zero 2592
+  .zero 2592
 .globl sign_y
 .globl sign_tmp
 .globl sign_w1_repvec
@@ -58,7 +58,7 @@ pk:
 .globl sk
 .balign 32
 sk:
-    .zero 3456
+  .zero 3456
 .globl w1_repvec
 .set w1_repvec, sk
 
@@ -68,7 +68,7 @@ sk:
 .globl sig
 .balign 32
 sig:
-    .zero 4627
+  .zero 4627
 .globl eta_out
 .globl matmul_nonce
 .globl keygen_mask_stack
@@ -83,13 +83,13 @@ sig:
 .globl mu
 .balign 32
 mu:
-    .zero 64
+  .zero 64
 
 /* Hedge randomness for signing (32 bytes). */
 .globl rnd
 .balign 32
 rnd:
-    .zero 32
+  .zero 32
 
 /* msg/ctx/msglen/ctxlen are unused here: external-mu sign/verify consume only
  * the pre-hashed mu (the driver hashes the message+context in software). */
@@ -98,7 +98,7 @@ rnd:
 .globl result
 .balign 4
 result:
-    .zero 4
+  .zero 4
 
 /* rho_prime_shares is keygen-internal (sign loads s1/s2 from s1s2_shares);
    overlay it onto sign-dead mask_stack. */
@@ -109,38 +109,38 @@ result:
 .globl K_shares
 .balign 32
 K_shares:
-    .zero 64
+  .zero 64
 
 /* Expanded sk: s1 then s2 as Boolean bitsliced ExpandS shares (worst case
    ML-DSA-87 = 2 * (7 + 8) * 96). */
 .globl s1s2_shares
 .balign 32
 s1s2_shares:
-    .zero 2880
+  .zero 2880
 
 .globl dptr_sig
 .balign 4
 dptr_sig:
-    .zero 4
+  .zero 4
 
 /* Single-symbol broadcast vectors, populated at runtime by
  * _setup_masked_vectors from mldsa_params. */
 .balign 32
 .globl eta
 eta:
-    .zero 32
+  .zero 32
 .balign 32
 .globl gamma1_vec_const
 gamma1_vec_const:
-    .zero 32
+  .zero 32
 .balign 32
 .globl gamma2_vec_const
 gamma2_vec_const:
-    .zero 32
+  .zero 32
 .balign 32
 .globl polyz_unpack_mask
 polyz_unpack_mask:
-    .zero 32
+  .zero 32
 /* poly.s loads the per-K names; in this single-binary build they all resolve to
  * the runtime broadcast vectors above, so no per-K tables are stored. */
 .globl gamma1_vec_const_17
@@ -158,26 +158,26 @@ polyz_unpack_mask:
 .balign 32
 .globl lambda0_z_vec
 lambda0_z_vec:
-    .zero 32
+  .zero 32
 .balign 32
 .globl lambda0_r_vec
 lambda0_r_vec:
-    .zero 32
+  .zero 32
 .balign 32
 .globl c_z_const
 c_z_const:
-    .zero 32
+  .zero 32
 .balign 32
 .globl c_r_const
 c_r_const:
-    .zero 32
+  .zero 32
 
 /* Masked-sign gadget stack (256B); live throughout sign, so it keeps its own
  * storage. */
 .balign 32
 .globl mask_stack
 mask_stack:
-    .zero 256
+  .zero 256
 .globl mask_stack_end
 mask_stack_end:
 
@@ -199,7 +199,7 @@ mask_stack_end:
 t_polyvec:
 w0_polyvec_shares:
 w1_polyvec:
-    .zero 16384
+  .zero 16384
 /* Verify packs the z shares into the BIG_BUF tail: w1_polyvec uses [0:8192],
  * z_polyvec uses [8192:15360] (L*1024 = 7168 worst case). */
 .globl z_polyvec
@@ -238,19 +238,19 @@ w1_polyvec:
 .globl mode
 .balign 4
 mode:
-    .zero 4
+  .zero 4
 
 /* Keygen seed (32 bytes). */
 .globl zeta
 .balign 32
 zeta:
-    .zero 32
+  .zero 32
 
 /* Public key (worst-case ML-DSA-87 = 2592 bytes). */
 .globl pk
 .balign 32
 pk:
-    .zero 2592
+  .zero 2592
 
 /* Secret key (sk) for keypair/sign and the packed z polyvec (z_polyvec)
  * for verify share storage: sk is unused during verify and z_polyvec is
@@ -261,48 +261,48 @@ pk:
 .balign 32
 sk:
 z_polyvec:
-    .zero 7168
+  .zero 7168
 
 /* Signature (worst-case ML-DSA-87 = 4627 bytes). */
 .globl sig
 .balign 32
 sig:
-    .zero 4627
+  .zero 4627
 
 .globl msg
 .balign 32
 msg:
-    .zero 2048
+  .zero 2048
 
 /* Message length (4 bytes). */
 .globl msglen
 .balign 4
 msglen:
-    .zero 4
+  .zero 4
 
 /* Context (up to 255 bytes per ML-DSA spec). */
 .globl ctx
 .balign 32
 ctx:
-    .zero 256
+  .zero 256
 
 /* Context length (4 bytes). */
 .globl ctxlen
 .balign 4
 ctxlen:
-    .zero 4
+  .zero 4
 
 /* Hedge randomness for signing (32 bytes). */
 .globl rnd
 .balign 32
 rnd:
-    .zero 32
+  .zero 32
 
 /* Verify result (0 on success, -1 on failure). */
 .globl result
 .balign 4
 result:
-    .zero 4
+  .zero 4
 
 /* Shared kernel scratch. Buffers that are only live within a single
  * operation are overlaid by aliasing label names to the same storage. */
@@ -310,7 +310,7 @@ result:
 .balign 32
 .globl tmp_poly
 tmp_poly:
-    .zero 1024
+  .zero 1024
 
 .balign 32
 .globl c_poly
@@ -319,29 +319,29 @@ tmp_poly:
 c_poly:
 y_poly:
 s1_poly:
-    .zero 1024
+  .zero 1024
 
 .balign 32
 .globl mu
 mu:
-    .zero 64
+  .zero 64
 
 .balign 32
 .globl rhoprime
 .globl ctilde
 rhoprime:
 ctilde:
-    .zero 64
+  .zero 64
 
 .balign 4
 .globl dptr_sig
 dptr_sig:
-    .zero 4
+  .zero 4
 
 .balign 32
 .globl w1_repvec
 w1_repvec:
-    .zero 256
+  .zero 256
 
 /* keypair: t_polyvec; sign: w0_polyvec; verify: w1_polyvec. */
 .balign 32
@@ -351,5 +351,5 @@ w1_repvec:
 t_polyvec:
 w0_polyvec:
 w1_polyvec:
-    .zero 8192
+  .zero 8192
 #endif
