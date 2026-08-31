@@ -430,11 +430,11 @@ refreshios:
 poly_rej_samp:
   /* Load 19 * q - 1. */
   addi   x4, x0, 1
-  la     x5, modulus_times_19_minus_1
+  la     x5, const_q19m1
   bn.lid x4++, 0(x5)
 
-  /* Load mont = 2^16 % q. */
-  la     x5, mont
+  /* Load 2^16 mod q. */
+  la     x5, const_2_16_modq
   bn.lid x4, 0(x5)
 
   /* x10 + 512 is the last valid address. */
@@ -1298,7 +1298,7 @@ secb2amodq:
   add     x10, x12, x0
   jal     x1, poly_rej_samp
   addi    x4, x0, 1
-  la      x5, modulus_bn
+  la      x5, const_q
   bn.lid  x4, 0(x5)
   addi    x5, x2, 32
   loopi 16, 3
@@ -1514,7 +1514,7 @@ poly_hocompress_dv:
   addi      x4, x0, 17
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
-  la        x5, modulus_over_2
+  la        x5, const_qp1_half
   bn.lid    x4++, 0(x5)
   bn.shv.8s w18, w18 >> 16
 
@@ -1712,7 +1712,7 @@ _du_params_done:
   addi       x4, x0, 17
   la         x5, const_m_du
   bn.lid     x4++, 0(x5)
-  la         x5, modulus_bn
+  la         x5, const_q
   bn.lid     x4, 0(x5)
   bn.shv.8s  w18, w18 >> 17 /* 0x680 in 8 32-bit lanes. */
   bn.trn1.8s w18, w18, w31  /* 0x680 in 4 64-bit lanes. */
@@ -1924,7 +1924,7 @@ masked_poly_frommsg:
   jal  x1, seconebitb2amodq
 
   /* mp *= (q + 1) / 2 mod q, coefficient-wise (Montgomery). */
-  la      x5, modulus_over_2_m2_16  /* ((q + 1) / 2) * (2^16) mod q. */
+  la      x5, const_qp1_half_mul_2_16_modq /* ((q + 1) / 2) * (2^16) mod q. */
   addi    x4, x0, 1
   bn.lid  x4, 0(x5)
   loopi 2, 9
@@ -2612,7 +2612,7 @@ masked_poly_tomsg:
   addi      x4, x0, 17
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
-  la        x5, modulus_over_2
+  la        x5, const_qp1_half
   bn.lid    x4++, 0(x5)
   bn.shv.8s w18, w18 >> 16
 
