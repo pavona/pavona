@@ -102,6 +102,7 @@ polyt1_unpack:
     jal   x1, _inner_polyt1_unpack
 
     nop
+  endloop
 
   ret
 
@@ -129,6 +130,7 @@ _inner_polyt1_unpack:
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 10 bit */
 
     bn.sid x7, 0(x10++)
+  endloop
   ret
 
 /**
@@ -229,6 +231,7 @@ polyz_unpack_17:
     bn.rshi w1, w31, w6 >> 112
     jal     x1, _inner_polyz_unpack_17
     nop /* Must not end on branch */
+  endloop
 
   ret
 
@@ -241,6 +244,7 @@ _inner_polyz_unpack_17:
     /* Advance the input register such that the next coefficient is
         in the lower 18 bits */
     bn.rshi w1, w31, w1 >> 18
+  endloop
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
@@ -295,6 +299,7 @@ polyz_unpack_19:
     bn.rshi w1, w31, w6 >> 96
     jal     x1, _inner_polyz_unpack_19
     nop /* Must not end on branch */
+  endloop
 
   ret
 
@@ -307,6 +312,7 @@ _inner_polyz_unpack_19:
     /* Advance the input register such that the next coefficient is
         in the lower 18 bits */
     bn.rshi w1, w31, w1 >> 20
+  endloop
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
@@ -385,6 +391,7 @@ poly_chknorm:
     bn.cmp w2, w4
     csrrs  x7, FG0, x0
     and    x5, x5, x7
+  endloop
 
   /* Return 0 on success, 1 on failure. */
   srli x12, x5, 3
@@ -441,6 +448,7 @@ poly_challenge:
   li x5, 31
   loopi 32, 1
     bn.sid x5, 0(x6++)
+  endloop
 
   /* Setup WDR */
   li x5, 0
@@ -525,6 +533,7 @@ _loop_inner_skip_load_poly_challenge:
     bn.rshi w1, w31, w1 >> 1 /* Discard the used bit: signs >>= 1 */
 
     addi x13, x13, 1 /* i++ */
+  endloop
 
   /* Finish the SHAKE-256 operation. */
 
@@ -856,6 +865,7 @@ poly_uniform:
     bn.cmp     w10, w13
     bn.sel     w15, w15, w31, Z
     bn.add     w14, w14, w15
+  endloop
   /* STATE REFRESH. */
   bn.wsrr shake_reg, kmac_digest
   .rept 8
@@ -952,6 +962,7 @@ poly_uniform:
     bn.cmp     w10, w13
     bn.sel     w15, w15, w31, Z
     bn.add     w14, w14, w15
+  endloop
   /* STATE REFRESH. */
   bn.wsrr shake_reg, kmac_digest
   .rept 8
@@ -1077,6 +1088,7 @@ _poly_uniform_discard_coeff:
     lw   x6, 4(x5)
     sw   x6, 0(x5)
     addi x5, x5, 4
+  endloop
 _poly_uniform_discard_coeff_skip_shift:
   /* Now we need to draw a new coefficient from SHAKE output. */
   /* Load the last vector of coefficients. */
@@ -1104,10 +1116,12 @@ _poly_uniform_discard_coeff_skip_shift:
   /* Shift invalid upper bytes out of the coefficient. */
   loop    x29, 1
     bn.rshi w0, w0, w31 >> 248
+  endloop
   /* Rotate valid bytes into the coefficient. */
   loop    x29, 2
     bn.rshi w0, shake_reg, w0 >> 8
     bn.rshi shake_reg, shake_reg, shake_reg >> 8
+  endloop
   /* Reinsert the uppermost 0 byte. */
   bn.rshi w0, w31, w0 >> 8
   /* Update the number of bytes available in the digest. */
@@ -1175,6 +1189,7 @@ poly_uniform_mask_and_check_vectors:
     /* If the Z flag is unset, stop incrementing the index. */
     bn.sel     w15, w15, w31, Z
     bn.add     w14, w14, w15
+  endloop
   ret
 
 /**
@@ -1288,6 +1303,7 @@ _rej_eta_sample_loop_eta_2:
     li x31, 8
 _rej_eta_sample_loop_continue_eta_2:
     bn.rshi shake_reg, w31, shake_reg >> 4 /* shift out the used nibble */
+  endloop
 
 /* Loop logic */
   bne  x11, x5, _rej_eta_sample_loop_eta_2 /* Continue sampling */
@@ -1381,6 +1397,7 @@ _rej_eta_sample_loop_eta_4:
     li x31, 8
 _rej_eta_sample_loop_continue_eta_4:
     bn.rshi shake_reg, w31, shake_reg >> 4 /* shift out the used nibble */
+  endloop
 
 /* Loop logic */
   bne  x11, x5, _rej_eta_sample_loop_eta_4 /* Continue sampling */
@@ -1493,6 +1510,7 @@ poly_use_hint_88:
     bn.addvm.8s w0, w2, w12
     bn.subvm.8s w0, w0, w13
     bn.sid x0, 0(x10++)
+  endloop
 
   bn.wsrw MOD, w15
 
@@ -1546,6 +1564,7 @@ poly_use_hint_32:
     bn.addvm.8s w0, w2, w12
     bn.subvm.8s w0, w0, w13
     bn.sid x0, 0(x10++)
+  endloop
 
   bn.wsrw MOD, w15
 
@@ -1646,7 +1665,9 @@ _inner_polyt1_pack:
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 10 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+    endloop
     nop
+  endloop
   bn.rshi w2, w31, w2 >> 96 /* Shift the 160 bits of data to the bottom of the
                                WDR */
   ret
@@ -1698,6 +1719,7 @@ polyeta_pack_eta_2:
   loopi 5, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
   /* Handle split coefficient */
   bn.rshi w2, w1, w2 >> 1 /* Get one more bit to fill w2 */
   bn.sid x7, 0(x10++)
@@ -1707,6 +1729,7 @@ polyeta_pack_eta_2:
   loopi 2, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
 
   /* 2 */
   jal x1, _inner_polyeta_pack_eta_2
@@ -1717,6 +1740,7 @@ polyeta_pack_eta_2:
   loopi 2, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
   /* Handle split coefficient */
   bn.rshi w2, w1, w2 >> 2 /* Get two more bits to fill w2 */
   bn.sid x7, 0(x10++)
@@ -1726,6 +1750,7 @@ polyeta_pack_eta_2:
   loopi 5, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
 
   /* 3 */
   jal x1, _inner_polyeta_pack_eta_2
@@ -1748,6 +1773,7 @@ _inner_polyeta_pack_eta_2:
       bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
     .endr
+  endloop
   ret
 
 .globl polyeta_pack_eta_4
@@ -1790,6 +1816,7 @@ _inner_polyeta_pack_eta_4:
       bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
     .endr
+  endloop
   ret
 /**
  * polyt0_pack
@@ -1907,7 +1934,9 @@ _inner_polyt0_pack:
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 13 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+    endloop
     nop
+  endloop
   bn.rshi w2, w31, w2 >> 48 /* Shift the 208 bits of data to the bottom of the
                                WDR */
   ret
@@ -1954,7 +1983,9 @@ poly_nonzero_encode:
       bn.and   w4, w1, w2
       bn.sel   w0, w0, w3, FG0.Z
       bn.rshi  w1, w31, w1 >> 32
+    endloop
     nop
+  endloop
 
   ret
 
@@ -2010,6 +2041,7 @@ polyw1_pack_88:
     jal     x1, _inner_polyw1_pack_88
     bn.rshi w4, w2, w4 >> 192
     bn.sid  x29, 0(x10++)
+  endloop
 
   ret
 
@@ -2019,7 +2051,9 @@ _inner_polyw1_pack_88:
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 6 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+    endloop
     nop
+  endloop
   bn.rshi w2, w31, w2 >> 64 /* Shift the 192 bits of data to the bottom of the
                                WDR */
   ret
@@ -2036,6 +2070,7 @@ polyw1_pack_32:
   loopi 4, 2
     jal     x1, _inner_polyw1_pack_32
     bn.sid x7, 0(x10++)
+  endloop
   ret
 
 _inner_polyw1_pack_32:
@@ -2044,7 +2079,9 @@ _inner_polyw1_pack_32:
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+    endloop
     nop
+  endloop
   ret
 /**
  * polyeta_unpack_eta_2 / polyeta_unpack_eta_4
@@ -2131,6 +2168,7 @@ _inner_polyeta_unpack_eta_2:
     bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
     bn.sid x7, 0(x10++)
+  endloop
   ret
 
 .globl polyeta_unpack_eta_4
@@ -2191,6 +2229,7 @@ _inner_polyeta_unpack_eta_4:
     bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
     bn.sid x7, 0(x10++)
+  endloop
   ret
 
 /**
@@ -2223,6 +2262,7 @@ poly_decode_h:
   li x5, 31
   loopi 32, 1
     bn.sid x5, 0(x6++)
+  endloop
 
   /* Initialize constants */
   li x17, 1
@@ -2460,6 +2500,7 @@ _inner_polyt0_unpack:
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 13 bit */
     bn.subvm.8s w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
     bn.sid     x7, 0(x10++)
+  endloop
   ret
 
 /**
@@ -2590,6 +2631,7 @@ poly_uniform_gamma_1_17:
     bn.rshi w1, w31, w6 >> 112
     jal     x1, _inner_poly_uniform_gamma_1_17
     nop /* Loop must not end on jump */
+  endloop
 
   /* Finish the SHAKE-256 operation. */
 
@@ -2604,6 +2646,7 @@ _inner_poly_uniform_gamma_1_17:
     /* Advance the input register such that the next coefficient is
         in the lower 18 bits */
     bn.rshi w1, w31, w1 >> 18
+  endloop
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
@@ -2684,6 +2727,7 @@ poly_uniform_gamma_1_19:
     bn.rshi w1, w31, w6 >> 96
     jal     x1, _inner_poly_uniform_gamma_1_19
     nop /* Must not end on branch */
+  endloop
 
   /* Finish the SHAKE-256 operation. */
 
@@ -2698,6 +2742,7 @@ _inner_poly_uniform_gamma_1_19:
     /* Advance the input register such that the next coefficient is
         in the lower 18 bits */
     bn.rshi w1, w31, w1 >> 20
+  endloop
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
@@ -2770,6 +2815,7 @@ poly_decompose_88:
     jal x1, decompose_88
     bn.sid x6, 0(x10++)
     bn.sid x7, 0(x11++)
+  endloop
 
   ret
 
@@ -2813,6 +2859,7 @@ poly_decompose_32:
     jal x1, decompose_32
     bn.sid x6, 0(x10++)
     bn.sid x7, 0(x11++)
+  endloop
 
   ret
 
@@ -2886,6 +2933,7 @@ _loop_end_poly_make_hint:
     add  x7, x7, x28
     addi x11, x11, 4
     addi x10, x10, 4
+  endloop
 
   addi x10, x7, 0 /* move result to return value */
   ret
@@ -3065,6 +3113,7 @@ _inner_polyz_pack_17:
   loopi 8, 2
     bn.rshi w2, w1, w2 >> 18 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
   bn.rshi w2, w31, w2 >> 112 /* Shift the 144 bits of data to the bottom of the
                                WDR */
   ret
@@ -3112,6 +3161,7 @@ polyz_pack_19:
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 160
     bn.sid  x29, 0(x10++)
+  endloop
 
   ret
 _inner_polyz_pack_19:
@@ -3121,6 +3171,7 @@ _inner_polyz_pack_19:
   loopi 8, 2
     bn.rshi w2, w1, w2 >> 20 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
+  endloop
   bn.rshi w2, w31, w2 >> 96 /* Shift the 96 bits of data to the bottom of the
                                WDR */
   ret
@@ -3166,17 +3217,18 @@ poly_encode_h:
     addi x12, x12, 1 /* k++ */
 _skip_store_poly_encode_h:
     addi x7, x7, 1
+  endloop
 
-    /* Store the number of nonzero coefficients after h[i] at the end. */
-    add  x7, x13, x14   /* OMEGA + i */
-    add  x7, x10, x7    /* *sig + OMEGA + i */
-    andi x28, x7, 0x3   /* preserve lower 2 bits */
-    and  x7, x7, x5    /* align */
-    lw   x29, 0(x7)     /* load from aligned(*sig + OMEGA + i) */
-    slli x28, x28, 3     /* #bytes -> #bits */
-    sll  x28, x12, x28    /* k << #bits */
-    or   x29, x29, x28
-    sw   x29, 0(x7)
+  /* Store the number of nonzero coefficients after h[i] at the end. */
+  add  x7, x13, x14   /* OMEGA + i */
+  add  x7, x10, x7    /* *sig + OMEGA + i */
+  andi x28, x7, 0x3   /* preserve lower 2 bits */
+  and  x7, x7, x5    /* align */
+  lw   x29, 0(x7)     /* load from aligned(*sig + OMEGA + i) */
+  slli x28, x28, 3     /* #bytes -> #bits */
+  sll  x28, x12, x28    /* k << #bits */
+  or   x29, x29, x28
+  sw   x29, 0(x7)
 
   ret
 
@@ -3230,6 +3282,7 @@ poly_reduce32:
     bn.subv.8s w2, w2, w5
 
     bn.sid x28, 0(x11++)
+  endloop
 
   ret
 
@@ -3281,6 +3334,7 @@ poly_power2round:
     /* Store */
     bn.sid x7, 0(x12++)
     bn.sid x28, 0(x11++)
+  endloop
 
   ret
 

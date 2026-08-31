@@ -1457,7 +1457,9 @@ _rej_crypto_sign_signature_internal:
   loop x28, 3
     loopi 32, 1
       bn.sid x5, 0(x6++)
+    endloop
     nop
+  endloop
 
   /* Load the constant for resetting the w pointer (K * 1024). */
   slli x22, x28, 10
@@ -1498,6 +1500,7 @@ _rej_crypto_sign_signature_internal:
     addi  x5, x24, 0
     loopi 32, 1
       bn.sid x21, 0(x5++)
+    endloop
     /* Compute y[j]. */
     addi x10, x24, 0
     addi x11, x18, 0
@@ -1542,6 +1545,7 @@ _rej_crypto_sign_signature_internal:
       jal  x1, poly_pointwise_acc
       /* Increment the w pointer. */
       addi x9, x9, 1024
+    endloop
     /* Reset w pointer. */
     sub  x9, x9, x22
     /* Increment the column index in the nonce by one. */
@@ -1550,6 +1554,7 @@ _rej_crypto_sign_signature_internal:
     bn.rshi w23, w23, w31 >> 8
     bn.rshi w23, w31, w23 >> 248
     bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
+  endloop
 
   bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
   /* Inverse NTT on w */
@@ -1561,6 +1566,7 @@ _rej_crypto_sign_signature_internal:
     jal x1, intt
     /* Go to next input polynomial */
     addi x10, x10, 1024
+  endloop
 
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
@@ -1571,6 +1577,7 @@ _rej_crypto_sign_signature_internal:
   lw x29, MLDSA_PARAM_POLYW1_PACKEDBYTES_OFFSET(x7)
   loop x28, 1
     add x11, x11, x29
+  endloop
   slli  x5, x11, 5
   addi  x5, x5, SHAKE256_CFG
   csrrw x0, KECCAK_CFG_REG, x5
@@ -1623,6 +1630,7 @@ _rej_crypto_sign_signature_internal:
     bn.sid x0, 0(x9++)
     /* Increment w pointer. */
     addi x8, x8, 1024
+  endloop
 
   /* Setup WDR */
   li x6, 8
@@ -1661,6 +1669,7 @@ _sign_pack_ctilde_65:
     sw x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
+  endloop
   bn.wsrr w8, 0xA
   bn.sid  x6, 0(x5)
   loopi 4, 4
@@ -1668,6 +1677,7 @@ _sign_pack_ctilde_65:
     sw x7, 0(x19)
     addi x5, x5, 4
     addi x19, x19, 4
+  endloop
 _sign_pack_ctilde_done:
 
   /* Finish the SHAKE-256 operation. */
@@ -1782,6 +1792,7 @@ _rejsmpl_loop:
       sw   x6, 0(x25)
       addi x11, x11, 4
       addi x25, x25, 4
+    endloop
   addi x20, x20, 1
   la x5, mldsa_params
   lw x6, MLDSA_PARAM_L_OFFSET(x5)
@@ -1800,6 +1811,7 @@ _rejsmpl_loop:
   loop  x6, 2
     sw   x0, 0(x10)
     addi x10, x10, 4
+  endloop
 
   addi x10, x25, 0
 
@@ -1838,7 +1850,9 @@ _rejsmpl_loop:
       bn.addv.8s  w0, w0, w1
       bn.addvm.8s w0, w31, w0
       bn.sid      x0, 0(x10++)
+    endloop
     NOP
+  endloop
 
   /* This loop computes the hint one element at a time, and performs
      rejection sampling. For each index i=0..k-1, it does:
@@ -1997,6 +2011,7 @@ _rejsmpl_loop:
     _mldsa_sign_hint_loop_end:
     /* Update pointer into w0. */
     addi x19, x19, 1024
+  endloop
 
   /* Reject the signature if any conditions failed in the hint loop. */
   bne  x24, x0, _rej_crypto_sign_signature_internal

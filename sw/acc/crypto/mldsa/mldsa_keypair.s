@@ -594,7 +594,9 @@ _t_unmask_loop:
   loop x26, 3
     loopi 32, 1
       bn.sid x5, 0(x6++)
+    endloop
     nop
+  endloop
 
   /* Load offset for resetting vector pointer (K * 1024). */
   slli x19, x26, 10
@@ -680,6 +682,7 @@ _t_unmask_loop:
       jal  x1, poly_pointwise_acc
       /* Increment the output vector pointer *t. */
       addi x18, x18, 1024
+    endloop
     /* Reset output vector pointer. */
     sub  x18, x18, x19
     /* Increment the column index in the nonce by one. */
@@ -687,6 +690,7 @@ _t_unmask_loop:
     /* Reset the row index in the nonce to zero. */
     bn.rshi w23, w23, w31 >> 8
     bn.rshi w23, w31, w23 >> 248
+  endloop
 
   /* After poly_pointwise, w16 is still R | Q and MOD is still 2*R | 2*Q */
   /* Inverse NTT on t=A*s1 */
@@ -695,6 +699,7 @@ _t_unmask_loop:
   loop x26, 2
     jal  x1, intt
     addi x10, x10, 1024 /* Go to next input polynomial */
+  endloop
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
   /* Load pointers for loop. */
@@ -727,6 +732,7 @@ _t_unmask_loop:
     jal  x1, poly_add
     /* Increment polyvec pointer *t. */
     addi x9, x9, 1024
+  endloop
 
   /* Reset t pointer for power2round loop. */
   la  x9, t_polyvec
@@ -744,6 +750,7 @@ _t_unmask_loop:
     addi x23, x10, 0
     /* Increment polyvec pointer *t. */
     addi x9, x9, 1024
+  endloop
 
   /* Pack pk. */
   la x10, pk
@@ -760,6 +767,7 @@ _t_unmask_loop:
   loop x26, 2
     jal x1, polyt1_pack
     nop
+  endloop
 
   /* Hash pk */
 

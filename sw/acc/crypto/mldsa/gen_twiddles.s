@@ -393,6 +393,7 @@ _inv_transform:
     bn.sid x5, 0(x6)
     addi   x6, x6, 32
     addi   x7, x7, -32
+  endloop
   /* tail: inv[240..253] = q - fwd[14..1] (fwd[1..14] still in scratch[1..14]) */
   addi x6, x11, 56              /* &fwd[14] */
   addi x7, x11, 960            /* &inv[240] */
@@ -403,6 +404,7 @@ _inv_transform:
     sw   x11, 0(x7)
     addi x6, x6, -4
     addi x7, x7, 4
+  endloop
   la   x11, scratch
   li   x5, 0x003caa21          /* inv[254] = ninv * fwd[1] (Mont) */
   sw   x5, 1016(x11)
