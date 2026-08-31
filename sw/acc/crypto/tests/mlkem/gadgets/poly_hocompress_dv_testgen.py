@@ -40,7 +40,7 @@ def bitslice_vec(x: List[int], k: int) -> bytes:
     return r_bytes
 
 
-def gen_poly_hocompress_test(
+def gen_poly_hocompress_dv_test(
         seed: Optional[int],
         data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     if seed is not None:
@@ -97,4 +97,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
-        gen_poly_hocompress_test(args.seed, args.data, args.exp, args.dexp)
+        gen_poly_hocompress_dv_test(args.seed, args.data, args.exp, args.dexp)
