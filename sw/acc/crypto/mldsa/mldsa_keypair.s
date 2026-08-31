@@ -42,13 +42,13 @@
  * @param[out] dmem[pk]: public key
  * @param[out] dmem[sk]: secret key
  *
- * clobbered registers: a0-a6, t0-t5, s1, w0-w30
+ * clobbered registers: x10-x16, x5-x30, x9, w0-w30
  */
 .globl crypto_sign_keypair
 .type crypto_sign_keypair, @function
 crypto_sign_keypair:
 #ifdef HARDENED
-  /* Masked gadgets use sp for stack frames. */
+  /* Masked gadgets use x2 for stack frames. */
   la    x2, keygen_mask_stack_end
   /* Runtime parameters. */
   la    x27, mldsa_params

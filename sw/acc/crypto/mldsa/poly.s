@@ -39,12 +39,10 @@
  * Unpack polynomial t1 with coefficients fitting in 10 bits.
  * Output coefficients are standard representatives.
  *
- * Returns: -
+ * @param[in]  x11: pointer to input byte array with POLYT1_PACKEDBYTES bytes
+ * @param[out] x10: pointer to output polynomial
  *
- * @param[in]  a1: pointer to input byte array with POLYT1_PACKEDBYTES bytes
- * @param[out] a0: pointer to output polynomial
- *
- * clobbered registers: a0-a1, t0-t2
+ * clobbered registers: x10-x11, x5-x7
  */
 
 .globl polyt1_unpack
@@ -139,13 +137,11 @@ _inner_polyt1_unpack:
  * Unpack polynomial z with coefficients in [-(GAMMA1 - 1), GAMMA1] fitting into
  * 18 bits.
  *
- * Returns: -
- *
- * @param[in]  a1: pointer to input byte array with POLYZ_PACKEDBYTES bytes
+ * @param[in]  x11: pointer to input byte array with POLYZ_PACKEDBYTES bytes
  * @param[in]  x14: K (used by polyz_unpack dispatcher only)
- * @param[out] a0: pointer to output polynomial
+ * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: a0-a1, t0-t6
+ * clobbered registers: x10-x11, x5-x31
  */
 .globl polyz_unpack
 .type polyz_unpack, @function
@@ -332,13 +328,11 @@ _inner_polyz_unpack_19:
  *
  * Returns: 0 if norm is strictly smaller than B <= (Q-1)/8 and 1 otherwise.
  *
- * Flags: -
+ * @param[in]    x11: norm bound
+ * @param[inout] x10: pointer to polynomial
+ * @param[out]   x12: 0 on success, 1 on failure
  *
- * @param[in]     a1: norm bound
- * @param[in,out] a0: pointer to polynomial
- * @param[out]    a2: 0 on success, 1 on failure
- *
- * clobbered registers: a0, a2, t0-t2, w0-w4
+ * clobbered registers: x10, x12, x5-x7, w0-w4
  */
 .globl poly_chknorm
 .type poly_chknorm, @function
@@ -404,16 +398,12 @@ poly_chknorm:
  * Implementation of H. Samples polynomial with TAU nonzero coefficients in
  * {-1,1} using the output stream of SHAKE128(seed|nonce).
  *
- * Returns: -
+ * @param[in]  x11: mu byte array containing seed of length CTILDEBYTES
+ * @param[out] x10: pointer to output polynomial
+ * @param[in]  x12: CTILDEBYTES
+ * @param[in]  x13: TAU
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  a1: mu byte array containing seed of length CTILDEBYTES
- * @param[out] a0: pointer to output polynomial
- * @param[in]  a2: CTILDEBYTES
- * @param[in]  a3: TAU
- *
- * clobbered registers: a0-a5, t0-t4, w0-w3
+ * clobbered registers: x10-x15, x5-x29, w0-w3
  */
 .globl poly_challenge
 .type poly_challenge, @function
@@ -422,16 +412,16 @@ poly_challenge:
   addi x14, x10, 0
 
   /* Initialize a SHAKE256 operation. */
-  addi x10, x11, 0 /* a0 <= *mu */
+  addi x10, x11, 0 /* x10 <= *mu */
 
-  addi  x11, x12, 0 /* a1 <= CTILDEBYTES */
+  addi  x11, x12, 0 /* x11 <= CTILDEBYTES */
   slli  x5, x11, 5
   addi  x5, x5, SHAKE256_CFG
   csrrw x0, KECCAK_CFG_REG, x5
 
   /* Send the message to the Keccak core. */
-  /* a0 contains *mu already */
-  /* a1 contains CTILDEBYTES already */
+  /* x10 contains *mu already */
+  /* x11 contains CTILDEBYTES already */
   jal  x1, keccak_send_message
 
   /* Restore output pointer */
@@ -473,12 +463,12 @@ poly_challenge:
   /* shift out sign bits from the register containing the SHAKE output */
   bn.rshi w0, w31, w0 >> 64
 
-  /* a2 <= number of remaining bits in buf */
+  /* x12 <= number of remaining bits in buf */
   li x12, 192
 
   addi x6, x13, 0
   li x14, N
-  /* a3 <= i = N-TAU */
+  /* x13 <= i = N-TAU */
   sub x13, x14, x6
   li x28, 1
 
@@ -502,7 +492,7 @@ _loop_inner_skip_load_poly_challenge:
     addi    x12, x12, -8 /* decrease number of remaining bits */
     /* NOTE: optimize this to use all bytes from this load */
     lw      x6, 0(x29) /* get one word of SHAKE output into GPR */
-    /* t1 = b from the reference implementation */
+    /* x6 = b from the reference implementation */
     andi    x6, x6, 0xFF /* mask out one byte, because we only need one */
     sub     x7, x13, x6 /* i <? b */
     srli    x7, x7, 31
@@ -547,12 +537,10 @@ _loop_inner_skip_load_poly_challenge:
  * Expects the SHAKE operation to have already been initialized before this
  * function is called.
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
+ * @param[in]  x11: dmem pointer to polynomial
+ * @param[out] dmem[x11]: freshly sampled polynomial
  *
- * @param[in] a1: dmem pointer to polynomial
- * @param[out] dmem[a1]: freshly sampled polynomial
- *
- * clobbered registers: a0-a3, t0-t6, w0, w8-w15, w21
+ * clobbered registers: x10-x13, x5-x31, w0, w8-w15, w21
  */
 .globl poly_uniform
 .type poly_uniform, @function
@@ -1069,10 +1057,10 @@ _poly_uniform_discard_coeff_done:
 
 _poly_uniform_discard_coeff:
   /* If we jump here:
-       - t0 points to a bad 32-bit coefficient
-       - t2 has the number of digest bytes available in shake_reg
-       - t3 points to the end of the output polynomial
-       - a3 holds the vector index of t0
+       - x5 points to a bad 32-bit coefficient
+       - x7 has the number of digest bytes available in shake_reg
+       - x28 points to the end of the output polynomial
+       - x13 holds the vector index of x5
        - w11 holds a vectorized 23-bit mask
      Now we need to shift the entire polynomial to eliminate the bad
      coefficient, and backfill the next candidate from the digest. */
@@ -1082,7 +1070,7 @@ _poly_uniform_discard_coeff:
   addi x6, x6, -1
   /* Loop iteration count cannot be zero. */
   beq  x6, x0, _poly_uniform_discard_coeff_skip_shift
-  /* For every coefficient from *a1...poly[254], shift in the value of the
+  /* For every coefficient from *x11...poly[254], shift in the value of the
      next coefficient. This overwrites the bad coefficient. */
   loop x6, 3
     lw   x6, 4(x5)
@@ -1161,16 +1149,14 @@ _poly_uniform_recompute_first_bad_index:
  * under about 80 cycles per 5 vectors is important but hyperoptimizing the
  * performance beyond that is not.
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in] w11 mask that selects lower 23 bits of each 32b word
- * @param[in] w12 vectorized modulus
- * @param[in] w13 mask that selects upper 8 bits of each 32b word
- * @param[in] t1, number of vectors to check
- * @param[in] t6, constant 21 (wide register pointer)
- * @param[in,out] t3, pointer to first input vector (updated in-place)
- * @param[in,out] w14 index, either current index or first bad index if found
- * @param[in,out] w15 incrementer, 1 if bad index not found yet otherwise 0
+ * @param[in]    w11: mask that selects lower 23 bits of each 32b word
+ * @param[in]    w12: vectorized modulus
+ * @param[in]    w13: mask that selects upper 8 bits of each 32b word
+ * @param[in]    x6: number of vectors to check
+ * @param[in]    x31: constant 21 (wide register pointer)
+ * @param[inout] x28: pointer to first input vector (updated in-place)
+ * @param[inout] w14: index, either current index or first bad index if found
+ * @param[inout] w15: incrementer, 1 if bad index not found yet otherwise 0
  *
  * clobbered registers: w10, w21
  */
@@ -1195,16 +1181,12 @@ poly_uniform_mask_and_check_vectors:
 /**
  * poly_uniform_eta_eta_2 / poly_uniform_eta_eta_4
  *
- * Returns: -
+ * @param[in]  x10: pointer to rho
+ * @param[in]  x12: nonce
+ * @param[in]  x11: dmem pointer to polynomial
+ * @param[in]  x14: K (used by poly_uniform_eta dispatcher only)
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]     a0: pointer to rho
- * @param[in]     a2: nonce
- * @param[in]     a1: dmem pointer to polynomial
- * @param[in]     x14: K (used by poly_uniform_eta dispatcher only)
- *
- * clobbered registers: a1, a3-a5, w8-w15, w20, t0-t6
+ * clobbered registers: x11, x13-x15, w8-w15, w20, x5-x31
  */
 #ifndef HARDENED
 .globl poly_uniform_eta
@@ -1233,13 +1215,13 @@ poly_uniform_eta_eta_2:
   /* Send the messages to the Keccak core. */
   addi x11, x0, 64            /* set rho length */
   addi x10, x10, 0
-  jal  x1, keccak_send_message /* a0 already contains the input buffer */
+  jal  x1, keccak_send_message /* x10 already contains the input buffer */
   addi x11, x0, 2             /* set nonce length */
   la   x10, poly_wdr2gpr        /* After rho, absorb nonce */
   jal  x1, keccak_send_message
-  addi x11, x14, 0 /* move output pointer back to a1 */
+  addi x11, x14, 0 /* move output pointer back to x11 */
 
-  /* t0 = 1024, stop address*/
+  /* x5 = 1024, stop address */
   addi x5, x11, 1024
 
   /* Initialize constants for WDR index */
@@ -1330,13 +1312,13 @@ poly_uniform_eta_eta_4:
   /* Send the messages to the Keccak core. */
   addi x11, x0, 64            /* set rho length */
   addi x10, x10, 0
-  jal  x1, keccak_send_message /* a0 already contains the input buffer */
+  jal  x1, keccak_send_message /* x10 already contains the input buffer */
   addi x11, x0, 2             /* set nonce length */
   la   x10, poly_wdr2gpr        /* After rho, absorb nonce */
   jal  x1, keccak_send_message
-  addi x11, x14, 0 /* move output pointer back to a1 */
+  addi x11, x14, 0 /* move output pointer back to x11 */
 
-  /* t0 = 1024, stop address*/
+  /* x5 = 1024, stop address */
   addi x5, x11, 1024
 
   /* Initialize constants for WDR index */
@@ -1442,16 +1424,12 @@ _poly_uniform_eta_arithmetic_eta_4:
  * calls r0, r1 "a0" and "a1", but we use r here to avoid confusion with
  * register names.
  *
- * Returns:
+ * @param[in]  x10: output poly pointer
+ * @param[out] x11: input poly pointer
+ * @param[out] x12: input hint poly pointer
+ * @param[in]  x14: K (used by poly_use_hint dispatcher only)
  *
- * Flags: -
- *
- * @param[in]     a0: output poly pointer
- * @param[out]    a1: input poly pointer
- * @param[out]    a2: input hint poly pointer
- * @param[in]     x14: K (used by poly_use_hint dispatcher only)
- *
- * clobbered registers: a0-a2, t0-t1, w0-w15, w30
+ * clobbered registers: x10-x12, x5-x6, w0-w15, w30
  */
 #endif
 .globl poly_use_hint
@@ -1576,13 +1554,11 @@ poly_use_hint_32:
  * Bit-pack polynomial t1 with coefficients fitting in 10 bits. Input
  * coefficients are assumed to be standard representatives.
  *
- * Flags: -
- *
- * @param[out] a0: pointer to output byte array with at least
+ * @param[out] x10: pointer to output byte array with at least
                    POLYT1_PACKEDBYTES bytes
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: a0-a1, t0-t2
+ * clobbered registers: x10-x11, x5-x7
  */
 .globl polyt1_pack
 .type polyt1_pack, @function
@@ -1677,16 +1653,12 @@ _inner_polyt1_pack:
  *
  * Bit-pack polynomial with coefficients in [-ETA,ETA].
  *
- * Returns: -
- *
- * Flags: -
- *
- * @param[out] a0: pointer to output byte array with at least
+ * @param[out] x10: pointer to output byte array with at least
                    POLYETA_PACKEDBYTES bytes
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyeta_pack dispatcher only)
  *
- * clobbered registers: a0-a1, t0-t3, w1, w2
+ * clobbered registers: x10-x11, x5-x28, w1, w2
  */
 #ifndef HARDENED
 .globl polyeta_pack
@@ -1823,13 +1795,11 @@ _inner_polyeta_pack_eta_4:
  *
  * Bit-pack polynomial t0 with coefficients in ]-2^{D-1}, 2^{D-1}].
  *
- * Flags: -
- *
- * @param[out] a0: pointer to output byte array with at least
+ * @param[out] x10: pointer to output byte array with at least
                    POLYETA_PACKEDBYTES bytes
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: a0-a1, t0-t3, w1, w2
+ * clobbered registers: x10-x11, x5-x28, w1, w2
  */
 #endif
 .globl polyt0_pack
@@ -1954,12 +1924,10 @@ _inner_polyt0_pack:
  *
  * Expects input in the range [0, q).
  *
- * Flags: -
- *
- * @param[in]  a0: pointer to input polynomial
+ * @param[in]  x10: pointer to input polynomial
  * @param[out] w0: Representative of nonzero coefficients.
  *
- * clobbered registers: a0, t0, w0-w4
+ * clobbered registers: x10, x5, w0-w4
  */
 .globl poly_nonzero_encode
 .type poly_nonzero_encode, @function
@@ -1998,14 +1966,12 @@ poly_nonzero_encode:
  * Output and input buffers may not arbitrarily overlap, but they may be the
  * same.
  *
- * Flags: -
- *
- * @param[out] a0: pointer to output byte array with at least
+ * @param[out] x10: pointer to output byte array with at least
                    POLYW1_PACKEDBYTES bytes
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyw1_pack dispatcher only)
  *
- * clobbered registers: a0-a1, t0-t2
+ * clobbered registers: x10-x11, x5-x7
  */
 .globl polyw1_pack
 .type polyw1_pack, @function
@@ -2088,13 +2054,11 @@ _inner_polyw1_pack_32:
  *
  * Unpack polynomial with coefficients fitting in [-ETA, ETA].
  *
- * Flags: -
- *
- * @param[in]  a1: byte array with bit-packed polynomial
+ * @param[in]  x11: byte array with bit-packed polynomial
  * @param[in]  x14: K (used by polyeta_unpack dispatcher only)
- * @param[out] a0: pointer to output polynomial
+ * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: a0-a1, t0-t2, w1-w2
+ * clobbered registers: x10-x11, x5-x7, w1-w2
  */
 #ifndef HARDENED
 .globl polyeta_unpack
@@ -2241,17 +2205,15 @@ _inner_polyeta_unpack_eta_4:
  * indicates that this is the last hint polynomial, then checks that extra bits
  * are zero.
  *
- * Flags: -
+ * @param[in]  x10: pointer to output polynomial h
+ * @param[in]  x11: pointer to bytes of encoded hint
+ * @param[in]  x12: k, number of nonzero h coefficients so far
+ * @param[in]  x13: i, index of this polynomial in h
+ * @param[out] x14: return code (1 or 0)
+ * @param[in]  x15: K, number of polynomials in h
+ * @param[in]  x29: OMEGA
  *
- * @param[in]  a0: pointer to output polynomial h
- * @param[in]  a1: pointer to bytes of encoded hint
- * @param[in]  a2: k, number of nonzero h coefficients so far
- * @param[in]  a3: i, index of this polynomial in h
- * @param[out] a4: return code (1 or 0)
- * @param[in]  a5: K, number of polynomials in h
- * @param[in]  t4: OMEGA
- *
- * clobbered registers: a0-a7, t0-t6
+ * clobbered registers: x10-x17, x5-x31
  */
 #endif
 .globl poly_decode_h
@@ -2268,7 +2230,7 @@ poly_decode_h:
   li x17, 1
 
   /* The notation inside the comments goes in line with the reference code */
-  /* Load sig[OMEGA + i] to t2 */
+  /* Load sig[OMEGA + i] to x7 */
   add  x7, x13, x29    /* i + OMEGA */
   add  x31, x7, x11    /* (sig + OMEGA + i) */
   andi x14, x31, 0x3   /* get lower two bits */
@@ -2304,12 +2266,12 @@ poly_decode_h:
   lw   x31, 0(x31)    /* aligned load */
   slli x14, x14, 3
   srl  x31, x31, x14   /* extract the respective byte */
-  andi x16, x31, 0xFF /* a6 = sig[j] */
+  andi x16, x31, 0xFF /* x16 = sig[j] */
 
   /* Store a 1 to h */
   slli x14, x16, 2  /* sig[j] * 4 */
   add  x31, x10, x14 /* (h[sig[j]]) */
-  sw   x17, 0(x31)  /* h->vec[i].coeffs[sig[j]] = a7 = 1 */
+  sw   x17, 0(x31)  /* h->vec[i].coeffs[sig[j]] = x17 = 1 */
 
   /* Skip the loop if we are already done here */
   addi x30, x30, 1
@@ -2326,7 +2288,7 @@ _loop_inner_decode_h:
     srl  x6, x6, x14  /* extract the respective byte */
     andi x6, x6, 0xFF
 
-    /* sig[j - 1] is in a6 at this point */
+    /* sig[j - 1] is in x16 at this point */
 
     /* sig[j] ==? sig[j-1] */
     beq  x6, x16, _ret1_decode_h
@@ -2366,7 +2328,7 @@ _loop_extra_decode_h:
   lw   x31, 0(x31)    /* aligned load */
   slli x14, x14, 3
   srl  x31, x31, x14   /* extract the respective byte */
-  andi x16, x31, 0xFF /* a6 = sig[j] */
+  andi x16, x31, 0xFF /* x16 = sig[j] */
 
   /* if(sig[j]) return 1; */
   bne x16, x0, _ret1_decode_h
@@ -2387,13 +2349,11 @@ _ret1_decode_h:
  *
  * Bit-unpack polynomial t0 with coefficients in ]-2^{D-1}, 2^{D-1}].
  *
- * Flags: -
- *
- * @param[out] a0: pointer to output byte array with at least
+ * @param[out] x10: pointer to output byte array with at least
                    POLYETA_PACKEDBYTES bytes
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: a0-a1, t2, t3, t5, t6, w1-w2
+ * clobbered registers: x10-x11, x7, x28, x30, x31, w1-w2
  */
 .globl polyt0_unpack
 .type polyt0_unpack, @function
@@ -2513,15 +2473,13 @@ _inner_polyt0_unpack:
  * register; the caller should zero this value if only the sampling output is
  * desired.
  *
- * Flags: -
- *
- * @param[out] a0: pointer to accumulator on which to add output
- * @param[in]  a1: byte array with seed of length CRHBYTES
- * @param[in]  a2: nonce
- * @param[in]  a3: pointer to gamma1_vec_const
+ * @param[out] x10: pointer to accumulator on which to add output
+ * @param[in]  x11: byte array with seed of length CRHBYTES
+ * @param[in]  x12: nonce
+ * @param[in]  x13: pointer to gamma1_vec_const
  * @param[in]  x14: K (used by poly_uniform_gamma_1 dispatcher only)
  *
- * clobbered registers: a1, t0-t3, w1-w6
+ * clobbered registers: x11, x5-x28, w1-w6
  */
 #ifndef HARDENED
 .globl poly_uniform_gamma_1
@@ -2539,7 +2497,7 @@ poly_uniform_gamma_1_17:
   addi x6, x10, 0
 
   /* Initialize a SHAKE256 operation. */
-  addi x10, x11, 0    /* save a0 <= seed address */
+  addi x10, x11, 0    /* save x10 <= seed address */
 
   addi  x11, x0, CRHBYTES
   addi  x11, x11, 2
@@ -2548,14 +2506,14 @@ poly_uniform_gamma_1_17:
   csrrw x0, KECCAK_CFG_REG, x5
 
   /* Send the seed to the Keccak core. */
-  /* a0 already set above */
-  li   x11, CRHBYTES /* a1 <= CRHBYTES */
+  /* x10 already set above */
+  li   x11, CRHBYTES /* x11 <= CRHBYTES */
   jal  x1, keccak_send_message
 
   /* Send the nonce to the Keccak core. */
   la   x10, poly_wdr2gpr
   sw   x12, 0(x10)
-  li   x11, 2 /* a1 <= 2 */
+  li   x11, 2 /* x11 <= 2 */
   jal  x1, keccak_send_message
 
   /* restore original value of output pointer */
@@ -2662,7 +2620,7 @@ poly_uniform_gamma_1_19:
   addi x6, x10, 0
 
   /* Initialize a SHAKE256 operation. */
-  addi x10, x11, 0    /* a0 <= seed address */
+  addi x10, x11, 0    /* x10 <= seed address */
 
   addi  x11, x0, CRHBYTES
   addi  x11, x11, 2
@@ -2671,14 +2629,14 @@ poly_uniform_gamma_1_19:
   csrrw x0, KECCAK_CFG_REG, x5
 
   /* Send the seed to the Keccak core. */
-  /* a0 already set above */
-  li   x11, CRHBYTES /* a1 <= CRHBYTES */
+  /* x10 already set above */
+  li   x11, CRHBYTES /* x11 <= CRHBYTES */
   jal  x1, keccak_send_message
 
   /* Send the nonce to the Keccak core. */
   la   x10, poly_wdr2gpr
   sw   x12, 0(x10)
-  li   x11, 2 /* a1 <= 2 */
+  li   x11, 2 /* x11 <= 2 */
   jal  x1, keccak_send_message
 
   /* restore original value of output pointer */
@@ -2758,14 +2716,12 @@ _inner_poly_uniform_gamma_1_19:
  *  = (Q-1)/ALPHA where we set c1 = 0 and -ALPHA/2 <= c0 = c mod Q - Q < 0.
  *  Assumes coefficients to be standard representatives.
  *
- * Flags: -
- *
- * @param[out] a0: a0 pointer to output polynomial with coefficients c0
- * @param[out] a1: a1 pointer to output polynomial with coefficients c1
- * @param[in]  a2: *a, pointer to input polynomial
+ * @param[out] x10: a0 pointer to output polynomial with coefficients c0
+ * @param[out] x11: a1 pointer to output polynomial with coefficients c1
+ * @param[in]  x12: *a, pointer to input polynomial
  * @param[in]  x14: K (used by poly_decompose dispatcher only)
  *
- * clobbered registers: w0-w11, a0-a2, t0-t4
+ * clobbered registers: w0-w11, x10-x12, x5-x29
  */
 .globl poly_decompose
 .type poly_decompose, @function
@@ -2876,12 +2832,12 @@ poly_decompose_32:
  *
  * Returns: Number of one bits
  *
- * @param[out] a0: pointer to output hint polynomial
- * @param[in]  a1: pointer to low part of input polynomial
- * @param[in]  a2: GAMMA2
+ * @param[out] x10: pointer to output hint polynomial
+ * @param[in]  x11: pointer to low part of input polynomial
+ * @param[in]  x12: GAMMA2
  * @param[in]  w0: 256b representative of nonzero values in high part of polynomial
  *
- * clobbered registers: t0-t2, t5-t6, a0-a2, a4-a7
+ * clobbered registers: x5-x7, x30-x31, x10-x12, x14-x17
  */
 #endif
 .globl poly_make_hint
@@ -2943,15 +2899,13 @@ _loop_end_poly_make_hint:
  *
  * Pack polynomial z with coefficients fitting in 18 bits.
  *
- * Flags: -
- *
  * @param[in]  w0: gamma1_vec_const
- * @param[in]  a1: pointer to input polynomial
+ * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyz_pack dispatcher only)
- * @param[out] a0: pointer to output byte array with at least
- *                 POLYZ_PACKEDBYTES bytes
+ * @param[out] x10: pointer to output byte array with at least
+ *                  POLYZ_PACKEDBYTES bytes
  *
- * clobbered registers: a0-a1, t0-t2, w0-w1
+ * clobbered registers: x10-x11, x5-x7, w0-w1
  */
 .globl polyz_pack
 .type polyz_pack, @function
@@ -3181,15 +3135,13 @@ _inner_polyz_pack_19:
  *
  * Encode hint to signature from single polynomial h[i].
  *
- * Flags: -
+ * @param[in]  x11: pointer to input polynomial h[i]
+ * @param[in]  x12: k, number of nonzero h coefficients so far
+ * @param[in]  x13: i, index of this polynomial in h
+ * @param[in]  x14: OMEGA
+ * @param[out] x10: pointer to the start of all signature hint bytes
  *
- * @param[in]  a1: pointer to input polynomial h[i]
- * @param[in]  a2: k, number of nonzero h coefficients so far
- * @param[in]  a3: i, index of this polynomial in h
- * @param[in]  a4: OMEGA
- * @param[out] a0: pointer to the start of all signature hint bytes
- *
- * clobbered registers: a1-a2, t0-t6
+ * clobbered registers: x11-x12, x5-x31
  */
 .globl poly_encode_h
 .type poly_encode_h, @function
@@ -3239,11 +3191,9 @@ _skip_store_poly_encode_h:
  *
  * This implements reduce32 for Dilithium, where n=256,q=8380417.
  *
- * Flags: Clobbers FG0, has no meaning beyond the scope of this subroutine.
- *
- * @param[in]  a0: dptr_input1, dmem pointer to first word of input1 polynomial
+ * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  w31: all-zero
- * @param[out] a1: dmem pointer to result
+ * @param[out] x11: dmem pointer to result
  *
  * clobbered registers: x4-x7, x10-x11, w2-w6
  */
@@ -3293,11 +3243,9 @@ poly_reduce32:
  *
  * This implements the polynomial addition for Dilithium, where n=256,q=8380417.
  *
- * Flags: -
- *
- * @param[in]  a0:  a, dmem pointer to first word of input polynomial
- * @param[in]  a1: a0, dmem pointer to output polynomial with coefficients c0
- * @param[in]  a2: a1, dmem pointer to output polynomial with coefficients c1
+ * @param[in]  x10:  a, dmem pointer to first word of input polynomial
+ * @param[in]  x11: a0, dmem pointer to output polynomial with coefficients c0
+ * @param[in]  x12: a1, dmem pointer to output polynomial with coefficients c1
  * @param[in]  w31: all-zero
  *
  * clobbered registers: x4-x7, w2-w4

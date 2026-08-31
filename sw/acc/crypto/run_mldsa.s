@@ -38,7 +38,6 @@
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
- *
  */
 .equ MODE_KEYGEN_44, 0x1ec
 .equ MODE_KEYGEN_65, 0x4d5
@@ -165,11 +164,11 @@ _mldsa_verify_common:
   ecall
 
 /**
- * Copy 64 bytes from a0 to mldsa_params.
+ * Copy 64 bytes from x10 to mldsa_params.
  *
- * @param[in] a0: pointer to source mldsa_params_* table
+ * @param[in]  x10: pointer to source mldsa_params_* table
  *
- * clobbered registers: a1, t0, w0
+ * clobbered registers: x11, x5, w0
  */
 _setup_params:
   la     x11, mldsa_params
