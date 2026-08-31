@@ -148,7 +148,7 @@ crypto_sign_signature_internal:
   /* Prepare modulus */
   #define mod_x2 w22
   bn.wsrr   w16, 0x0 /* w16 = MOD = R | Q */
-  bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
+  bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   li x27, 0 /* nonce */
 
@@ -806,7 +806,7 @@ _sz_done:
     /* gadget's b2a clobbered w16/w22; rebuild from MOD (still R|Q). */
     bn.wsrr   w16, 0x0
 
-    bn.shv.8S mod_x2, w16 << 1
+    bn.shv.8s mod_x2, w16 << 1
 
     /* c*s1 share 0 at s2 (sign_tmp), share 1 at s3; delta in t3
      * (survives ntt/intt/poly_pointwise; t0-t2 don't). */
@@ -907,7 +907,7 @@ _sign_z_gamma1_a_5:
     loop x7, 5
       loopi 32, 3
         bn.lid x6, 0(x5)
-        bn.addvm.8S w0, w0, w31
+        bn.addvm.8s w0, w0, w31
         bn.sid x6, 0(x5++)
       endloop
       bn.xor w0, w0, w0          /* Whitening */
@@ -1064,7 +1064,7 @@ _sh_done:
     /* b2a chain clobbered w16/w22; rebuild from MOD (still R|Q). */
     bn.wsrr   w16, 0x0
 
-    bn.shv.8S mod_x2, w16 << 1
+    bn.shv.8s mod_x2, w16 << 1
 
     /* Per-share NTT chain in place on sign_c_poly_shares -> c*s2. */
     la   x9, sign_c_poly_shares
@@ -1125,7 +1125,7 @@ _sh_done:
     loop x7, 5
       loopi 32, 3
         bn.lid x6, 0(x5)
-        bn.addvm.8S w0, w0, w31
+        bn.addvm.8s w0, w0, w31
         bn.sid x6, 0(x5++)
       endloop
       bn.xor w0, w0, w0          /* Whitening */
@@ -1148,7 +1148,7 @@ _sh_done:
     loopi 32, 4
       bn.lid x7, 0(x30++)
       bn.lid x28, 0(x29)
-      bn.subvm.8S w0, w0, w2
+      bn.subvm.8s w0, w0, w2
       bn.sid x7, 0(x29++)
     endloop
     /* Whitening */
@@ -1159,7 +1159,7 @@ _sh_done:
     loopi 32, 4
       bn.lid x7, 0(x30++)
       bn.lid x28, 0(x29)
-      bn.subvm.8S w0, w0, w2
+      bn.subvm.8s w0, w0, w2
       bn.sid x7, 0(x29++)
     endloop
     jal x0, _sign_h_rtilde_done
@@ -1208,8 +1208,8 @@ _sign_h_rtilde_l35:
     loopi 32, 5
       bn.lid x7, 0(x29)
       bn.lid x28, 0(x30++)
-      bn.addvm.8S w0, w0, w2
-      bn.subvm.8S w0, w1, w0
+      bn.addvm.8s w0, w0, w2
+      bn.subvm.8s w0, w1, w0
       bn.sid x7, 0(x29++)
     endloop
 
@@ -1248,15 +1248,15 @@ _sign_h_rtilde_l35:
     loopi 32, 5
       bn.lid x7, 0(x29)
       bn.lid x28, 0(x30++)
-      bn.addvm.8S w0, w0, w2
-      bn.subvm.8S w0, w31, w0
+      bn.addvm.8s w0, w0, w2
+      bn.subvm.8s w0, w31, w0
       bn.sid x7, 0(x29++)
     endloop
 _sign_h_rtilde_done:
 
     /* b2a chain clobbered w16/w22; rebuild from MOD (still R|Q). */
     bn.wsrr   w16, 0x0
-    bn.shv.8S mod_x2, w16 << 1
+    bn.shv.8s mod_x2, w16 << 1
 
     addi x5, x0, UNMASK
     beq  x22, x5, _sign_h_hint_poly
@@ -1439,7 +1439,7 @@ _sign_h_reject:
   /* Prepare modulus */
   #define mod_x2 w22
   bn.wsrr   w16, 0x0 /* w16 = MOD = R | Q */
-  bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
+  bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   li x27, 0 /* nonce */
 
@@ -1835,8 +1835,8 @@ _rejsmpl_loop:
   loop x6, 6
     loopi 32, 4
       bn.lid      x0, 0(x10)
-      bn.addv.8S  w0, w0, w1
-      bn.addvm.8S w0, w31, w0
+      bn.addv.8s  w0, w0, w1
+      bn.addvm.8s w0, w31, w0
       bn.sid      x0, 0(x10++)
     NOP
 

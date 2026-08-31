@@ -243,7 +243,7 @@ _inner_polyz_unpack_17:
     bn.rshi w1, w31, w1 >> 18
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
-  bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
+  bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
   bn.sid     x7, 0(x10++)
   ret
 
@@ -309,7 +309,7 @@ _inner_polyz_unpack_19:
     bn.rshi w1, w31, w1 >> 20
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
-  bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
+  bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
   bn.sid     x7, 0(x10++)
   ret
 
@@ -368,18 +368,18 @@ poly_chknorm:
     */
     /* Get the mask */
     /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
-    bn.shv.8S  w2, w1 >> 31
-    bn.subv.8S w2, w31, w2 /* Build mask from MSBs */
+    bn.shv.8s  w2, w1 >> 31
+    bn.subv.8s w2, w31, w2 /* Build mask from MSBs */
     /* w2 <= w2 & (2 * w1) */
-    bn.shv.8S  w3, w1 << 1
+    bn.shv.8s  w3, w1 << 1
     bn.and     w2, w2, w3
     /* w2 <= w1 - w2 */
-    bn.subv.8S w2, w1, w2
+    bn.subv.8s w2, w1, w2
 
     /* Compare to the bound. */
     /* w2 <= w2 <? w0  */
-    bn.subv.8S w2, w2, w0
-    bn.shv.8S  w2, w2 >> 31
+    bn.subv.8s w2, w2, w0
+    bn.shv.8s  w2, w2 >> 31
 
     /* Check that all underflow bits are 1 (w2 == w4, Z = 1). */
     bn.cmp w2, w4
@@ -565,7 +565,7 @@ poly_uniform:
   bn.lid  x5, 0(x6)
 
   /* Set up a mask to select the most significant byte of each 32 bits. */
-  bn.shv.8S w13, w11 << 24
+  bn.shv.8s w13, w11 << 24
 
   /* Copy the pointer to the start of the output polynomial. */
   addi    x28, x11, 0
@@ -851,7 +851,7 @@ poly_uniform:
     bn.lid     x31, 0(x28)
     bn.and     w21, w21, w11
     bn.sid     x31, 0(x28++)
-    bn.subv.8S w10, w21, w12
+    bn.subv.8s w10, w21, w12
     bn.and     w10, w10, w13
     bn.cmp     w10, w13
     bn.sel     w15, w15, w31, Z
@@ -947,7 +947,7 @@ poly_uniform:
     bn.lid     x31, 0(x28)
     bn.and     w21, w21, w11
     bn.sid     x31, 0(x28++)
-    bn.subv.8S w10, w21, w12
+    bn.subv.8s w10, w21, w12
     bn.and     w10, w10, w13
     bn.cmp     w10, w13
     bn.sel     w15, w15, w31, Z
@@ -1033,7 +1033,7 @@ _poly_uniform_discard_coeff_done:
   bn.lid  x0, 0(x5)
 
   /* Subtract the modulus from each coefficient. */
-  bn.subv.8S w10, w0, w12
+  bn.subv.8s w10, w0, w12
 
   /* Select the most significant byte of each difference. */
   bn.and  w10, w10, w13
@@ -1169,7 +1169,7 @@ poly_uniform_mask_and_check_vectors:
     bn.and     w21, w21, w11
     bn.sid     x31, 0(x28++)
     /* Check for underflow in all coefficients. */
-    bn.subv.8S w10, w21, w12
+    bn.subv.8s w10, w21, w12
     bn.and     w10, w10, w13
     bn.cmp     w10, w13
     /* If the Z flag is unset, stop incrementing the index. */
@@ -1390,17 +1390,17 @@ _rej_eta_sample_loop_continue_eta_4:
   ret
 
 _poly_uniform_eta_arithmetic_eta_2:
-  bn.mulv.8S.even.lo w13, w20, w12
-  bn.mulv.8S.odd.lo  w13, w13, w12
-  bn.shv.8S  w13, w13 >> 10
-  bn.mulv.8S.even.lo w13, w13, w0
-  bn.mulv.8S.odd.lo  w13, w13, w0
-  bn.subv.8S w20, w20, w13
-  bn.subvm.8S w9, w1, w20
+  bn.mulv.8s.even.lo w13, w20, w12
+  bn.mulv.8s.odd.lo  w13, w13, w12
+  bn.shv.8s  w13, w13 >> 10
+  bn.mulv.8s.even.lo w13, w13, w0
+  bn.mulv.8s.odd.lo  w13, w13, w0
+  bn.subv.8s w20, w20, w13
+  bn.subvm.8s w9, w1, w20
   ret
 
 _poly_uniform_eta_arithmetic_eta_4:
-  bn.subvm.8S w9, w1, w20
+  bn.subvm.8s w9, w1, w20
   ret
 
 /**
@@ -1472,8 +1472,8 @@ poly_use_hint_88:
 
   bn.wsrr w15, MOD
 
-  bn.shv.8S w12, w5 >> 6
-  bn.addv.8S w12, w12, w8
+  bn.shv.8s w12, w5 >> 6
+  bn.addv.8s w12, w12, w8
   bn.wsrw MOD, w12
 
   loopi 32, 11
@@ -1482,16 +1482,16 @@ poly_use_hint_88:
 
     bn.lid x0, 0(x12++)
 
-    bn.subv.8S w1, w1, w0
-    bn.shv.8S w12, w1 >> 31
+    bn.subv.8s w1, w1, w0
+    bn.shv.8s w12, w1 >> 31
 
     bn.and w13, w12, w0
 
     bn.xor w12, w12, w0
     bn.and w12, w12, w0
 
-    bn.addvm.8S w0, w2, w12
-    bn.subvm.8S w0, w0, w13
+    bn.addvm.8s w0, w2, w12
+    bn.subvm.8s w0, w0, w13
     bn.sid x0, 0(x10++)
 
   bn.wsrw MOD, w15
@@ -1525,8 +1525,8 @@ poly_use_hint_32:
 
   bn.wsrr w15, MOD
 
-  bn.shv.8S w12, w5 >> 6
-  bn.addv.8S w12, w12, w8
+  bn.shv.8s w12, w5 >> 6
+  bn.addv.8s w12, w12, w8
   bn.wsrw MOD, w12
 
   loopi 32, 11
@@ -1535,16 +1535,16 @@ poly_use_hint_32:
 
     bn.lid x0, 0(x12++)
 
-    bn.subv.8S w1, w1, w0
-    bn.shv.8S w12, w1 >> 31
+    bn.subv.8s w1, w1, w0
+    bn.shv.8s w12, w1 >> 31
 
     bn.and w13, w12, w0
 
     bn.xor w12, w12, w0
     bn.and w12, w12, w0
 
-    bn.addvm.8S w0, w2, w12
-    bn.subvm.8S w0, w0, w13
+    bn.addvm.8s w0, w2, w12
+    bn.subvm.8s w0, w0, w13
     bn.sid x0, 0(x10++)
 
   bn.wsrw MOD, w15
@@ -1694,7 +1694,7 @@ polyeta_pack_eta_2:
 
   bn.lid x6, 0(x11++)
   /* w1 <= eta - w1 */
-  bn.subvm.8S w1, w3, w1
+  bn.subvm.8s w1, w3, w1
   loopi 5, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1713,7 +1713,7 @@ polyeta_pack_eta_2:
 
   bn.lid x6, 0(x11++)
   /* w1 <= eta - w1 */
-  bn.subvm.8S w1, w3, w1
+  bn.subvm.8s w1, w3, w1
   loopi 2, 2
     bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1743,7 +1743,7 @@ _inner_polyeta_pack_eta_2:
   loopi 10, 18
     bn.lid x6, 0(x11++)
     /* w1 <= eta - w1 */
-    bn.subvm.8S w1, w3, w1
+    bn.subvm.8s w1, w3, w1
     .rept 8
       bn.rshi w2, w1, w2 >> 3 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1785,7 +1785,7 @@ _inner_polyeta_pack_eta_4:
   loopi 8, 18
     bn.lid x6, 0(x11++)
     /* w1 <= eta - w1 */
-    bn.subvm.8S w1, w3, w1
+    bn.subvm.8s w1, w3, w1
     .rept 8
       bn.rshi w2, w1, w2 >> 4 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1903,7 +1903,7 @@ _inner_polyt0_pack:
   loopi 2, 6
     bn.lid x6, 0(x11++)
     /* w1 <= eta - w1 */
-    bn.subv.8S w1, w3, w1
+    bn.subv.8s w1, w3, w1
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 13 /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -2128,7 +2128,7 @@ _inner_polyeta_unpack_eta_2:
     .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 3 bit */
-    bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
+    bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
     bn.sid x7, 0(x10++)
   ret
@@ -2188,7 +2188,7 @@ _inner_polyeta_unpack_eta_4:
     .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 4 bit */
-    bn.subvm.8S w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
+    bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
     bn.sid x7, 0(x10++)
   ret
@@ -2458,7 +2458,7 @@ _inner_polyt0_unpack:
     .endr
 
     bn.and     w2, w2, w5 /* Mask unpacked coeffs to 13 bit */
-    bn.subvm.8S w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
+    bn.subvm.8s w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
     bn.sid     x7, 0(x10++)
   ret
 
@@ -2606,9 +2606,9 @@ _inner_poly_uniform_gamma_1_17:
     bn.rshi w1, w31, w1 >> 18
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
-  bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
+  bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
   bn.lid     x0, 0(x6)
-  bn.addvm.8S w2, w0, w2
+  bn.addvm.8s w2, w0, w2
   bn.sid     x7, 0(x6++)
   ret
 
@@ -2700,9 +2700,9 @@ _inner_poly_uniform_gamma_1_19:
     bn.rshi w1, w31, w1 >> 20
 
   bn.and     w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
-  bn.subvm.8S w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
+  bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
   bn.lid     x0, 0(x6)
-  bn.addvm.8S w2, w0, w2
+  bn.addvm.8s w2, w0, w2
   bn.sid     x7, 0(x6++)
   ret
 /**
@@ -3061,7 +3061,7 @@ polyz_pack_17:
 _inner_polyz_pack_17:
   bn.lid x6, 0(x11++)
   /* w1 <= eta - w1 */
-  bn.subv.8S w1, w3, w1
+  bn.subv.8s w1, w3, w1
   loopi 8, 2
     bn.rshi w2, w1, w2 >> 18 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -3117,7 +3117,7 @@ polyz_pack_19:
 _inner_polyz_pack_19:
   bn.lid x6, 0(x11++)
   /* w1 <= eta - w1 */
-  bn.subv.8S w1, w3, w1
+  bn.subv.8s w1, w3, w1
   loopi 8, 2
     bn.rshi w2, w1, w2 >> 20 /* Write one coefficient into the output WDR */
     bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -3206,7 +3206,7 @@ poly_reduce32:
   /* Setup constant 1 << 22 */
   la        x6, reduce32_const
   bn.lid    x5, 0(x6)
-  bn.shv.8S w4, w4 << 22
+  bn.shv.8s w4, w4 << 22
 
   /* Load q */
   la     x28, modulus
@@ -3219,15 +3219,15 @@ poly_reduce32:
     bn.lid x28, 0(x10++)
 
     /* t = a + (1 << 22) */
-    bn.addv.8S w5, w2, w4
+    bn.addv.8s w5, w2, w4
     /* t = (a + (1 << 22)) >> 23 */
     /* Shift can be logical because inputs are positive anyways */
-    bn.shv.8S  w5, w5 >> 23
+    bn.shv.8s  w5, w5 >> 23
     /* t = t * q */
-    bn.mulv.8S.even.lo  w5, w5, w6
-    bn.mulv.8S.odd.lo   w5, w5, w6
+    bn.mulv.8s.even.lo  w5, w5, w6
+    bn.mulv.8s.odd.lo   w5, w5, w6
     /* a - t */
-    bn.subv.8S w2, w2, w5
+    bn.subv.8s w2, w2, w5
 
     bn.sid x28, 0(x11++)
 
@@ -3270,13 +3270,13 @@ poly_power2round:
 
     /* Compute */
     /* (a + (1 << (D-1)) - 1) */
-    bn.addv.8S w6, w4, w5
+    bn.addv.8s w6, w4, w5
     /* a1 = (a + (1 << (D-1)) - 1) >> D */
-    bn.shv.8S w6, w6 >> D
+    bn.shv.8s w6, w6 >> D
     /* a0 = (a1 << D) */
-    bn.shv.8S w7, w6 << D
+    bn.shv.8s w7, w6 << D
     /* a0 = a - (a1 << D) */
-    bn.subv.8S w7, w5, w7
+    bn.subv.8s w7, w5, w7
 
     /* Store */
     bn.sid x7, 0(x12++)

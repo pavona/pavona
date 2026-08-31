@@ -123,7 +123,7 @@ crypto_sign_keypair:
 
   bn.wsrr   w16, mod /* w16 = R | Q */
 
-  bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
+  bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
   bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
 
   /* Load destination pointer for matrix-vector multiplication. */
@@ -234,7 +234,7 @@ _kg1_done:
     addi      x5, x0, 2
     csrrw     x0, kmac_partial_write, x5
     bn.wsrw   kmac_msg, w23
-    bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
+    bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
     bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
     /* Stage forward twiddles once (eta gadget clobbered scratch); both
      * shares of s1[j] reuse them. */
@@ -578,7 +578,7 @@ _t_unmask_loop:
   /* Finish the SHAKE-256 operation. */
 
   bn.wsrr   w16, mod /* w16 = R | Q */
-  bn.shv.8S w22, w16 << 1 /* w22 = 2*R | 2*Q */
+  bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
   bn.wsrw   mod, w22 /* MOD = 2*R | 2*Q */
 
   /* Load source pointers for matrix-vector multiplication. */

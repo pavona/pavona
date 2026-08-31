@@ -34,29 +34,29 @@ decompose_88:
   /* "a", "a{0,1}" refer to the variable names from the reference code */
 
   /* Compute "a1" */
-  bn.addv.8S w2, w0, w5         /* "a" + 127 */
-  bn.shv.8S  w2, w2 >> 7   /* ("a" + 127) >> 7 */
-  bn.mulv.8S.even.lo w2, w2, w6         /* "a1" * 11275 */
-  bn.mulv.8S.odd.lo  w2, w2, w6         /* "a1" * 11275 */
-  bn.shv.8S  w4, w7 << 23  /* 1 << 23 */
-  bn.addv.8S w2, w2, w4         /* ("a1" * 11275) + (1 << 23) */
-  bn.shv.8S  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */
-  bn.subv.8S w3, w8, w2         /* 43 - "a1" */
-  bn.shv.8S w30, w3 >> 31
-  bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
+  bn.addv.8s w2, w0, w5         /* "a" + 127 */
+  bn.shv.8s  w2, w2 >> 7   /* ("a" + 127) >> 7 */
+  bn.mulv.8s.even.lo w2, w2, w6         /* "a1" * 11275 */
+  bn.mulv.8s.odd.lo  w2, w2, w6         /* "a1" * 11275 */
+  bn.shv.8s  w4, w7 << 23  /* 1 << 23 */
+  bn.addv.8s w2, w2, w4         /* ("a1" * 11275) + (1 << 23) */
+  bn.shv.8s  w2, w2 >> 24  /* (("a1" * 11275) + (1 << 23)) >> 24 */
+  bn.subv.8s w3, w8, w2         /* 43 - "a1" */
+  bn.shv.8s w30, w3 >> 31
+  bn.subv.8s w30, w31, w30 /* Build mask from MSBs */
   bn.and w3, w2, w30           /* ((43 - "a1") >> 31) & "a1" */
   bn.xor w2, w2, w3            /* "a1" ^= ((43 - "a1") >> 31) & "a1" */
 
   /* Compute "a0" */
-  bn.mulv.8S.even.lo w4, w2, w9          /* "a1" * GAMMA2 */
-  bn.mulv.8S.odd.lo  w4, w4, w9          /* "a1" * GAMMA2 */
-  bn.shv.8S  w4, w4 << 1    /* "a1" * GAMMA2 * 2 */
-  bn.subv.8S w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
-  bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */
-  bn.shv.8S  w30, w4 >> 31
-  bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
+  bn.mulv.8s.even.lo w4, w2, w9          /* "a1" * GAMMA2 */
+  bn.mulv.8s.odd.lo  w4, w4, w9          /* "a1" * GAMMA2 */
+  bn.shv.8s  w4, w4 << 1    /* "a1" * GAMMA2 * 2 */
+  bn.subv.8s w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
+  bn.subv.8s w4, w10, w1         /* (Q-1)/2 - "a0" */
+  bn.shv.8s  w30, w4 >> 31
+  bn.subv.8s w30, w31, w30 /* Build mask from MSBs */
   bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */
-  bn.subv.8S w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
+  bn.subv.8s w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
 
   ret
 
@@ -66,24 +66,24 @@ decompose_32:
   /* "a", "a{0,1}" refer to the variable names from the reference code */
 
   /* Compute "a1" */
-  bn.addv.8S w2, w0, w5         /* "a" + 127 */
-  bn.shv.8S  w2, w2 >> 7   /* ("a" + 127) >> 7 */
-  bn.mulv.8S.even.lo w2, w2, w6    /* "a1" * 1025 */
-  bn.mulv.8S.odd.lo  w2, w2, w6    /* "a1" * 1025 */
-  bn.shv.8S  w4, w7 << 21  /* 1 << 21 */
-  bn.addv.8S w2, w2, w4    /* ("a1" * 1025) + (1 << 21) */
-  bn.shv.8S  w2, w2 >> 22  /* (("a1" * 1025) + (1 << 21)) >> 22 */
+  bn.addv.8s w2, w0, w5         /* "a" + 127 */
+  bn.shv.8s  w2, w2 >> 7   /* ("a" + 127) >> 7 */
+  bn.mulv.8s.even.lo w2, w2, w6    /* "a1" * 1025 */
+  bn.mulv.8s.odd.lo  w2, w2, w6    /* "a1" * 1025 */
+  bn.shv.8s  w4, w7 << 21  /* 1 << 21 */
+  bn.addv.8s w2, w2, w4    /* ("a1" * 1025) + (1 << 21) */
+  bn.shv.8s  w2, w2 >> 22  /* (("a1" * 1025) + (1 << 21)) >> 22 */
   bn.and     w2, w2, w8    /* & 15 */
 
   /* Compute "a0" */
-  bn.mulv.8S.even.lo w4, w2, w9          /* "a1" * GAMMA2 */
-  bn.mulv.8S.odd.lo  w4, w4, w9          /* "a1" * GAMMA2 */
-  bn.shv.8S  w4, w4 << 1    /* "a1" * GAMMA2 * 2 */
-  bn.subv.8S w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
-  bn.subv.8S w4, w10, w1         /* (Q-1)/2 - "a0" */
-  bn.shv.8S  w30, w4 >> 31
-  bn.subv.8S w30, w31, w30 /* Build mask from MSBs */
+  bn.mulv.8s.even.lo w4, w2, w9          /* "a1" * GAMMA2 */
+  bn.mulv.8s.odd.lo  w4, w4, w9          /* "a1" * GAMMA2 */
+  bn.shv.8s  w4, w4 << 1    /* "a1" * GAMMA2 * 2 */
+  bn.subv.8s w1, w0, w4          /* a - "a1" * GAMMA2 * 2 */
+  bn.subv.8s w4, w10, w1         /* (Q-1)/2 - "a0" */
+  bn.shv.8s  w30, w4 >> 31
+  bn.subv.8s w30, w31, w30 /* Build mask from MSBs */
   bn.and     w4, w11, w30        /* (((Q-1)/2 - "a0") >> 31) & Q */
-  bn.subv.8S w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
+  bn.subv.8s w1, w1, w4          /* a0 -= (((Q-1)/2 - "a0") >> 31) & Q */
 
   ret

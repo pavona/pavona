@@ -36,12 +36,12 @@ poly_pointwise:
     bn.lid x0, 0(x10++)
     bn.lid x4, 0(x11++)
 
-    bn.mulv.8S.even.acc.z.lo w0, w0, w1
-    bn.mulv.l.8S.even.lo     w0, w0, sw0.1
-    bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
-    bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
-    bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
-    bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
+    bn.mulv.8s.even.acc.z.lo w0, w0, w1
+    bn.mulv.l.8s.even.lo     w0, w0, sw0.1
+    bn.mulv.l.8s.even.acc.hi w0, w0, sw0.0
+    bn.mulv.8s.odd.acc.z.lo  w0, w0, w1
+    bn.mulv.l.8s.odd.lo      w0, w0, sw0.1
+    bn.mulv.l.8s.odd.acc.hi  w0, w0, sw0.0
 
     bn.sid x0, 0(x12++)
   endloop
@@ -76,16 +76,16 @@ poly_pointwise_acc:
     bn.lid x0, 0(x10++)
     bn.lid x4, 0(x11++)
 
-    bn.mulv.8S.even.acc.z.lo w0, w0, w1
-    bn.mulv.l.8S.even.lo     w0, w0, sw0.1
-    bn.mulv.l.8S.even.acc.hi w0, w0, sw0.0
-    bn.mulv.8S.odd.acc.z.lo  w0, w0, w1
-    bn.mulv.l.8S.odd.lo      w0, w0, sw0.1
-    bn.mulv.l.8S.odd.acc.hi  w0, w0, sw0.0
+    bn.mulv.8s.even.acc.z.lo w0, w0, w1
+    bn.mulv.l.8s.even.lo     w0, w0, sw0.1
+    bn.mulv.l.8s.even.acc.hi w0, w0, sw0.0
+    bn.mulv.8s.odd.acc.z.lo  w0, w0, w1
+    bn.mulv.l.8s.odd.lo      w0, w0, sw0.1
+    bn.mulv.l.8s.odd.acc.hi  w0, w0, sw0.0
 
     /* Accumulate onto output polynomial */
     bn.lid      x4, 0(x12)
-    bn.addvm.8S w0, w0, w1
+    bn.addvm.8s w0, w0, w1
 
     bn.sid x0, 0(x12++)
   endloop

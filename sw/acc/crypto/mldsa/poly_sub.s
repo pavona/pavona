@@ -36,7 +36,7 @@ poly_sub:
   loopi 32, 4
     bn.lid      x0, 0(x10++)
     bn.lid      x4, 0(x11++)
-    bn.subvm.8S w0, w0, w1
+    bn.subvm.8s w0, w0, w1
     bn.sid      x0, 0(x12++)
   endloop
   ret

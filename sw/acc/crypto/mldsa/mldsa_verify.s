@@ -168,7 +168,7 @@ _ctilde_unpack_done:
   /* Prepare modulus */
   #define mod_x2 w22
   bn.wsrr   w16, 0x0 /* w16 = R | Q */
-  bn.shv.8S mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
+  bn.shv.8s mod_x2, w16 << 1 /* mod_x2 = 2*R | 2*Q */
 
   bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
 #ifdef HARDENED
@@ -352,7 +352,7 @@ _ctilde_unpack_done:
     addi x6, x19, 0
     loopi 32, 3
       bn.lid    x0, 0(x6)
-      bn.shv.8S w0, w0 << D
+      bn.shv.8s w0, w0 << D
       bn.sid    x0, 0(x6++)
     /* Compute ntt(t1) in place. */
     addi x10, x19, 0
