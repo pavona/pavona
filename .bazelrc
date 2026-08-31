@@ -169,6 +169,10 @@ common:macos --repo_env=C_INCLUDE_PATH=/opt/homebrew/include:/opt/homebrew/inclu
 common:macos --repo_env=CPLUS_INCLUDE_PATH=/opt/homebrew/include:/opt/homebrew/include/libelf
 common:macos --repo_env=LIBRARY_PATH=/opt/homebrew/lib
 
+# Do not implicitly create `__init__.py` files in the runfiles of Python
+# targets. A future rules_python release makes this the default.
+build --incompatible_default_to_explicit_init_py
+
 # Bazel remote cache configuration.
 common --remote_cache=https://storage.googleapis.com/pavona-bazel-cache"
 build --remote_upload_local_results=false
