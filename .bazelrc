@@ -161,3 +161,6 @@ build --incompatible_strict_action_env
 # Bazel remote cache configuration.
 common --remote_cache=https://storage.googleapis.com/pavona-bazel-cache"
 build --remote_upload_local_results=false
+
+# Disable telemetry in `aspect_rules_lint`.
+common --repo_env=DO_NOT_TRACK=1

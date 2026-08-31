@@ -23,7 +23,7 @@ bazel_dep(name = "toolchains_llvm", version = "1.7.0")
 # Dev dependencies:
 bazel_dep(
     name = "aspect_rules_lint",
-    version = "1.13.0",
+    version = "2.8.0",
     dev_dependency = True,
 )
 bazel_dep(
