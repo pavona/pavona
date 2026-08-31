@@ -120,7 +120,7 @@ _continue:
   add    x11, x21, x0
   jal    x1, poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
   loop x19, 21
@@ -202,7 +202,7 @@ _continue:
 
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -302,7 +302,7 @@ _continue:
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, mpoly_e
-    la         x11, twiddles_ntt
+    la         x11, const_tw_ntt
     add        x12, x10, x0
     jal        x1, ntt
     bn.wsrw    mod, w16
@@ -402,7 +402,7 @@ _continue:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpoly_e
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
   bn.wsrw    mod, w16
@@ -494,7 +494,7 @@ _continue:
   add    x11, x21, x0
   jal    x1, masked_poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
   loop x19, 27
@@ -594,7 +594,7 @@ _continue:
   /**************************************************************************/
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -712,7 +712,7 @@ _continue:
     bn.wsrw    mod, w0
 
     la  x10, mpoly_e
-    la  x11, twiddles_ntt
+    la  x11, const_tw_ntt
     add x12, x10, x0
     loopi NSHARES, 3
       jal x1, ntt
@@ -851,7 +851,7 @@ _continue:
   bn.wsrw    mod, w0
 
   la  x10, mpoly_e
-  la  x11, twiddles_ntt
+  la  x11, const_tw_ntt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, ntt

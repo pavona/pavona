@@ -81,8 +81,8 @@ indcpa_dec:
   la x21, mpoly_sk
   la x22, poly_b
   la x23, mpoly_m
-  la x24, twiddles_ntt
-  la x25, twiddles_basemul
+  la x24, const_tw_ntt
+  la x25, const_tw_basemul
 
 #ifndef HARDENED
   /*** Step 1: unpack dk_pke[0] and compute the first product. ***/
@@ -147,7 +147,7 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add    x10, x23, x0
-  la     x11, twiddles_intt
+  la     x11, const_tw_intt
   add    x12, x10, x0
   jal    x1, intt
   bn.wsrw mod, w16
@@ -262,7 +262,7 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add x10, x23, x0
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, intt

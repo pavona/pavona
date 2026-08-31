@@ -20,7 +20,7 @@
  * This routine is constant time.
  *
  * @param[in]  x10: dmem pointer to x
- * @param[in]  x11: dmem pointer to the twiddle factors twiddles_ntt
+ * @param[in]  x11: dmem pointer to the twiddle factors const_tw_ntt
  * @param[out] x12: dmem pointer to r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)

@@ -14,9 +14,9 @@
 
 .data
 .balign 32
-/* qinv = -q^-1 mod 2^16 = 3327. */
-.globl modulus_inv
-modulus_inv:
+/* mqinv = -q^-1 mod 2^16 = 3327. */
+.globl const_mqinv
+const_mqinv:
   .word 0x00000cff
   .word 0x00000000
   .word 0x00000000
@@ -27,8 +27,8 @@ modulus_inv:
   .word 0x00000000
 
 /* q = 3329 in every 16-bit slot. */
-.globl modulus_bn
-modulus_bn:
+.globl const_q
+const_q:
   .word 0x0d010d01
   .word 0x0d010d01
   .word 0x0d010d01
@@ -39,8 +39,8 @@ modulus_bn:
   .word 0x0d010d01
 
 /* (q + 1) / 2 = 1665. */
-.globl modulus_over_2
-modulus_over_2:
+.globl const_qp1_half
+const_qp1_half:
   .word 0x06810681
   .word 0x06810681
   .word 0x06810681
@@ -51,8 +51,8 @@ modulus_over_2:
   .word 0x06810681
 
 /* ((q + 1) / 2) * (2^16) % q. */
-.globl modulus_over_2_m2_16
-modulus_over_2_m2_16:
+.globl const_qp1_half_mul_2_16_modq
+const_qp1_half_mul_2_16_modq:
   .word 0x0af70af7
   .word 0x0af70af7
   .word 0x0af70af7
@@ -63,8 +63,8 @@ modulus_over_2_m2_16:
   .word 0x0af70af7
 
 /* 19 * q - 1. */
-.globl modulus_times_19_minus_1
-modulus_times_19_minus_1:
+.globl const_q19m1
+const_q19m1:
   .word 0x0000f712
   .word 0x0000f712
   .word 0x0000f712
@@ -75,8 +75,8 @@ modulus_times_19_minus_1:
   .word 0x0000f712
 
 /* 2^16 mod q. */
-.globl mont
-mont:
+.globl const_2_16_modq
+const_2_16_modq:
   .word 0x08ed08ed
   .word 0x08ed08ed
   .word 0x08ed08ed
@@ -87,8 +87,8 @@ mont:
   .word 0x08ed08ed
 
 /* 2^32 mod q. */
-.globl const_tomont
-const_tomont:
+.globl const_2_32_modq
+const_2_32_modq:
   .word 0x05490549
   .word 0x05490549
   .word 0x05490549
@@ -122,8 +122,8 @@ const_m_du:
   .word 0x680bb055
   .word 0x0013afb7
 
-.globl cbd2_const
-cbd2_const:
+.globl const_cbd2
+const_cbd2:
   /* const1 */
   .word 0x55555555
   .word 0x55555555
@@ -143,8 +143,8 @@ cbd2_const:
   .word 0x33333333
   .word 0x33333333
 
-.globl cbd3_const
-cbd3_const:
+.globl const_cbd3
+const_cbd3:
   /* const1 */
   .word 0x49249249
   .word 0x92492492
@@ -164,8 +164,8 @@ cbd3_const:
   .word 0xc71c71c7
   .word 0x71c71c71
 
-.globl twiddles_ntt
-twiddles_ntt:
+.globl const_tw_ntt
+const_tw_ntt:
   /* Layer 1--4 */
   .half 0x0a0b
   .half 0x0b9a
@@ -300,8 +300,8 @@ twiddles_ntt:
   .word 0x03df03df
   .word 0x065c065c
 
-.globl twiddles_intt
-twiddles_intt:
+.globl const_tw_intt
+const_tw_intt:
   /* Layer 7 */
   .word 0x06a506a5
   .word 0x09220922
@@ -436,8 +436,8 @@ twiddles_intt:
   .half 0x078c /* ((758 * 2^16) mod q) * (1 / 128) mod q. */
   .half 0x05a1 /* ((2^32 mod q) * (1 / 128)) mod q. */
 
-.globl twiddles_basemul
-twiddles_basemul:
+.globl const_tw_basemul
+const_tw_basemul:
   .word 0x081e08b2
   .word 0x04e3044f
   .word 0x036701ae
