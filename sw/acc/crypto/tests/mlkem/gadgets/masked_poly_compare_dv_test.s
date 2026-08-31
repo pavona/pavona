@@ -10,22 +10,22 @@ main:
   /* All-zero register. */
   bn.xor w31, w31, w31
 
-  /* r <- poly_masked_compare_du(xu, cu_du11), k = 4 path (du = 11). */
+  /* r <- masked_poly_compare_dv(xv, cv_dv5), k = 4 path (dv = 5). */
   la   x2, stack_end
-  la   x10, xu
-  la   x11, cu_du11
-  addi x12, x0, 352
+  la   x10, xv
+  la   x11, cv_dv5
+  addi x12, x0, 160
   la   x14, r
   addi x15, x0, 4
-  jal  x1, poly_masked_compare_du
+  jal  x1, masked_poly_compare_dv
 
-  /* r &= poly_masked_compare_du(xu, cu_du10), k != 4 path (du = 10). */
-  la   x10, xu
-  la   x11, cu_du10
-  addi x12, x0, 320
+  /* r &= masked_poly_compare_dv(xv, cv_dv4), k != 4 path (dv = 4). */
+  la   x10, xv
+  la   x11, cv_dv4
+  addi x12, x0, 128
   la   x14, r
   addi x15, x0, 2
-  jal  x1, poly_masked_compare_du
+  jal  x1, masked_poly_compare_dv
 
   /* Unmask r; both compares matched, so every bit is set. */
   addi   x4, x0, 1

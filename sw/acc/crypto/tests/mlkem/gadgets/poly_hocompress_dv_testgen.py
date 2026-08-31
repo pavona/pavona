@@ -40,7 +40,7 @@ def bitslice_vec(x: List[int], k: int) -> bytes:
     return r_bytes
 
 
-def gen_polyvec_hocompress_test(
+def gen_poly_hocompress_dv_test(
         seed: Optional[int],
         data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
     if seed is not None:
@@ -57,15 +57,15 @@ def gen_polyvec_hocompress_test(
         x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
         x_bytes += int.to_bytes(x_int, byteorder="little", length=512)
 
-    # Reference compressions for both du values (du = 10 for k != 4, du = 11 for
+    # Reference compressions for both dv values (dv = 4 for k != 4, dv = 5 for
     # k == 4); the gadget is exercised at both.
-    ru10 = bitslice_vec([compress(r[i], 10) for i in range(N)], 10)
-    ru11 = bitslice_vec([compress(r[i], 11) for i in range(N)], 11)
+    rv4 = bitslice_vec([compress(r[i], 4) for i in range(N)], 4)
+    rv5 = bitslice_vec([compress(r[i], 5) for i in range(N)], 5)
 
     # Write input values.
     inputs = {
         'xa': x_bytes,
-        'rbu': bytes(32 * 11 * NSHARES)
+        'rbv': bytes(32 * 5 * NSHARES)
     }
     write_test_data(inputs, data_file)
 
@@ -73,7 +73,7 @@ def gen_polyvec_hocompress_test(
     write_test_exp({}, exp_file)
 
     # Write expected dmem values.
-    write_test_dexp({'ru10': ru10, 'ru11': ru11}, dexp_file)
+    write_test_dexp({'rv4': rv4, 'rv5': rv5}, dexp_file)
 
 
 if __name__ == '__main__':
@@ -97,4 +97,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
-        gen_polyvec_hocompress_test(args.seed, args.data, args.exp, args.dexp)
+        gen_poly_hocompress_dv_test(args.seed, args.data, args.exp, args.dexp)
