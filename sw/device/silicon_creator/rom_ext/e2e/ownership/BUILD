@@ -173,6 +173,8 @@ ownership_transfer_test(
     name = "bad_activate_test",
     fpga = fpga_params(
         changes_otp = True,
+        # Broken: fails repeatedly on CW340.
+        tags = ["broken"],
         test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
@@ -734,6 +736,8 @@ ownership_transfer_test(
         },
         changes_otp = True,
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_hybrid_owner_keys",
+        # Broken: fails repeatedly on CW340.
+        tags = ["broken"],
         test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}

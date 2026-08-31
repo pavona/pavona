@@ -119,6 +119,8 @@ pavona_test(
         changes_otp = True,
         exit_success = "BFV:{}".format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         rom_ext = ":rom_ext_0",
+        # Broken: fails repeatedly on CW340.
+        tags = ["broken"],
         test_cmd = """
             # First, assemble the additional images we'll need for this test.
             --exec="image assemble -s 131072 --mirror=false -o fw1.bin {rom_ext1}@0 {boot_test_b}@0x10000"

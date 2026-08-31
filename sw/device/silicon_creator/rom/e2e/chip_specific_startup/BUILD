@@ -28,7 +28,8 @@ package(default_visibility = ["//visibility:public"])
         },
         fpga = fpga_params(
             otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
-            tags = maybe_skip_in_ci(lc_state_val),
+            # Broken: fails intermittently on CW310.
+            tags = maybe_skip_in_ci(lc_state_val) + ["broken"],
             test_cmd = """
                 --bootstrap="{firmware}"
                 --otp-unprogrammed

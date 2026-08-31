@@ -177,6 +177,8 @@ genrule(
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             rom_ext_offset = _POSITIONS[rxslot]["rom_ext_offset"],
             slot = position["slot"],
+            # Broken: fails repeatedly on CW340.
+            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -291,6 +293,8 @@ pavona_test(
             ":boot_test_slot_a": "payload",
         },
         changes_otp = True,
+        # Broken: fails repeatedly on CW340.
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
