@@ -26,8 +26,9 @@ def document(outfile):
     outfile.write("\nThe top configuration partially specifies its list of modules.\n\n")
     document_schema(outfile, "urn:topgen:module")
 
-    outfile.write("""\nTops must also come with a seed configuration Hjson.\n\n""")
+    outfile.write("\nTops must also come with a seed configuration Hjson.\n\n")
     document_schema(outfile, "urn:topgen:seedcfg")
+    outfile.write("\n\n## Other schemas\n\n")
 
     for schemafile in sorted((Path(__file__).parent / "schemas").iterdir()):
         schema_name = schemafile.stem  # assume schema name matches file name
