@@ -18,8 +18,6 @@
 
 .section .text.start
 
-#define NSHARES 2
-
 #ifndef KYBER_K
   #define KYBER_K 3
 #endif
@@ -34,9 +32,8 @@
 
 .globl main
 main:
+  /* All-zero register. */
   bn.xor w31, w31, w31
-
-  la x2, stack_end
 
   /* mod = mqinv | q. */
   li      x4, 16
@@ -48,56 +45,56 @@ main:
   bn.or   w16, w16, w17 << 32
   bn.wsrw mod, w16
 
-  la   x10, coins
-  la   x11, ek
-  la   x12, dk
-  li   x13, KYBER_K
-  jal  x1, crypto_kem_keypair
+  /* dk <- crypto_kem_keypair(coins, ek). */
+  la  x2, stack_end
+  la  x10, coins
+  la  x11, ek
+  la  x12, dk
+  li  x13, KYBER_K
+  jal x1, crypto_kem_keypair
 
   /* Unpack the masked dk secret polys into keygen-dead scratch. */
   la x10, dk
   la x11, mpolyvec_sk
-  loopi KYBER_K, 4
-    loopi NSHARES, 2
-      jal x1, poly_frombytes
-      nop
+  loopi KYBER_K, 3
+    jal x1, poly_frombytes
+    jal x1, poly_frombytes
     nop
-  addi x8, x10, 0 /* Start of ek in the masked dk. */
+  endloop
+  add x8, x10, x0 /* Start of ek in the masked dk. */
 
   /* Unmask dk: sum the arithmetic shares mod q. */
+  li   x4, 1
   la   x5, mpolyvec_sk
   la   x6, mpolyvec_sk
-  li   x4, 1
-  li   x7, NSHARES
-  slli x28, x7, 9 /* NSHARES * 512 */
-  addi x7, x7, -1
-  loopi KYBER_K, 10
-    addi x29, x5, 0
-    loopi 16, 7
-      addi   x30, x5, 512
-      bn.lid x0, 0(x5++)
-      loop x7, 3
-        bn.lid       x4, 0(x30)
-        bn.addvm.16h w0, w0, w1
-        addi         x30, x30, 512
-      bn.sid x0, 0(x6++)
-    add x5, x29, x28
+  loopi KYBER_K, 7
+    addi x7, x5, 512
+    loopi 16, 4
+      bn.lid       x0, 0(x5++)
+      bn.lid       x4, 0(x7++)
+      bn.addvm.16h w0, w0, w1
+      bn.sid       x0, 0(x6++)
+    endloop
+    addi x5, x5, 512
+  endloop
 
   /* Repack the plain dk in place (poly_frombytes read all shares first). */
-  la  x10, mpolyvec_sk
-  la  x11, dk
+  la x10, mpolyvec_sk
+  la x11, dk
   loopi KYBER_K, 2
     jal x1, poly_tobytes
     nop
-  addi x9, x11, 0
+  endloop
+  add x9, x11, x0 /* Start of ek in the plain dk. */
 
   /* Move ek (and H(ek) || z shares) down to the plain dk offset. src > dst,
    * copied forward, so there is no overwrite hazard. */
   li   x5, CRYPTO_PUBLICKEYBYTES
-  srli x5, x5, 5
-  addi x5, x5, 3
+  srli x5, x5, 5 /* Byte length of ek. */
+  addi x5, x5, 3 /* Byte length of H(ek) (unmasked) and z (masked). */
   loop x5, 2
     bn.lid x0, 0(x8++)
     bn.sid x0, 0(x9++)
+  endloop
 
   ecall
