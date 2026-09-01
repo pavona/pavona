@@ -11,6 +11,8 @@ from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
 
 from shared.testgen import write_testcase
 
+N = 256
+
 INSTANCE_FOR_PARAMS = {
     'mlkem512': ML_KEM_512,
     'mlkem768': ML_KEM_768,
@@ -24,20 +26,23 @@ def gen_keypair_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO):
     ek, dk = mlkem.key_derive(coins)
 
     if hardened:
-        # Generate shares for d.
+        # Mask d.
         d_int = int.from_bytes(coins[0:32], byteorder="little")
-        r1 = random.getrandbits(256)
-        r2 = r1 ^ d_int
-        td = int.to_bytes(r1, byteorder="little", length=32)
-        td += int.to_bytes(r2, byteorder="little", length=32)
-        # Generate shares for z.
+        d0 = random.getrandbits(N)
+        d1 = d0 ^ d_int
+        d_bytes = int.to_bytes(d0, byteorder="little", length=32)
+        d_bytes += int.to_bytes(d1, byteorder="little", length=32)
+
+        # Mask z.
         z_int = int.from_bytes(coins[32:], byteorder="little")
-        r1 = random.getrandbits(256)
-        r2 = r1 ^ z_int
-        tz = int.to_bytes(r1, byteorder="little", length=32)
-        tz += int.to_bytes(r2, byteorder="little", length=32)
-        coins = td + tz
-        dk = dk[:-32] + tz
+        z0 = random.getrandbits(N)
+        z1 = z0 ^ z_int
+        z_bytes = int.to_bytes(z0, byteorder="little", length=32)
+        z_bytes += int.to_bytes(z1, byteorder="little", length=32)
+
+        # Finalize masked input coins.
+        coins = d_bytes + z_bytes
+        dk = dk[:-32] + z_bytes
 
     # Unprotected keygen runs run_mlkem (dispatched by mode); the masked wrapper
     # calls the kernel directly, unmasks dk, and has no MODE_* symbol.

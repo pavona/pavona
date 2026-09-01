@@ -19,6 +19,7 @@ INSTANCE_FOR_PARAMS = {
 
 Q = 3329
 N = 256
+NSHARES = 2
 
 
 def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
@@ -40,7 +41,6 @@ def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
     if not hardened:
         dk_input = dk
     else:
-        nshares = 2
         skpv = []
         dk_int = int.from_bytes(dk[0:384 * mlkem.k], byteorder="little")
         for k in range(mlkem.k):
@@ -51,29 +51,27 @@ def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
                 tv.append(t)
             skpv.append(tv)
 
-        dk_bytes = 0
+        t = [0] * N
+        dk_bytes = bytes()
         for k in range(mlkem.k):
             sk = skpv[k].copy()
-            sk_bytes = 0
-            for i in range(nshares - 1):
-                t = [random.randint(0, Q - 1) for _ in range(N)]
-                sk = [(sk[j] - t[j]) % Q for j in range(N)]
-                t = sum(t[j] << (j * 12) for j in range(N))
-                sk_bytes |= (t << (i * N * 12))
-            sk_int = sum(sk[j] << (j * 12) for j in range(N))
-            sk_bytes |= (sk_int << ((nshares - 1) * N * 12))
-            dk_bytes |= (sk_bytes << (k * N * 12 * nshares))
-
-        dk_bytes = int.to_bytes(dk_bytes, byteorder='little', length=384 * nshares * mlkem.k)
+            for _ in range(NSHARES - 1):
+                for coeff in range(N):
+                    t[coeff] = random.randint(0, Q - 1)
+                    sk[coeff] = (sk[coeff] - t[coeff]) % Q
+                t_int = sum(t[coeff] << (coeff * 12) for coeff in range(N))
+                dk_bytes += int.to_bytes(t_int, byteorder="little", length=384)
+            sk_int = sum(sk[coeff] << (coeff * 12) for coeff in range(N))
+            dk_bytes += int.to_bytes(sk_int, byteorder="little", length=384)
 
         dk_bytes += dk[mlkem.k * 384:-32]
+
         # Mask z.
         z_int = int.from_bytes(dk[-32:], byteorder='little')
-        r1 = random.getrandbits(256)
-        r2 = r1 ^ z_int
-        tz = int.to_bytes(r1, byteorder='little', length=32)
-        tz += int.to_bytes(r2, byteorder='little', length=32)
-        dk_bytes += tz
+        z0 = random.getrandbits(N)
+        z1 = z0 ^ z_int
+        dk_bytes += int.to_bytes(z0, byteorder='little', length=32)
+        dk_bytes += int.to_bytes(z1, byteorder='little', length=32)
         dk_input = dk_bytes
 
     # Unprotected decap runs run_mlkem (dispatched by mode); the masked wrapper
