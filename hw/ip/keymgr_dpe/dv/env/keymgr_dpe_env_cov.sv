@@ -46,7 +46,12 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
       keymgr_pkg::keymgr_key_dest_e dest
   );
     state_cp:     coverpoint state;
-    op_cp:        coverpoint op;
+    op_cp:        coverpoint op {
+      // OpDpeLoadRootKey is reserved in the keymgr_dpe_ops_e enum but the DUT does
+      // not accept it as a user op -- the root-key load is internal, triggered by
+      // OpDpeAdvance in StWorkDpeReset.
+      ignore_bins load_root_key = {keymgr_dpe_pkg::OpDpeLoadRootKey};
+    }
     op_status_cp: coverpoint op_status {
       // only sample when op is done
       ignore_bins illegal = {keymgr_pkg::OpIdle, keymgr_pkg::OpWip};
@@ -54,14 +59,36 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     cdi_cp:       coverpoint cdi iff (!(op inside {
       keymgr_dpe_pkg::OpDpeAdvance,
       keymgr_dpe_pkg::OpDpeDisable})
-    );
+    ) {
+      // keymgr_dpe is slot-based; it does not distinguish Sealing vs Attestation
+      // CDIs the way the keymgr (non-DPE) sibling does. The scoreboard's
+      // current_cdi is never assigned (only declared, defaults to Sealing), so the
+      // Attestation bin is structurally unreachable in this DV.
+      ignore_bins attestation = {Attestation};
+    }
     dest_cp:      coverpoint dest iff (op inside {
       keymgr_dpe_pkg::OpDpeGenSwOut,
       keymgr_dpe_pkg::OpDpeGenHwOut}
     );
 
-    op_x_state_cross:  cross op_cp, cdi_cp, dest_cp, state_cp;
-    op_x_status_cross: cross op_cp, cdi_cp, dest_cp, op_status_cp;
+    // Both crosses require cdi_cp AND dest_cp to be actively sampling. Their iff
+    // conditions intersect to op in {OpDpeGenSwOut, OpDpeGenHwOut}, so for any
+    // other op the cross is structurally unreachable -- exclude those bins so URG
+    // doesn't count them in the expected total.
+    op_x_state_cross:  cross op_cp, cdi_cp, dest_cp, state_cp {
+      ignore_bins non_gen_ops = binsof(op_cp) intersect {
+        keymgr_dpe_pkg::OpDpeAdvance,
+        keymgr_dpe_pkg::OpDpeErase,
+        keymgr_dpe_pkg::OpDpeDisable
+      };
+    }
+    op_x_status_cross: cross op_cp, cdi_cp, dest_cp, op_status_cp {
+      ignore_bins non_gen_ops = binsof(op_cp) intersect {
+        keymgr_dpe_pkg::OpDpeAdvance,
+        keymgr_dpe_pkg::OpDpeErase,
+        keymgr_dpe_pkg::OpDpeDisable
+      };
+    }
   endgroup
 
   // Covergroup to sample LC disable occurs at all the states or during operations
@@ -71,7 +98,10 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
       bit wip
   );
     state_cp: coverpoint state;
-    op_cp: coverpoint op iff (wip == 1);
+    op_cp: coverpoint op iff (wip == 1) {
+      // OpDpeLoadRootKey is reserved in the enum but the DUT never reports it.
+      ignore_bins load_root_key = {keymgr_dpe_pkg::OpDpeLoadRootKey};
+    }
     wip_cp: coverpoint wip;
 
     // state crosses with wip or idle
@@ -98,13 +128,20 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     // the state where sideload_clear occurs
     state_cp:          coverpoint state;
     // the operation followed by sideload_clear
-    op_cp:             coverpoint op;
+    op_cp:             coverpoint op {
+      // OpDpeLoadRootKey is reserved in the enum but the DUT never reports it.
+      ignore_bins load_root_key = {keymgr_dpe_pkg::OpDpeLoadRootKey};
+    }
     aes_sl_avail_cp:   coverpoint aes_sl_avail;
     kmac_sl_avail_cp:  coverpoint kmac_sl_avail;
     acc_sl_avail_cp:  coverpoint acc_sl_avail;
     regwen_cp:         coverpoint regwen;
 
-    sideload_clear_x_state_op_cross: cross sideload_clear, state, op;
+    // Cross over the binned versions: the raw 3-bit sideload_clear has 8 values but
+    // they collapse to {none, one[1..3], all}, and the raw op_cp has the unreachable
+    // OpDpeLoadRootKey bin. Using the _cp coverpoints means URG only counts the
+    // actually-defined bins.
+    sideload_clear_x_state_op_cross: cross sideload_clear_cp, state_cp, op_cp;
     sideload_clear_x_sl_avail_cross: cross sideload_clear_cp, aes_sl_avail, kmac_sl_avail,
                                            acc_sl_avail;
     sideload_clear_x_regwen_cross:   cross sideload_clear_cp, regwen_cp;
@@ -197,7 +234,11 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     end
 
     create_sw_input_cg_obj(cfg.ral.max_key_ver_shadowed.get_name());
-    create_sw_input_cg_obj(cfg.ral.start.get_name());
+    // Note: `start` is intentionally not registered. Its only meaningful write
+    // values are 0 and 1 (start.en, bit 0); the upper 31 bits don't reach any DUT
+    // logic, so the 32-bin sw_input_cp could never get past ~6% per instance and
+    // was dragging the per-instance average down. The scoreboard gates its
+    // sample() call on exists() in the wrap.
   endfunction
 
   virtual function void create_sw_input_cg_obj(string name);
