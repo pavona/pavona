@@ -114,7 +114,13 @@ class SlurmLauncher(Launcher):
         '''
 
         assert self.process is not None
+        self._tick_runtime()
         if self.process.poll() is None:
+            reason = self._limit_exceeded()
+            if reason is not None:
+                self._kill_with_reason(reason)
+                return 'K'
+
             return 'D'
 
         # Copy slurm job results to log file
@@ -143,18 +149,27 @@ class SlurmLauncher(Launcher):
         This must be called between dispatching and reaping the process (the
         same window as poll()).
         '''
-        assert self.process is not None
+        self._kill()
+        self._post_finish(
+            'K',
+            ErrorMessage(line_number=None, message='Job killed!', context=[]))
 
-        # Try to kill the running process. Send SIGTERM first, wait a bit,
-        # and then send SIGKILL if it didn't work.
+    def _kill(self):
+        '''Cancel the job by terminating the srun that holds it.
+
+        srun forwards the signal to the job and releases the allocation, so
+        there is no need to reach for scancel.
+        '''
+        if self.process is None:
+            return
+
+        # Send SIGTERM first, wait a bit, and then send SIGKILL if it did not
+        # work.
         self.process.terminate()
         try:
             self.process.wait(timeout=2)
         except subprocess.TimeoutExpired:
             self.process.kill()
-        self._post_finish(
-            'K',
-            ErrorMessage(line_number=None, message='Job killed!', context=[]))
 
     def _post_finish(self, status, err_msg):
         super()._post_finish(status, err_msg)

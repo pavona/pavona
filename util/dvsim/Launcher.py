@@ -14,6 +14,11 @@ from typing import Union
 
 from utils import VERBOSE, clean_odirs, dir_size_mb, mk_symlink, rm_path
 
+# How much of the end of each log read to carry over to the next one, so that a
+# start marker split across two reads is still matched. Comfortably longer than
+# the lines being looked for
+_LOG_SCAN_TAIL_CHARS = 256
+
 
 # Failure message used when a job returns a non-zero exit code without any of
 # its fail patterns matching. _check_status() keys off this to tell a job that
@@ -211,6 +216,20 @@ class Launcher:
         # The actual job runtime computed by dvsim, in seconds.
         self.job_runtime_secs = 0
 
+        # Ceiling on how long the job may run once it has started doing its
+        # work, in seconds. None lets it run indefinitely.
+        self.timeout_secs = None
+
+        # When the job was seen to start doing its work, as opposed to when it
+        # was launched. None until one of the deploy's started_patterns turns up
+        # in the log.
+        self._run_start_time = None
+
+        # How far the log has been read looking for that marker, and the tail
+        # carried over so that a marker split across two reads still matches.
+        self._log_scan_offset = 0
+        self._log_scan_tail = ""
+
         # Whether the job's log has already been mined for information about
         # the job. Guards against reading it twice, since the job's outcome
         # decides which of the two code paths gets there first.
@@ -262,6 +281,150 @@ class Launcher:
         self.deploy.pre_launch()
         self._make_odir()
         self.start_time = datetime.datetime.now()
+
+        # Read here rather than in each launcher, because a job's ceiling is a
+        # property of the job and not of how it is dispatched.
+        timeout_mins = self.deploy.get_timeout_mins()
+        self.timeout_secs = timeout_mins * 60 if timeout_mins else None
+
+    def _tick_runtime(self) -> None:
+        """Record how long the job has been going.
+
+        This is dvsim's own measurement, which is what the results table falls
+        back to when the tool's log does not report a runtime of its own. A
+        launcher that never calls this reports every job as having taken no
+        time at all.
+        """
+        elapsed = datetime.datetime.now() - self.start_time
+        self.job_runtime_secs = elapsed.total_seconds()
+
+    def _peak_mem_mb(self) -> Union[float, None]:
+        """Return the job's peak resident set size so far in MB, or None.
+
+        None means this launcher cannot measure a running job, so
+        max_job_mem_gb goes unenforced. That is the honest answer whenever the
+        work happens somewhere the launcher cannot see, as it does for a batch
+        system that runs the job on another machine. Such a system usually
+        applies a memory limit of its own, which is what enforces the ceiling
+        there instead.
+        """
+        return None
+
+    def _limit_exceeded(self) -> Union[str, None]:
+        """Return why the job ought to be killed, or None to let it run on.
+
+        Both ceilings are policy that every launcher shares, so they live here.
+        What differs between launchers is only what they are able to measure,
+        which is _peak_mem_mb().
+        """
+        reason = self._timeout_reason()
+        if reason is not None:
+            return reason
+
+        limit_gb = self.max_job_mem_gb
+        if limit_gb is None:
+            return None
+
+        peak_mb = self._peak_mem_mb()
+        if peak_mb is None or peak_mb <= limit_gb * 1024:
+            return None
+
+        return (f"Job exceeded the {limit_gb} GB memory limit "
+                f"(peak resident set size {peak_mb / 1024:.2f} GB)")
+
+    def _kill(self) -> None:
+        """Terminate the running job without recording an outcome.
+
+        Separated from kill() so that the shared limit checks can stop a job
+        and attribute it to the limit that stopped it.
+        """
+        raise NotImplementedError
+
+    def _detect_job_start(self) -> None:
+        """Look for the point in the log where the job started doing its work.
+
+        Sets _run_start_time when one of the deploy's started_patterns turns up.
+        Only the bytes added to the log since the last look are read, so the cost
+        does not grow with the log, and nothing is read at all once the job has
+        started.
+        """
+        patterns = self.deploy.started_patterns
+        if not patterns:
+            # Nothing marks the start for this flow, so treat the job as under
+            # way from the moment it was launched.
+            self._run_start_time = self.start_time
+            return
+
+        try:
+            with open(self.deploy.get_log_path(), "rb") as f:
+                f.seek(self._log_scan_offset)
+                chunk = f.read()
+                self._log_scan_offset = f.tell()
+        except OSError:
+            # The log is not there yet, or cannot be read. Try again next poll.
+            return
+
+        if not chunk:
+            return
+
+        text = self._log_scan_tail + chunk.decode("UTF-8", errors="surrogateescape")
+        for pattern in patterns:
+            if re.search(pattern, text, re.MULTILINE):
+                self._run_start_time = datetime.datetime.now()
+                self._log_scan_tail = ""
+                return
+
+        # Hold on to the tail, so that a marker straddling two reads still
+        # matches when the rest of it arrives
+        self._log_scan_tail = text[-_LOG_SCAN_TAIL_CHARS:]
+
+    def _timeout_reason(self) -> Union[str, None]:
+        """Return why the job ought to be killed for taking too long, or None.
+
+        A job is timed from the point where it starts doing its work rather than
+        from the point where it was launched, because the gap between the two is
+        spent queueing for a license.
+
+        The waiting and the running phases therefore get separate limits and
+        separate messages, so that a report can tell a job that never got a
+        license apart from one that genuinely ran too long.
+        """
+        if self.deploy.gui:
+            # The user is driving, so nothing counts as too slow
+            return None
+
+        if self._run_start_time is None:
+            self._detect_job_start()
+
+        if self._run_start_time is None:
+            wait_mins = Launcher.max_job_wait_mins
+            if wait_mins and self.job_runtime_secs > wait_mins * 60:
+                return (
+                    f"Job did not start running within {wait_mins} minutes of "
+                    f"being launched, so it was most likely still waiting for a "
+                    f"license"
+                )
+            return None
+
+        if not self.timeout_secs:
+            return None
+
+        run_secs = (
+            datetime.datetime.now() - self._run_start_time
+        ).total_seconds()
+        if run_secs > self.timeout_secs:
+            timeout_mins = self.deploy.get_timeout_mins()
+            return f"Job timed out after running for {timeout_mins} minutes"
+
+        return None
+
+    def _kill_with_reason(self, message: str) -> None:
+        """Kill the job and record why dvsim decided to kill it."""
+        self._kill()
+        self._post_finish(
+            "K",
+            ErrorMessage(line_number=None, message=message, context=[message]),
+        )
 
     def _do_launch(self) -> None:
         """Launch the job."""

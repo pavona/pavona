@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Launcher implementation to run jobs as subprocesses on the local machine."""
 
-import datetime
 import os
-import re
 import shlex
 import signal
 import subprocess
@@ -14,11 +12,6 @@ from typing import Union
 import logging as log
 
 from Launcher import ErrorMessage, Launcher, LauncherBusy, LauncherError
-
-# How much of the end of each log read to carry over to the next one, so that a
-# start marker split across two reads is still matched. Comfortably longer than
-# the lines being looked for
-_LOG_SCAN_TAIL_CHARS = 256
 
 
 def _read_vmhwm_mb(pid: int) -> Union[float, None]:
@@ -102,7 +95,7 @@ class LocalLauncher(Launcher):
     """Implementation of Launcher to launch jobs in the user's local workstation."""
 
     # Re-discover the job's process tree once every this many polls. See
-    # _sample_peak_rss() for why the tree is not walked afresh every time.
+    # _peak_mem_mb() for why the tree is not walked afresh every time.
     pid_walk_interval = 30
 
     def __init__(self, deploy) -> None:
@@ -116,15 +109,6 @@ class LocalLauncher(Launcher):
         # The job's process tree, and the countdown to re-walking it.
         self._job_pids = []
         self._pid_walk_countdown = 0
-
-        # When the job started doing its work, as opposed to when it was
-        # launched. None until we see it start. See _detect_job_start().
-        self._run_start_time = None
-
-        # How far through the log we have looked for the job starting, and the
-        # tail of what we read, so a marker split across two reads is not missed.
-        self._log_scan_offset = 0
-        self._log_scan_tail = ""
 
     def _do_launch(self) -> None:
         # Update the shell's env vars with self.exports. Values in exports must
@@ -144,10 +128,6 @@ class LocalLauncher(Launcher):
 
         if not self.deploy.sim_cfg.interactive:
             log_path = Path(self.deploy.get_log_path())
-            timeout_mins = self.deploy.get_timeout_mins()
-
-            self.timeout_secs = timeout_mins * 60 if timeout_mins else None
-
             try:
                 self._log_file = log_path.open(
                     "w",
@@ -217,25 +197,13 @@ class LocalLauncher(Launcher):
         if self._process is None:
             return "E"
 
-        elapsed_time = datetime.datetime.now() - self.start_time
-        self.job_runtime_secs = elapsed_time.total_seconds()
+        self._tick_runtime()
         if self._reap() is None:
             # Still running.
-            timeout_reason = self._timeout_reason()
-            if timeout_reason is not None:
-                self._kill_with_reason(timeout_reason)
+            reason = self._limit_exceeded()
+            if reason is not None:
+                self._kill_with_reason(reason)
                 return "K"
-
-            mem_limit_gb = Launcher.max_job_mem_gb
-            if mem_limit_gb is not None:
-                peak_rss_mb = self._sample_peak_rss()
-                if peak_rss_mb is not None and peak_rss_mb > mem_limit_gb * 1024:
-                    self._kill_with_reason(
-                        f"Job exceeded the {mem_limit_gb} GB memory limit "
-                        f"(peak resident set size "
-                        f"{peak_rss_mb / 1024:.2f} GB)",
-                    )
-                    return "K"
 
             return "D"
 
@@ -243,84 +211,6 @@ class LocalLauncher(Launcher):
         self._post_finish(status, err_msg)
 
         return self.status
-
-    def _detect_job_start(self) -> None:
-        """Look for the point in the log where the job started doing its work.
-
-        Sets _run_start_time when one of the deploy's started_patterns turns up.
-        Only the bytes added to the log since the last look are read, so the cost
-        does not grow with the log, and nothing is read at all once the job has
-        started.
-        """
-        patterns = self.deploy.started_patterns
-        if not patterns:
-            # Nothing marks the start for this flow, so treat the job as under
-            # way from the moment it was launched.
-            self._run_start_time = self.start_time
-            return
-
-        try:
-            with open(self.deploy.get_log_path(), "rb") as f:
-                f.seek(self._log_scan_offset)
-                chunk = f.read()
-                self._log_scan_offset = f.tell()
-        except OSError:
-            # The log is not there yet, or cannot be read. Try again next poll.
-            return
-
-        if not chunk:
-            return
-
-        text = self._log_scan_tail + chunk.decode("UTF-8", errors="surrogateescape")
-        for pattern in patterns:
-            if re.search(pattern, text, re.MULTILINE):
-                self._run_start_time = datetime.datetime.now()
-                self._log_scan_tail = ""
-                return
-
-        # Hold on to the tail, so that a marker straddling two reads still
-        # matches when the rest of it arrives
-        self._log_scan_tail = text[-_LOG_SCAN_TAIL_CHARS:]
-
-    def _timeout_reason(self) -> Union[str, None]:
-        """Return why the job ought to be killed for taking too long, or None.
-
-        A job is timed from the point where it starts doing its work rather than
-        from the point where it was launched, because the gap between the two is
-        spent queueing for a license.
-
-        The waiting and the running phases therefore get separate limits and
-        separate messages, so that a report can tell a job that never got a
-        license apart from one that genuinely ran too long.
-        """
-        if self.deploy.gui:
-            # The user is driving, so nothing counts as too slow
-            return None
-
-        if self._run_start_time is None:
-            self._detect_job_start()
-
-        if self._run_start_time is None:
-            wait_mins = Launcher.max_job_wait_mins
-            if wait_mins and self.job_runtime_secs > wait_mins * 60:
-                return (
-                    f"Job did not start running within {wait_mins} minutes of "
-                    f"being launched, so it was most likely still waiting for a "
-                    f"license"
-                )
-            return None
-
-        if not self.timeout_secs:
-            return None
-
-        run_secs = (
-            datetime.datetime.now() - self._run_start_time
-        ).total_seconds()
-        if run_secs > self.timeout_secs:
-            timeout_mins = self.deploy.get_timeout_mins()
-            return f"Job timed out after running for {timeout_mins} minutes"
-
-        return None
 
     def _reap(self) -> Union[int, None]:
         """Reap the process if it has finished, returning its exit code.
@@ -365,7 +255,7 @@ class LocalLauncher(Launcher):
         ):
             self.deploy.job_peak_rss = peak_rss_mb
 
-    def _sample_peak_rss(self) -> Union[float, None]:
+    def _peak_mem_mb(self) -> Union[float, None]:
         """Read the running job's peak resident set size so far, in MB.
 
         The process dvsim launches is a make wrapper, and the simulator it goes
@@ -411,14 +301,6 @@ class LocalLauncher(Launcher):
 
         self._record_peak_rss(peak_rss_mb)
         return peak_rss_mb
-
-    def _kill_with_reason(self, message: str) -> None:
-        """Kill the job and record why dvsim decided to kill it."""
-        self._kill()
-        self._post_finish(
-            "K",
-            ErrorMessage(line_number=None, message=message, context=[message]),
-        )
 
     def _signal_job_group(self, sig: int) -> None:
         """Send a signal to every process belonging to the job.
@@ -471,7 +353,7 @@ class LocalLauncher(Launcher):
         # Read the job's peak memory before signaling it. This is the last
         # moment at which procfs can still tell us, and a killed job is exactly
         # the case where the tool never gets to report the figure itself.
-        self._sample_peak_rss()
+        self._peak_mem_mb()
 
         self._signal_job_group(signal.SIGTERM)
         try:
@@ -505,7 +387,7 @@ class LocalLauncher(Launcher):
         if self._process is not None:
             # One cheap procfs read before it dies, so that even a force-quit
             # leaves the job's memory figure behind for the report.
-            self._sample_peak_rss()
+            self._peak_mem_mb()
             self._signal_job_group(signal.SIGKILL)
             self._process.poll()
 
