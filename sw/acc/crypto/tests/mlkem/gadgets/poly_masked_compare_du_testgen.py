@@ -25,13 +25,15 @@ def compress_poly(coeffs: List[int], d: int) -> bytes:
 
 def random_shared_poly() -> Tuple[bytes, List[int]]:
     """Return NSHARES random arithmetic shares (packed) and their sum mod Q."""
+    s = [0] * N
     r = [0] * N
     shares = bytes()
     for _ in range(NSHARES):
-        s = [random.randint(0, Q - 1) for _ in range(N)]
-        r = [(r[j] + s[j]) % Q for j in range(N)]
-        shares += int.to_bytes(sum(s[j] << (j * 16) for j in range(N)),
-                               byteorder="little", length=512)
+        for coeff in range(N):
+            s[coeff] = random.randint(0, Q - 1)
+            r[coeff] = (r[coeff] + s[coeff]) % Q
+        s_int = sum(s[coeff] << (coeff * 16) for coeff in range(N))
+        shares += int.to_bytes(s_int, byteorder="little", length=512)
     return shares, r
 
 
@@ -44,24 +46,38 @@ def gen_poly_masked_compare_du_test(
     # One polynomial compared against its compression at du = 10 (k != 4) and
     # du = 11 (k = 4). Both match, so the recombined output is all ones.
     xu, ru = random_shared_poly()
+
+    # Write input values.
     write_test_data({'xu': xu,
                      'cu_du10': compress_poly(ru, 10),
                      'cu_du11': compress_poly(ru, 11)}, data_file)
+
+    # Write expected register values.
     write_test_exp({'w0': int.to_bytes((1 << N) - 1, byteorder="little",
                                        length=32)}, exp_file)
+
+    # Write expected dmem values (none).
     write_test_dexp({}, dexp_file)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed', type=int, required=False,
-                        help='Seed value for pseudorandomness.')
-    parser.add_argument('data', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for input DMEM values.')
-    parser.add_argument('exp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected register values.')
-    parser.add_argument('dexp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected DMEM values.')
+    parser.add_argument('-s', '--seed',
+                        type=int,
+                        required=False,
+                        help=('Seed value for pseudorandomness.'))
+    parser.add_argument('data',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for input DMEM values.'))
+    parser.add_argument('exp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
