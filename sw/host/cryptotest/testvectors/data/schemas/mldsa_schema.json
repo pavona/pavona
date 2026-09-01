@@ -36,6 +36,11 @@
         "type": "integer",
         "enum": [44, 65, 87]
       },
+      "sign_mode": {
+        "description": "ML-DSA signature mode: pure, a HashML-DSA pre-hash function, or external_mu (message is a precomputed mu)",
+        "type": "string",
+        "enum": ["pure", "hash_mldsa_sha2_256", "hash_mldsa_sha2_384", "hash_mldsa_sha2_512", "hash_mldsa_sha3_224", "hash_mldsa_sha3_256", "hash_mldsa_sha3_384", "hash_mldsa_sha3_512", "hash_mldsa_shake128", "hash_mldsa_shake256", "external_mu"]
+      },
       "seed": {
         "description": "Seed for keygen",
         "$ref": "#/$defs/byte_array"
