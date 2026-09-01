@@ -39,22 +39,46 @@ def random_shared_poly() -> Tuple[bytes, List[int]]:
 
 def gen_masked_poly_compare_du_test(
         seed: Optional[int],
-        data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
+        data_file: TextIO, exp_file: TextIO, dexp_file: TextIO, invalid=False):
     if seed is not None:
         random.seed(seed)
 
     # One polynomial compared against its compression at du = 10 (k != 4) and
-    # du = 11 (k = 4). Both match, so the recombined output is all ones.
+    # du = 11 (k = 4). Both match, so each recombined output is all ones. The
+    # two paths are checked separately so that neither can hide a failure of
+    # the other in the false test.
     xu, ru = random_shared_poly()
+    r_kn4 = (1 << N) - 1
+    r_k4 = (1 << N) - 1
+
+    # Generate the packed reference ciphertext.
+    cu_du10_bytes = compress_poly(ru, 10)
+    cu_du11_bytes = compress_poly(ru, 11)
+
+    if invalid:
+        # Pick a random index in the ciphertext and modify a random bytes.
+        idx = random.randrange(320)
+        cu_du10_bytes = cu_du10_bytes[:idx] + bytes([cu_du10_bytes[idx] ^ 1]) + \
+            cu_du10_bytes[idx + 1:]
+        idx = random.randrange(352)
+        cu_du11_bytes = cu_du11_bytes[:idx] + bytes([cu_du11_bytes[idx] ^ 1]) + \
+            cu_du11_bytes[idx + 1:]
+        # Since the reference ciphertext is changed, the comparison does not
+        # match. So the recombined output is not all ones.
+        r_kn4 = 0
+        r_k4 = 0
 
     # Write input values.
     write_test_data({'xu': xu,
-                     'cu_du10': compress_poly(ru, 10),
-                     'cu_du11': compress_poly(ru, 11)}, data_file)
+                     'cu_du10': cu_du10_bytes,
+                     'cu_du11': cu_du11_bytes}, data_file)
 
     # Write expected register values.
-    write_test_exp({'w0': int.to_bytes((1 << N) - 1, byteorder="little",
-                                       length=32)}, exp_file)
+    exp = {
+        'w0': int.to_bytes(r_kn4, byteorder="little", length=32),
+        'w1': int.to_bytes(r_k4, byteorder="little", length=32),
+    }
+    write_test_exp(exp, exp_file)
 
     # Write expected dmem values (none).
     write_test_dexp({}, dexp_file)
@@ -66,6 +90,9 @@ if __name__ == '__main__':
                         type=int,
                         required=False,
                         help=('Seed value for pseudorandomness.'))
+    parser.add_argument('-i', '--invalid',
+                        action='store_true',
+                        help=('Set in order to make the decapsulation input invalid.'))
     parser.add_argument('data',
                         metavar='FILE',
                         type=argparse.FileType('w'),
@@ -82,4 +109,4 @@ if __name__ == '__main__':
 
     with args.data, args.exp, args.dexp:
         gen_masked_poly_compare_du_test(args.seed, args.data, args.exp,
-                                        args.dexp)
+                                        args.dexp, args.invalid)
