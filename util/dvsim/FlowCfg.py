@@ -5,6 +5,7 @@
 import logging as log
 import os
 import pprint
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -585,7 +586,7 @@ class FlowCfg():
         repo_dir = os.path.expanduser("./scratch/results_repo")
 
         env = self._setup_ssh_env()
-        self.clone_or_pull(repository, repo_dir, env)
+        remote = self.clone_or_pull(repository, repo_dir, env)
 
         latest_batch_report = os.path.join(self.scratch_path, 'reports', 'latest', 'report.html')
         # Destination directory should be
@@ -643,7 +644,7 @@ class FlowCfg():
         subprocess.run(["git", "-C", repo_dir, "commit", "-m",
                         f"[dashboard] Update {self.name}_{test}_{self.flow} {self.timestamp}"],
                        check=True, env=env)
-        subprocess.run(["git", "-C", repo_dir, "push", "origin", self.branch],
+        subprocess.run(["git", "-C", repo_dir, "push", remote, f"HEAD:{self.branch}"],
                        check=True, env=env)
         log.info("Results published successfully.")
 
@@ -712,43 +713,72 @@ class FlowCfg():
             os.unlink(askpass_script)
         return env
 
-    def clone_or_pull(self, repository: str, local_path: str, env: dict):
-        """Clone the repo if it doesn't exist locally, otherwise pull latest.
+    @staticmethod
+    def remote_name_for(repository: str) -> str:
+        """Pick a stable git remote name for a dashboard repository.
+
+        Derived from the repository name, so that a staging directory serving
+        more than one dashboard ends up with one clearly named remote per
+        dashboard instead of a single `origin` that has to be repointed.
+        """
+        name = repository.rstrip("/").rsplit("/", 1)[-1]
+        if name.endswith(".git"):
+            name = name[:-len(".git")]
+        name = re.sub(r"[^A-Za-z0-9._-]", "-", name)
+        return name or "dashboard"
+
+    def _ensure_remote(self, local_path: str, remote: str, repository: str,
+                       env: dict) -> None:
+        """Make `remote` exist in local_path and point at `repository`."""
+        result = subprocess.run(["git", "-C", local_path, "remote"],
+                                check=True, capture_output=True, text=True, env=env)
+        action = "set-url" if remote in result.stdout.split() else "add"
+        subprocess.run(["git", "-C", local_path, "remote", action, remote, repository],
+                       check=True, env=env)
+
+    def clone_or_pull(self, repository: str, local_path: str, env: dict) -> str:
+        """Make local_path a checkout of `repository` at `self.branch`.
 
         Operates on `self.branch`: we expect a matching branch on the dashboard
-        repository (verified up-front by check_remote_branch_exists).
+        repository (verified up-front by check_remote_branch_exists). Returns
+        the name of the remote that tracks `repository`, which is the one the
+        results have to be pushed back to.
+
+        A staging directory that already exists is reused whatever dashboard it
+        was last pointed at: the remote is added or repointed and the branch is
+        fetched, rather than the whole thing being cloned again. Cloning a
+        dashboard afresh every time the publication target alternates is slow
+        anywhere and painful over NFS.
         """
         branch = self.branch
+        remote = self.remote_name_for(repository)
         try:
-            if os.path.exists(local_path):
-                result = subprocess.run(
-                    ["git", "-C", local_path, "remote", "get-url", "origin"],
-                    check=True, capture_output=True, text=True, env=env
-                )
-                existing_remote = result.stdout.strip()
-                if existing_remote != repository:
-                    log.warning("Existing repo at %s points to %s, expected %s. Recloning.",
-                                local_path, existing_remote, repository)
-                    shutil.rmtree(local_path)
-                    subprocess.run(
-                        ["git", "clone", "-b", branch, repository, local_path],
-                        check=True, env=env)
-                else:
-                    # The local clone may have been left on a different branch
-                    # by a previous run, so fetch + checkout + pull explicitly.
-                    subprocess.run(
-                        ["git", "-C", local_path, "fetch", "origin", branch],
-                        check=True, env=env)
-                    subprocess.run(
-                        ["git", "-C", local_path, "checkout", branch],
-                        check=True, env=env)
-                    subprocess.run(
-                        ["git", "-C", local_path, "pull", "origin", branch],
-                        check=True, env=env)
-            else:
+            if not os.path.exists(local_path):
                 subprocess.run(
-                    ["git", "clone", "-b", branch, repository, local_path],
+                    ["git", "clone", "-b", branch, "-o", remote, repository, local_path],
                     check=True, env=env)
+                return remote
+
+            self._ensure_remote(local_path, remote, repository, env)
+            subprocess.run(["git", "-C", local_path, "fetch", remote, branch],
+                           check=True, env=env)
+            # Forced, because this directory is a staging area for reports and
+            # never a place where work happens: whatever a previous run left
+            # behind is of no value.
+            # Detached, because nothing here reads a branch name and the push
+            # below names HEAD. A local branch called `<remote>/<branch>` would
+            # collide with the remote-tracking ref the fetch just wrote.
+            subprocess.run(
+                ["git", "-C", local_path, "checkout", "-f", "--detach",
+                 "FETCH_HEAD"],
+                check=True, env=env)
+            # One directory can serve several dashboards, and the private one
+            # receives native artifacts that the public one must never be
+            # given. Everything untracked and everything ignored goes before
+            # the caller's `git add -A` can sweep it into the wrong repository.
+            subprocess.run(["git", "-C", local_path, "clean", "-ffdx"],
+                           check=True, env=env)
+            return remote
         except FileNotFoundError:
             log.error("git is not installed or not on PATH. Cannot publish results.")
             raise
