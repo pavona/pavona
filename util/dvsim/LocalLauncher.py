@@ -245,16 +245,6 @@ class LocalLauncher(Launcher):
         self.exit_code = self._process.returncode
         return self.exit_code
 
-    def _record_peak_rss(self, peak_rss_mb: Union[float, None]) -> None:
-        """Keep the largest peak resident set size seen for this job, in MB."""
-        if peak_rss_mb is None:
-            return
-        if (
-            self.deploy.job_peak_rss is None
-            or peak_rss_mb > self.deploy.job_peak_rss  # noqa: W503
-        ):
-            self.deploy.job_peak_rss = peak_rss_mb
-
     def _peak_mem_mb(self) -> Union[float, None]:
         """Read the running job's peak resident set size so far, in MB.
 

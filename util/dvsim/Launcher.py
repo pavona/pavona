@@ -310,6 +310,16 @@ class Launcher:
         """
         return None
 
+    def _record_peak_rss(self, peak_rss_mb: Union[float, None]) -> None:
+        """Keep the largest peak resident set size seen for this job, in MB."""
+        if peak_rss_mb is None:
+            return
+        if (
+            self.deploy.job_peak_rss is None
+            or peak_rss_mb > self.deploy.job_peak_rss  # noqa: W503
+        ):
+            self.deploy.job_peak_rss = peak_rss_mb
+
     def _limit_exceeded(self) -> Union[str, None]:
         """Return why the job ought to be killed, or None to let it run on.
 
