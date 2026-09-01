@@ -285,6 +285,10 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/topgen_seed"></a>**`topgen_seed`** *(integer, required)*: seed for topgen generated random netlist constants.
 - <a id="properties/otp_img_seed"></a>**`otp_img_seed`** *(integer)*: Seed for OTP image generation.
 - <a id="properties/lc_ctrl_seed"></a>**`lc_ctrl_seed`** *(integer)*: Seed for lc_ctrl generated random netlist constants.
+
+
+## Other schemas
+
 ### Alert
 
 *Alert description*
