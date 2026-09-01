@@ -115,7 +115,7 @@ In the example vendor description file below, the mpsse directory is populated f
 
   upstream: {
     url: "https://chromium.googlesource.com/chromiumos/platform2/",
-    rev: "master",
+    rev: "main",
     only_subdir: "trunks/ftdi",
   },
 }

@@ -9,6 +9,6 @@
 
   upstream: {
     url: "https://chromium.googlesource.com/chromiumos/third_party/cryptoc/",
-    rev: "master",
+    rev: "main",
   },
 }

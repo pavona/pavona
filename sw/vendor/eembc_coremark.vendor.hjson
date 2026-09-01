@@ -8,6 +8,6 @@
 
   upstream: {
     url: "https://github.com/eembc/coremark.git",
-    rev: "master",
+    rev: "main",
   },
 }

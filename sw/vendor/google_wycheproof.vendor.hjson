@@ -6,8 +6,8 @@
   target_dir: "wycheproof",
 
   upstream: {
-    url: "https://github.com/google/wycheproof.git",
-    rev: "master",
+    url: "https://github.com/C2SP/wycheproof.git",
+    rev: "main",
   },
 
   exclude_from_upstream: [
