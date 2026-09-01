@@ -28,8 +28,14 @@ def gen_poly_decompress_test(
 
     c4 = R(x4).encode(4)
     c5 = R(x5).encode(5)
+
+    # Write input values.
     write_test_data({'x_dv4': c4, 'x_dv5': c5}, data_file)
+
+    # Write expected register values (none).
     write_test_exp({}, exp_file)
+
+    # Write expected dmem values.
     write_test_dexp({'r_dv4': R.decode(c4, 4).decompress(4).encode(16),
                      'r_dv5': R.decode(c5, 5).decompress(5).encode(16)},
                     dexp_file)
@@ -37,14 +43,22 @@ def gen_poly_decompress_test(
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed', type=int, required=False,
-                        help='Seed value for pseudorandomness.')
-    parser.add_argument('data', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for input DMEM values.')
-    parser.add_argument('exp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected register values.')
-    parser.add_argument('dexp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected DMEM values.')
+    parser.add_argument('-s', '--seed',
+                        type=int,
+                        required=False,
+                        help=('Seed value for pseudorandomness.'))
+    parser.add_argument('data',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for input DMEM values.'))
+    parser.add_argument('exp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
