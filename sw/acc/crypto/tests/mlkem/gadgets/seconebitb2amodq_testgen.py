@@ -11,7 +11,6 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
-N_WDR = 16
 
 
 def gen_seconebitb2amodq_test(
@@ -21,25 +20,26 @@ def gen_seconebitb2amodq_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    operand_nbytes = 32 * N_WDR * nshares
-
-    # Generate input.
-    r = 0
+    # Generate inputs.
+    x = [0] * N
+    r = [0] * N
     x_bytes = bytes()
-    for _ in range(nshares):
-        t = [random.randint(0, 1) for _ in range(N)]
-        t_int = sum(t[j] << (j * 16) for j in range(N))
-        r ^= t_int
-        x_bytes += int.to_bytes(t_int, byteorder="little", length=512)
+    for _ in range(NSHARES):
+        for coeff in range(N):
+            x[coeff] = random.randint(0, 1)
+            r[coeff] ^= x[coeff]
+        x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
+        x_bytes += int.to_bytes(x_int, byteorder="little", length=512)
 
     # Generate expected result.
-    r_bytes = int.to_bytes(r, byteorder='little', length=512)
-
-    ra_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    r_int = sum(r[coeff] << (coeff * 16) for coeff in range(N))
+    r_bytes = int.to_bytes(r_int, byteorder='little', length=512)
 
     # Write input values.
-    inputs = {'xb': x_bytes, 'ra': ra_bytes}
+    inputs = {
+        'xb': x_bytes,
+        'ra': int.to_bytes(0, byteorder='little', length=512 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

@@ -11,14 +11,17 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+Q = 3329
+K = 12
 
 
-def bitslice(x: List[int], k: int) -> List[int]:
-    r = [0] * k
-    for i in range(N):
-        for j in range(k):
-            bit = (x[i] >> j) & 1
-            r[j] |= (bit << i)
+def bitslice(x: List[int], k: int) -> bytes:
+    r = bytes()
+    for bit in range(k):
+        t = 0
+        for coeff in range(N):
+            t |= (((x[coeff] >> bit) & 1) << coeff)
+        r += int.to_bytes(t, byteorder="little", length=32)
     return r
 
 
@@ -29,35 +32,24 @@ def gen_seca2bmodq_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    q = 3329
-    k = 12
-    operand_nbytes = 32 * nshares * k
-
-    t = [0] * nshares
-    x = [random.randint(0, q - 1) for _ in range(N)]
-    rx = x.copy()
+    # Generate input.
+    x = [0] * N
+    r = [0] * N
     x_bytes = bytes()
-    for i in range(nshares - 1):
-        t[i] = [random.randint(0, q - 1) for _ in range(N)]
-        rx = [(rx[j] - t[i][j]) % q for j in range(N)]
-        tmp = bitslice(t[i], k)
-        for j in range(k):
-            x_bytes += int.to_bytes(tmp[j], byteorder="little", length=32)
-    tmp = bitslice(rx, k)
-    for j in range(k):
-        x_bytes += int.to_bytes(tmp[j], byteorder="little", length=32)
+    for _ in range(NSHARES):
+        for coeff in range(N):
+            x[coeff] = random.randint(0, Q - 1)
+            r[coeff] = (r[coeff] + x[coeff]) % Q
+        x_bytes += bitslice(x, K)
 
     # Generate expected result.
-    r = bitslice(x, k)
-    r_bytes = bytes()
-    for i in range(k):
-        r_bytes += int.to_bytes(r[i], byteorder="little", length=32)
-
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    r_bytes = bitslice(r, K)
 
     # Write input values.
-    inputs = {'xa': x_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xa': x_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=32 * K * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

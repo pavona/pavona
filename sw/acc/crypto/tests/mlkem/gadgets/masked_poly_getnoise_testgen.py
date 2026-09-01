@@ -13,8 +13,7 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
-N_WDR = 16
-BITSIZE = 16
+K = 16
 Q = 3329
 
 
@@ -62,7 +61,7 @@ def getnoise(seed: bytes, nonce: int, eta: int) -> int:
     shake = SHAKE256.new(seed + bytes([nonce]))
     buf = shake.read(eta * N // 4)
     r = _cbd3(buf) if eta == 3 else _cbd2(buf)
-    return sum(r[i] << (i * BITSIZE) for i in range(N))
+    return sum(r[i] << (i * K) for i in range(N))
 
 
 def gen_masked_poly_getnoise_test(
@@ -82,30 +81,45 @@ def gen_masked_poly_getnoise_test(
 
     # eta_1 is exercised at both ETA1 values (2 and 3); eta_2 uses eta = 2.
     def pack(v):
-        return int.to_bytes(v, byteorder="little", length=32 * N_WDR)
+        return int.to_bytes(v, byteorder="little", length=512)
     reta1_e2 = pack(getnoise(coins, nonce, 2))
     reta1_e3 = pack(getnoise(coins, nonce, 3))
     reta2 = pack(getnoise(coins, nonce, 2))
 
-    ra_bytes = int.to_bytes(0, byteorder='little', length=32 * N_WDR * NSHARES)
+    # Write input values.
+    inputs = {
+        'seed': seed_bytes,
+        'nonce': nonce_byte,
+        'ra': int.to_bytes(0, byteorder='little', length=512 * NSHARES)
+    }
+    write_test_data(inputs, data_file)
 
-    write_test_data({'seed': seed_bytes, 'nonce': nonce_byte, 'ra': ra_bytes},
-                    data_file)
+    # Write expected register values (none).
     write_test_exp({}, exp_file)
+
+    # Write expected dmem values.
     write_test_dexp({'reta_1_e2': reta1_e2, 'reta_1_e3': reta1_e3,
                      'reta_2': reta2}, dexp_file)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed', type=int, required=False,
-                        help='Seed value for pseudorandomness.')
-    parser.add_argument('data', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for input DMEM values.')
-    parser.add_argument('exp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected register values.')
-    parser.add_argument('dexp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected DMEM values.')
+    parser.add_argument('-s', '--seed',
+                        type=int,
+                        required=False,
+                        help=('Seed value for pseudorandomness.'))
+    parser.add_argument('data',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for input DMEM values.'))
+    parser.add_argument('exp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:

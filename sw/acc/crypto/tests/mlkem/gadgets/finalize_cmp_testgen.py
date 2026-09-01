@@ -31,22 +31,35 @@ def gen_finalize_cmp_test(
     x = (int.to_bytes(share0, byteorder="little", length=32)
          + int.to_bytes(v ^ share0, byteorder="little", length=32))
 
+    # Write input values.
     write_test_data({'x': x}, data_file)
+
+    # Write expected register values.
     write_test_exp({'w0': int.to_bytes(expected, byteorder="little",
                                        length=32)}, exp_file)
+
+    # Write expected dmem values (none).
     write_test_dexp({}, dexp_file)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed', type=int, required=False,
-                        help='Seed value for pseudorandomness.')
-    parser.add_argument('data', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for input DMEM values.')
-    parser.add_argument('exp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected register values.')
-    parser.add_argument('dexp', metavar='FILE', type=argparse.FileType('w'),
-                        help='Output file for expected DMEM values.')
+    parser.add_argument('-s', '--seed',
+                        type=int,
+                        required=False,
+                        help=('Seed value for pseudorandomness.'))
+    parser.add_argument('data',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for input DMEM values.'))
+    parser.add_argument('exp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected register values.'))
+    parser.add_argument('dexp',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help=('Output file for expected DMEM values.'))
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
