@@ -295,7 +295,7 @@ See below for details on both approaches.
 
 ### Automatically loading FPGA bitstreams and bootstrapping software with Bazel
 
-A majority of on-device software tests are defined using the custom `pavona_test` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
+A majority of on-device software tests are defined using the custom `pavona_test` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://bazel.build/reference/be/shell#sh_test).
 In doing so, this macro provides a convenient interface for developers to run software tests on FPGA instances with a single invocation of `bazel test ...`.
 For example, to run the UART smoke test (which is an `pavona_test` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
 ```sh

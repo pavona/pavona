@@ -245,7 +245,7 @@ Bazel is aware of all dependency relationships, and knows what prerequisites to 
 ## Troubleshooting Builds
 
 If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `bazel clean` command to erase any existing building directories to yield a clean build.
-Specifically, according to the Bazel [documentation](https://docs.bazel.build/versions/main/user-manual.html#clean), issuing a
+Specifically, according to the Bazel [documentation](https://bazel.build/docs/user-manual#clean), issuing a
 ```sh
 bazel clean
 ```
@@ -316,7 +316,7 @@ For example add the following line to your crontab (using `crontab -e`) to delet
 0 0 * * 0 /usr/bin/find /path/to/disk/cache -type f -atime +60 -delete
 ```
 
-For more documentation on Bazel disk caches see the [official documentation](https://docs.bazel.build/versions/main/remote-caching.html#disk-cache).
+For more documentation on Bazel disk caches see the [official documentation](https://bazel.build/remote/caching#disk-cache).
 
 ## Excluding Verilator Simulation Binary Builds
 
