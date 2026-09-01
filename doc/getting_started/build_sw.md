@@ -305,9 +305,9 @@ Refer to the output of the command with `--help` for a full list of options.
 
 ### Check CI
 
-First, [check the GitHub repository](https://github.com/pavona/pavona/commits/master) to make sure the CI check is succeeding for the commit you cloned.
+First, [check the GitHub repository](https://github.com/pavona/pavona/commits/main) to make sure the CI check is succeeding for the commit you cloned.
 If there's an issue with that commit (it would have a red "X" next to it), check out the most recent commit that passed CI (indicated by a green check mark).
-We try to always keep the master branch healthy, but it is in active development.
+We try to always keep the main branch healthy, but it is in active development.
 
 For a more stabilized release, check out an officially supported release.
 

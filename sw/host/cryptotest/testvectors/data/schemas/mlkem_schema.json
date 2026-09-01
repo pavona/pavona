@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/zerorisc/expo/master/sw/host/cryptotest/testvectors/data/schemas/mlkem_schema.json",
+  "$id": "https://raw.githubusercontent.com/pavona/pavona/main/sw/host/cryptotest/testvectors/data/schemas/mlkem_schema.json",
   "title": "Cryptotest ML-KEM Testvector",
   "description": "A list of testvectors for ML-KEM testing",
   "$defs": {

@@ -207,7 +207,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
 <Marker/>
 <IsTruncated>false</IsTruncated>
 <Contents>
-<Key>master/bitstream-0.tar.gz</Key>
+<Key>main/bitstream-0.tar.gz</Key>
 <Generation>1669083850593267</Generation>
 <MetaGeneration>1</MetaGeneration>
 <LastModified>2022-11-22T02:24:10.633Z</LastModified>
@@ -223,10 +223,10 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
             name='cache.Get',
             side_effect=MOCKED_GET_RETURN,
         )
-        self.cache.GetBitstreamsAvailable(branch="master", refresh=True)
+        self.cache.GetBitstreamsAvailable(branch="main", refresh=True)
         self.assertEqual(self.cache.Get.call_count, 2)
         self.assertEqual(self.cache.available, {
-            "0": "master/bitstream-0.tar.gz",
+            "0": "main/bitstream-0.tar.gz",
             "latest": "0",
         })
 
@@ -237,10 +237,10 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
 <Name>pavona-bitstreams</Name>
 <Prefix/>
 <Marker/>
-<NextMarker>master/bitstream-1.tar.gz</NextMarker>
+<NextMarker>main/bitstream-1.tar.gz</NextMarker>
 <IsTruncated>true</IsTruncated>
 <Contents>
-<Key>master/bitstream-0.tar.gz</Key>
+<Key>main/bitstream-0.tar.gz</Key>
 <Generation>1656382040594268</Generation>
 <MetaGeneration>1</MetaGeneration>
 <LastModified>2022-06-28T02:07:20.635Z</LastModified>
@@ -251,10 +251,10 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
             b"""<ListBucketResult xmlns="http://doc.s3.amazonaws.com/2006-03-01">
 <Name>pavona-bitstreams</Name>
 <Prefix/>
-<Marker>master/bitstream-1.tar.gz</Marker>
+<Marker>main/bitstream-1.tar.gz</Marker>
 <IsTruncated>false</IsTruncated>
 <Contents>
-<Key>master/bitstream-1.tar.gz</Key>
+<Key>main/bitstream-1.tar.gz</Key>
 <Generation>1656382040594268</Generation>
 <MetaGeneration>1</MetaGeneration>
 <LastModified>2022-06-28T02:07:20.635Z</LastModified>
@@ -262,7 +262,7 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
 <Size>12254300</Size>
 </Contents>
 <Contents>
-<Key>master/latest.txt</Key>
+<Key>main/latest.txt</Key>
 <Generation>1669836798495359</Generation>
 <MetaGeneration>1</MetaGeneration>
 <LastModified>2022-11-30T19:33:18.615Z</LastModified>
@@ -279,12 +279,12 @@ class TestFetchAvailableBitstreams(unittest.TestCase):
             name='cache.Get',
             side_effect=MOCKED_GET_RETURN,
         )
-        self.cache.GetBitstreamsAvailable(branch="master", refresh=True)
+        self.cache.GetBitstreamsAvailable(branch="main", refresh=True)
         self.assertEqual(self.cache.Get.call_count, 3)
         self.assertEqual(
             self.cache.available, {
-                "0": "master/bitstream-0.tar.gz",
-                "1": "master/bitstream-1.tar.gz",
+                "0": "main/bitstream-0.tar.gz",
+                "1": "main/bitstream-1.tar.gz",
                 "latest": "1",
             })
 

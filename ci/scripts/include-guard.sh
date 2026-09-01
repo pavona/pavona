@@ -6,7 +6,7 @@
 # A wrapper around fix_include_guard.py, used for CI.
 #
 # Expects a single argument, which is the pull request's target branch
-# (usually "master").
+# (usually "main").
 
 set -e
 

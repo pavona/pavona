@@ -15,7 +15,7 @@ set -e
 
 case $# in
     0)
-        tgt_branch=master
+        tgt_branch=main
         ;;
     1)
         tgt_branch="$1"

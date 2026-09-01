@@ -65,7 +65,7 @@ runs:
       run: |
         git fetch origin main
         set +e
-        python3 -m ci.scripts.check_for_dvsim_rerun ${{ inputs.hjson }} origin/master $GITHUB_SHA
+        python3 -m ci.scripts.check_for_dvsim_rerun ${{ inputs.hjson }} origin/main $GITHUB_SHA
         SHOULD_RERUN=$?
         set -e
         echo "SHOULD_RERUN=$SHOULD_RERUN" >> $GITHUB_OUTPUT

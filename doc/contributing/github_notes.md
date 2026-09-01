@@ -66,8 +66,8 @@ $ git fetch upstream
 
 ## Working in your local repository
 
-The repository that you have created locally will initially be on the `master` branch.
-In general, your fork's `master` branch should track the `master` branch upstream.
+The repository that you have created locally will initially be on the `main` branch.
+In general, your fork's `main` branch should track the `main` branch upstream.
 The recommended flow is to make your own branch; it is conventionally named based on the change you are making.
 The following Git command creates a new branch called `my-new-change` and switches to it:
 
@@ -142,7 +142,7 @@ Once the reviewers are happy you can "Rebase and Merge" the Pull Request on GitH
 You can delete the branch in your local repository with:
 
 ```console
-$ git checkout master
+$ git checkout main
 $ git branch -D my-new-change
 ```
 
@@ -151,7 +151,7 @@ Interactive rebase can be used to manipulate commits in a pull request to achiev
 Rebasing is commonly used to squash commits that fix up issues reported during review back into the relevant commit.
 
 ```console
-$ git rebase -i `git merge-base {current_branch} master`
+$ git rebase -i `git merge-base {current_branch} main`
 ```
 
 Then, an editor will open.
@@ -183,24 +183,24 @@ $ chmod +x .git/hooks/prepare-commit-msg
 ## Update your repository with changes in the upstream repository
 
 There is a little work to do to keep everything in sync.
-Normally you want to first get your local repository `master` branch up to date with the upstream repository (**upstream**) and then you use that to update your fork (**origin**).
+Normally you want to first get your local repository `main` branch up to date with the upstream repository (**upstream**) and then you use that to update your fork (**origin**).
 
 ```console
-$ git checkout master
-$ git pull --ff-only upstream master
+$ git checkout main
+$ git pull --ff-only upstream main
 $ git push origin
 ```
 
-If you do this while you have changes on some other branch then before a Pull Request will work you need to be sure your branch merges cleanly into the newly updated upstream master branch.
-Assuming you got the local `master` branch up to date with the procedure above you can now _rebase_ your changes on the new `master`.
+If you do this while you have changes on some other branch then before a Pull Request will work you need to be sure your branch merges cleanly into the newly updated upstream main branch.
+Assuming you got the local `main` branch up to date with the procedure above you can now _rebase_ your changes on the new `main`.
 Assuming you have your changes on the local branch `my-new-change`:
 
 ```console
 $ git checkout my-new-change
-$ git rebase master
+$ git rebase main
 ```
 
-If you are lucky this will just work, it unwinds your changes, gets the updated `master` and replays your changes.
+If you are lucky this will just work, it unwinds your changes, gets the updated `main` and replays your changes.
 If there are conflicts then you need a big pot of coffee and patience (see next section).
 
 Once everything has rebased properly you can do
@@ -210,11 +210,11 @@ Once everything has rebased properly you can do
 $ git log
 ```
 
-And see that the changes you committed on the branch are at the top of the log followed by the latest changes on the `master` branch.
+And see that the changes you committed on the branch are at the top of the log followed by the latest changes on the `main` branch.
 
 Note: be mindful about which branch you are working on.
-If you have added new commits to your local `master` branch, aligning it with `upstream` using `git pull --ff-only` may fail.
-An alternative is to use `git pull --rebase` in that case, which directly rebases your local `master` branch onto `upstream/master`.
+If you have added new commits to your local `main` branch, aligning it with `upstream` using `git pull --ff-only` may fail.
+An alternative is to use `git pull --rebase` in that case, which directly rebases your local `main` branch onto `upstream/main`.
 Do not use plain `git pull` or `git merge` commands, as they do not preserve a linear commit history.
 See also [this tutorial](https://www.atlassian.com/git/tutorials/merging-vs-rebasing) to learn more about `git rebase` vs `git merge`.
 
@@ -229,7 +229,7 @@ The Git output actually describes what to do (once you are used to how to read i
 For example:
 
 ```console
-$ git rebase master
+$ git rebase main
 First, rewinding head to replay your work on top of it...
 Applying: [util][pystyle] Clean Python style in single file tools
 Using index info to reconstruct a base tree...
@@ -319,7 +319,7 @@ Applying: [util][pystyle] Clean Python style in single file tools
 
 If there were more than one patch outstanding (which isn't usual if you use the `commit --amend` flow) then you may get subsequent conflicts following the `rebase --continue` as other patches are replayed.
 
-You can check the rebase worked as expected by looking at the log to see your branch is one commit (or more if there were more) ahead of the `master` branch.
+You can check the rebase worked as expected by looking at the log to see your branch is one commit (or more if there were more) ahead of the `main` branch.
 
 ```console
 $ git log
@@ -332,13 +332,13 @@ Date:   Thu Jan 10 09:41:20 2019 +0000
 
     Result of lintpy.py --fix on the diff and build_docs tools
 
-    Tested with  ./diff_generated_util_output.py master
+    Tested with  ./diff_generated_util_output.py main
 
-commit cb85dc42199e925ad09c45d33f6483a14764b93e (upstream/master, origin/master, origin/HEAD, master)
+commit cb85dc42199e925ad09c45d33f6483a14764b93e (upstream/main, origin/main, origin/HEAD, main)
 
 ```
 
-This shows the new commit (`HEAD` of the branch `sastyle`) and the preceding commit is at the `master` branch (and at the same point as `master` on both `origin` and `upstream` so everything is in sync at `master`).
+This shows the new commit (`HEAD` of the branch `sastyle`) and the preceding commit is at the `main` branch (and at the same point as `main` on both `origin` and `upstream` so everything is in sync at `main`).
 
 At this point the conflicts have been cleared and the local repository can be used as expected.
 

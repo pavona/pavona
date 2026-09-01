@@ -6,7 +6,7 @@
 # A wrapper around lint_commits.py, used for CI.
 #
 # Expects a single argument, which is the pull request's target branch
-# (usually "master").
+# (usually "main").
 
 if [ $# != 1 ]; then
     echo >&2 "Usage: lint-commits.sh <tgt-branch>"

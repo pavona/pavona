@@ -145,7 +145,7 @@ The following files are produced as a result:
 * `lowrisc_systems_chip_egret_cw310_0.1.bit` (test ROM, RMA OTP image)
 * `memories.mmi`
 
-If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket.
+If CI is working on the `main` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket.
 
 ### Exposing GCS-cached artifacts to Bazel
 

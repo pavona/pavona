@@ -68,7 +68,7 @@ EGRET_SKUS = {
         "signature_prefix": None,
         "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
     },
-    # This configuration is not really usable in master but left here as an example until
+    # This configuration is not really usable in main but left here as an example until
     # a more appropriate solution is found.
     # "sival": {
     #     "otp": "sv00",

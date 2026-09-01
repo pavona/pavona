@@ -6,7 +6,7 @@
 # A wrapper around //quality:license_check, used for CI.
 #
 # Expects a single argument, which is the pull request's target branch
-# (usually "master").
+# (usually "main").
 
 set -e
 
