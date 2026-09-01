@@ -259,6 +259,28 @@ py_binary(
     for i in range(NTESTS)
 ]
 
+[
+    acc_autogen_sim_test(
+        name = "masked_poly_compare_dv_false_test{}".format(
+            str(i),
+        ),
+        srcs = ["masked_poly_compare_dv_test.s"],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":masked_poly_compare_dv_testgen",
+        testgen_args = [
+            "-i",
+        ],
+        deps = [
+            "//sw/acc/crypto/mlkem:consts",
+            "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
+        ],
+    )
+    for i in range(NTESTS)
+]
+
 # masked_poly_compare_du
 py_binary(
     name = "masked_poly_compare_du_testgen",
@@ -284,6 +306,28 @@ py_binary(
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
+        ],
+    )
+    for i in range(NTESTS)
+]
+
+[
+    acc_autogen_sim_test(
+        name = "masked_poly_compare_du_false_test{}".format(
+            str(i),
+        ),
+        srcs = ["masked_poly_compare_du_test.s"],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":masked_poly_compare_du_testgen",
+        testgen_args = [
+            "-i",
+        ],
+        deps = [
+            "//sw/acc/crypto/mlkem:consts",
+            "//sw/acc/crypto/mlkem:gadgets",
+            "//sw/acc/crypto/mlkem:whitening",
         ],
     )
     for i in range(NTESTS)

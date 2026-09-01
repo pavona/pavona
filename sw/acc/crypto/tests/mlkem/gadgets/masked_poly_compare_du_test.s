@@ -27,12 +27,19 @@ main:
   addi x15, x0, 2
   jal  x1, masked_poly_compare_du
 
-  /* Unmask r; both compares matched, so every bit is set. */
+  /* w0 <- unmask(r). */
   addi   x4, x0, 1
   la     x10, r
   bn.lid x0, 0(x10++)
   bn.lid x4, 0(x10++)
   bn.xor w0, w0, w1
+
+  /* If both compares matches, every bit is set. Otherwise, we
+   * set the result to all 0 for comparison with the expected result
+   * for the masked_poly_compare_du_false_test. */
+  bn.subi w1, w31, 1
+  bn.cmp  w0, w1, FG0
+  bn.sel  w0, w0, w31, FG0.z
 
   ecall
 
