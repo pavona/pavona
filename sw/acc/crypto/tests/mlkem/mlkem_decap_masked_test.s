@@ -17,9 +17,10 @@
 
 .globl main
 main:
-  bn.xor  w31, w31, w31
+  /* All-zero register. */
+  bn.xor w31, w31, w31
 
-  /* mod = mqinv | q. */
+  /* w16 = mod = mqinv | q. */
   li      x5, 16
   la      x6, const_q
   bn.lid  x5++, 0(x6)
@@ -29,6 +30,7 @@ main:
   bn.or   w16, w16, w17 << 32
   bn.wsrw mod, w16
 
+  /* ss <- crypto_kem_dec(ct, dk). */
   la   x2, stack_end
   la   x10, ct
   la   x11, dk
@@ -36,9 +38,9 @@ main:
   li   x13, KYBER_K
   jal  x1, crypto_kem_dec
 
-  /* Unmask the shared key: ss[0] ^= ss[1]. */
+  /* ss <- unmask(ss): ss_0 ^= ss_1. */
   la     x2, ss
-  addi   x4, x0, 1
+  li     x4, 1
   bn.lid x0, 0(x2)
   bn.lid x4, 32(x2)
   bn.xor w0, w0, w1
