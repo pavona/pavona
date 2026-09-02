@@ -258,7 +258,7 @@ The latter sledgehammer is only intended to be used as a last resort when the ex
 
 ## Create a `.bazelrc` File
 
-Create a `.bazelrc` file in your home directory to simplify executing bazel commands.
+Create a `.bazelrc` file in your home directory to simplify executing Bazel commands.
 For example, you can use a `.bazelrc` to:
 * set up a [disk cache](#disk-cache), or
 * skip running tests on the CW310 FPGA if you don not have one.
@@ -363,7 +363,7 @@ Here are some tips that can improve the developer experience when using worktree
 
 ### Cannot find ld
 
-One issue encountered while using bazel is the following error message when attempting to build:
+One issue encountered while using Bazel is the following error message when attempting to build:
 ```sh
   = note: collect2: fatal error: cannot find 'ld'
           compilation terminated.
@@ -371,8 +371,8 @@ One issue encountered while using bazel is the following error message when atte
 
 The reason this occurs is related to this issue: [bazelbuild/rules_rust#1114](https://github.com/bazelbuild/rules_rust/issues/1114)
 
-Specifically, when the rustc compiler is invoked, it uses the LLVM linker that is not managed by the bazel flow.
-This means bazel cannot ensure it is installed at a specific location, and instead just uses whatever is available on the host machine.
+Specifically, when the rustc compiler is invoked, it uses the LLVM linker that is not managed by the Bazel flow.
+This means Bazel cannot ensure it is installed at a specific location, and instead just uses whatever is available on the host machine.
 The issue above points out that rustc expects the linker to be located in the same directory as `gcc`, so if on the host machine this statement is untrue, there can be build issues.
 
 To resolve this problem, you can either:

@@ -1,6 +1,6 @@
 # Binary and test rules
 
-The bazel rules defined in `//rules/pavona/...` define how to build and test C and C++ binaries on the Pavona platform.
+The Bazel rules defined in `//rules/pavona/...` define how to build and test C and C++ binaries on the Pavona platform.
 The test rules also permit dispatching test binaries/images produced by other languages or rule sets.
 
 ## Execution Environments
@@ -24,7 +24,7 @@ The exec\_envs are provided to the `pavona_binary` and `pavona_test` rules in or
 
 ## The `pavona_binary` rule
 
-The `pavona_binary` rule is very similar to bazel's built-in `cc_binary` rule: it accepts a list of sources, dependencies and other compiler configuration parameters and produces a linked binary.
+The `pavona_binary` rule is very similar to Bazel's built-in `cc_binary` rule: it accepts a list of sources, dependencies and other compiler configuration parameters and produces a linked binary.
 Unlike the built-in `cc_binary`, the `pavona_binary` rule transitions the C toolchain to the Pavona platform and accepts a list of exec\_envs describing for which targets to build binaries.
 
 **Example: building a binary for 3 exec\_envs**
@@ -89,7 +89,7 @@ pavona_test(
 )
 ```
 
-The test macro will instantiate individual tests for each exec\_env and name the bazel targets with the "basename" of the exec\_env.
+The test macro will instantiate individual tests for each exec\_env and name the Bazel targets with the "basename" of the exec\_env.
 In the example above, the tests will be:
 - `uart_smoketest_fpga_cw310_test_rom`
 - `uart_smoketest_sim_dv`

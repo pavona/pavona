@@ -7,7 +7,7 @@ A tool to manipulate and extract information from the testplans.
 python util/testplantool/testplantool.py export-csv \
 hw/top_egret/data/chip_testplan.hjson /tmp/egret.csv
 ```
-or with bazel:
+or with Bazel:
 ```sh
 ./bazelisk.sh run util/testplantool -- export-csv \
 $(pwd)/hw/top_egret/data/chip_testplan.hjson /tmp/egret.csv
@@ -40,7 +40,7 @@ Available testpoint filters:
 fields filters:
     --fields: Comma separated list of fields that should be in the output.
 
-## Exporting bazel testsuites:
+## Exporting Bazel testsuites:
 Based on SiVal stage
 ```sh
 ./bazelisk.sh run util/testplantool -- export-testsuite \

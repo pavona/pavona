@@ -37,7 +37,7 @@ replace the defaults) you may do so by:
 1. follow the steps (labeled `TH-Step *`) in the
    `sw/default/tests/closed_source/BUILD.bazel` file to add additional test
    hook libraries / config settings,
-1. invoking bazel with the `MANUFACTURER_HOOKS_DIR` environment variable set,
+1. invoking Bazel with the `MANUFACTURER_HOOKS_DIR` environment variable set,
    and the proper `config_setting` , e.g.,
    `MANUFACTURER_HOOKS_DIR=</path/to/test_hooks/> ./bazelisk.sh test
       //sw/device/tests:<target>

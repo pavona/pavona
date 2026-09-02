@@ -1,8 +1,8 @@
 # Top Selection
 
-The `hw/top` bazel package provides a mechanism to select the specific top for which all targets (headers, binaries, tests) are built.
-This package also provides various bazel targets to expose hardware information about the top that could be useful for software and bazel rules.
-Finally, its provides a number of useful bazel macros that integrate with the build system to handle conditional handling of dependencies.
+The `hw/top` Bazel package provides a mechanism to select the specific top for which all targets (headers, binaries, tests) are built.
+This package also provides various Bazel targets to expose hardware information about the top that could be useful for software and Bazel rules.
+Finally, its provides a number of useful Bazel macros that integrate with the build system to handle conditional handling of dependencies.
 
 **Table of content**
 - [Top selection](#top-selection)
@@ -13,8 +13,8 @@ Finally, its provides a number of useful bazel macros that integrate with the bu
 
 This package provide a single target `//hw/top:top` (which can abbreviated as `//hw/top`) which is a [`string_flat`](https://github.com/bazelbuild/bazel-skylib/blob/main/docs/common_settings_doc.md#string_flag).
 This means that:
-- the top can be selected on bazel's command line using the syntax `--//hw/top=<top value>`,
-- the top can be selected by any bazel [transition](https://bazel.build/rules/lib/builtins/transition).
+- the top can be selected on Bazel's command line using the syntax `--//hw/top=<top value>`,
+- the top can be selected by any Bazel [transition](https://bazel.build/rules/lib/builtins/transition).
 
 The values accepted by this setting are the names of the tops configured with the build system.
 This includes, but is not limited to:
@@ -22,7 +22,7 @@ This includes, but is not limited to:
 - `dragonfly`
 - `scafi_deprecated`
 
-The default value of this setting is `egret`, meaning that unless explicitly specified, bazel will compile for Egret.
+The default value of this setting is `egret`, meaning that unless explicitly specified, Bazel will compile for Egret.
 
 For example, to build the UART headers for Dragonfly, use:
 ```console
@@ -104,13 +104,13 @@ Dependency chain:
     //sw/device/lib/dif/autogen:usbdev_src (927671)
     //sw/device/lib/dif/autogen:usbdev_gen (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
 ```
-As we can see, this DIF indirectly depends on generated top-specific code which does make sense on a platform without a usbdev and therefore bazel will not let us compile this target for Dragonfly.
+As we can see, this DIF indirectly depends on generated top-specific code which does make sense on a platform without a usbdev and therefore Bazel will not let us compile this target for Dragonfly.
 
 You can create your own annotations by using the macros described in the next section.
 
 ## The `//hw/top:defs.bzl` library
 
-This bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system.
+This Bazel library provides several important definitions are macros which can be used by rule creators and users to interact with the build system.
 See the documentation in [the file](./defs.bzl) for more details.
 - `pavona_if_ip(ip, obj, default)` provides a way to conditionally do something the top selected by `//hw/top` contains at least one instance of a given IP.
 For example, if we want to conditionally compile code only if the usbdev block is present, we could do:
@@ -161,7 +161,7 @@ This section explains how to perform several common operations using Bazel.
 
 ### Inspect the C/Rust/DT generated source code
 
-The [bazel targets](#bazel-targets) compiles a lot of tool generated code which sometimes needs to be inspected.
+The [Bazel targets](#bazel-targets) compiles a lot of tool generated code which sometimes needs to be inspected.
 To access those files, you must perform the following two operations:
 - build the file(s) using the correct `//hw/top` configuration,
 - query the location of the output, **also** using the same `//hw/top` configuration.

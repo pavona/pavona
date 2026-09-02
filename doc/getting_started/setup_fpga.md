@@ -42,7 +42,7 @@ popd
 
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
 There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
-When the bitstream cache is used in bazel flows, the ROMs from the cache are not used.
+When the bitstream cache is used in Bazel flows, the ROMs from the cache are not used.
 Instead, the bazel-built ROMs are spliced into the image to create new bitstreams, using the mechanism described in the [FPGA Reference Manual](../contributing/fpga/ref_manual_fpga.md#boot-rom-development).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be downloaded separately.
 
@@ -317,7 +317,7 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 #### Configuring Bazel to load the Vivado-built bitstream
 
 By default, the above invocations of `./bazelisk.sh test ...` use the pre-built (Internet downloaded) FPGA bitstream.
-To instruct bazel to load the bitstream built earlier, or to have Bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
+To instruct Bazel to load the bitstream built earlier, or to have Bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
 ```sh
 ./bazelisk.sh test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```

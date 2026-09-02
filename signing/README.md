@@ -34,9 +34,9 @@ mode to 600.
 > The following configuration only works in the `egret_es_sival` branch.
 
 Once a profile configuration is in place, you can build binaries signed by
-the keyset by telling bazel that you want to use a token.
+the keyset by telling Bazel that you want to use a token.
 
-In the example below, we instruct bazel to use a NitroKey as the token
+In the example below, we instruct Bazel to use a NitroKey as the token
 and to sign with the key specified by the `rsa_key` attribute of the target
 (or the target's `exec_env`).
 
@@ -148,7 +148,7 @@ for each binary.
 ./bazelisk.sh build //signing/examples:digests
 ```
 
-The bazel `offline_presigning_artifacts` rule updates the binary with
+The Bazel `offline_presigning_artifacts` rule updates the binary with
 a supplied manifest and public key:
 
 ```console
@@ -180,7 +180,7 @@ detached signatures.
 ./bazelisk.sh build //signing/examples:fake
 ```
 
-The bazel `offline_fake_sign` rule performs the same RSA signing
+The Bazel `offline_fake_sign` rule performs the same RSA signing
 operation as the HSM would perform, but public test keys are used
 instead of the real keys:
 
@@ -210,7 +210,7 @@ final signed binaries are produced.
 ./bazelisk.sh build //signing/examples:signed
 ```
 
-The bazel `offline_signature_attach` rule takes the signed digests and
+The Bazel `offline_signature_attach` rule takes the signed digests and
 attaches them to the pre-signed binaries, thus producing signed binaries
 that can be verified by the ROM.
 

@@ -2,7 +2,7 @@
 
 ## Bump the release version
 
-Edit the `IMM_SECTION_VERSION_{MAJOR,MINOR}"` line in the bazel file.
+Edit the `IMM_SECTION_VERSION_{MAJOR,MINOR}"` line in the Bazel file.
 `sw/device/silicon_creator/rom_ext/imm_section/defs.bzl`
 
 After editing, the edit PR should be MERGED before continuing to create

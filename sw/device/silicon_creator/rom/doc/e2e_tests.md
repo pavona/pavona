@@ -12,7 +12,7 @@ Each test is divided into components:
    That documentation is specialized for the different tops.
    For an example, see egret's [OTP memory map](../../../../../hw/top_egret/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
  - **FPGA bitstream**, Hardware implementation of a device synthesized for the FPGA built by `bazel` and `vivado`.
- - **Device test firmware**, a C program (built by bazel to run on the device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.
+ - **Device test firmware**, a C program (built by Bazel to run on the device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.
  - **opentitantool**, a Rust program that provides a common interface to interact with a device. `opentitantool` uses `opentitanlib` which provides the abstractions to communicate with a device.
  - **Host test software**, any Rust program (built by `bazel` to run on the host platform , e.g. a x86 binary, and linked with `opentitanlib`) that actively interacts with a device over any hardware interface (e.x., UART, SPI or JTAG) to perform the test functions and check their results.
 
@@ -45,7 +45,7 @@ The software dependencies are covered by other guides in this book and are linke
 **Note**: Make sure that you added the udev rules for the [FPGA](../../../../../doc/getting_started/install_vivado#device-permissions-udev-rules) board and the [JTAG](../../../../../doc/getting_started/setup_fpga.md#device-permissions-udev-rules) adapter.
 
 ## Running the ROM E2E tests
-The ROM E2E tests are listed in the bazel [BUILD file](../e2e/BUILD), alternatively they can be listed with the command:
+The ROM E2E tests are listed in the Bazel [BUILD file](../e2e/BUILD), alternatively they can be listed with the command:
 ```sh
 ./bazelisk.sh query 'attr(tags, cw310, tests(//sw/device/silicon_creator/rom/e2e/...))'
 ```
@@ -54,7 +54,7 @@ Once the hardware setup is done and the FPGA is connected to the USB, the full s
 cd ${REPO_TOP}
 ./bazelisk.sh test --define DISABLE_VERILATOR_BUILD=true --define bitstream=gcp_splice --test_tag_filters=-verilator,-dv,-broken --build_tests_only //sw/device/silicon_creator/rom/e2e/...
 ```
-This bazel command will download a bitstream associated with the HEAD commit of the repository, splice it with the different OTP configurations (RMA, DEV, PROD*, TEST*), load the FPGA and run all the tests suites under `sw/device/silicon_creator/rom/e2e`.
+This Bazel command will download a bitstream associated with the HEAD commit of the repository, splice it with the different OTP configurations (RMA, DEV, PROD*, TEST*), load the FPGA and run all the tests suites under `sw/device/silicon_creator/rom/e2e`.
 
 **Note**: If you have hardware changes then you can build the bitstream locally by changing the tag `bitstream=` from `gcp_splice` to `vivado`.
 Although this will take much longer.

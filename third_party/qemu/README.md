@@ -16,7 +16,7 @@ ln -s "/path/to/your/repo/third_party/qemu/BUILD.qemu_opentitan.bazel" "BUILD.ba
 ```
 
 Once done, every time you compile something using QEMU, you need to tell Bazel to use your QEMU repository instead of downloading a release archive.
-This is done by passing the following command-line argument to bazel:
+This is done by passing the following command-line argument to Bazel:
 ```
 --override_repository="+qemu+qemu_pavona_src=/path/to/your/qemu/repo/"
 ```
@@ -38,7 +38,7 @@ Bazel will automatically watch all files in the QEMU repository so that it can r
 
 ## Bazel tells me that `+qemu+qemu_pavona_src` is not a valid repository name
 
-Unfortunately bazel requires the canonical name of the repository to be given on the command line and this name may change in the future.
+Unfortunately Bazel requires the canonical name of the repository to be given on the command line and this name may change in the future.
 If this happens, you can run the following commands to figure out the canonical name:
 ```bash
 ./bazelisk.sh mod dump_repo_mapping "" | jq .qemu_pavona_src

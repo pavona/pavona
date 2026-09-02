@@ -234,7 +234,7 @@ Note that for automated tests, `opentitantool` interfaces with the simulator, an
 
 In addition, it may be necessary to adjust the test timeout values when using `./bazelisk.sh test` with waveforms.
 Tracing slows down the simulation by roughly factor of 1000.
-The timeout adjustment may be done via bazel's `--test_timeout` option.
+The timeout adjustment may be done via Bazel's `--test_timeout` option.
 Putting these all together for the UART smoke test yields the following command line:
 
 ```console
