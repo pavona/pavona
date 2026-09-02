@@ -12,104 +12,89 @@ on:
 
 jobs:
   # CW340 FPGA jobs
-  execute_long_test_rom_fpga_tests_cw340:
+  execute_test_rom_fpga_tests_cw340:
     name: CW340 Test ROM Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 Test ROM Long Tests
-      job_name: execute_long_test_rom_fpga_tests_cw340
+      job_name: execute_test_rom_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: cw340_test_rom
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
-  execute_long_rom_fpga_tests_cw340:
+  execute_rom_fpga_tests_cw340:
     name: CW340 ROM Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 ROM Long Tests
-      job_name: execute_long_rom_fpga_tests_cw340
+      job_name: execute_rom_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf"
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
-  execute_long_rom_ext_fpga_tests_cw340:
+  execute_rom_ext_fpga_tests_cw340:
     name: CW340 ROM_EXT Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 ROM_EXT Long Tests
-      job_name: execute_long_rom_ext_fpga_tests_cw340
+      job_name: execute_rom_ext_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: cw340_rom_ext
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
-  execute_long_sival_fpga_tests_cw340:
+  execute_sival_fpga_tests_cw340:
     name: CW340 SiVal Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 SiVal Long Tests
-      job_name: execute_long_sival_fpga_tests_cw340
+      job_name: execute_sival_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: "cw340_sival,-manuf"
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
-  execute_long_sival_rom_ext_fpga_tests_cw340:
+  execute_sival_rom_ext_fpga_tests_cw340:
     name: CW340 SiVal ROM_EXT Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 SiVal ROM_EXT Long Tests
-      job_name: execute_long_sival_rom_ext_fpga_tests_cw340
+      job_name: execute_sival_rom_ext_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: cw340_sival_rom_ext
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
-  execute_long_manuf_fpga_tests_cw340:
+  execute_manuf_fpga_tests_cw340:
     name: CW340 Manufacturing Long Tests
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       name: CW340 Manufacturing Long Tests
-      job_name: execute_long_manuf_fpga_tests_cw340
+      job_name: execute_manuf_fpga_tests_cw340
       bitstream: ${{ inputs.bitstream }}
       board: cw340
       interface: cw340
       tag_filters: "manuf,-cw310"
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
-
-  execute_long_pqc_fpga_tests_cw340:
-    name: CW340 PQCEn=1 Long Tests
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      name: CW340 PQCEn=1 Long Tests
-      job_name: execute_long_pqc_fpga_tests_cw340
-      bitstream: chip_egret_cw340_pqc
-      board: cw340
-      interface: cw340
-      tag_filters: cw340_pqc_test_rom
-      timeout_filters: 'long,eternal'
-      timeout: 300
-      extra_bazel_flags: --define=acc_has_pqc=true
 
   verify_fpga_jobs:
     name: Verify FPGA jobs
@@ -117,13 +102,12 @@ jobs:
     with:
       test_group: "cw340-nightly"
       tag_filters: "cw340"
-      timeout_filters: 'long,eternal'
+      timeout_filters: 'short,moderate,long,eternal'
     needs:
-      - execute_long_test_rom_fpga_tests_cw340
-      - execute_long_rom_fpga_tests_cw340
-      - execute_long_rom_ext_fpga_tests_cw340
-      - execute_long_sival_fpga_tests_cw340
-      - execute_long_sival_rom_ext_fpga_tests_cw340
-      - execute_long_manuf_fpga_tests_cw340
-      - execute_long_pqc_fpga_tests_cw340
+      - execute_test_rom_fpga_tests_cw340
+      - execute_rom_fpga_tests_cw340
+      - execute_rom_ext_fpga_tests_cw340
+      - execute_sival_fpga_tests_cw340
+      - execute_sival_rom_ext_fpga_tests_cw340
+      - execute_manuf_fpga_tests_cw340
     if: success() || failure()

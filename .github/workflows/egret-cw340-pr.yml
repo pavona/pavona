@@ -11,86 +11,6 @@ on:
         type: string
 
 jobs:
-  execute_test_rom_fpga_tests_cw340:
-    name: CW340 Test ROM Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 Test ROM Tests
-      job_name: execute_test_rom_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: cw340_test_rom
-
-  execute_rom_fpga_tests_cw340:
-    name: CW340 ROM Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 ROM Tests
-      job_name: execute_rom_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf"
-
-  execute_rom_ext_fpga_tests_cw340:
-    name: CW340 ROM_EXT Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 ROM_EXT Tests
-      job_name: execute_rom_ext_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: cw340_rom_ext
-      timeout: 180
-
-  execute_sival_fpga_tests_cw340:
-    name: CW340 SiVal Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 SiVal Tests
-      job_name: execute_sival_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: "cw340_sival,-manuf"
-
-  execute_sival_rom_ext_fpga_tests_cw340:
-    name: CW340 SiVal ROM_EXT Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 SiVal ROM_EXT Tests
-      job_name: execute_sival_rom_ext_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: cw340_sival_rom_ext
-      timeout: 180
-
-  execute_manuf_fpga_tests_cw340:
-    name: CW340 Manufacturing Tests
-    uses: ./.github/workflows/fpga.yml
-    if: ${{ github.event_name != 'merge_group' }}
-    secrets: inherit
-    with:
-      name: CW340 Manufacturing Tests
-      job_name: execute_manuf_fpga_tests_cw340
-      bitstream: ${{ inputs.bitstream }}
-      board: cw340
-      interface: cw340
-      tag_filters: "manuf,-cw310"
-
   execute_pqc_fpga_tests_cw340:
     name: CW340 PQCEn=1 Tests
     uses: ./.github/workflows/fpga.yml
@@ -111,14 +31,9 @@ jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
     with:
-      test_group: "cw340-pr"
-      tag_filters: "cw340"
+      test_group: cw340-pr
+      tag_filters: cw340_pqc_test_rom
+      timeout_filters: 'short,moderate,long,eternal'
     needs:
-      - execute_test_rom_fpga_tests_cw340
-      - execute_rom_fpga_tests_cw340
-      - execute_rom_ext_fpga_tests_cw340
-      - execute_sival_fpga_tests_cw340
-      - execute_sival_rom_ext_fpga_tests_cw340
-      - execute_manuf_fpga_tests_cw340
       - execute_pqc_fpga_tests_cw340
     if: success() || failure()
