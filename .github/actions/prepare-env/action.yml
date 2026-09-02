@@ -69,8 +69,8 @@ runs:
           else
             POOL_URL=http://ports.ubuntu.com/ubuntu-ports/pool/universe/n/ncurses
           fi
-          wget "${POOL_URL}/libtinfo5_6.3-2ubuntu0.2_${ARCH}.deb"
-          sudo apt install "./libtinfo5_6.3-2ubuntu0.2_${ARCH}.deb"
+          wget "${POOL_URL}/libtinfo5_6.3-2ubuntu0.3_${ARCH}.deb"
+          sudo apt install "./libtinfo5_6.3-2ubuntu0.3_${ARCH}.deb"
         else
           # Install Extra Packages for Enterprise Linux first
           sudo yum install -y epel-release
