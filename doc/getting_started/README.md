@@ -145,7 +145,9 @@ To build this test, invoke Bazel through a script called `bazelisk.sh`, which fe
 Note that there is an extra colon (`:`) between the directory (`sw/device/examples/hello_world`) and the name of the target (`hello_world`).
 
 ```shell
-$ ./bazelisk.sh build sw/device/examples/hello_world:hello_world
+$ ./bazelisk.sh build \
+      --//hw:verilator_options=--threads,1 \
+      sw/device/examples/hello_world:hello_world
 ...
 Target //sw/device/examples/hello_world:hello_world up-to-date:
   ...
@@ -160,12 +162,17 @@ INFO: Build completed successfully, 49 total actions
 The output (with some trimming) shows the files that were built.
 You can examine the RISC-V (dis)assembly in the `bazel-bin/sw/device/examples/hello_world/hello_world_sim_verilator.dis` file.
 
+Note: if you are using a machine with at least four CPU cores, the `--//hw:verilator_options` flag listed above can be removed to make simulation faster.
+
 ### Run a test on Verilator
 
 Run the "Hello, World!" binary by using Bazel:
 
 ```shell
-$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator --test_output=streamed
+$ ./bazelisk.sh test \
+      --//hw:verilator_options=--threads,1 \
+      --test_output=streamed \
+      sw/device/examples/hello_world:hello_world_sim_verilator
 ```
 
 In the Pavona project, a specific run is assembled by concatenating the name of the binary (`hello_world`) with the name of an *execution environment* (`sim_verilator`).
@@ -200,7 +207,10 @@ Executed 1 out of 1 test: 1 test passes.
 If you'd like to run the test again, you'll likely see:
 
 ```shell
-$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator
+$ ./bazelisk.sh test \
+      --//hw:verilator_options=--threads,1 \
+      --test_output=streamed \
+      sw/device/examples/hello_world:hello_world_sim_verilator
 ...
 INFO: Analyzed target //sw/device/examples/hello_world:hello_world_sim_verilator (0 packages loaded, 4 targets configured).
 INFO: Found 1 test target...
