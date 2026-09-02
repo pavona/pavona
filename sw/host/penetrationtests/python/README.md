@@ -11,7 +11,7 @@ Contains the basic scripts to interact with the target such as reading or sendin
 The directory for fault injection or side-channel analysis related tests.
 
 #### communication
-Contains the scipts for the UART output to the chip/fpga to execute tests.
+Contains the scripts for the UART output to the chip/fpga to execute tests.
 
 #### host_scripts
 Combines functions from the communication directory to perform simple tests.

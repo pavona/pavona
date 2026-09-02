@@ -39,21 +39,21 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 ## Security Countermeasures
 
-| Countermeasure ID                          | Description                                                  |
-|:-------------------------------------------|:-------------------------------------------------------------|
-| CLKMGR.BUS.INTEGRITY                       | End-to-end bus integrity scheme.                             |
-| CLKMGR.TIMEOUT.CLK.BKGN_CHK                | Background check for clock timeout.                          |
-| CLKMGR.MEAS.CLK.BKGN_CHK                   | Background check for clock frequency.                        |
-| CLKMGR.MEAS.CONFIG.SHADOW                  | Measurement configurations are shadowed.                     |
-| CLKMGR.IDLE.INTERSIG.MUBI                  | Idle inputs are multibit encoded.                            |
-| CLKMGR.LC_CTRL.INTERSIG.MUBI               | The life cycle control signals are multibit encoded.         |
-| CLKMGR.LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI | The life cycle clock req/ack signals are multibit encoded.   |
-| CLKMGR.CLK_HANDSHAKE.INTERSIG.MUBI         | The external clock req/ack signals are multibit encoded.     |
-| CLKMGR.DIV.INTERSIG.MUBI                   | Divider step down request is multibit encoded.               |
-| CLKMGR.JITTER.CONFIG.MUBI                  | The jitter enable configuration is multibit encoded.         |
-| CLKMGR.IDLE.CTR.REDUN                      | Idle counter is duplicated.                                  |
-| CLKMGR.MEAS.CONFIG.REGWEN                  | The measurement controls protected with regwen.              |
-| CLKMGR.CLK_CTRL.CONFIG.REGWEN              | Software controlled clock requests are proteced with regwen. |
+| Countermeasure ID                          | Description                                                   |
+|:-------------------------------------------|:--------------------------------------------------------------|
+| CLKMGR.BUS.INTEGRITY                       | End-to-end bus integrity scheme.                              |
+| CLKMGR.TIMEOUT.CLK.BKGN_CHK                | Background check for clock timeout.                           |
+| CLKMGR.MEAS.CLK.BKGN_CHK                   | Background check for clock frequency.                         |
+| CLKMGR.MEAS.CONFIG.SHADOW                  | Measurement configurations are shadowed.                      |
+| CLKMGR.IDLE.INTERSIG.MUBI                  | Idle inputs are multibit encoded.                             |
+| CLKMGR.LC_CTRL.INTERSIG.MUBI               | The life cycle control signals are multibit encoded.          |
+| CLKMGR.LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI | The life cycle clock req/ack signals are multibit encoded.    |
+| CLKMGR.CLK_HANDSHAKE.INTERSIG.MUBI         | The external clock req/ack signals are multibit encoded.      |
+| CLKMGR.DIV.INTERSIG.MUBI                   | Divider step down request is multibit encoded.                |
+| CLKMGR.JITTER.CONFIG.MUBI                  | The jitter enable configuration is multibit encoded.          |
+| CLKMGR.IDLE.CTR.REDUN                      | Idle counter is duplicated.                                   |
+| CLKMGR.MEAS.CONFIG.REGWEN                  | The measurement controls protected with regwen.               |
+| CLKMGR.CLK_CTRL.CONFIG.REGWEN              | Software controlled clock requests are protected with regwen. |
 
 
 <!-- END CMDGEN -->

@@ -45,7 +45,7 @@ There are no gaps between repeats: the MSB of a pattern is immediately followed 
 The length and repeat count of a pattern are configured by fields in the [`SIZE`](doc/registers.md#size) register.
 In both cases, the value in the register is one less than the length or count.
 For example, a repeat count of 0 means that the pattern should be sent once.
-A repeat count of `10'h3ff` means the patter should be sent 1024 times.
+A repeat count of `10'h3ff` means the pattern should be sent 1024 times.
 
 ## Polarity
 

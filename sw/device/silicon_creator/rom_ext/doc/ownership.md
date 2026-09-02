@@ -552,7 +552,7 @@ typedef struct owner_block {
    * length: 2048.
    */
   tlv_header_t header;
-  /** Configuraion version (monotonically increasing per owner) */
+  /** Configuration version (monotonically increasing per owner) */
   uint32_t config_version;
   /** SRAM execution configuration (DisabledLocked, Disabled, Enabled). */
   uint32_t sram_exec_mode;
@@ -662,7 +662,7 @@ typedef struct owner_flash_region {
 
 typedef struct owner_flash_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `FLSH`.
    * length: 8 + 12 * length(config).
    */
@@ -713,7 +713,7 @@ typedef struct owner_info_page {
 
 typedef struct owner_flash_info_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `INFO`.
    * length: 8 + 12 * length(config).
    */
@@ -740,7 +740,7 @@ The rescue configuration describes the owner's desired configuration of the ROM\
 ```c
 typedef struct owner_rescue_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `RSCU`.
    * length: 16 + sizeof(command_allow).
    */
@@ -800,7 +800,7 @@ owner block.
 
 Detached signatures are used when the signature is too larger to fit within
 the designated signature area of the original buffer. In such cases, the
-orginal buffer's signature field will be all zeros and the verification
+original buffer's signature field will be all zeros and the verification
 function will scan through the flash data pages to find the detached
 signature.
 

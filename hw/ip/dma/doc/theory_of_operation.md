@@ -328,7 +328,7 @@ the data being transferred, using any of the following algorithms:
 - SHA-384 - SHA-2 hash with a 384-bit digest.
 - SHA-512 - SHA-2 hash with a 512-bit digest.
 
-This is achived simply by modifying the [*opcode*](registers.md#control--opcode)
+This is achieved simply by modifying the [*opcode*](registers.md#control--opcode)
 field of the [*CONTROL*](registers.md#control) and collecting the
 [digest](registers.md#sha2_digest) from the registers interface when the
 transfer has completed.

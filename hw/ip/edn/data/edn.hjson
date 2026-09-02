@@ -531,7 +531,7 @@
         { bits: "12",
           name: "EDN_BUS_CMP_ALERT",
           desc: '''
-                This bit is set when the interal entropy bus value is equal to the prior
+                This bit is set when the internal entropy bus value is equal to the prior
                 valid value on the bus, indicating a possible attack.
                 Writing a zero resets this status bit.
                 '''

@@ -458,7 +458,7 @@ When a debugger sends an abstract command to the debug module, the debug module 
 The hart receiving the command must execute the instruction at this address after acknowledging the command with the write to [`GOING.`](#going)
 
 Similarly, when a debugger requests that a hart resume, the debug module supplies a jump instruction to execute here.
-In the resume request case, the hart must execute the indicated instruction after acknolwedging the request with the write to [`RESUMING.`](#resuming)
+In the resume request case, the hart must execute the indicated instruction after acknowledging the request with the write to [`RESUMING.`](#resuming)
 - Offset: `0x300`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

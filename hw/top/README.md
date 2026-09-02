@@ -22,7 +22,7 @@ This includes, but is not limited to:
 - `dragonfly`
 - `scafi_deprecated`
 
-The default value of this setting is `egret`, meaning that unless explicitely specified, bazel will compile for Egret.
+The default value of this setting is `egret`, meaning that unless explicitly specified, bazel will compile for Egret.
 
 For example, to build the UART headers for Dragonfly, use:
 ```console
@@ -143,7 +143,7 @@ alias(
     }, "//something:default")
 )
 ```
-- `pavona_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certan tops.
+- `pavona_require_top(top)` provides a way to construct a `target_compatible_with` restriction to indicate that a target is only valid on certain tops.
 Similarly to `pavona_require_ip`, this requirement will usually be redundant if the target transitively depends on headers or the DT.
 Example:
 ```python

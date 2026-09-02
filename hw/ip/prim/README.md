@@ -6,7 +6,7 @@ Having reusable components is one way to manage complexity and reduce the amount
 Modules, a standard language feature in HDLs, define their abstraction boundary using ports (a finite set of wires via which signals move in and out of the module) and parameters (compile time constant inputs which control features of the module which would otherwise be static, such as the number of wires in each port).
 Common low-level design patterns and well-understood or optimized circuits can be abstracted and implemented as modules.
 
-This repository provides a number of these low-level reuseable components, referred to as **primitives** (not to be confused with the built-in [SystemVerilog](https://ieeexplore.ieee.org/document/8299595) `primitive` building block).
+This repository provides a number of these low-level reusable components, referred to as **primitives** (not to be confused with the built-in [SystemVerilog](https://ieeexplore.ieee.org/document/8299595) `primitive` building block).
 There is no strict limit on the size of the logic inside a primitive, but they tend to be small and fixed-function.
 Examples include fifos, counters, arbiters, synchronizers and codecs.
 
@@ -15,7 +15,7 @@ A primitive implementation may be made of lower level components which can be cr
 In ASIC or FPGA targets, the lower level components may be macro cells or other fixed-function hardware blocks.
 An alternative lowering could be to gate-level models of an equivalent hardware implementation, where additional information is added to increase simulation accuracy for prediction of timing and power characteristics.
 
-Having multiple primitive implementations allows tools to infer a combination of lower level components that best implement the circut functionality that is described.
+Having multiple primitive implementations allows tools to infer a combination of lower level components that best implement the circuit functionality that is described.
 There are many reasons that we may wish to constrain or modify our source files to control inferencing of a set of hardware components to make up a final circuit.
 
 ## Primitive Implementations & Libraries

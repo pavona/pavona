@@ -91,7 +91,7 @@ stream.
 
 The device-side test software has one LFSR implementation for each of its streams, and uses these
 to generate the byte streams. Since the host-side code is informed of the initial state of each LFSR
-via the stream signatures, and employs the same algoriths, the host-side code may check the received
+via the stream signatures, and employs the same algorithms, the host-side code may check the received
 data for correctness and thus detect any transmission errors and signal integrity issues on the USB.
 
 Having verified the received bytes against expectations using its own model of the device-side LFSR,

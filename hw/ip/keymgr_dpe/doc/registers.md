@@ -210,7 +210,7 @@ The source key slot to be used for the invoked operation.
 
 ### CONTROL_SHADOWED . DEST_SEL
 When the OPERATION field is programmed to generate output, this field selects
-the target cryptograhic use of the key.
+the target cryptographic use of the key.
 
 This field should be programmed for both HW / SW generation, as this helps diversify the output.
 

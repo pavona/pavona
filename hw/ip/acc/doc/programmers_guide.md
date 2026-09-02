@@ -144,7 +144,7 @@ outer_body:
   SUBI  x9, x9, 1
 ```
 
-### Algorithic Examples: Multiplication with BN.MULQACC
+### Algorithmic Examples: Multiplication with BN.MULQACC
 
 The big number instruction subset of ACC generally operates on WLEN bit numbers.
 {{#acc-insn-ref BN.MULQACC}} operates with WLEN/4 bit operands (with a full WLEN accumulator).

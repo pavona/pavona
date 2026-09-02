@@ -134,7 +134,7 @@ There is no hardware support for calculating or checking the Packet Error Code, 
 #### Target Address Registers
 
 Every transfer involving the I2C Target Module begins with an address.
-The I2C Target Module supports up to two 7-bit addresse./ci/scripts/check-links.shs and 7-bit mask pairs.
+The I2C Target Module supports up to two 7-bit addresses and 7-bit mask pairs.
 The Target Module accepts a transaction if the result of the bitwise AND operation performed on the transaction address sent by the controller and a mask matches the assigned address corresponding to the mask.
 In other words, address matching is performed only for bits where the mask is "1".
 Thus, with the masks set to all ones (0x7F), the target device will respond to either of the two assigned unique addresses and no other.

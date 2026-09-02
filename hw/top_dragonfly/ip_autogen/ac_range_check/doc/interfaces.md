@@ -41,7 +41,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 | AC_RANGE_CHECK.BUS.INTEGRITY    | End-to-end bus integrity scheme.                                                        |
 | AC_RANGE_CHECK.CTRL.REGWEN_MUBI | Registers are protected from writes with a multi-bit encoded signal.                    |
 | AC_RANGE_CHECK.CTRL.MUBI        | Registers have multi-bit encoded fields.                                                |
-| AC_RANGE_CHECK.INTERSIG.MUBI    | Range overwrite singal to bypass the matching logic.                                    |
+| AC_RANGE_CHECK.INTERSIG.MUBI    | Range overwrite signal to bypass the matching logic.                                    |
 | AC_RANGE_CHECK.CTR.REDUN        | The log counter is protected by a second counter that counts in the opposite direction. |
 
 

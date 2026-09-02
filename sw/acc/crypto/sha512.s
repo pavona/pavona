@@ -116,7 +116,7 @@ sha512:
 
     /* Expand 1024 bit data chunk to full message schedule (W_0 ... W_79)
        The 80 64-bit words of the message schedule are kept in dmem
-       scatchpad (20 256-bit cells). */
+       scratchpad (20 256-bit cells). */
 
     /* The message schedule's 16 lower words (W_0 to W_15) are set equal to the
        16 words of the message chunk (M_0 to M_15).

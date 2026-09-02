@@ -57,7 +57,7 @@ The life cycle definition schema
 | tokens          | required | list  | List of tokens to hash.                                                                                                                         |
 | lc_state        | required | group | Life cycle state declaration.                                                                                                                   |
 | lc_cnt          | required | group | Life cycle counter declaration.                                                                                                                 |
-| soc_dbg_state   | required | group | SoC debuggger state declaration.                                                                                                                |
+| soc_dbg_state   | required | group | SoC debugger state declaration.                                                                                                                 |
 | ownership_state | required | group | Ownership state declaration.                                                                                                                    |
 | auth_state      | required | group | Authentication state declaration.                                                                                                               |
 | min_hw          | optional | int   | Minimum hamming weight (default 0).                                                                                                             |
@@ -331,7 +331,7 @@ TODO
 
 `check-netlist.py netlist.v` will report the number of preserved, `size_only` cells.
 In addition, it will parse the netlist for suspicious synthesis optimizations
-such as constant propagation accross preserved instances.
+such as constant propagation across preserved instances.
 
 On the `prim_sdc_example.sv` design, the script produces the following output:
 

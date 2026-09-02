@@ -294,7 +294,7 @@ Writes to this register are used to define and drive Controller-Mode transaction
 |  7:0   |   wo   |   0x0   | [FBYTE](#fdata--fbyte) |
 
 ### FDATA . NAKOK
-For the currrent controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
+For the current controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
 or assert the 'controller_halt' interrupt if the current byte is not ACK'd.
 
 ### FDATA . RCONT

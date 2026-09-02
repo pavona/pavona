@@ -172,7 +172,7 @@
         { bits: "31:0",
           resval: "0",
           name: "CLK_RATIO",
-          desc: "Clock divider ratio fpr Channel 0 (relative to I/O clock). Note that writes to a channel's configuration registers have no effect while the channel is enabled."
+          desc: "Clock divider ratio for Channel 0 (relative to I/O clock). Note that writes to a channel's configuration registers have no effect while the channel is enabled."
         }
       ]
     },

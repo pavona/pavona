@@ -808,7 +808,7 @@
           { bits: "${9 + info_type_width -1}:9",
             name: "INFO_SEL",
             desc: '''
-              Informational partions can have multiple types.
+              Informational partitions can have multiple types.
 
               This field selects the info type to be accessed.
             '''

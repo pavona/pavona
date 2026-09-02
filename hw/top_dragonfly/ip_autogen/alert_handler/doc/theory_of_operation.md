@@ -763,7 +763,7 @@ This information is then used to parameterize the alert handler design, and make
 
 ### Hardening Against Glitch Attacks
 
-In addition to the differential alert and escalation signalling scheme, the internal state machines and counters are hardened against glitch attacks as described bellow:
+In addition to the differential alert and escalation signalling scheme, the internal state machines and counters are hardened against glitch attacks as described below:
 
 1. Ping Timer:
   - The FSM is sparsely encoded.

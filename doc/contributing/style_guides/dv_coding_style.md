@@ -567,7 +567,7 @@ To use the UVM factory, these guidelines should be followed:
     m_axi_driver = axi_driver::type_id::create("m_axi_driver", this);
     ```
 
-7.  For classes derived from `uvm_object`, use `gfn` as part of the name argument to append the full hierachy name, since `uvm_object` hierarchies are not automatically built.
+7.  For classes derived from `uvm_object`, use `gfn` as part of the name argument to append the full hierarchy name, since `uvm_object` hierarchies are not automatically built.
     Note that this only applies to class instances that are not instantiated within a `uvm_component` in the test hierarchy, as in this case the full hierarchy name will already be provided.
 
     ```systemverilog
@@ -1126,7 +1126,7 @@ The following guidelines help maximize the reuse of these SVA modules horizontal
 
 1.  Bind SVA modules to RTL modules and not to specific instances of the RTL module.
     Binding the SVA module to an instance again, creates reusability issues - other testbenches may have additional instances of the RTL module elsewhere in the design, which will miss out on the SVA checks.
-    If there is a strong justifiable reason to bind the SVA module to a specifc instance, then refrain from specifying the absolute hierarchical path to the instance.
+    If there is a strong justifiable reason to bind the SVA module to a specific instance, then refrain from specifying the absolute hierarchical path to the instance.
     Instead, use the `bind <module_name>: <instance_name>` notation.
 
     :-1:

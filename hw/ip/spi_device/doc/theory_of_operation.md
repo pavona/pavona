@@ -336,7 +336,7 @@ Software is recommended to set the filter bit for Passthrough to not deliver the
 
 #### Internally processed Commands
 
-As described in [SPI Device Modes](../README.md#spi-device-modes-and-active-submodules), tje SPI device may return the data from the IP even if the passthrough mode is set.
+As described in [SPI Device Modes](../README.md#spi-device-modes-and-active-submodules), the SPI device may return the data from the IP even if the passthrough mode is set.
 The hardware can process Read Status, Read JEDEC ID, Read SFDP, Read commands accessing the mailbox region, and EN4B/EX4B.
 
 The software configures [`INTERCEPT_EN`](registers.md#intercept_en) CSR to enable the feature.

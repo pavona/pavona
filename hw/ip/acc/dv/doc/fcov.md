@@ -57,7 +57,7 @@ We expect to:
 
 Accesses to CSRs and WSRs are tracked in the coverage for the instructions that access them.
 See [CSRRS](#csrrs) and [CSRRW](#csrrw) for CSRs; [BN.WSRR](#bnwsrr) and [BN.WSRW](#bnwsrw) for WSRs.
-Some CSRs and WSRs are dependant on the `AccPQCEn` RTL parameter, and are appropriately set as valid/illegal bins when appropriate.
+Some CSRs and WSRs are dependent on the `AccPQCEn` RTL parameter, and are appropriately set as valid/illegal bins when appropriate.
 
 ## Random numbers
 

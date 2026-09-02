@@ -574,7 +574,7 @@
               The hart receiving the command must execute the instruction at this address after acknowledging the command with the write to !!GOING.
 
               Similarly, when a debugger requests that a hart resume, the debug module supplies a jump instruction to execute here.
-              In the resume request case, the hart must execute the indicated instruction after acknolwedging the request with the write to !!RESUMING.
+              In the resume request case, the hart must execute the indicated instruction after acknowledging the request with the write to !!RESUMING.
               ''',
         swaccess: "ro",
         hwaccess: "hrw",

@@ -319,7 +319,7 @@ finish_item(req);  // Waiting for item_done() that may never come
     ↓
 5. Run Phase : activate/create desired sequence to run
     ↓
-    5a. Driver : run_phase() is reset aware - two seperate threads -
+    5a. Driver : run_phase() is reset aware - two separate threads -
                  reset_thread and get_and_drive_thread
     ↓
     5b. Driver : Wait for initial reset and start both threads
@@ -333,7 +333,7 @@ finish_item(req);  // Waiting for item_done() that may never come
     5e. Driver : get_and_drive() is restarted when reset is deasserted and
                  stable.
     ↓
-    5f. Monitor : run_phase() is reset aware - two seperate threads -
+    5f. Monitor : run_phase() is reset aware - two separate threads -
                   reset_thread and collect_trans_thread
     ↓
     5g. Monitor : Wait for POR and start both threads. When reset is detected
@@ -365,7 +365,7 @@ finish_item(req);  // Waiting for item_done() that may never come
     ↓
     8c. trigger_reset_thread() : Independent and asynchronous thread.
                                  User defined stimulus logic to randomly
-                                 trigger reset. Key contol knobs:
+                                 trigger reset. Key control knobs:
                                  - reset_assertion_delay - time between
                                    assertions
                                  - length_reset_assertion - active time for
@@ -657,7 +657,7 @@ task dv_rand_rst_safe_base_vseq::body();
 
   // TODO: Have a discussion on how parameters can be organised
   // Turn off randomisation for test parameters once randomization is
-  // sucessful. These parameters need to be stable for the rest of the test
+  // successful. These parameters need to be stable for the rest of the test
   // sequence execution
   test_params.constraint_mode(0);
 
@@ -666,10 +666,10 @@ task dv_rand_rst_safe_base_vseq::body();
   `uvm_info (get_name(), $sformatf("test_params.num_reset_loops:%d",
                                      test_params.num_reset_loops), UVM_LOW)
 
-  // 'monitor_reset()' task helps the sequence syncronise with 'reset' trigger.
+  // 'monitor_reset()' task helps the sequence synchronize with 'reset' trigger.
   // Synchronisation is done only when reset is observed at the signal level.
   // Actions taken when reset is triggered are different to when sequence
-  // actually triggers a reset, since both threads run independantly.
+  // actually triggers a reset, since both threads run independently.
   monitor_reset();
 
 

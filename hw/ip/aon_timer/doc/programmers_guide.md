@@ -85,7 +85,7 @@ enable_wakeup_interrupt();
 
 If either timer reaches the programmed threshold, interrupts are generated from the AON_TIMER module.
 Disable the wakeup timer by clearing the enable bit in [`WKUP_CTRL`](registers.md#wkup_ctrl).
-Reset the timer if desired by clearing [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) and renable by setting the enable bit in [`WKUP_CTRL`](registers.md#wkup_ctrl).
+Reset the timer if desired by clearing [`WKUP_COUNT_HI`](registers.md#wkup_count_hi) and [`WKUP_COUNT_LO`](registers.md#wkup_count_lo) and re-enable by setting the enable bit in [`WKUP_CTRL`](registers.md#wkup_ctrl).
 Clear the interrupt by writing 1 into the Interrupt Status Register [`INTR_STATE`](registers.md#intr_state).
 
 If the timer has caused a wakeup event ([`WKUP_CAUSE`](registers.md#wkup_cause) is set) then clear the wakeup request by writing 0 to [`WKUP_CAUSE`](registers.md#wkup_cause).

@@ -327,7 +327,7 @@ One fewer than the number of bus words the flash operation should read or progra
 For example, to read 10 words, software should program this field with the value 9.
 
 ### CONTROL . INFO_SEL
-Informational partions can have multiple types.
+Informational partitions can have multiple types.
 
 This field selects the info type to be accessed.
 

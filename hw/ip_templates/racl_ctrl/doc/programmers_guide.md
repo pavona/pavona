@@ -35,7 +35,7 @@ A typical programming sequence for initializing the IP looks as follows:
 1. For each of the `POLICY_*` registers, program them with the desired read/write permissions for each of the roles. This step is only necessary if the default values are not sufficient.
 2. Set up an interrupt service routine for the interrupt of this IP and configure the PLIC accordingly.
 2. Enable interrupts by writing to the [`INTR_ENABLE`](./registers.md#intr_enable) register.
-3. Optionally, check if any RACL error has occured before interrupts were enabled by reading `ERROR_LOG.valid`.
+3. Optionally, check if any RACL error has occurred before interrupts were enabled by reading `ERROR_LOG.valid`.
 
 ### Checking for and handling RACL errors
 

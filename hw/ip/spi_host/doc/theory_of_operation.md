@@ -690,7 +690,7 @@ Therefore, this extra storage is transparent to software.
 The Byte Select unit is responsible for loading words from the TX FIFO and feeding individual bytes into the shift register.
 This unit takes two data inputs: a data word `word_i[31:0]` and a byte enable signal `word_be_i[3:0]`.
 There is a single output `byte_o[7:0]` which feeds the following shift register.
-This block is built on the `prim_packer_fifo` primative to create the interface between the word-width and byte-width datapaths.
+This block is built on the `prim_packer_fifo` primitive to create the interface between the word-width and byte-width datapaths.
 
 There are ready/valid signals for managing flow control on both the word-input and the byte-output.
 The shift register asserts ready to request new bytes based on control inputs from the SPI_HOST FSM.

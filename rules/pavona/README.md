@@ -89,7 +89,7 @@ pavona_test(
 )
 ```
 
-The test macro will instatiate individual tests for each exec\_env and name the bazel targets with the "basename" of the exec\_env.
+The test macro will instantiate individual tests for each exec\_env and name the bazel targets with the "basename" of the exec\_env.
 In the example above, the tests will be:
 - `uart_smoketest_fpga_cw310_test_rom`
 - `uart_smoketest_sim_dv`

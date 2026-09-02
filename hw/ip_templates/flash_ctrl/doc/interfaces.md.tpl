@@ -21,7 +21,7 @@ Signal                     | Direction      | Description
 `mem_tl`                   | `input/output` | TL-UL interface used by host to access the vendor flash memory directly.
 `OTP`                      | `input/output` | Interface used to request scrambling keys from `otp_ctrl`.
 `rma_req`                  | `input`        | rma entry request from `lc_ctrl`.
-`rma_ack`                  | `output`       | rma entry acknowlegement to `lc_ctrl`.
+`rma_ack`                  | `output`       | rma entry acknowledgement to `lc_ctrl`.
 `rma_seed`                 | `input`        | rma entry seed.
 `pwrmgr`                   | `output`       | Idle indication to `pwrmgr`.
 `keymgr`                   | `output`       | Secret seed bus to `keymgr`.

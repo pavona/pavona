@@ -127,7 +127,7 @@ PATTGEN pre-divider register for Channel 0
 
 |  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                     |
 |:------:|:------:|:-------:|:----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | CLK_RATIO | Clock divider ratio fpr Channel 0 (relative to I/O clock). Note that writes to a channel's configuration registers have no effect while the channel is enabled. |
+|  31:0  |   rw   |   0x0   | CLK_RATIO | Clock divider ratio for Channel 0 (relative to I/O clock). Note that writes to a channel's configuration registers have no effect while the channel is enabled. |
 
 ## PREDIV_CH1
 PATTGEN pre-divider register for Channel 1

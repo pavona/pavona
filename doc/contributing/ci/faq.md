@@ -22,7 +22,7 @@ This allows contributors to rely on a stable development base for testing new ch
 <!-- markdownlint-disable MD026 -->
 ### How do I use the continuous integration service?
 
-Upon creating a Pull Request (PR) in GitHub against the `pavona` respository, continuous integration jobs will automatically trigger.
+Upon creating a Pull Request (PR) in GitHub against the `pavona` repository, continuous integration jobs will automatically trigger.
 You can check the status of the running CI jobs in the `Checks` tab after navigating to your Pull Request.
 
 We also run nightly and weekly regressions on main branches that trigger automatically and include tests that are not reasonable to run on every PR.

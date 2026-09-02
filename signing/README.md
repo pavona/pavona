@@ -61,7 +61,7 @@ The production SiVAL ROM\_EXT expects a signing key held in Google's cloud-kms
 service.
 
 You need an hsmtool profile that maps to the cloud-kms token.  Add an entry
-to your profiles confiuration file:
+to your profiles configuration file:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
 mode to 600.

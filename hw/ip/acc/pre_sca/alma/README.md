@@ -198,7 +198,7 @@ Run the following command to see the waveform:
    gtkwave tmp/circuit.vcd
    ```
 
-Run the following command to see the circuit diagramm if there is a leakage:
+Run the following command to see the circuit diagram if there is a leakage:
    ```sh
    xdot tmp/dbg-circuit-0.dot
    ```

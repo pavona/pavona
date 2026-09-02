@@ -304,7 +304,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       desc: "The measurement controls protected with regwen."
     }
     { name: "CLK_CTRL.CONFIG.REGWEN",
-      desc: "Software controlled clock requests are proteced with regwen."
+      desc: "Software controlled clock requests are protected with regwen."
     }
 
   ]

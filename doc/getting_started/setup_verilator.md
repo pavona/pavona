@@ -112,7 +112,7 @@ Invoking: sw/host/opentitantool/opentitantool --rcfile= --logging=info --interfa
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout] Simulation running, end by pressing CTRL-c.
 [2022-06-09T08:08:16Z INFO  opentitanlib::transport::verilator::stdout]
-[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] Verilator started with the following interaces:
+[2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] Verilator started with the following interfaces:
 [2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] gpio_read = $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-read
 [2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] gpio_write = $HOME/.cache/bazel/_bazel_ttrippel/3d92022c091a734228e22679f3ac7c7f/execroot/lowrisc_opentitan/bazel-out/k8-fastbuild/bin/sw/device/tests/uart_smoketest_sim_verilator.runfiles/lowrisc_opentitan/gpio0-write
 [2022-06-09T08:08:17Z INFO  opentitanlib::transport::verilator::transport] uart = /dev/pts/10

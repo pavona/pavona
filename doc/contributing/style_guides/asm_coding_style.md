@@ -211,7 +211,7 @@ To aid the disassembler, every function must follow the following template:
   /**
    * Comment describing what my function does
    */
-  .section .some_section  // Optional if the previous symbol is in this setion.
+  .section .some_section  // Optional if the previous symbol is in this section.
   .balign 4
   .global my_function  // Only for exported symbols.
   .type my_function, @function
@@ -239,7 +239,7 @@ Within a function, whether or not it conforms to RISC-V's calling convention, co
 Example:
 ```S
   /**
-   * Compute some stuff, outputing a 96-bit integer.
+   * Compute some stuff, outputting a 96-bit integer.
    *
    * @param[out] a0 bits [31:0] of the result.
    * @param[out] a1 bits [63:32] of the result.

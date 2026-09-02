@@ -2,7 +2,7 @@
 
 # Overview
 
-This document specifies Power Manger hardware IP (HWIP) functionality.
+This document specifies Power Manager hardware IP (HWIP) functionality.
 As an IP integrated within the broader Pavona ecosystem, this module conforms to [Pavona's Comportability Specification](../../../../doc/contributing/hw/comportability/README.md).
 
 ${"##"} Features

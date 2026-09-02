@@ -79,7 +79,7 @@ Reaching for HTML may suggest that:
 
 ## Links
 
-The [GFM autolinks extention][] is not used so links should be flanked by `<` and `>` characters.
+The [GFM autolinks extension][] is not used so links should be flanked by `<` and `>` characters.
 
 One must not use [shortcut reference link][]s, but instead use [collapsed reference link][]s.
 This is because it can be ambiguous whether [shortcut reference link][] are meant to be links or not.
@@ -178,4 +178,4 @@ Use the HTML `<!--` and `-->` as the comment delimiters.
 [backslash hard breaks]: https://spec.commonmark.org/0.30/#example-634
 [gfm tables]: https://github.github.com/gfm/#tables-extension-
 [gfm list items]: https://github.github.com/gfm/#task-list-items-extension-
-[gfm autolinks extention]: https://github.github.com/gfm/#autolinks-extension-
+[gfm autolinks extension]: https://github.github.com/gfm/#autolinks-extension-

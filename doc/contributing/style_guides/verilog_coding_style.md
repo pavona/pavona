@@ -1793,7 +1793,7 @@ Note that although don't cares can be used to indicate possible optimization opp
 
 #### Catching errors where invalid values are consumed
 
-For an internally-generated signal that could be invalid (but not driven to `X`) and is used to trigger some action (such as a register write-enable), it is recommened to add an assert to check that when the enable is true, the signal is valid.
+For an internally-generated signal that could be invalid (but not driven to `X`) and is used to trigger some action (such as a register write-enable), it is recommended to add an assert to check that when the enable is true, the signal is valid.
 This triggers a simple to diagnose failure when an invalid value has been accidentally used.
 
 ```systemverilog
@@ -2737,7 +2737,7 @@ For example, `in_p` and `in_n` comprise a differential pair set.
 
 If one signal is only a delayed version of another signal, the `_q` suffix should be used to indicate this relationship.
 
-If another signal is then delayed by another clock cycle, the next signal should be identifed with the `_q2` suffix, and then `_q3` and so on.
+If another signal is then delayed by another clock cycle, the next signal should be identified with the `_q2` suffix, and then `_q3` and so on.
 
 Example:
 

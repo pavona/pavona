@@ -470,7 +470,7 @@
         { bits: "12"
           name: "NAKOK"
           desc: '''
-                For the currrent controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
+                For the current controller-transmitter byte (WRITE), do not halt via CONTROLLER_EVENTS
                 or assert the 'controller_halt' interrupt if the current byte is not ACK'd.
                 '''
         }

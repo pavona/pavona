@@ -109,7 +109,7 @@ These requests primarily come from the following sources:
 This reset manager supports the shadow configuration registers.
 These are registers stored in two constantly checking copies to ensure the values are not maliciously or accidentally disturbed.
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
-This reset separation ensures that a targetted attack on the reset line cannot easily defeat shadow registers.
+This reset separation ensures that a targeted attack on the reset line cannot easily defeat shadow registers.
 
 ### Reset Consistency Checks
 
