@@ -267,7 +267,6 @@ class csr_rw_seq extends csr_base_seq;
       bit            supports_byte_enable;
       bit            has_user_frontdoor;
       bit            do_field_rd_check;
-      bit            blocking = 0;
 
       // The test_csrs list may be jumbled from different RAL models. Hence, we find at runtime, if
       // the interface supports byte_accesses.
@@ -298,7 +297,6 @@ class csr_rw_seq extends csr_base_seq;
       // might pick up stale mirrored value
       // the pre-predict also needs to happen after the register is being written, to make sure the
       // register is getting the updated access information.
-      void'($value$plusargs("csr_blocking=%0b", blocking));
       csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(blocking),
              .predict(!external_checker));
 
