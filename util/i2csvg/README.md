@@ -89,9 +89,9 @@ The baseline tool will generate an svg file (which can be viewed in a
 browser) that includes the diagrammatic form of the transaction and a
 line with the comma separated structured text form.
 
-```console
-$ cd $REPO_TOP/util
-$ echo "SA0, P4" | ./i2csvg.py > out.svg
+```sh
+cd $REPO_TOP/util
+echo "SA0, P4" | ./i2csvg.py > out.svg
 ```
 
 The text version (which is just the input with more structured
@@ -100,18 +100,24 @@ output. This output will always have the five flags in order and five
 characters in the flags field (including a `.` if the flag is not
 set):
 
-```console
-$ cd $REPO_TOP/util
-$ echo "SA0, P4" | ./i2csvg.py --text --nosvg
+```sh
+cd $REPO_TOP/util
+echo "SA0, P4" | ./i2csvg.py --text --nosvg
+```
+which prints:
+```
 S.... A0
 .P... 0x4
 ```
 
 The debug version is intended for tool development:
 
-```console
-$ cd $REPO_TOP/util
-$ echo "SA0, P4" | ./i2csvg.py --debug --nosvg
+```sh
+cd $REPO_TOP/util
+echo "SA0, P4" | ./i2csvg.py --debug --nosvg
+```
+which prints:
+```
 I2cOp(read=False, rcont=False, start=True, stop=False, nackok=False, mvalue=False, adr=True, size=10, fbyte=0, tag=None)
 I2cOp(read=False, rcont=False, start=False, stop=True, nackok=False, mvalue=False, adr=False, size=10, fbyte=4, tag=None)
 ```
@@ -119,18 +125,18 @@ I2cOp(read=False, rcont=False, start=False, stop=True, nackok=False, mvalue=Fals
 If svg generation is not suppressed then the text or debug output and
 the svg are generated in an HTML file.
 
-```console
-$ cd $REPO_TOP/util
-$ echo "SA0, P4" | ./i2csvg.py --text > out.html
+```sh
+cd $REPO_TOP/util
+echo "SA0, P4" | ./i2csvg.py --text > out.html
 ```
 
 The smbus directory contains files with each of the commands listed in
 section 6.5 of the SMBus 3.0 specification. These can be used to
 generate an HTML file with all the transactions expanded.
 
-```console
-$ cd $REPO_TOP/util
-$ ./i2csvg.py i2csvg/smbus/*.txt > out.html
+```sh
+cd $REPO_TOP/util
+./i2csvg.py i2csvg/smbus/*.txt > out.html
 ```
 
 Alternatively, these can all be converted to individual svg files (for
@@ -140,15 +146,24 @@ replaced with `.svg`. Note that if the `--text` or `--debug` flags
 are given then the output will be HTML and the extension will be
 `.html`.
 
-```console
-$ cd $REPO_TOP/util
-$ ls i2csvg/smbus
+```sh
+cd $REPO_TOP/util
+ls i2csvg/smbus
+```
+which prints:
+```
 01-Quick.txt        04-WriteWord.txt    07-BlockRead.txt       10-Write32.txt
 02-SendByte.txt     05-ReadByte.txt     07-BlockWrite.txt      11-Read32.txt
 03-ReceiveByte.txt  05-ReadWord.txt     08-BlockWrRdPCall.txt  12-Write64.txt
 04-WriteByte.txt    06-ProcessCall.txt  09-HostNotify.txt      13-Read64.txt
-$ ./i2csvg.py --multiout i2csvg/smbus/*.txt
-$ ls i2csvg/smbus
+```
+then run:
+```sh
+./i2csvg.py --multiout i2csvg/smbus/*.txt
+ls i2csvg/smbus
+```
+which prints:
+```
 01-Quick.svg        04-WriteWord.svg    07-BlockRead.svg       10-Write32.svg
 01-Quick.txt        04-WriteWord.txt    07-BlockRead.txt       10-Write32.txt
 02-SendByte.svg     05-ReadByte.svg     07-BlockWrite.svg      11-Read32.svg
@@ -168,9 +183,12 @@ prefixed by `I2CF:` Prior to a transaction a title line starting with
 `T` is produced. This output can be processed to give a simple text
 representation:
 
-```console
-$ cd $REPO_TOP/util
-$ ./i2csvg.py --nosvg --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt
+```sh
+cd $REPO_TOP/util
+./i2csvg.py --nosvg --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt
+```
+which prints:
+```
 T read sensor
 S.... 0x40
 .PR.. 0x1
@@ -182,7 +200,7 @@ S.... 0x41
 
 Or the output can be converted into pictures for display in a browser:
 
-```console
-$ cd $REPO_TOP/util
-$ ./i2csvg.py --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt > out.html
+```sh
+cd $REPO_TOP/util
+./i2csvg.py --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt > out.html
 ```

@@ -135,9 +135,9 @@ Once the lock file exists, the vendor tool will only use the upstream informatio
 
 ### Re-clone code and apply new file exclusions or patches
 
-```command
-$ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v
+```sh
+cd $REPO_TOP
+./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v
 ```
 
 ### Update code and commit the new code
@@ -145,7 +145,7 @@ $ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v
 This will generate a commit message based off the git shortlog between the
 previously cloned revision and the newly cloned revision of the repository.
 
-```command
-$ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v --update --commit
+```sh
+cd $REPO_TOP
+./util/vendor.py hw/vendor/google_riscv-dv.vendor.hjson -v --update --commit
 ```

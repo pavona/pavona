@@ -12,8 +12,8 @@ Building / stamping from a dirty tree should only be done for testing purposes.
 
 ## Build a release bundle
 
-```shell
-$ ./bazelisk.sh build --stamp //sw/device/silicon_creator/rom_ext/imm_section:release_bundle
+```sh
+./bazelisk.sh build --stamp //sw/device/silicon_creator/rom_ext/imm_section:release_bundle
 ```
 
 Building with --stamp flag will stamp the built immutable section, including
@@ -40,10 +40,13 @@ that can be linked to ROM\_EXT. The prebuilt folder should be checked-in to eith
 *   this (upstream) repo under: `sw/device/silicon_creator/rom\_ext/imm_section/prebuilts/`, or
 *   to a (downstream) integrators repo.
 
-```shell
-$ tar xvf \
+```sh
+tar xvf \
   bazel-bin/sw/device/silicon_creator/rom_ext/imm_section/release_bundle.tar \
   -C sw/device/silicon_creator/rom_ext/imm_section/prebuilts/
+```
+which prints something like:
+```
 2025-03-28-v0.1-d686b36b/BUILD
 2025-03-28-v0.1-d686b36b/main_binaries_dice_x509_slot_virtual_silicon_creator.bin
 2025-03-28-v0.1-d686b36b/main_binaries_dice_x509_slot_virtual_silicon_creator.elf
@@ -51,8 +54,13 @@ $ tar xvf \
 2025-03-28-v0.1-d686b36b/main_binaries_dice_cwt_slot_virtual_silicon_creator.bin
 2025-03-28-v0.1-d686b36b/main_binaries_dice_cwt_slot_virtual_silicon_creator.elf
 2025-03-28-v0.1-d686b36b/main_binaries_dice_cwt_slot_virtual_silicon_creator.map
-
-$ ./bazelisk.sh query //sw/device/silicon_creator/rom_ext/imm_section/prebuilts/2025-03-28-v0.1-d686b36b/...
+```
+then run:
+```sh
+./bazelisk.sh query //sw/device/silicon_creator/rom_ext/imm_section/prebuilts/2025-03-28-v0.1-d686b36b/...
+```
+which prints something like:
+```
 //sw/device/silicon_creator/rom_ext/imm_section/prebuilts/2025-03-28-v0.1-d686b36b:dice_cwt
 //sw/device/silicon_creator/rom_ext/imm_section/prebuilts/2025-03-28-v0.1-d686b36b:dice_cwt_object
 //sw/device/silicon_creator/rom_ext/imm_section/prebuilts/2025-03-28-v0.1-d686b36b:dice_x509

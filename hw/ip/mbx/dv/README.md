@@ -44,8 +44,8 @@ The MBX IP blocks employs two RAL models for the RoT-side registers and the SoC-
 Both are created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 They may be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
-```console
-$ $REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/mbx/data/mbx.hjson -s --outdir <path_to_directory>
+```sh
+$REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/mbx/data/mbx.hjson -s --outdir <path_to_directory>
 ```
 ### Stimulus Strategy
 #### Test sequences
@@ -80,8 +80,8 @@ TBD: Interrupt prediction and checking.
 
 ### Building and running tests
 The MBX IP has been verified using the in-house regression tool [`dvsim`](../../../../util/dvsim/README.md) for building and running tests/regressions.
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/mbx/dv/mbx_sim_cfg.hjson -i mbx_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/mbx/dv/mbx_sim_cfg.hjson -i mbx_smoke
 ```
 
 ## Testplan

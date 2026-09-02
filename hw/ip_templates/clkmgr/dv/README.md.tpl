@@ -192,8 +192,8 @@ We are using our in-house developed [regression tool](../../../../../util/dvsim/
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson -i clkmgr_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson -i clkmgr_smoke
 ```
 
 ${"##"} Testplan

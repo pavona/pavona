@@ -75,46 +75,46 @@ Basic lintpy usage is just to run from the util directory.
 If everything is fine the command produces no output, otherwise it will report the problems.
 Additional information will be printed if the `--verbose` or `-v` flag is given.
 
-```console
-$ cd $REPO_TOP/util
-$ ./lintpy.py
-$ ./lintpy.py -v
+```sh
+cd $REPO_TOP/util
+./lintpy.py
+./lintpy.py -v
 ```
 
 Checking can be done on an explicit list of files using the `--file` or `-f` flag.
 In this case the tool will not derive the list from git, so any file can be checked even if it has not been modified.
 
-```console
-$ cd $REPO_TOP/util
-$ ./lintpy.py -f a.py subdir/*.py
+```sh
+cd $REPO_TOP/util
+./lintpy.py -f a.py subdir/*.py
 ```
 
 Errors may be fixed using the same tool to edit the problem file(s) in-place (you may need to refresh the file(s) in your editor after doing this).
 This uses the same set of files as are being checked, so unless the`--file` or `-f` flag is used this will only affect files that have already been modified (or staged for commit if `-c`is used) and will not fix errors in Python files that have not been touched.
 
-```console
-$ cd $REPO_TOP/util
-$ ./lintpy.py --fix
+```sh
+cd $REPO_TOP/util
+./lintpy.py --fix
 ```
 
 lintpy.py can be installed as a git pre-commit hook which will prevent commits if there are any lint errors.
 This will normally be a symlink to the tool in util so changes are automatically used (it also works if `lintpy.py` is copied to `.git/hooks/pre-commit` but in that case the hook must be reinstalled each time the tool changes).
 Since git hooks are not automatically installed the symlink hook can be installed if required using the tool:
 
-```console
-$ cd $REPO_TOP/util
-$ ./lintpy.py --hook
+```sh
+cd $REPO_TOP/util
+./lintpy.py --hook
 ```
 
 
 Fixing style errors for a single file can also be done with `yapf` directly:
-```console
-$ yapf -i file.py
+```sh
+yapf -i file.py
 ```
 
 Fixing import ordering errors for a single file can be done with `isort`:
-```console
-$ isort file.py
+```sh
+isort file.py
 ```
 
 Yapf and isort are both listed in `python-requirements.txt`, so they come with the environment described in [Python Environment Setup](../../getting_started/setup_python.md).

@@ -18,8 +18,8 @@ An example of the crossbar Hjson is given in `util/example/tlgen/xbar_main.hjson
 
 The package file and RTL can be created by the command below:
 
-```console
-    $ util/tlgen.py -t util/example/tlgen/xbar_main.hjson -o /tmp/
+```sh
+    util/tlgen.py -t util/example/tlgen/xbar_main.hjson -o /tmp/
 ```
 
 This creates files in `/tmp/{rtl|dv}`.
@@ -232,9 +232,12 @@ The tool creates DAG connections when it creates RTL to help understanding the f
 The information is put as a comment in the header of the RTL.
 For instance, with the above 2x2 example, the following information is created.
 
-```console
-    $ util/tlgen.py -t util/example/tlgen/xbar_2x2.hjson -o /tmp/
-    $ cat /tmp/rtl/xbar_2x2.sv
+```sh
+    util/tlgen.py -t util/example/tlgen/xbar_2x2.hjson -o /tmp/
+    cat /tmp/rtl/xbar_2x2.sv
+```
+which prints something like:
+```
 // ...
 // Interconnect
 // h0

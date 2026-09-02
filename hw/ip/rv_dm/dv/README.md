@@ -170,13 +170,13 @@ Assertion checks for rv_dm currently come from four places.
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_use_jtag_interface_sim_cfg.hjson -i rv_dm_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_use_jtag_interface_sim_cfg.hjson -i rv_dm_smoke
 ```
 
 If you want to run the RV DM with the TLUL-based DMI interface run the following configuration:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson -i rv_dm_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson -i rv_dm_smoke
 ```
 
 ## Testplan

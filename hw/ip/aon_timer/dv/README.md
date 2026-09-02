@@ -248,8 +248,8 @@ Outputs are also checked for `'X` values by assertions in the design RTL.
 Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
-```console
-$ util/dvsim/dvsim.py hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
+```sh
+util/dvsim/dvsim.py hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson -i aon_timer_smoke
 ```
 
 

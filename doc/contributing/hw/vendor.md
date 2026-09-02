@@ -51,8 +51,11 @@ A "vendor description file" controls the vendoring process and serves as input t
 
 In the simple, yet typical, case, the vendor description file is only a couple of lines of human-readable JSON:
 
-```command
-$ cat hw/vendor/lowrisc_ibex.vendor.hjson
+```sh
+cat hw/vendor/lowrisc_ibex.vendor.hjson
+```
+which prints something like:
+```
 {
   name: "lowrisc_ibex",
   target_dir: "lowrisc_ibex",
@@ -69,9 +72,12 @@ The code comes from the `master` branch of the Git repository found at `https://
 
 With this description file written, the `util/vendor` tool can do its job.
 
-```command
-$ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --update
+```sh
+cd $REPO_TOP
+./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --update
+```
+which prints something like:
+```
 INFO: Cloning upstream repository https://github.com/lowRISC/ibex.git @ master
 INFO: Cloned at revision 7728b7b6f2318fb4078945570a55af31ee77537a
 INFO: Copying upstream sources to /home/foo/pavona/hw/vendor/lowrisc_ibex
@@ -86,8 +92,11 @@ This file can be found along the `.vendor.hjson` file, it's named `.lock.hjson`.
 
 In the example above, it looks roughly like this:
 
-```command
-$ cat hw/vendor/lowrisc_ibex.lock.hjson
+```sh
+cat hw/vendor/lowrisc_ibex.lock.hjson
+```
+which prints something like:
+```
 {
   upstream:
   {
@@ -104,24 +113,24 @@ After running `util/vendor`, the code in your local working copy is updated to t
 Next is testing: run simulations, syntheses, or other tests to ensure that the new code works as expected.
 Once you're confident that the new code is good to be committed, do so using the normal Git commands.
 
-```command
-$ cd $REPO_TOP
+```sh
+cd $REPO_TOP
 
-$ # Stage all files in the vendored directory
-$ git add -A hw/vendor/lowrisc_ibex
+# Stage all files in the vendored directory
+git add -A hw/vendor/lowrisc_ibex
 
-$ # Stage the lock file as well
-$ git add hw/vendor/lowrisc_ibex.lock.hjson
+# Stage the lock file as well
+git add hw/vendor/lowrisc_ibex.lock.hjson
 
-$ # Now commit everything. Don't forget to write a useful commit message!
-$ git commit
+# Now commit everything. Don't forget to write a useful commit message!
+git commit
 ```
 
 Instead of running `util/vendor` first, and then manually creating a Git commit, you can also use the `--commit` flag.
 
-```command
-$ cd $REPO_TOP
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
+```sh
+cd $REPO_TOP
+./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
     --verbose --update --commit
 ```
 
@@ -133,21 +142,21 @@ Read on for a complete example how to efficiently update a vendored dependency, 
 
 A complete example to update a vendored dependency, commit its changes, and create a pull request from it, is given below.
 
-```command
-$ cd $REPO_TOP
-$ # Ensure a clean working directory
-$ git stash
-$ # Create a new branch for the pull request
-$ git checkout -b update-ibex-code upstream/master
-$ # Update lowrisc_ibex and create a commit
-$ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
+```sh
+cd $REPO_TOP
+# Ensure a clean working directory
+git stash
+# Create a new branch for the pull request
+git checkout -b update-ibex-code upstream/master
+# Update lowrisc_ibex and create a commit
+./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson \
     --verbose --update --commit
-$ # Push the new branch to your fork
-$ git push origin update-ibex-code
-$ # Restore changes in working directory (if anything was stashed before)
-$ git stash pop
-$ # Now go to the GitHub web interface to open a pull request
-$ # for the `update-ibex-code` branch.
+# Push the new branch to your fork
+git push origin update-ibex-code
+# Restore changes in working directory (if anything was stashed before)
+git stash pop
+# Now go to the GitHub web interface to open a pull request
+# for the `update-ibex-code` branch.
 ```
 
 
@@ -159,13 +168,13 @@ $ # for the `update-ibex-code` branch.
 
 2. Clone the upstream repository and switch to the used branch:
 
-   ```command
-   $ # Go to your source directory (can be anywhere)
-   $ cd ~/src
-   $ # Clone the repository and switch the branch. Below is an example for ibex.
-   $ git clone https://github.com/lowRISC/ibex.git
-   $ cd ibex
-   $ git checkout master
+   ```sh
+   # Go to your source directory (can be anywhere)
+   cd ~/src
+   # Clone the repository and switch the branch. Below is an example for ibex.
+   git clone https://github.com/lowRISC/ibex.git
+   cd ibex
+   git checkout master
    ```
 
 After this step you're ready to make your modifications.
@@ -184,34 +193,37 @@ Modifying the external code directly in the `hw/vendor` directory is therefore a
 
 2. Create a patch with your changes. The example below uses `lowrisc_ibex`.
 
-   ```command
-   $ cd hw/vendor/lowrisc_ibex
-   $ git diff --relative . > changes.patch
+   ```sh
+   cd hw/vendor/lowrisc_ibex
+   git diff --relative . > changes.patch
    ```
 
 3. Take note of the revision of the imported repository from the lock file.
-   ```command
-   $ cat hw/vendor/lowrisc_ibex.lock.hjson | grep rev
+   ```sh
+   cat hw/vendor/lowrisc_ibex.lock.hjson | grep rev
+   ```
+   which prints something like:
+   ```
     rev: 7728b7b6f2318fb4078945570a55af31ee77537a
    ```
 
 4. Switch to the checked out upstream repository and bring it into the same state as the imported repository.
    Again, the example below uses ibex, adjust as needed.
 
-   ```command
+   ```sh
    # Change to the upstream repository
-   $ cd ~/src/ibex
+   cd ~/src/ibex
 
-   $ # Create a new branch for your patch
-   $ # Use the revision you determined in the previous step!
-   $ git checkout -b modify-ibex-somehow 7728b7b6f2318fb4078945570a55af31ee77537a
-   $ git apply -p1 < $REPO_BASE/hw/vendor/lowrisc_ibex/changes.patch
+   # Create a new branch for your patch
+   # Use the revision you determined in the previous step!
+   git checkout -b modify-ibex-somehow 7728b7b6f2318fb4078945570a55af31ee77537a
+   git apply -p1 < $REPO_BASE/hw/vendor/lowrisc_ibex/changes.patch
 
-   $ # Add and commit your changes as usual
-   $ # You can create multiple commits with git add -p and committing
-   $ # multiple times.
-   $ git add -u
-   $ git commit
+   # Add and commit your changes as usual
+   # You can create multiple commits with git add -p and committing
+   # multiple times.
+   git add -u
+   git commit
    ```
 
 ### Step 3: Get your changes accepted upstream
@@ -252,28 +264,28 @@ Vendoring external code is done by creating a vendor description file, and then 
 
 2. Create a new branch for a subsequent pull request
 
-   ```command
-   $ git checkout -b vendor-something upstream/master
+   ```sh
+   git checkout -b vendor-something upstream/master
    ```
 
 3. Commit the vendor description file
 
-   ```command
-   $ git add hw/vendor/<vendor>_<name>.vendor.hjson
-   $ git commit
+   ```sh
+   git add hw/vendor/<vendor>_<name>.vendor.hjson
+   git commit
    ```
 
 4. Run the `util/vendor` tool for the newly vendored code.
 
-   ```command
-   $ cd $REPO_TOP
-   $ ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --commit
+   ```sh
+   cd $REPO_TOP
+   ./util/vendor.py hw/vendor/lowrisc_ibex.vendor.hjson --verbose --commit
    ```
 
 5. Push the branch to your fork for review (assuming `origin` is the remote name of your fork of Pavona).
 
-   ```command
-   $ git push -u origin vendor-something
+   ```sh
+   git push -u origin vendor-something
    ```
 
    Now go the GitHub web interface to create a pull request for the newly created branch.

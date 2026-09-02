@@ -93,8 +93,8 @@ It creates the following analysis FIFOs to retrieve the data monitored by corres
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson -i spi_device_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson -i spi_device_smoke
 ```
 
 ## Testplan

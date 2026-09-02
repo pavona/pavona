@@ -140,8 +140,8 @@ ${"##"} Building and running tests
 We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson -i otp_ctrl_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson -i otp_ctrl_smoke
 ```
 
 ${"##"} Testplan

@@ -141,8 +141,8 @@ We are using our in-house developed
 Please take a look at the link for detailed information on the usage, capabilities, features and known
 issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/hmac/dv/hmac_sim_cfg.hjson -i hmac_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/hmac/dv/hmac_sim_cfg.hjson -i hmac_smoke
 ```
 
 ## Testplan

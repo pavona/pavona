@@ -85,8 +85,11 @@ The `//hw/top` package makes extensive usage of this feature.
 Generally speaking, if a target does not make sense for a given `//hw/top` value, then it will be marked as [`@platforms//:incompatible`](https://bazel.build/extending/platforms#expressive-constraints) which will result in build errors.
 
 For example, if we try to build Egret headers for dragonfly:
-```console
-$ ./bazelisk.sh build //hw/top_egret/sw/autogen:top_egret --//hw/top=dragonfly
+```sh
+./bazelisk.sh build //hw/top_egret/sw/autogen:top_egret --//hw/top=dragonfly
+```
+which fails with:
+```
 ERROR: Analysis of target '//hw/top_egret/sw/autogen:top_egret' failed; build aborted: Target //hw/top_egret/sw/autogen:top_egret is incompatible and cannot be built, but was explicitly requested.
 Dependency chain:
     //hw/top_egret/sw/autogen:top_egret (927671)   <-- target platform (@@platforms//host:host) didn't satisfy constraint @@platforms//:incompatible
@@ -95,8 +98,11 @@ Dependency chain:
 Note that this mechanism applies transitively, which has powerful consequences.
 For example, Dragonfly does not have a USB module.
 Let's look at what happens if try to compile to usbdev DIF for dragonfly:
-```console
-$ ./bazelisk.sh build //sw/device/lib/dif:usbdev --//hw/top=dragonfly
+```sh
+./bazelisk.sh build //sw/device/lib/dif:usbdev --//hw/top=dragonfly
+```
+which fails with:
+```
 ERROR: Analysis of target '//sw/device/lib/dif:usbdev' failed; build aborted: Target //sw/device/lib/dif:usbdev is incompatible and cannot be built, but was explicitly requested.
 Dependency chain:
     //sw/device/lib/dif:usbdev (927671)
@@ -167,10 +173,13 @@ To access those files, you must perform the following two operations:
 - query the location of the output, **also** using the same `//hw/top` configuration.
 
 For example to query the UART C headers for Dragonfly, run:
-```console
-$ ./bazelisk.sh build --//hw/top=dragonfly //hw/top:uart_c_regs
+```sh
+./bazelisk.sh build --//hw/top=dragonfly //hw/top:uart_c_regs
 # NOTE that both commands use the same --//hw/top=dragonfly setting!
-$ ./bazelisk.sh cquery --//hw/top=dragonfly //hw/top:uart_c_regs
+./bazelisk.sh cquery --//hw/top=dragonfly //hw/top:uart_c_regs
+```
+which prints something like:
+```
 bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h
 ```
 You can now open `bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h` (path may vary between machines).
@@ -182,9 +191,12 @@ The DT headers and source have individual targets for technical reasons and shou
 - `//hw/top/dt:<ip>_hdr` for both the header file (`dt_<ip>.h`).
 
 For example:
-```console
-$ ./bazelisk.sh build --//hw/top=dragonfly //hw/top/dt:uart_hdr
+```sh
+./bazelisk.sh build --//hw/top=dragonfly //hw/top/dt:uart_hdr
 # NOTE that both commands use the same --//hw/top=dragonfly setting!
-$ ./bazelisk.sh cquery --//hw/top=dragonfly //hw/top/dt:uart_hdr
+./bazelisk.sh cquery --//hw/top=dragonfly //hw/top/dt:uart_hdr
+```
+which prints something like:
+```
 bazel-out/k8-fastbuild/bin/hw/top/uart_regs.h
 ```

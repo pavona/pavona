@@ -557,8 +557,8 @@ The register generation tool will generate the RTL if it is invoked with the `-r
 The `-t <directory>` flag is used to specify the output directory where the two files will be written.
 As an example the tool can be invoked from the top project directory to generate the uart registers with:
 
-```console
-$ ./util/regtool.py -r -t hw/ip/uart/rtl hw/ip/uart/data/uart.hjson
+```sh
+./util/regtool.py -r -t hw/ip/uart/rtl hw/ip/uart/data/uart.hjson
 ```
 
 The first created file (`<name>_reg_pkg.sv`, from `<name>.hjson`) contains a SystemVerilog package definition that includes type definitions for two packed structures that have details of the registers and fields (all names are converted to lowercase).
@@ -966,8 +966,8 @@ The register generation tool will generate simple headers if it is invoked with 
 The `-o <file.h>` flag may be used to specify the output file.
 As an example, the tool can be invoked from the top project directory to generate the UART headers with:
 
-```console
-$ ./util/regtool.py -D -o hw/ip/uart.h hw/ip/uart/data/uart.hjson
+```sh
+./util/regtool.py -D -o hw/ip/uart.h hw/ip/uart/data/uart.hjson
 ```
 
 This format assumes that there is a base address `<NAME><n>_BASE_ADDR` defined where `<n>` is an identifying number to allow for multiple instantiations of peripherals.

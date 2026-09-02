@@ -6,9 +6,9 @@ This readme gives some quick instructions on how to run synthesis in Pavona, usi
 
 To run synthesis through dvsim, use a command like the following:
 
-```
-$ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py -t dc hw/top_egret/syn/chip_egret_asic_syn_cfg.hjson --purge --local
+```sh
+cd $REPO_TOP
+./util/dvsim/dvsim.py -t dc hw/top_egret/syn/chip_egret_asic_syn_cfg.hjson --purge --local
 ```
 
 This comment will invoke dvsim to run synthesis and terminate upon success or failure.
@@ -36,18 +36,18 @@ When the normal synthesis steps are run (see example above), an output file call
 
 To re-run this synthesis interactively, do the following:
 
-```
-$ cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
-$ dc_shell
+```sh
+cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
+dc_shell
 
 ```
 
 The above command opens dc_shell in the scratch area.
 Once dc_shell is open, do the following:
 
-```
-$ source ../env_variables.tcl
-$ source $REPO_TOP/hw/syn/tools/dc/run-syn.tcl
+```sh
+source ../env_variables.tcl
+source $REPO_TOP/hw/syn/tools/dc/run-syn.tcl
 
 ```
 
@@ -58,20 +58,20 @@ If you do not wish for synthesis to run that far, `run_syn.tcl` can be directly 
 ## Loading DDC After Synth Completion
 If a synthesis job has completed and you would like to reload the session for more details, follow the steps below
 
-```
-$ cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
-$ dc_shell
+```sh
+cd $SCRATCH_ROOT/{branch_name}/chip_egret_asic-syn-dc/default/syn-icarus
+dc_shell
 
 ```
 
 The above command opens dc_shell in the scratch area.
 Once dc_shell is open, do the following:
 
-```
-$ source ../env_variables.tcl
-$ set foundry_root "$::env(foundry_root)"
-$ source "${foundry_root}/syn/dc/setup.tcl"
-$ read_ddc DDC/mapped.ddc
+```sh
+source ../env_variables.tcl
+set foundry_root "$::env(foundry_root)"
+source "${foundry_root}/syn/dc/setup.tcl"
+read_ddc DDC/mapped.ddc
 
 ```
 

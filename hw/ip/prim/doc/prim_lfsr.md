@@ -75,8 +75,8 @@ The polynomial coefficients have been obtained from
 [Xilinx application note 52](https://www.xilinx.com/support/documentation/application_notes/xapp052.pdf).
 The script `./script/get-lfsr-coeffs.py` can be used to download, parse and dump
 these coefficients in SV format as follows:
-```
-$ script/get-lfsr-coeffs.py -o <output_file>
+```sh
+script/get-lfsr-coeffs.py -o <output_file>
 ```
 
 The implementation of the state transition function of both polynomials have

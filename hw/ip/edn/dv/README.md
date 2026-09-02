@@ -86,8 +86,8 @@ explain inputs monitored, flow of data and outputs checked -->
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/edn/dv/edn_edn0_sim_cfg.hjson -i edn_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/edn/dv/edn_edn0_sim_cfg.hjson -i edn_smoke
 ```
 
 ## Testplan

@@ -54,8 +54,8 @@ These baud rates are supported: 9600, 115200, 230400, 1Mbps(1048576), 2Mbps(2097
 The UART RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
-```console
-$ $REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/uart/data/uart.hjson -s --outdir <path_to_directory>
+```sh
+$REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/uart/data/uart.hjson -s --outdir <path_to_directory>
 ```
 
 ### Stimulus strategy
@@ -98,8 +98,8 @@ It creates the following analysis FIFOs to retrieve the data monitored by corres
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
-```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke
+```sh
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke
 ```
 
 ## Testplan

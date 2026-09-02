@@ -38,10 +38,10 @@ For example, see the `//hw/bitstream:rom` target defined in [hw/bitstream/BUILD]
 
     See example below:
 
-    ```console
-    $ cd $REPO_TOP
-    $ ./util/fpga/splice_rom.sh
-    $ ./bazelisk.sh run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit
+    ```sh
+    cd $REPO_TOP
+    ./util/fpga/splice_rom.sh
+    ./bazelisk.sh run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit
     ```
 
     The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup](../../getting_started/setup_fpga.md)).
@@ -61,11 +61,11 @@ Also the binary you wish to load needs to be built first.
 For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that is able to fit in the emulated flash space.
 The example below builds the `hello_world` image and loads it onto the FPGA.
 
-```console
-$ cd ${REPO_TOP}
-$ ./bazelisk.sh run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
-$ ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
-$ ./bazelisk.sh run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+```sh
+cd ${REPO_TOP}
+./bazelisk.sh run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
+./bazelisk.sh build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
+./bazelisk.sh run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
 ```
 
 Uart output:

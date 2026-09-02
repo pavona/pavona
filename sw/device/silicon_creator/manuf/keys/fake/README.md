@@ -15,18 +15,18 @@ the key has been checked into the repository.
 To generate additional fake keys for testing using OpenSSL, follow these steps:
 ```sh
 # Generate the curve:
-$ openssl ecparam -out curve.pem -name prime256v1
+openssl ecparam -out curve.pem -name prime256v1
 
 # Generate the ECC private key in SEC1 PEM format:
-$ openssl ecparam -in curve.pem -genkey -out sk.pem
+openssl ecparam -in curve.pem -genkey -out sk.pem
 
 # Convert the ECC private key from SEC1 format to PKCS8 (we do this because
 # the Rust elliptic-curve crate is able to load PKCS8 keys with less additional
 # crates):
-$ openssl pkcs8 -in sk.pem -topk8 -nocrypt -out sk.pkcs8.der -outform DER
+openssl pkcs8 -in sk.pem -topk8 -nocrypt -out sk.pkcs8.der -outform DER
 
 # Show the ECC public key (not required, but helps confirm the above worked):
-$ openssl ec -in sk.pem -text -noout
+openssl ec -in sk.pem -text -noout
 ```
 
 ## Generating a Root CA Certificate
@@ -37,14 +37,14 @@ to this repo (`dice_ca.conf` or `ext_ca.conf`) as in input to the following
 OpenSSL commands:
 ```sh
 # Generate the CSR:
-$ openssl req -new -key sk.pem -out dice_ca.csr -config ../dice_ca.conf
+openssl req -new -key sk.pem -out dice_ca.csr -config ../dice_ca.conf
 
 # Generate the X.509 certificate in PEM format:
-$ openssl x509 -req -in dice_ca.csr -signkey sk.pem -out dice_ca.pem \
+openssl x509 -req -in dice_ca.csr -signkey sk.pem -out dice_ca.pem \
     -days 3650 -extfile ../dice_ca.conf -extensions v3_ca
 
 # Examine the generated certificate:
-$ openssl x509 -in dice_ca.pem -text
+openssl x509 -in dice_ca.pem -text
 ```
 
 # Generating the RMA unlock token encryption keypair with OpenSSL
@@ -54,14 +54,14 @@ RMA unlock token generated during provisioning.
 
 The fake keys (used for testing) in this subdirectory were generated with `openssl`.
 
-```
+```sh
 ### Generate the RSA keypair:
-$ openssl genrsa -out rma_unlock_enc_rsa3072.pem 3072
+openssl genrsa -out rma_unlock_enc_rsa3072.pem 3072
 
 ### Extract the public key to a separate file:
-$ openssl rsa -in rma_unlock_enc_rsa3072.pem -pubout -out rma_unlock_enc_rsa3072.pub.pem
+openssl rsa -in rma_unlock_enc_rsa3072.pem -pubout -out rma_unlock_enc_rsa3072.pub.pem
 
 ### Convert the PEM files to DER files:
-$ openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072..der
-$ openssl rsa -pubin -in rma_unlock_enc_rsa3072.pub.pem -outform der -out rma_unlock_enc_rsa3072.pub.der
+openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072..der
+openssl rsa -pubin -in rma_unlock_enc_rsa3072.pub.pem -outform der -out rma_unlock_enc_rsa3072.pub.der
 ```

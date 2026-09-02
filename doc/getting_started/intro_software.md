@@ -39,8 +39,11 @@ For more, see the Bazel documentation and the Pavona-specific Bazel documentatio
 Use `./bazelisk.sh query` to find out what software can be built from a particular directory.
 The following command lists the targets that can be built in `sw/device/tests`:
 
-```shell
-$ ./bazelisk.sh query sw/device/tests:*
+```sh
+./bazelisk.sh query sw/device/tests:*
+```
+which prints something like:
+```
 ...
 //sw/device/tests:BUILD
 //sw/device/tests:README.md
@@ -60,8 +63,11 @@ $ ./bazelisk.sh query sw/device/tests:*
 Use `./bazelisk.sh build` to build a particular target.
 The following command builds the mask ROM (note that this is insufficient for a test, because you need an execution environment; read further).
 
-```shell
-$ ./bazelisk.sh build sw/device/silicon_creator/rom:mask_rom
+```sh
+./bazelisk.sh build sw/device/silicon_creator/rom:mask_rom
+```
+which prints something like:
+```
 ...
 INFO: Analyzed target //sw/device/silicon_creator/rom:mask_rom (645 packages loaded, 25678 targets configured).
 INFO: Found 1 target...
@@ -89,8 +95,11 @@ In Pavona, the name of a test is given by the binary as well as an execution env
 To run a test, combine the test binary name with the name of the execution environment with an underscore.
 For example, to run a UART smoketest on the `sim_verilator` execution environment, run the following command:
 
-```shell
-$ ./bazelisk.sh test sw/device/tests:uart_smoketest_sim_verilator
+```sh
+./bazelisk.sh test sw/device/tests:uart_smoketest_sim_verilator
+```
+which prints something like:
+```
 ...
 INFO: Found 1 test target...
 Target //sw/device/tests:uart_smoketest_sim_verilator up-to-date:
@@ -99,7 +108,6 @@ INFO: Elapsed time: 472.684s, Critical Path: 472.17s
 INFO: 3 processes: 285 action cache hit, 3 linux-sandbox.
 INFO: Build completed successfully, 3 total actions
 //sw/device/tests:uart_smoketest_sim_verilator                           PASSED in 34.5s
-
 ```
 
 ### Running host software
@@ -108,8 +116,11 @@ Host tools are generally run, not tested; for these, use `./bazelisk.sh run`.
 For instance, opentitantool is the name of the tool for interacting with Pavona devices from an external host.
 To see the help menu for opentitantool:
 
-```shell
-$ ./bazelisk.sh run //sw/host/opentitantool -- help
+```sh
+./bazelisk.sh run //sw/host/opentitantool -- help
+```
+which prints something like:
+```
    ...
 INFO: Build completed successfully, 1467 total actions
 INFO: Running command line: bazel-bin/sw/host/opentitantool/opentitantool <args omitted>
@@ -139,8 +150,8 @@ For a full list of execution environments, see `rules/pavona/defs.bzl`.
 A complete test run of a given test on a given hardware is given by combining the name of a test and the name of an execution environment.
 For instance, if a chip-level test is called `chip_sw_uart_rx_tx`, and we'd like to run it in the `sim_verilator` execution environment, we run a test whose name is formed by combining the test name and the execution environment with an underscore:
 
-```shell
-$ ./bazelisk.sh test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
+```sh
+./bazelisk.sh test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
 ```
 
 ## Writing a new test

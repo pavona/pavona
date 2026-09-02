@@ -7,9 +7,9 @@ Each top that uses OTP has a memory map Hjson configuration file located at hw/t
 
 The `gen-otp-mmap.py` script can also be used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
 
-```console
-$ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-mmap.py --topname <mytop>
+```sh
+cd ${PROJ_ROOT}
+./util/design/gen-otp-mmap.py --topname <mytop>
 ```
 
 The `--topname` switch is mandatory and is used to select the given topname's hjson configuration file.
@@ -31,17 +31,17 @@ The `gen-lc-state-enc.py` script is used to generate the redundant life cycle st
 The life cycle definition file for top_egret is currently located at `hw/ip/lc_ctrl/data/lc_ctrl_state.hjson`.
 
 The script can either be invoked via the makefile
-```console
-$ cd ${PROJ_ROOT}
-$ make -C hw lc-state-enc
+```sh
+cd ${PROJ_ROOT}
+make -C hw lc-state-enc
 
 ```
 
 or directly using the command
 
-```console
-$ cd ${PROJ_ROOT}
-$ ./util/design/gen-lc-state-enc.py
+```sh
+cd ${PROJ_ROOT}
+./util/design/gen-lc-state-enc.py
 ```
 
 The seed value used for generating life-cycle-state-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
@@ -195,9 +195,9 @@ Common example configuration files that can be used for simulation and emulation
 Note that the preload image generator script automatically scrambles secret partitions, computes digests of locked partitions using the PRESENT cipher, and computes the OTP ECC bits.
 
 The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch and a top secret configuration provided vie the `--top-secret-cfg` switch, for example:
-```console
-$ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
+```sh
+cd ${PROJ_ROOT}
+./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
                                --mmap-def hw/top_egret/data/otp/otp_ctrl_mmap.hjson \
                                --top-secret-cfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson \
                                --out otp-img.mem
@@ -243,9 +243,9 @@ For example, this can be used to patch in additional software configuration data
 ```
 
 The generator script call would then look as follows:
-```console
-$ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
+```sh
+cd ${PROJ_ROOT}
+./util/design/gen-otp-img.py --img-cfg hw/top_egret/data/otp/otp_ctrl_img_dev.hjson \
                                --top-secret-cfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
@@ -292,9 +292,9 @@ An optional name prefix can be specified using the `--prefix` parameter.
 
 For example, running the following command:
 
-```console
-$ cd ${PROJ_ROOT}
-$ ./util/design/gen-lfsr-seed.py -w 8 --prefix "my"
+```sh
+cd ${PROJ_ROOT}
+./util/design/gen-lfsr-seed.py -w 8 --prefix "my"
 ```
 produces the following parameters for an 8-bit LFSR.
 

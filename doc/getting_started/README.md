@@ -10,13 +10,6 @@ After this guide, you'll be able to refer to other guides to modify the hardware
 
 ## Basic system requirements
 
-Commands you'll need to run in your terminal begin with `$`:
-
-```shell
-$ echo 'Hello world!'
-Hello world!
-```
-
 Check that your system meets the following system requirements:
 
 * Ubuntu 22.04, 24.04, or 26.04
@@ -27,8 +20,11 @@ This guide describes instructions for Ubuntu 22.04 ("jammy").
 
 First, check that you are running a suitable Linux distribution.
 
-```shell
-$ cat /etc/os-release
+```sh
+cat /etc/os-release
+```
+which prints something like:
+```
 PRETTY_NAME="Ubuntu 22.04.5 LTS"
 NAME="Ubuntu"
   ...
@@ -36,9 +32,9 @@ NAME="Ubuntu"
 
 Ensure that you have the appropriate system dependencies to proceed to the next step.
 
-```shell
-$ sudo apt update
-$ sudo apt upgrade
+```sh
+sudo apt update
+sudo apt upgrade
 ```
 
 ## Get Pavona
@@ -55,14 +51,14 @@ Download the source code (available as a tarball or zip file) and decompress it.
 
 If you downloaded a tarball (\*.tar.gz), use:
 
-```shell
-$ tar -xzf [Pavona release name].tar.gz
+```sh
+tar -xzf [Pavona release name].tar.gz
 ```
 
 If you downloaded a zip file (\*.zip), use:
 
-```shell
-$ unzip [Pavona release name].zip
+```sh
+unzip [Pavona release name].zip
 ```
 
 ### Advanced: Clone the Pavona repository
@@ -74,9 +70,12 @@ For the best stability, use a Pavona release.
 If you'd like to contribute code to Pavona, create your own fork in order to open pull requests (see the [Github notes](../contributing/github_notes.md)).
 You cannot push a branch directly to the Pavona Git repository.
 
-```shell
-$ sudo apt install -y git
-$ git clone https://github.com/pavona/pavona
+```sh
+sudo apt install -y git
+git clone https://github.com/pavona/pavona
+```
+which prints something like:
+```
 Cloning into 'pavona'...
    ...
 Updating files: 100% (13468/13468), done.
@@ -92,9 +91,12 @@ Whether you used a Pavona release or cloned the Pavona repository, the following
 
 Change into the `pavona/` directory and you'll find the following files:
 
-```shell
-$ cd pavona
-$ ls
+```sh
+cd pavona
+ls
+```
+which prints something like:
+```
 BLOCKFILE          apt-requirements.txt  python-requirements.txt
 BUILD.bazel        bazelisk.sh           quality
 CLA                bench                 release
@@ -110,8 +112,8 @@ SUMMARY.md         pyproject.toml        yum-requirements.txt
 The file `apt-requirements.txt` contains a list of the additional Ubuntu packages you'll need to install in order to work with Pavona.
 The following command processes this file and passes it to apt to install them:
 
-```shell
-$ sed '/^#/d' apt-requirements.txt | xargs sudo apt install -y
+```sh
+sed '/^#/d' apt-requirements.txt | xargs sudo apt install -y
 ```
 
 Anything you build or test with Bazel brings its own Python, so no Python setup is needed here.
@@ -124,8 +126,11 @@ The few tools that run outside Bazel, such as `util/dvsim/dvsim.py` and `util/re
 Bazel is the tool used to build software that runs on Pavona.
 We'd like to build the "Hello, world!" application, which lives in the `sw/device/examples/hello_world` directory:
 
-```shell
-$ ls sw/device/examples/hello_world/
+```sh
+ls sw/device/examples/hello_world/
+```
+which prints something like:
+```
 BUILD  README.md  hello_world.c
 ```
 
@@ -144,8 +149,11 @@ void _ottf_main(void) {
 To build this test, invoke Bazel through a script called `bazelisk.sh`, which fetches the correct version of Bazel for you, then builds the `hello_world` binary.
 Note that there is an extra colon (`:`) between the directory (`sw/device/examples/hello_world`) and the name of the target (`hello_world`).
 
-```shell
-$ ./bazelisk.sh build sw/device/examples/hello_world:hello_world
+```sh
+./bazelisk.sh build sw/device/examples/hello_world:hello_world
+```
+which prints something like:
+```
 ...
 Target //sw/device/examples/hello_world:hello_world up-to-date:
   ...
@@ -164,8 +172,8 @@ You can examine the RISC-V (dis)assembly in the `bazel-bin/sw/device/examples/he
 
 Run the "Hello, World!" binary by using Bazel:
 
-```shell
-$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator --test_output=streamed
+```sh
+./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator --test_output=streamed
 ```
 
 In the Pavona project, a specific run is assembled by concatenating the name of the binary (`hello_world`) with the name of an *execution environment* (`sim_verilator`).
@@ -199,8 +207,11 @@ Executed 1 out of 1 test: 1 test passes.
 
 If you'd like to run the test again, you'll likely see:
 
-```shell
-$ ./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator
+```sh
+./bazelisk.sh test sw/device/examples/hello_world:hello_world_sim_verilator
+```
+which prints something like:
+```
 ...
 INFO: Analyzed target //sw/device/examples/hello_world:hello_world_sim_verilator (0 packages loaded, 4 targets configured).
 INFO: Found 1 test target...

@@ -109,9 +109,9 @@ Please take a look at the link for detailed information on the usage, capabiliti
 
 Here's how to run a smoke test:
 
-```console
-$ cd hw/ip/foo/dv
-$ make TEST_NAME=foo_smoke
+```sh
+cd hw/ip/foo/dv
+make TEST_NAME=foo_smoke
 ```
 
 ## Testplan

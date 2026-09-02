@@ -38,8 +38,11 @@ export PATH=/tools/verilator/$VERILATOR_VERSION/bin:$PATH
 ```
 
 Check your installation by running:
-```console
-$ verilator --version
+```sh
+verilator --version
+```
+which prints something like:
+```
 Verilator 4.210 2021-07-07 rev v4.210 (mod)
 ```
 
@@ -197,12 +200,21 @@ cd $REPO_TOP
 The simulation contains code to monitor the SPI bus and provide a host interface to allow interaction with the `spi_device`.
 When starting the simulation you should see a message like
 
-```console
+```
 SPI: Created /dev/pts/4 for spi0. Connect to it with any terminal program, e.g.
-$ screen /dev/pts/4
+```
+then run:
+```sh
+screen /dev/pts/4
+```
+which prints something like:
+```
 NOTE: a SPI transaction is run for every 4 characters entered.
 SPI: Monitor output file created at /home/username/github/pavona/spi0.log. Works well with tail:
-$ tail -f /home/username/github/pavona/spi0.log
+```
+then run:
+```sh
+tail -f /home/username/github/pavona/spi0.log
 ```
 
 Use any terminal program, e.g. `screen` or `microcom` to connect to the simulation.

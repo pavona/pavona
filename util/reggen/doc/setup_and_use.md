@@ -30,33 +30,42 @@ See the [register tool documentation](../README.md) for details about how to inv
 
 The following shows an example of how to generate RTL from a register description:
 
-```console
-$ cd $REPO_TOP/util
-$ mkdir /tmp/rtl
-$ ./regtool.py -r -t /tmp/rtl ../hw/ip/uart/data/uart.hjson
-$ ls /tmp/rtl
+```sh
+cd $REPO_TOP/util
+mkdir /tmp/rtl
+./regtool.py -r -t /tmp/rtl ../hw/ip/uart/data/uart.hjson
+ls /tmp/rtl
+```
+which prints:
+```
     uart_reg_pkg.sv   uart_reg_top.sv
 ```
 
 The following shows an example of how to generate a DV UVM class from a register description:
 
-```console
-$ cd $REPO_TOP/util
-$ mkdir /tmp/dv
-$ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson
-$ ls /tmp/dv
+```sh
+cd $REPO_TOP/util
+mkdir /tmp/dv
+./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson
+ls /tmp/dv
+```
+which prints:
+```
     uart_ral_pkg.sv
 ```
 
 By default, the generated block, register and field models are derived from `dv_base_reg` classes provided at [`hw/dv/sv/dv_base_reg`](../../../hw/dv/sv/dv_base_reg/dv_base_reg.core).
 If required, the user can supply the `--dv-base-names <block>:<type>:<entity-name>` switch to have the models derive from custom, user-defined RAL classes instead:
 
-```console
-$ cd $REPO_TOP/util
-$ mkdir /tmp/dv
-$ ./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson \
+```sh
+cd $REPO_TOP/util
+mkdir /tmp/dv
+./regtool.py -s -t /tmp/dv ../hw/ip/uart/data/uart.hjson \
   --dv-base-names <block>:<type>:<entity-name>
-$ ls /tmp/dv
+ls /tmp/dv
+```
+which prints:
+```
     uart_ral_pkg.sv
 ```
 Multiple sources of DV base names may be passed in.
@@ -83,11 +92,14 @@ This makes the following assumptions:
 
 The following shows an example of how to generate a FPV CSR read write assertion module from a register description:
 
-```console
-$ cd $REPO_TOP/util
-$ mkdir /tmp/fpv/vip
-$ ./regtool.py -f -t /tmp/fpv/vip ../hw/ip/uart/data/uart.hjson
-$ ls /tmp/fpv
+```sh
+cd $REPO_TOP/util
+mkdir /tmp/fpv/vip
+./regtool.py -f -t /tmp/fpv/vip ../hw/ip/uart/data/uart.hjson
+ls /tmp/fpv
+```
+which prints:
+```
     uart_csr_assert_fpv.sv
 ```
 

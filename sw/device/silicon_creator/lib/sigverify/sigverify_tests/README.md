@@ -12,6 +12,6 @@ Note that there is probably no need to run these scripts directly; the Bazel
 sets.
 
 Example:
-```shell
-$ ./sigverify_set_testvectors.py sw/device/tests/crypto/testvectors/rsa_3072_verify_wycheproof.hjson
+```sh
+./sigverify_set_testvectors.py sw/device/tests/crypto/testvectors/rsa_3072_verify_wycheproof.hjson
 ```

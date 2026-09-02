@@ -224,36 +224,36 @@ The following limitations currently hold:
 ### Standalone tool invocations
 
 Generate the testplan table in HTML to stdout:
-```console
-$ cd $REPO_TOP
-$ ./util/dvsim/testplanner.py \
+```sh
+cd $REPO_TOP
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson
 ```
 
 Generate the testplan table in HTML to a file:
-```console
-$ ./util/dvsim/testplanner.py \
+```sh
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson \
     -o /tmp/foo_testplan_table.html
 ```
 
 Generate simulation result tables in HTML to stdout:
-```console
-$ ./util/dvsim/testplanner.py \
+```sh
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson
 ```
 
 Filter the testplan by tags "foo" and "bar":
-```console
-$ ./util/dvsim/testplanner.py \
+```sh
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson:foo:bar \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson
 ```
 
 Filter the testplan by excluding the testpoints tagged "foo":
-```console
-$ ./util/dvsim/testplanner.py \
+```sh
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson:-foo \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson
 ```
@@ -265,8 +265,8 @@ Note that the simulations results Hjson file used for mapping the results to the
 `dvsim` does not generate such a file - it invokes the `Testplan` class APIs directly to map the simulation results.
 
 Generate simulation result tables in HTML to a file:
-```console
-$ ./util/dvsim/testplanner.py \
+```sh
+./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson \
     -o /tmp/foo_sim_results.html

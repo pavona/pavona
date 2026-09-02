@@ -128,8 +128,8 @@ Finally, the `acc_idle_checker` checks that the `idle_o` output correctly matche
 Tests can be run with [`dvsim.py`](../../../../util/dvsim/README.md).
 The link gives details of the tool's features and command line arguments.
 To run a basic smoke test, go to the top of the repository and run:
-```console
-$ util/dvsim/dvsim.py hw/ip/acc/dv/uvm/acc_sim_cfg.hjson -i acc_smoke
+```sh
+util/dvsim/dvsim.py hw/ip/acc/dv/uvm/acc_sim_cfg.hjson -i acc_smoke
 ```
 
 Note that due to the `AccPQCEn` parameterization of ACC to support PQC algorithms that there are two simulation configs.

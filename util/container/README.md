@@ -9,8 +9,8 @@ First, you'll need to install Docker either through your package manager or thei
 You'll also need to clone the [Pavona repository](https://github.com/pavona/pavona) if you haven't done that yet.
 Then, from `$REPO_TOP` (the top-level directory in the repository, called `pavona` by default), you can build the container with:
 
-```shell
-$ sudo docker build -t pavona -f util/container/Dockerfile .
+```sh
+sudo docker build -t pavona -f util/container/Dockerfile .
 ```
 
 ## Using the Container

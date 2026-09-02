@@ -22,36 +22,39 @@ In that case, there is no need to repeat these commands.
 (See below if you want to use a different email address for this repo.)
 
 Check the parameters:
-```console
-$ git config -l
+```sh
+git config -l
 ```
 
 If "user.name" and "user.email" do not appear, then set them:
 
-```console
-$ git config --global user.name "My Name"
-$ git config --global user.email "my_name@email.com"
+```sh
+git config --global user.name "My Name"
+git config --global user.email "my_name@email.com"
 ```
 
 `git` will take care of prompting for your GitHub user name and password when it is required, but it can be useful to allow it to cache these credentials (set here to an hour using the timeout in seconds) so you don't have to enter every time:
 
-```console
-$ git config --global credential.helper 'cache --timeout=3600'
+```sh
+git config --global credential.helper 'cache --timeout=3600'
 ```
 
 Now, clone your fork of the Pavona repository:
 
-```console
-$ git clone git@github.com:<your GitHub username>/pavona
+```sh
+git clone git@github.com:<your GitHub username>/pavona
 ```
 
 A directory called `pavona` should appear in your current working directory.
 To make it easy to fetch changes from the original Pavona repository (also called "upstream"), add a new Git _remote_.
 Print the known Git remotes with `git remote -v`:
 
-```console
-$ git remote add upstream git@github.com:pavona/pavona
-$ git remote -v
+```sh
+git remote add upstream git@github.com:pavona/pavona
+git remote -v
+```
+which prints something like:
+```
 origin      git@github.com:<your GitHub username>/pavona (fetch)
 origin      git@github.com:<your GitHub username>/pavona (push)
 upstream    git@github.com:pavona/pavona (fetch)
@@ -60,8 +63,8 @@ upstream    git@github.com:pavona/pavona (push)
 
 To fetch changes made upstream (without affecting your current work), use `git fetch`:
 
-```console
-$ git fetch upstream
+```sh
+git fetch upstream
 ```
 
 ## Working in your local repository
@@ -71,14 +74,17 @@ In general, your fork's `main` branch should track the `main` branch upstream.
 The recommended flow is to make your own branch; it is conventionally named based on the change you are making.
 The following Git command creates a new branch called `my-new-change` and switches to it:
 
-```console
-$ git checkout -b my-new-change
+```sh
+git checkout -b my-new-change
 ```
 
 To check the status of your changes at any time, use `git status`:
 
-```console
-$ git status
+```sh
+git status
+```
+which prints something like:
+```
 On branch my-new-change
 nothing to commit, working tree clean
 ```
@@ -87,15 +93,15 @@ nothing to commit, working tree clean
 
 Once you are happy with your changes, stage them for commit with `git add`:
 
-```console
-$ git add <files to add>
+```sh
+git add <files to add>
 ```
 
 Use `git status` and `git diff --staged` to review your changes.
 When you are satisfied with your changes, create a commit:
 
-```console
-$ git commit -s
+```sh
+git commit -s
 ```
 
 The commit will make you add a message.
@@ -118,9 +124,9 @@ Adding this line certifies you agree to the statement in [CONTRIBUTING.md](../..
 
 When you have finished everything locally, you can push your branch (e.g. `my-new-change`) to **your** GitHub repository (the **origin**):
 
-```console
-$ git status
-$ git push origin my-new-change
+```sh
+git status
+git push origin my-new-change
 ```
 
 Then you need to go to your repository in GitHub and either select branch from the pulldown or often there is a status message that you can click on, review the changes and make a Pull Request.
@@ -131,35 +137,35 @@ You will need to `add` files and commit again.
 It is normally best to squash your changes into a single commit by doing it with `--amend` which will give you a chance to edit the message.
 If you do this you need to force `-f` the push back to your repo.
 
-```console
-$ git add <files to add>
-$ git commit --amend
-$ git status
-$ git push -f origin my-new-change
+```sh
+git add <files to add>
+git commit --amend
+git status
+git push -f origin my-new-change
 ```
 
 Once the reviewers are happy you can "Rebase and Merge" the Pull Request on GitHub, delete the branch there (it offers to do this when you do the merge).
 You can delete the branch in your local repository with:
 
-```console
-$ git checkout main
-$ git branch -D my-new-change
+```sh
+git checkout main
+git branch -D my-new-change
 ```
 
 When a Pull Request contain multiple commits, those commits should be logically independent.
 Interactive rebase can be used to manipulate commits in a pull request to achieve that goal.
 Rebasing is commonly used to squash commits that fix up issues reported during review back into the relevant commit.
 
-```console
-$ git rebase -i `git merge-base {current_branch} main`
+```sh
+git rebase -i `git merge-base {current_branch} main`
 ```
 
 Then, an editor will open.
 Follow the instructions given there, to reorder and combine commits, or to change the commit message.
 Then update the PR branch in the GitHub remote repository.
 
-```console
-$ git push -f origin HEAD
+```sh
+git push -f origin HEAD
 ```
 
 ## Automatically adding a Signed-off-by line for your commits
@@ -168,8 +174,8 @@ One option to avoid having to remember to add `-s` to `git commit` is to configu
 This can be done using an executable hook.
 An appropriate hook can be installed by executing this from the root of your repository checkout:
 
-```console
-$ cat <<"EOF" > .git/hooks/prepare-commit-msg
+```sh
+cat <<"EOF" > .git/hooks/prepare-commit-msg
 #!/bin/sh
 
 # Add a Signed-off-by line to the commit message if not already present.
@@ -177,7 +183,7 @@ git interpret-trailers --if-exists doNothing --trailer \
   "Signed-off-by: $(git config user.name) <$(git config user.email)>" \
   --in-place "$1"
 EOF
-$ chmod +x .git/hooks/prepare-commit-msg
+chmod +x .git/hooks/prepare-commit-msg
 ```
 
 ## Update your repository with changes in the upstream repository
@@ -185,19 +191,19 @@ $ chmod +x .git/hooks/prepare-commit-msg
 There is a little work to do to keep everything in sync.
 Normally you want to first get your local repository `main` branch up to date with the upstream repository (**upstream**) and then you use that to update your fork (**origin**).
 
-```console
-$ git checkout main
-$ git pull --ff-only upstream main
-$ git push origin
+```sh
+git checkout main
+git pull --ff-only upstream main
+git push origin
 ```
 
 If you do this while you have changes on some other branch then before a Pull Request will work you need to be sure your branch merges cleanly into the newly updated upstream main branch.
 Assuming you got the local `main` branch up to date with the procedure above you can now _rebase_ your changes on the new `main`.
 Assuming you have your changes on the local branch `my-new-change`:
 
-```console
-$ git checkout my-new-change
-$ git rebase main
+```sh
+git checkout my-new-change
+git rebase main
 ```
 
 If you are lucky this will just work, it unwinds your changes, gets the updated `main` and replays your changes.
@@ -206,8 +212,8 @@ If there are conflicts then you need a big pot of coffee and patience (see next 
 Once everything has rebased properly you can do
 
 
-```console
-$ git log
+```sh
+git log
 ```
 
 And see that the changes you committed on the branch are at the top of the log followed by the latest changes on the `main` branch.
@@ -228,8 +234,11 @@ In either case Git has marked that you are in a conflict state and work is neede
 The Git output actually describes what to do (once you are used to how to read it).
 For example:
 
-```console
-$ git rebase main
+```sh
+git rebase main
+```
+which prints something like:
+```
 First, rewinding head to replay your work on top of it...
 Applying: [util][pystyle] Clean Python style in single file tools
 Using index info to reconstruct a base tree...
@@ -253,8 +262,8 @@ The last line of this gives the ultimate out.
 You can abort the rebase and figure some other way to proceed.
 As it says, this is done with:
 
-```console
-$ git rebase --abort
+```sh
+git rebase --abort
 ```
 
 After executing this command you are back to a clean tree with your changes intact, but they are still based on whatever the earlier state of the repository was.
@@ -288,8 +297,11 @@ Once all conflicts have been addressed the file can be `git add`ed and once all 
 
 After the fix a status report will remind you where you are.
 
-```console
-$ git status
+```sh
+git status
+```
+which prints something like:
+```
 rebase in progress; onto cb85dc4
 You are currently rebasing branch 'sastyle' on 'cb85dc4'.
   (all conflicts fixed: run "git rebase --continue")
@@ -305,15 +317,17 @@ Changes not staged for commit:
   (use "git checkout -- <file>..." to discard changes in working directory)
 
         modified:   build_docs.py
-
 ```
 
 This gives the same instructions as the original merge failure message and gives the comfort that all conflicts were fixed.
 To finish up you need to follow the instructions.
 
-```console
-$ git add build_docs.py
-$ git rebase --continue
+```sh
+git add build_docs.py
+git rebase --continue
+```
+which prints something like:
+```
 Applying: [util][pystyle] Clean Python style in single file tools
 ```
 
@@ -321,9 +335,11 @@ If there were more than one patch outstanding (which isn't usual if you use the 
 
 You can check the rebase worked as expected by looking at the log to see your branch is one commit (or more if there were more) ahead of the `main` branch.
 
-```console
-$ git log
-
+```sh
+git log
+```
+which prints something like:
+```
 commit dd8721d2b1529c575c4aef988219fbf2ecd3fd1b (HEAD -> sastyle)
 Author: Mark Hayter <mark.hayter@gmail.com>
 Date:   Thu Jan 10 09:41:20 2019 +0000
@@ -335,7 +351,6 @@ Date:   Thu Jan 10 09:41:20 2019 +0000
     Tested with  ./diff_generated_util_output.py main
 
 commit cb85dc42199e925ad09c45d33f6483a14764b93e (upstream/main, origin/main, origin/HEAD, main)
-
 ```
 
 This shows the new commit (`HEAD` of the branch `sastyle`) and the preceding commit is at the `main` branch (and at the same point as `main` on both `origin` and `upstream` so everything is in sync at `main`).
@@ -359,10 +374,10 @@ This way, `--autosquash` does not have to be added to the command all the time.
 
 With the commands below, you can checkout a pull request from the upstream repository to your local repo.
 
-```console
-$ git fetch upstream pull/{ID}/head:{BRANCH_NAME}
-$ # e.g. git fetch upstream pull/5/head:docgen_review
-$ git checkout {BRANCH_NAME}
+```sh
+git fetch upstream pull/{ID}/head:{BRANCH_NAME}
+# e.g. git fetch upstream pull/5/head:docgen_review
+git checkout {BRANCH_NAME}
 ```
 
 ### Applying the pull request to the local commit
@@ -378,26 +393,26 @@ If the other user created a pull request with ID #345, which has a fix for the d
 
 * The `rebase` method:
 
-    ```console
-    $ git checkout -b br_localandremote br_localfix
-    $ git fetch upstream pull/345/head:pr_345
-    $ git rebase pr_345
+    ```sh
+    git checkout -b br_localandremote br_localfix
+    git fetch upstream pull/345/head:pr_345
+    git rebase pr_345
     ```
 
 * The `cherry-pick` method:
 
-    ```console
-    $ git checkout -b br_localandremote br_localfix
-    $ git fetch upstream pull/345/head:pr_345
-    $ # find the commit ID from pr_345 that you want to merge: b345232342ff
-    $ git cherry-pick b345232342ff
+    ```sh
+    git checkout -b br_localandremote br_localfix
+    git fetch upstream pull/345/head:pr_345
+    # find the commit ID from pr_345 that you want to merge: b345232342ff
+    git cherry-pick b345232342ff
     ```
 * The `merge` method:
 
-    ```console
-    $ git fetch upstream pull/345/head:pr_345
-    $ git checkout -b br_localandremote br_localfix
-    $ git merge pr_345
+    ```sh
+    git fetch upstream pull/345/head:pr_345
+    git checkout -b br_localandremote br_localfix
+    git merge pr_345
     ```
 
 The `rebase` method is more convenient than `cherry-pick` if you have more than one commit ID to merge.
@@ -413,29 +428,29 @@ The process is quite complicated so please follow the instruction below step-by-
 
 * Step 1: Checkout the other pull request branch
 
-    ```console
-    $ git fetch upstream pull/{ID}/head:{BRANCH_NAME}
-    $ git checkout {BRANCH_NAME}
+    ```sh
+    git fetch upstream pull/{ID}/head:{BRANCH_NAME}
+    git checkout {BRANCH_NAME}
     ```
 
 * Step 2: Make necessary changes
 
-    ```console
-    $ git add...
-    $ git commit -m "Add CFG examples to UART specification"
+    ```sh
+    git add...
+    git commit -m "Add CFG examples to UART specification"
     ```
 
 * Step 3: Create your GitHub branch for the pull request
 
-    ```console
-    $ git push -u origin {BRANCH_NAME}:<remote_branch_name>
+    ```sh
+    git push -u origin {BRANCH_NAME}:<remote_branch_name>
     ```
 
     You can use any branch name for the pull request.
     If you want to the created branch name same as local branch name, this can simply be:
 
-    ```console
-    $ git push -u origin HEAD
+    ```sh
+    git push -u origin HEAD
     ```
 
 * Step 4: Create a pull request into the other contributor's forked repository

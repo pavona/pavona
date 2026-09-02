@@ -15,9 +15,12 @@ Remember to activate your Python virtual environment.
 
 Change into the pavona directory and you'll find the following files:
 
-```shell
-$ cd pavona
-$ ls
+```sh
+cd pavona
+ls
+```
+which prints something like:
+```
 BLOCKFILE          apt-requirements.txt  python-requirements.txt
 BUILD.bazel        bazelisk.sh           quality
 CLA                bench                 release
@@ -178,8 +181,11 @@ ACE is composed of many tools in the util/ directory whose names typically end i
 To run ACE, pass this invocation to the Makefile.
 (If this fails with a missing "hjson" package, remember to source your Python virtual environment, then try again.)
 
-```shell
-$ make -C hw all
+```sh
+make -C hw all
+```
+which prints something like:
+```
 make: Entering directory ...
 .../util/topgen.py -t .../hw/top_dragonfly/data/top_dragonfly.hjson ... -o hw/top_dragonfly
    ...
@@ -213,8 +219,8 @@ For example, change `num_inp_period_counters` to zero in `top_dragonfly.hjson`:
 
  and re-run ACE by running
 
-```shell
-$ make -C hw all
+```sh
+make -C hw all
 ```
 
 You'll notice that `hw/top_dragonfly/ip_autogen/gpio/rtl/gpio.sv` is now much shorter.

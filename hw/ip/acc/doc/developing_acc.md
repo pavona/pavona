@@ -43,8 +43,8 @@ Other users include:
 The quickest way to run an ACC-only program is to use the Python simulator.
 First, generate a `.elf.` file either using the usual build process or by manually running `acc_as.py` and `acc_ld.py` as shown above.
 Then, from `$REPO_TOP`:
-```console
-$ hw/ip/acc/dv/accsim/standalone.py path/to/prog.elf
+```sh
+hw/ip/acc/dv/accsim/standalone.py path/to/prog.elf
 ```
 
 ### Run the standalone RTL simulation
