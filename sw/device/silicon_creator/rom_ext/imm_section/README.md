@@ -13,7 +13,7 @@ Building / stamping from a dirty tree should only be done for testing purposes.
 ## Build a release bundle
 
 ```shell
-$ bazel build --stamp //sw/device/silicon_creator/rom_ext/imm_section:release_bundle
+$ ./bazelisk.sh build --stamp //sw/device/silicon_creator/rom_ext/imm_section:release_bundle
 ```
 
 Building with --stamp flag will stamp the built immutable section, including

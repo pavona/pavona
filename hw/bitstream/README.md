@@ -19,7 +19,7 @@ design.
 The following command shows a list of targets provided by `//hw/bitstream`:
 
 ```
-bazel query //hw/bitstream:*
+./bazelisk.sh query //hw/bitstream:*
 ```
 
 ## Overriding Defaults in `pavona_test` Targets

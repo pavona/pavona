@@ -215,7 +215,7 @@ Executed 0 out of 1 test: 1 test passes.
 ```
 
 This is because Bazel caches your test results, which is useful if you haven't changed your code.
-To re-run a test, pass the additional flag `--cache_test_results=false` to your bazelisk invocation.
+To re-run a test, pass the additional flag `--cache_test_results=false` to your `./bazelisk.sh` invocation.
 
 ## Modify a test
 

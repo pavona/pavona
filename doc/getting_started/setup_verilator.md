@@ -65,12 +65,12 @@ Moreover, Bazel automatically connects to the simulated UART (via `opentitantool
 For example, to run the UART smoke test on Verilator simulated hardware, and see the output in real time, use
 ```console
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 or
 ```console
 cd $REPO_TOP
-bazel test --test_tag_filters=verilator --test_output=streamed //sw/device/tests:uart_smoketest
+./bazelisk.sh test --test_tag_filters=verilator --test_output=streamed //sw/device/tests:uart_smoketest
 ```
 
 You should expect to see something like:
@@ -173,23 +173,23 @@ For more guidance on using OpenOCD, see [Using OpenOCD](../contributing/fpga/usi
 Run the simulation with Bazel, making sure to build the device software with debug symbols using
 ```console
 cd $REPO_TOP
-bazel run --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+./bazelisk.sh run --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
 Then, connect with OpenOCD using the following command.
 
 ```console
 cd $REPO_TOP
-bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-egret-verilator.cfg
+./bazelisk.sh run //third_party/openocd -- -s util/openocd -f board/lowrisc-egret-verilator.cfg
 ```
 
 Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).
 
 ```console
 cd $REPO_TOP
-bazel run @lowrisc_rv32imcb_toolchain//:/bin/riscv32-unknown-elf-gdb -- \
+./bazelisk.sh run @lowrisc_rv32imcb_toolchain//:/bin/riscv32-unknown-elf-gdb -- \
   -ex "target extended-remote :3333" -ex "info reg" \
-  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
 ## SPI device test interface (optional)
@@ -232,14 +232,14 @@ With the `--trace` argument the simulation generates a FST signal trace which ca
 An argument may be provided to `--trace` to specify where the trace file will be saved.
 Note that for automated tests, `opentitantool` interfaces with the simulator, and verilator arguments must be passed via `--verilator-args=<arg>`.
 
-In addition, it may be necessary to adjust the test timeout values when using `bazel test` with waveforms.
+In addition, it may be necessary to adjust the test timeout values when using `./bazelisk.sh test` with waveforms.
 Tracing slows down the simulation by roughly factor of 1000.
 The timeout adjustment may be done via bazel's `--test_timeout` option.
 Putting these all together for the UART smoke test yields the following command line:
 
 ```console
 cd $REPO_TOP
-bazel test //sw/device/tests:uart_smoketest_sim_verilator \
+./bazelisk.sh test //sw/device/tests:uart_smoketest_sim_verilator \
   --test_output=streamed \
   --test_timeout=1000 \
   --test_arg=--verilator-args=--trace=/tmp/sim.fst

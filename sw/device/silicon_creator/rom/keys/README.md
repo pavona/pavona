@@ -11,7 +11,7 @@ This process is only for fake keys. For real keys, use an offline HSM.
 
 Build opentitantool:
 ```
-bazel build //sw/host/opentitantool
+./bazelisk.sh build //sw/host/opentitantool
 ```
 Generate new key:
 ```

@@ -41,7 +41,7 @@ For example, see the `//hw/bitstream:rom` target defined in [hw/bitstream/BUILD]
     ```console
     $ cd $REPO_TOP
     $ ./util/fpga/splice_rom.sh
-    $ bazel run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit
+    $ ./bazelisk.sh run //sw/host/opentitantool fpga load-bitstream build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit
     ```
 
     The script assumes that there is an existing bitfile `build/lowrisc_systems_chip_egret_cw310_0.1/synth-vivado/lowrisc_systems_chip_egret_cw310_0.1.bit` (this is created after following the steps in [FPGA Setup](../../getting_started/setup_fpga.md)).
@@ -63,9 +63,9 @@ The example below builds the `hello_world` image and loads it onto the FPGA.
 
 ```console
 $ cd ${REPO_TOP}
-$ bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
-$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
-$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
+$ ./bazelisk.sh run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
+$ ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
+$ ./bazelisk.sh run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
 ```
 
 Uart output:

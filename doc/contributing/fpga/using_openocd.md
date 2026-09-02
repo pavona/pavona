@@ -15,8 +15,8 @@ Currently supported top-level systems (Egret, Dragonfly) have a default JTAG ada
 
 ```sh
 # Manually run OpenOCD:
-bazel run //third_party/openocd -- arg1 arg2
+./bazelisk.sh run //third_party/openocd -- arg1 arg2
 
 # Get the path of the OpenOCD binary:
-bazel outquery //third_party/openocd:openocd_bin
+./bazelisk.sh outquery //third_party/openocd:openocd_bin
 ```

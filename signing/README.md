@@ -41,7 +41,7 @@ and to sign with the key specified by the `rsa_key` attribute of the target
 (or the target's `exec_env`).
 
 ```console
-bazel build --//signing:token=//signing/tokens:nitrokey //label-of-target
+./bazelisk.sh build --//signing:token=//signing/tokens:nitrokey //label-of-target
 ```
 
 To sign with an alternate key, you can override the key label via the
@@ -49,7 +49,7 @@ keyset in question.  For `silicon_creator` code, the keyset is
 `//sw/device/silicon_creator/rom/keys/real/rsa:keyset`.
 
 ```console
-bazel build \
+./bazelisk.sh build \
     --//signing:token=//signing/tokens:nitrokey \
     --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=egret_a0_dev_0 \
     //label-of-target
@@ -128,7 +128,7 @@ follows:
 > `chmod 600 signing/tokens/egret_z1_sival.yaml`
 
 ```console
-bazel build --//signing:token=//signing/tokens:cloud_kms_sival //label-of-target
+./bazelisk.sh build --//signing:token=//signing/tokens:cloud_kms_sival //label-of-target
 ```
 
 ## Demo of offline signing
@@ -145,7 +145,7 @@ updates the manifest and public key.  Then, SHA256 digests are computed
 for each binary.
 
 ```console
-bazel build //signing/examples:digests
+./bazelisk.sh build //signing/examples:digests
 ```
 
 The bazel `offline_presigning_artifacts` rule updates the binary with
@@ -177,7 +177,7 @@ secure facility and a signing ceremony would be performed to create the
 detached signatures.
 
 ```console
-bazel build //signing/examples:fake
+./bazelisk.sh build //signing/examples:fake
 ```
 
 The bazel `offline_fake_sign` rule performs the same RSA signing
@@ -207,7 +207,7 @@ The detached signatures are attached to the pre-signing binaries and
 final signed binaries are produced.
 
 ```console
-bazel build //signing/examples:signed
+./bazelisk.sh build //signing/examples:signed
 ```
 
 The bazel `offline_signature_attach` rule takes the signed digests and
@@ -226,7 +226,7 @@ opentitantool \
 
 ```console
 cd $REPO_TOP
-bazel run //sw/host/opentitantool -- \
+./bazelisk.sh run //sw/host/opentitantool -- \
    image manifest show \
    $PWD/bazel-bin/signing/examples/hello_world_fpga_cw310.signed.bin
 ```

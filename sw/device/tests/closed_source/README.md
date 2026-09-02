@@ -39,7 +39,7 @@ replace the defaults) you may do so by:
    hook libraries / config settings,
 1. invoking bazel with the `MANUFACTURER_HOOKS_DIR` environment variable set,
    and the proper `config_setting` , e.g.,
-   `MANUFACTURER_HOOKS_DIR=</path/to/test_hooks/> bazel test
+   `MANUFACTURER_HOOKS_DIR=</path/to/test_hooks/> ./bazelisk.sh test
       //sw/device/tests:<target>
       --define test_hooks=<test hooks setting>`
 

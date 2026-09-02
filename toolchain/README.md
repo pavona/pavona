@@ -15,7 +15,7 @@ To add new flags to a tool in the toolchain, define a new `cc_args` target and a
 Add the new flags to `cc_toolchain.args`.
 
 To make flags optional, define a new `cc_feature` for those `cc_args`.
-Features can be enabled at the command line using `bazel --features=$feature_name`.
+Features can be enabled at the command line using `./bazelisk.sh --features=$feature_name`.
 Add the flags to `cc_toolchain.known_features` and optionally to `cc_toolchain.enabled_features`.
 
 Bazel has three built-in features called `dbg`, `fastbuild`, and `opt` that can be used to enable and disable flags at different optimization levels.

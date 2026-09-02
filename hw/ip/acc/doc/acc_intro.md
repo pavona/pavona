@@ -316,11 +316,11 @@ To reproduce these benchmarks yourself, checkout the specified commit, then run 
 
 #### Step 1: Build the tests.
 
-To build the tests with Bazel, run `bazel build //sw/acc/crypto/tests:<target_name>`, e.g. `bazel build //sw/acc/crypto/tests:p256_ecdsa_verify_test`.
+To build the tests with Bazel, run `./bazelisk.sh build //sw/acc/crypto/tests:<target_name>`, e.g. `./bazelisk.sh build //sw/acc/crypto/tests:p256_ecdsa_verify_test`.
 Then locate the `.elf` file that Bazel generates, for example `bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/acc/crypto/tests/p256_ecdsa_verify_test.elf`.
 The exact path depends on the build configuration and can be queried with:
 ```
-bazel aquery 'outputs(".*.elf", //sw/acc/crypto/tests:p256_ecdsa_verify_test)' | grep 'Outputs'
+./bazelisk.sh aquery 'outputs(".*.elf", //sw/acc/crypto/tests:p256_ecdsa_verify_test)' | grep 'Outputs'
 ```
 
 Alternatively, you can build the tests manually with `acc_as.py` and `acc_ld.py`, as described in the [ACC development guide](developing_acc.md#build-acc-software).

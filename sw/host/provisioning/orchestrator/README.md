@@ -13,7 +13,7 @@ To run on an FPGA for testing, run:
 ```
 # Select either cw340 or cw310
 export FPGA_TARGET=hyper310
-bazel run \
+./bazelisk.sh run \
   --//hw/bitstream/universal:env=//hw/top_egret:fpga_${FPGA_TARGET}_rom_with_fake_keys \
   --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
@@ -29,7 +29,7 @@ bazel run \
 To run on silicon, run:
 
 ```
-bazel run \
+./bazelisk.sh run \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token=<token as a hexstring> \
@@ -45,7 +45,7 @@ dependencies.
 
 ```
 export FPGA_TARGET=hyper310
-bazel build \
+./bazelisk.sh build \
   --//hw/bitstream/universal:env=//hw/top_egret:fpga_${FPGA_TARGET}_rom_with_fake_keys \
   --//hw/bitstream/universal:otp=//hw/top_egret/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator.zip

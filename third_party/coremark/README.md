@@ -5,14 +5,14 @@
 To build and run CoreMark on the CW310:
 
 ```sh
-bazel test --test_tag_filters=cw310 \
+./bazelisk.sh test --test_tag_filters=cw310 \
 //third_party/coremark/top_egret:coremark_test
 ```
 
 To build and run CoreMark on Verilator:
 
 ```sh
-bazel test --test_tag_filters=verilator \
+./bazelisk.sh test --test_tag_filters=verilator \
 //third_party/coremark/top_egret:coremark_test
 ```
 

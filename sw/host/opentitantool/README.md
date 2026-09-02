@@ -17,8 +17,8 @@ It is used throughout the repository for executing tests.
 To build and run the tool manually:
 
 ```sh
-bazel build //sw/host/opentitantool
-bazel run //sw/host/opentitantool -- help
+./bazelisk.sh build //sw/host/opentitantool
+./bazelisk.sh run //sw/host/opentitantool -- help
 ```
 
 ## Configuration

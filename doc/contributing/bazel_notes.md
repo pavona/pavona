@@ -28,16 +28,16 @@ To maintain the invariant that hand-written files not be included in autogen dir
 
 - Build everything (software and Verilator hardware):
   ```sh
-  bazel build //...
+  ./bazelisk.sh build //...
   ```
 - Build and run all tests (on-host tests, and Verilator/FPGA on-device tests):
   ```sh
-  bazel test --test_tag_filters=-broken,-dv //sw/...
+  ./bazelisk.sh test --test_tag_filters=-broken,-dv //sw/...
   ```
   Note: this will take several hours.
 - Clean all build outputs and reclaim all disk and memory traces of a Bazel instance:
   ```sh
-  bazel clean --expunge
+  ./bazelisk.sh clean --expunge
   ```
   Note: you should rarely need to run this, see [below](#troubleshooting-builds) for when this may be necessary.
 
@@ -66,7 +66,7 @@ Since running tests on multiple Pavona devices (whether DV or Verilator simulati
 
 - List all `sh_test` targets instantiated by a `pavona_test`, e.g. the UART smoketest:
   ```sh
-  bazel query 'labels(tests, //sw/device/tests:uart_smoketest)'
+  ./bazelisk.sh query 'labels(tests, //sw/device/tests:uart_smoketest)'
   ```
 
 > Info: See [Pavona binary and test rules](../../rules/pavona/README.md)) for more details on the `pavona_test` rule.
@@ -75,7 +75,7 @@ Since running tests on multiple Pavona devices (whether DV or Verilator simulati
 
 * To build Pavona software see [here](../getting_started/build_sw.md#building-software-with-bazel), or run
   ```sh
-  bazel build <target>
+  ./bazelisk.sh build <target>
   ```
 
 # Testing Software
@@ -93,23 +93,23 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 
 * Query for all ROM functional and E2E tests for FPGA:
   ```sh
-  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
+  ./bazelisk.sh query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
   ```
   and for Verilator:
   ```sh
-  bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/silicon_creator/...))'
+  ./bazelisk.sh query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/silicon_creator/...))'
   ```
 * Run all ROM functional and E2E tests on FPGA:
   ```sh
-  bazel test --test_tag_filters=cw310 //sw/device/silicon_creator/...
+  ./bazelisk.sh test --test_tag_filters=cw310 //sw/device/silicon_creator/...
   ```
   and for Verilator:
   ```sh
-  bazel test --test_tag_filters=verilator //sw/device/silicon_creator/...
+  ./bazelisk.sh test --test_tag_filters=verilator //sw/device/silicon_creator/...
   ```
 * Run a single ROM functional or E2E test on FPGA and see the output in real time:
   ```sh
-  bazel test \
+  ./bazelisk.sh test \
     --define DISABLE_VERILATOR_BUILD=true \
     --test_tag_filters=cw310 \
     --test_output=streamed \
@@ -117,34 +117,34 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
   ```sh
-  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310
+  ./bazelisk.sh test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310
   ```
   and similarly for Verilator:
   ```sh
-  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_sim_verilator
+  ./bazelisk.sh test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_sim_verilator
   ```
 
 ### Chip-Level Tests
 
 * Query for all chip-level tests for FPGA:
   ```sh
-  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
+  ./bazelisk.sh query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
   ```
   and for Verilator:
   ```sh
-  bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/tests/...))'
+  ./bazelisk.sh query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/tests/...))'
   ```
 * Run all chip-level tests on FPGA:
   ```sh
-  bazel test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw310 //sw/device/tests/...
+  ./bazelisk.sh test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw310 //sw/device/tests/...
   ```
   and for Verilator:
   ```sh
-  bazel test --test_tag_filters=verilator //sw/device/tests/...
+  ./bazelisk.sh test --test_tag_filters=verilator //sw/device/tests/...
   ```
 * Run a single chip-level test on FPGA and see the output in real time:
   ```sh
-  bazel test \
+  ./bazelisk.sh test \
     --define DISABLE_VERILATOR_BUILD=true
     --test_tag_filters=cw310 \
     --test_output=streamed \
@@ -152,11 +152,11 @@ However, only Verilator simulation and FPGA device software tests can be run wit
   ```
   or, remove the define/filtering flags and just append the `<device>` name like:
   ```sh
-  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+  ./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
   ```
   and similarly for Verilator:
   ```sh
-  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+  ./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
   ```
 
 # Linting Software
@@ -164,7 +164,7 @@ However, only Verilator simulation and FPGA device software tests can be run wit
 There are several Bazel rules that enable running quality checks and fixers on code.
 They can be listed by running the following:
 ```sh
-bazel query //quality:all
+./bazelisk.sh query //quality:all
 ```
 The subsections below describe how to use them.
 All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
@@ -175,11 +175,11 @@ The Pavona supported linter for C/C++ files is `clang-format`, and can be run wi
 
 Run the following to check if all C/C++ code as been formatted correctly:
 ```sh
-bazel test //quality:clang_format_check --test_output=streamed
+./bazelisk.sh test //quality:clang_format_check --test_output=streamed
 ```
 and run the following to fix it, if it is not formatted correctly.
 ```sh
-bazel run //quality:clang_format_fix
+./bazelisk.sh run //quality:clang_format_fix
 ```
 
 ## Formatting Rust Code
@@ -188,11 +188,11 @@ bazel run //quality:clang_format_fix
 
 Run the following to check if all Rust code as been formatted correctly:
 ```sh
-bazel test //quality:rustfmt_check --test_output=streamed
+./bazelisk.sh test //quality:rustfmt_check --test_output=streamed
 ```
 and run the following to fix it, if it is not formatted correctly.
 ```sh
-bazel run //quality:rustfmt_fix
+./bazelisk.sh run //quality:rustfmt_fix
 ```
 
 ## Formatting Bazel files
@@ -201,11 +201,11 @@ bazel run //quality:rustfmt_fix
 
 Run the following to check if all BUILD files has been formatted correctly:
 ```sh
-bazel test //quality:buildifier_check --test_output=streamed
+./bazelisk.sh test //quality:buildifier_check --test_output=streamed
 ```
 and run the following to fix it, if it is not formatted correctly.
 ```sh
-bazel run //quality:buildifier_fix
+./bazelisk.sh run //quality:buildifier_fix
 ```
 
 ## Linting Starlark
@@ -214,18 +214,18 @@ The Pavona supported linter for Bazel files is `buildifier`, and can be run with
 
 Run the following to check if all `WORKSPACE`, `BUILD`, and `.bzl` files have been formatted correctly:
 ```sh
-bazel test //quality:buildifier_check --test_output=streamed
+./bazelisk.sh test //quality:buildifier_check --test_output=streamed
 ```
 and run the following to fix them, if they are not formatted correctly.
 ```sh
-bazel run //quality:buildifier_fix
+./bazelisk.sh run //quality:buildifier_fix
 ```
 
 ## Checking License Headers
 
 Lastly, the Pavona supported linter for checking that every source code file contains a license header may be run with:
 ```sh
-bazel run //quality:license_check --test_output=streamed
+./bazelisk.sh run //quality:license_check --test_output=streamed
 ```
 
 # Building Hardware
@@ -237,21 +237,21 @@ Bazel is aware of all dependency relationships, and knows what prerequisites to 
 - Build FPGA bitstream with (production) ROM, see [here](../getting_started/setup_fpga.md#build-an-fpga-bitstream).
 - Build Verilator simulation binary:
   ```sh
-  bazel build //hw:verilator
+  ./bazelisk.sh build //hw:verilator
   ```
 
 # Miscellaneous
 
 ## Troubleshooting Builds
 
-If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `bazel clean` command to erase any existing building directories to yield a clean build.
+If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `./bazelisk.sh clean` command to erase any existing building directories to yield a clean build.
 Specifically, according to the Bazel [documentation](https://bazel.build/docs/user-manual#clean), issuing a
 ```sh
-bazel clean
+./bazelisk.sh clean
 ```
 deletes all the output build directories, while running
 ```sh
-bazel clean --expunge
+./bazelisk.sh clean --expunge
 ```
 will wipe all disk and memory traces (i.e., any cached intermediate files) produced by Bazel.
 The latter sledgehammer is only intended to be used as a last resort when the existing configuration is seriously broken.
@@ -303,7 +303,7 @@ This is also useful for persisting build artifacts when switching tops; if disk 
 Use the `--disk_cache=<filename>` to specify a cache directory.
 For example, running
 ```sh
-bazel build //... --disk_cache=~/.cache/bazel-disk-cache
+./bazelisk.sh build //... --disk_cache=~/.cache/bazel-disk-cache
 ```
 will cache all built artifacts.
 Alternatively add the following to `$HOME/.bazelrc` to avoid automatically using the disk cache on every Bazel invocation, as shown [above](#create-a-bazelrc-file).
@@ -326,7 +326,7 @@ To avoid building it, use the
 `--define DISABLE_VERILATOR_BUILD=true` build option.
 For example, to build the UART smoke test artifacts but not the Verilator simulation binary run
 ```sh
-bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smoketest
+./bazelisk.sh build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smoketest
 ```
 
 ## Displaying Test Outputs in Real Time
@@ -334,7 +334,7 @@ bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smokete
 By default, Bazel does not write test outputs to STDOUT.
 To see a test's output in real time, use the `--test_output=streamed` flag, like:
 ```sh
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
 ```
 
 ## Filtering Broken Tests
@@ -343,7 +343,7 @@ Some tests are marked known to be broken (and are in the process of being triage
 To prevent running these tests when running a block of tests, use the `test_tag_filters=-broken` flag.
 For example, to run all chip-level tests except the broken ones on FPGA:
 ```sh
-bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
+./bazelisk.sh test --test_tag_filters=cw310,-broken //sw/device/tests/...
 ```
 
 ## Using Bazel with Git Worktrees
@@ -356,7 +356,7 @@ Here are some tips that can improve the developer experience when using worktree
   Because each worktree is a separate workspace at a different path, different worktrees cannot share an action cache.
   They can, however, share a disk cache, which helps avoid rebuilding the same artifacts across different worktrees.
   Note that the repository cache is shared by default across all workspaces, so no additional configuration is needed there.
-1. Before deleting a worktree, be sure to run `bazel clean --expunge` to remove Bazel's generated files.
+1. Before deleting a worktree, be sure to run `./bazelisk.sh clean --expunge` to remove Bazel's generated files.
   Otherwise, files from old worktrees can accumulate in your output user root (located at `~/.cache/bazel/_bazel_${USER}/` by default).
 
 ## Commonly Encountered Issues

@@ -94,7 +94,7 @@ In particular, the repository must include:
   Binding a hook to a ROM state pre-run or post-run step is done through respectively the `ROM_STATE_PRE_HOOK` and `ROM_STATE_POST_HOOK` macros.
   See `dummy_rom_hooks.c` in this folder for a simple example.
 
-To link a ROM image with external hooks override, use `bazel --override_module` to specify the local path of the hooks repository.
+To link a ROM image with external hooks override, use `./bazelisk.sh --override_module` to specify the local path of the hooks repository.
 
 For example:
 

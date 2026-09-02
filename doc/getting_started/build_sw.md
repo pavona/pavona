@@ -12,7 +12,7 @@ Additionally, _most_ tests may be run with Bazel too.
 To install the correct version of Bazel, build, and run a single test with Verilator, run:
 
 ```console
-$REPO_TOP/bazelisk.sh test --test_output=streamed --disk_cache=~/bazel_cache //sw/device/tests:uart_smoketest_sim_verilator
+./bazelisk.sh test --test_output=streamed --disk_cache=~/bazel_cache //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
 This will take a while (an hour on a laptop is typical) if it's your first build or the first after a `git pull`, because Bazel has to build the chip simulation.
@@ -62,24 +62,24 @@ or by following [instructions for your system](https://bazel.build/install).
 
 Running
 ```console
-bazel build //sw/...
+./bazelisk.sh build //sw/...
 ```
 will build all software in our repository.
 If you do not have Verilator installed yet, you can use the `--define DISABLE_VERILATOR_BUILD=true` flag to skip the jobs that depend on that.
 
 In general, you can build any software target (and all of it's dependencies) using the following syntax:
 ```console
-bazel build @<repository>//<package>:<target>
+./bazelisk.sh build @<repository>//<package>:<target>
 ```
 Since most targets are within the main Bazel repository, you can often drop the "`@<repository>`" prefix.
 For example, to build the boot ROM we use for testing (also referred to as the _test ROM_), you can use
 ```console
-bazel build //sw/device/lib/testing/test_rom:test_rom
+./bazelisk.sh build //sw/device/lib/testing/test_rom:test_rom
 ```
 Additionally, some Bazel syntactic sugar enables dropping the target name when the target name matches the last subcomponent of the package name.
 For example, the following is equivalent to the above
 ```console
-bazel build //sw/device/lib/testing/test_rom
+./bazelisk.sh build //sw/device/lib/testing/test_rom
 ```
 
 For more information on Bazel repositories, packages, and targets, please refer to the Bazel [documentation](https://bazel.build/concepts/build-ref).
@@ -102,14 +102,14 @@ Examples of on-device tests are:
 * [ROM functional tests](../../sw/device/silicon_creator/rom/README.md)
 
 Test target names normally match file names (for instance, `//sw/device/tests:uart_smoketest` corresponds to `sw/device/test/uart_smoketest.c`).
-You can see all tests available under a given directory using `bazel query`, e.g.:
+You can see all tests available under a given directory using `./bazelisk.sh query`, e.g.:
 
 ```console
-bazel query 'tests(//sw/device/tests/...)'
+./bazelisk.sh query 'tests(//sw/device/tests/...)'
 ```
 ### Tags and wildcards
 
-TLDR: `bazel test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...` *should* be able to run all the tests and build steps that don't require optional setup steps.
+TLDR: `./bazelisk.sh test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...` *should* be able to run all the tests and build steps that don't require optional setup steps.
 
 You may find it useful to use wildcards to build/test all targets in the repository instead of individual targets.
 `//sw/...` is shorthand for all targets in `sw` that isn't tagged with manual.
@@ -136,7 +136,7 @@ These tags can then be used to filter tests using `--build_tests_only --test_tag
 These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator,-vivado`.
 
 `--build_tests_only` is important when matching wildcards if you aren't using
-`--build_tag_filters` to prevent `bazel test //...` from building targets that are filtered out by `--test_tag_filters`.
+`--build_tag_filters` to prevent `./bazelisk.sh test //...` from building targets that are filtered out by `--test_tag_filters`.
 
 There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `pavona_test` rule) from a build.
 
@@ -149,12 +149,12 @@ Not all tests are available on all of these targets; in particular, tests do not
 
 You can check which Verilator tests are available under a given directory using:
 ```console
-bazel query 'attr(tags, verilator, tests(//sw/device/tests/...))'
+./bazelisk.sh query 'attr(tags, verilator, tests(//sw/device/tests/...))'
 ```
 
 For FPGA tests, just change the tag:
 ```console
-bazel query 'attr(tags, cw310, tests(//sw/device/tests/...))'
+./bazelisk.sh query 'attr(tags, cw310, tests(//sw/device/tests/...))'
 ```
 
 For more information, please refer to the [Verilator](./setup_verilator.md) and/or [FPGA](./setup_fpga.md) setup instructions.
@@ -166,18 +166,18 @@ As shown below, you may use Bazel to query which tests are available, build and 
 
 #### Querying which tests are available
 ```console
-bazel query 'tests(//sw/device/lib/dif:all)'
+./bazelisk.sh query 'tests(//sw/device/lib/dif:all)'
 ```
 
 #### Building and running **all** tests
 ```console
-bazel test //sw/device/lib/dif:all
+./bazelisk.sh test //sw/device/lib/dif:all
 ```
 
 #### Building and running a **single** test
 For example, building and testing the UART DIF library's unit tests:
 ```console
-bazel test //sw/device/lib/dif:uart_unittest
+./bazelisk.sh test //sw/device/lib/dif:uart_unittest
 ```
 
 ### Running on-host ROM Tests
@@ -188,18 +188,18 @@ Similar to the DIF libraries, you can query, build, and run all the [ROM](../../
 Note, the ROM has both on-host and on-device tests.
 This query filters tests by their kind, i.e., only on-host tests.
 ```console
-bazel query 'kind(cc_.*, tests(//sw/device/silicon_creator/lib/...))'
+./bazelisk.sh query 'kind(cc_.*, tests(//sw/device/silicon_creator/lib/...))'
 ```
 
 #### Building and running **all** (on-host) tests
 ```console
-bazel test --test_tag_filters=-cw310,-dv,-verilator //sw/device/silicon_creator/lib/...
+./bazelisk.sh test --test_tag_filters=-cw310,-dv,-verilator //sw/device/silicon_creator/lib/...
 ```
 
 #### Building and running a **single** (on-host) test
 For example, building and testing the ROM UART driver unit tests:
 ```console
-bazel test //sw/device/silicon_creator/lib/drivers:uart_unittest
+./bazelisk.sh test //sw/device/silicon_creator/lib/drivers:uart_unittest
 ```
 
 ## Miscellaneous
@@ -266,7 +266,7 @@ There are two ways to run an ACC program:
 
 You can run `.elf` artifacts directly using the simulator as described in [the ACC documentation](../../hw/ip/acc/doc/developing_acc.md#run-the-python-simulator).
 The `acc_sim_test` rule is a thin wrapper around `acc_binary`.
-If you use it, `bazel test` will run the ACC simulator for you and check the test result.
+If you use it, `./bazelisk.sh test` will run the ACC simulator for you and check the test result.
 
 To include an ACC program in a C program, you need to add the desired ACC `acc_binary` Bazel target to the `deps` list of the C program's Bazel target.
 No `#include` is necessary, but you will likely need to initialize the symbols from the ACC program as required by the ACC driver you are using.
@@ -283,20 +283,20 @@ A disassembly of all executable sections is produced by the build system by defa
 It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.
 
 ```console
-bazel build //sw/device/tests:uart_smoketest_prog_sim_verilator_dis
+./bazelisk.sh build //sw/device/tests:uart_smoketest_prog_sim_verilator_dis
 
-less "$(bazel outquery //sw/device/tests:uart_smoketest_prog_sim_verilator_dis)"
+less "$(./bazelisk.sh outquery //sw/device/tests:uart_smoketest_prog_sim_verilator_dis)"
 ```
 
 To get a different type of disassembly, e.g. one which includes data sections in addition to executable sections, objdump can be called manually.
 For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code:
 
 ```console
-bazel build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
+./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
 
-bazel run @llvm_toolchain_llvm//:bin/llvm-objdump -- \
+./bazelisk.sh run @llvm_toolchain_llvm//:bin/llvm-objdump -- \
   --disassemble-all --headers --line-numbers --source \
-  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
 Refer to the output of the command with `--help` for a full list of options.
@@ -316,7 +316,7 @@ For a more stabilized release, check out an officially supported release.
 If your Bazel build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
 
 ```console
-bazel build //hw:verilator
+./bazelisk.sh build //hw:verilator
 ```
 This build can take a long time; it's creating a simulation for an entire SoC.
 Expect up to an hour for a successful build, depending on your machine.
@@ -328,5 +328,5 @@ If the `//hw:verilator` build failed pretty much immediately, try running `util/
 
 If the `//hw:verilator` build succeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
 If that works, then it may be a problem with the specific test you're running.
-See if you can build, but not run, the test with `bazel build` instead of `bazel test`.
+See if you can build, but not run, the test with `./bazelisk.sh build` instead of `./bazelisk.sh test`.
 If the test fails to build, that indicates some issue with the source code or possibly the RISC-V toolchain installation.

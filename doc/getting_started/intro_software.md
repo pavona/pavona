@@ -36,11 +36,11 @@ For more, see the Bazel documentation and the Pavona-specific Bazel documentatio
 
 ### Querying what targets are available
 
-Use `bazel query` to find out what software can be built from a particular directory.
+Use `./bazelisk.sh query` to find out what software can be built from a particular directory.
 The following command lists the targets that can be built in `sw/device/tests`:
 
 ```shell
-$ bazel query sw/device/tests:*
+$ ./bazelisk.sh query sw/device/tests:*
 ...
 //sw/device/tests:BUILD
 //sw/device/tests:README.md
@@ -57,11 +57,11 @@ $ bazel query sw/device/tests:*
 
 ### Building a target
 
-Use `bazel build` to build a particular target.
+Use `./bazelisk.sh build` to build a particular target.
 The following command builds the mask ROM (note that this is insufficient for a test, because you need an execution environment; read further).
 
 ```shell
-$ bazel build sw/device/silicon_creator/rom:mask_rom
+$ ./bazelisk.sh build sw/device/silicon_creator/rom:mask_rom
 ...
 INFO: Analyzed target //sw/device/silicon_creator/rom:mask_rom (645 packages loaded, 25678 targets configured).
 INFO: Found 1 target...
@@ -84,13 +84,13 @@ Note also that building something else tends to blow away anything you've built 
 
 ### Running a Pavona test (device software)
 
-Use `bazel test` to run a test on Pavona.
+Use `./bazelisk.sh test` to run a test on Pavona.
 In Pavona, the name of a test is given by the binary as well as an execution environment, described below.
 To run a test, combine the test binary name with the name of the execution environment with an underscore.
 For example, to run a UART smoketest on the `sim_verilator` execution environment, run the following command:
 
 ```shell
-$ bazel test sw/device/tests:uart_smoketest_sim_verilator
+$ ./bazelisk.sh test sw/device/tests:uart_smoketest_sim_verilator
 ...
 INFO: Found 1 test target...
 Target //sw/device/tests:uart_smoketest_sim_verilator up-to-date:
@@ -104,12 +104,12 @@ INFO: Build completed successfully, 3 total actions
 
 ### Running host software
 
-Host tools are generally run, not tested; for these, use `bazel run`.
+Host tools are generally run, not tested; for these, use `./bazelisk.sh run`.
 For instance, opentitantool is the name of the tool for interacting with Pavona devices from an external host.
 To see the help menu for opentitantool:
 
 ```shell
-$ bazel run //sw/host/opentitantool -- help
+$ ./bazelisk.sh run //sw/host/opentitantool -- help
    ...
 INFO: Build completed successfully, 1467 total actions
 INFO: Running command line: bazel-bin/sw/host/opentitantool/opentitantool <args omitted>
@@ -140,7 +140,7 @@ A complete test run of a given test on a given hardware is given by combining th
 For instance, if a chip-level test is called `chip_sw_uart_rx_tx`, and we'd like to run it in the `sim_verilator` execution environment, we run a test whose name is formed by combining the test name and the execution environment with an underscore:
 
 ```shell
-$ bazel test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
+$ ./bazelisk.sh test sw/device/tests:chip_sw_uart_rx_tx_sim_verilator
 ```
 
 ## Writing a new test

@@ -7,5 +7,5 @@ This allows for resources like FPGAs to be connected to a remote machine and use
 The tool can be built and run using Bazel:
 
 ```sh
-bazel run //sw/host/opentitansession -- help
+./bazelisk.sh run //sw/host/opentitansession -- help
 ```
