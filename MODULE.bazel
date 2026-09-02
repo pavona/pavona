@@ -277,6 +277,11 @@ register_toolchains("//third_party/foreign_cc:preinstalled_make_toolchain_macos"
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
     name = "llvm_toolchain",
+    # macOS links the system libc++ dylib, so use its headers too.
+    extra_cxx_flags = {"darwin-aarch64": [
+        "-nostdinc++",
+        "-isystem=/usr/include/c++/v1",
+    ]},
     llvm_versions = {"": "22.1.2"},
     sha256 = {
         "darwin-aarch64": "7b290ec4529c309b6b952d64a3513595c816dff1c217d54466a586d6e35dcec9",

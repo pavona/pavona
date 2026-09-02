@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV", "IS_MACOS", "MACOS_SEARCH_PATHS")
 
 """Rules for running FuseSoC.
@@ -100,6 +101,11 @@ def _fusesoc_build_impl(ctx):
         }
         if IS_MACOS:
             target_env |= MACOS_SEARCH_PATHS
+
+            # The sysroot holding the libc++ the model links against.
+            target_env |= {
+                "VERILATOR_SYSROOT": find_cpp_toolchain(ctx).sysroot or "",
+            }
 
     ctx.actions.run(
         mnemonic = "FuseSoC",
@@ -216,4 +222,5 @@ fusesoc_build = rule(
             doc = "C/C++ standard library include headers.",
         ),
     },
+    toolchains = use_cpp_toolchain(),
 )
