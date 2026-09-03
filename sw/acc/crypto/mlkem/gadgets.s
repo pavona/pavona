@@ -42,28 +42,28 @@
  *           https://eprint.iacr.org/2019/910
  */
 
-/*
- * Name: secand
+/**
+ * Bitwise AND of two 1-bit Boolean-shared values.
  *
- * Return new Boolean shares of a value r = x & y.
- * Bitsliced.
+ * Return Boolean shares of r = x & y, given 1-bit Boolean shares of x and y.
  *
- *   s   <- URND
+ *   s   <- urnd
  *   r_0 <- (x_0 & y_0) ^ (x_0 & (y_1 ^ s)) ^ ((x_0 ^ 1) & s)
  *   r_1 <- (x_1 & y_1) ^ (x_1 & (y_0 ^ s)) ^ ((x_1 ^ 1) & s)
  *
  * Source: Alg.2 [CS20]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_yb, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_rb, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
  *
  * clobbered registers: x4 to x7, x10, x12, x15, w0 to w3, w5 to w8
  * clobbered flag groups: FG0
  */
+
 .globl secand
 .type secand, @function
 secand:
@@ -121,33 +121,33 @@ secand:
   addi x15, x15, 32
   ret
 
-/*
- * Name: secfulladder
+/**
+ * Full adder on 1-bit Boolean-shared values.
  *
- * Return Boolean shares of a value r = (x + y + c) mod 2^2, given Boolean
- * shares of x and y mod 2.
- * Bitsliced.
+ * Return Boolean shares of (cout, r) = (x + y + cin), given 1-bit Boolean
+ * shares of x, y and cin.
  *
  *   a    <- x ^ y                   (sharewise)
  *   r    <- a ^ cin                 (sharewise; sum bit)
- *   cout <- x ^ SecAnd(a, x ^ cin)  (carry bit)
+ *   cout <- x ^ secand(a, x ^ cin)  (carry bit)
  *
  * Source: Alg.5 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_r, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
- * @param[in]  x17: dptr_c, dmem pointer to the Boolean shares of cin
- * @param[in]  x29: share stride, distance between shares of cin
- * @param[out] x30: dptr_c, dmem pointer to the Boolean shares of cout
- * @param[in]  x31: share stride, distance between shares of cout
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
+ * @param[in]  x17: dmem pointer to Boolean shares of cin
+ * @param[in]  x29: share stride of cin
+ * @param[out] x30: dmem pointer to Boolean shares of cout
+ * @param[in]  x31: share stride of cout
  *
  * clobbered registers: x4 to x7, x10, x12, x15, x28, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl secfulladder
 .type secfulladder, @function
 secfulladder:
@@ -245,30 +245,31 @@ secfulladder:
   addi x15, x15, 32
   ret
 
-/*
- * Name: secadd
+/**
+ * Addition of two k-bit Boolean-shared values.
  *
- * Return Boolean shares of a value r = (x + y) mod 2^k, given Boolean shares of
- * x and y mod 2^k.
+ * Return Boolean shares of r = (x + y) mod 2^k, given k-bit Boolean shares of
+ * x and y.
  * Bitsliced.
  *
  *   c <- 0
- *   for i = 0, ..., k-2:  (c, r[i]) <- SecFullAdder(x[i], y[i], c)
- *   r[k-1] <- x[k-1] ^ y[k-1] ^ c
+ *   for i = 0..k - 2:  (c, r[i]) <- secfulladder(x[i], y[i], c)
+ *   r[k - 1] <- x[k - 1] ^ y[k - 1] ^ c
  *
  * Source: Alg.6 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_r, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
- * @param[in]  x17: k, bitsize of x and y.
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
+ * @param[in]  x17: k, bitsize of x and y
  *
  * clobbered registers: x2, x4 to x8, x10, x12, x15, x17, x28 to x31, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl secadd
 .type secadd, @function
 secadd:
@@ -347,24 +348,25 @@ secadd:
   addi x2, x2, 96
   ret
 
-/*
- * Name: bitcopymask
+/**
+ * Boolean-shared product of the modulus q = 3329 and a single bit.
  *
- * Return k-bit Boolean shares of q * x, given 1-bit Boolean shares of x for
- * q = 3329 and the bitsize k = 12 (since q < 2**k).
+ * Return k-bit Boolean shares of r = q * x, given 1-bit Boolean
+ * shares of x for q = 3329 and the bitsize k = 12 (since q < 2^k).
  * Bitsliced.
  *
- *   for j = 0, ..., k-1:  r[j] <- q_j & x   (q = 3329 = 0b110100000001)
+ *   for j = 0..k - 1:  r[j] <- q[j] & x   (q = 3329 = 0b110100000001)
  *
  * Source: Alg.1 [BC22]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[out] x13: dptr_rb, dmem pointer to the output Boolean shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[out] x13: dmem pointer to Boolean shares of r
  *
  * clobbered registers: x4, x10, x13, w0
  * clobbered flag groups: FG0
  */
+
 .globl bitcopymask
 .type bitcopymask, @function
 bitcopymask:
@@ -392,27 +394,28 @@ bitcopymask:
   endloop
   ret
 
-/*
- * Name: refreshios
+/**
+ * Refresh of Boolean shares.
  *
- * Return new Boolean shares of x mod 2^k, given old Boolean shares of x.
+ * Return new k-bit Boolean shares of x, given k-bit Boolean shares of x.
  * Bitsliced.
  *
  *   for each bit-slice:
- *     s    <- URND
- *     r[0] <- x[0] ^ s
- *     r[1] <- x[1] ^ s
+ *     s   <- urnd
+ *     r_0 <- x_0 ^ s
+ *     r_1 <- x_1 ^ s
  *
  * Source: Alg.18 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: k, bitsize of x.
- * @param[in]  x12: share stride, distance between shares
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: k, bitsize of x
+ * @param[in]  x12: share stride of x and r
+ * @param[out] x14: dmem pointer to Boolean shares of r
  *
  * clobbered registers: x4 to x6, x10, x14, w0 to w2
  * clobbered flag groups: FG0
  */
+
 .globl refreshios
 .type refreshios, @function
 refreshios:
@@ -436,16 +439,19 @@ refreshios:
   endloop
   ret
 
-/*
- * Name: poly_rej_samp
+/**
+ * Rejection sampling of a polynomial with coefficients mod q = 3329.
  *
  * Return a polynomial of random coefficients mod q, obtained by running
- * rejection sampling on uniform random bytes from URND.
+ * rejection sampling on uniform random bytes from urnd.
  *
- * @param[in]  w16: sw0, R | Q
- * @param[out] x10: ptr_r, dmem pointer to output polynomial
- * @param[in]  x11: dmem pointer to random input words (MLKEM_REJ_SAMPLE_TEST only)
+ * @param[out] x10: dmem pointer to output polynomial
+ * @param[in]  x11: dmem pointer to random input words
+ *                  (MLKEM_REJ_SAMPLE_TEST only)
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x5 to x6, x10, w0 to w5, acch, acc
  * clobbered flag groups: FG0
@@ -509,25 +515,28 @@ _rej_sample_loop:
 _end_rej_sample_loop:
   ret
 
-/*
- * Name: refreshmodq
+/**
+ * Refresh of arithmetic shares mod q = 3329.
  *
  * Return new arithmetic shares mod q = 3329 of the value x.
  * Vectorized for polynomial.
  *
  *   rand <- poly_rej_samp()      uniform polynomial mod q
- *   r[0] <- x[0] + rand   mod q
- *   r[1] <- x[1] - rand   mod q
+ *   r_0  <- x_0 + rand   mod q
+ *   r_1  <- x_1 - rand   mod q
  *
  * Source: [BBD+16]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_xa, dmem pointer to arithmetic shares of x
- * @param[out] x12: dptr_ra, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x7, x10, x12, x28, w0 to w5, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl refreshmodq
 .type refreshmodq, @function
 refreshmodq:
@@ -565,20 +574,24 @@ refreshmodq:
   addi x2, x2, 544
   ret
 
-/*
- * Name: poly_to_bitsliced
+/**
+ * Bitsliced representation of a polynomial.
  *
- * Return bitsliced representation of a value x in [0, KYBER_Q).
+ * Return the bitsliced representation r of a value x in [0, q), q = 3329.
  * Vectorized for polynomial.
  *
- *   bs[j] <- bit j of x,  j = 0, ..., 11
+ *   r[j] <- bit j of x,  j = 0..11
  *
- * @param[in]  x10: dptr_x, dmem pointer to the input masked value
- * @param[out] x11: dptr_r, dmem pointer to the output bitslice representation
+ * Only 12 bitslices are needed since q < 2^12.
+ *
+ * @param[in]  x10: dmem pointer to x
+ * @param[out] x11: dmem pointer to bitsliced representation r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10, w0 to w15, w28 to w29
  * clobbered flag groups: FG0
  */
+
 .globl poly_to_bitsliced
 .type poly_to_bitsliced, @function
 poly_to_bitsliced:
@@ -601,21 +614,25 @@ poly_to_bitsliced:
   endloop
   ret
 
-/*
- * Name: poly_from_bitsliced
+/**
+ * Normal representation of a bitsliced polynomial.
  *
- * Return normal representation of a bitsliced value x in [0, KYBER_Q).
+ * Return the normal representation r of a bitsliced value x in [0, q),
+ * q = 3329.
  * Vectorized for polynomial.
  *
- *   x <- sum_{j=0}^{11} bs[j] << j
+ *   r <- sum_{j=0..11} x[j] << j
  *
- * @param[in]  x10: dptr_x, dmem pointer to the input bitsliced representation
+ * Only 12 bitslices are needed since q < 2^12.
+ *
+ * @param[in]  x10: dmem pointer to bitsliced representation x
+ * @param[out] x11: dmem pointer to r
  * @param[in]  w31: all-zero register
- * @param[out] x11: dptr_r, dmem pointer to the output masked value
  *
  * clobbered registers: x4, x10 to x11, w0 to w15, w28 to w29
  * clobbered flag groups: FG0
  */
+
 .globl poly_from_bitsliced
 .type poly_from_bitsliced, @function
 poly_from_bitsliced:
@@ -641,10 +658,19 @@ poly_from_bitsliced:
   endloop
   ret
 
-/*
- * 16x16 per-lane bit transpose of w0..w15, shared by poly_to_bitsliced and
- * poly_from_bitsliced.
+/**
+ * Per-lane 16x16 bit transpose.
+ *
+ * Transpose in place the 16x16 bit matrix held by each 16-bit lane of
+ * w0 to w15. Shared by poly_to_bitsliced and poly_from_bitsliced.
+ *
+ * @param[in,out] w0 to w15: bit matrices to transpose
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: w0 to w15, w28 to w29
+ * clobbered flag groups: FG0
  */
+
 _bitslice_transpose:
   /* Stage d=8. */
   bn.not     w28, w31
@@ -852,26 +878,27 @@ _bitslice_transpose:
   bn.xor     w14, w14, w29
   ret
 
-/*
- * Name: seca2b
+/**
+ * Arithmetic-to-Boolean conversion mod 2^k.
  *
- * Return Boolean shares mod 2**k of a value x given its arithmetic shares mod 2**k.
+ * Return k-bit Boolean shares r of x, given arithmetic shares of x mod 2^k.
  * Bitsliced.
  *
- *   s  <- (x[0], 0)
- *   s' <- (0, x[1])
+ *   s  <- (x_0, 0)
+ *   s' <- (0, x_1)
  *   r  <- secadd(s, s')
  *
  * Source: Alg.8 [BC22]
  *
- * @param[in]  x10: dptr_xa, dmem pointer to the input arithmetic shares mod 2**k of x
- * @param[in]  x11: k, bitsize of x.
- * @param[in]  x12: share bytes, bytes per bitsliced share
- * @param[out] x14: dptr_rb, dmem pointer to the output Boolean shares
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[in]  x11: k, bitsize of x
+ * @param[in]  x12: share stride of x and r
+ * @param[out] x14: dmem pointer to Boolean shares of r
  *
  * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x28 to x31, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl seca2b
 .type seca2b, @function
 seca2b:
@@ -930,27 +957,29 @@ seca2b:
   addi x2, x2, 32
   ret
 
-/*
- * Name: seca2bmodq
+/**
+ * Arithmetic-to-Boolean conversion mod q = 3329.
  *
- * Return Boolean shares mod 2**k (k = 12) of a value x mod q = 3329 given its
- * arithmetic shares. (It is required that q < 2**k).
+ * Return k-bit Boolean shares r of x, given arithmetic shares of x mod
+ * q = 3329, with the bitsize k = 12 (since q < 2^k).
  * Bitsliced.
  *
- *   s  <- ((2^(k+1) - q) + x[0], 0)
- *   s' <- (0, x[1])
- *   u  <- secadd(s, s')
+ *   s  <- ((2^(k + 1) - q) + x_0, 0)    (k + 1 bits)
+ *   s' <- (0, x_1)                      (k + 1 bits)
+ *   u  <- secadd(s, s')                 (k + 1 bits)
  *   a  <- bitcopymask(u[k])
- *   r  <- secadd(a, u)
+ *   r  <- secadd(a, u)                  (k bits)
  *
  * Source: Alg.10 [BC22]
  *
- * @param[in]  x10: dptr_xa, dmem pointer to the input arithmetic shares mod q of x
- * @param[out] x12: dptr_rb, dmem pointer to the output Boolean shares
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2, x4 to x7, x10 to x13, x15 to x18, x28 to x31, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl seca2bmodq
 .type seca2bmodq, @function
 seca2bmodq:
@@ -1159,27 +1188,30 @@ seca2bmodq:
   addi x2, x2, 1760
   ret
 
-/*
- * Name: seconebitb2amodq
+/**
+ * One-bit Boolean-to-Arithmetic conversion mod q = 3329.
  *
- * Return arithmetic shares mod q = 3329 of a bit x, given its Boolean shares.
+ * Return arithmetic shares mod q = 3329 r of a bit x, given its Boolean shares.
  * Vectorized for polynomial.
  *
- *   v    <- (x[0], 0)
+ *   v    <- (x_0, 0)
  *   v    <- refreshmodq(v)
- *   v[0] <- (1 - 2*x[1])*v[0] + x[1]   mod q
- *   v[1] <- (1 - 2*x[1])*v[1]          mod q
- *   r    <- refreshmodq(v[0], v[1])
+ *   v_0  <- (1 - 2 * x_1) * v_0 + x_1   mod q
+ *   v_1  <- (1 - 2 * x_1) * v_1         mod q
+ *   r    <- refreshmodq(v)
  *
  * Source: Alg.5 [SPOG19]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[out] x12: dptr_r, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl seconebitb2amodq
 .type seconebitb2amodq, @function
 seconebitb2amodq:
@@ -1259,14 +1291,14 @@ seconebitb2amodq:
   addi x2, x2, 1056
   ret
 
-/*
- * Name: secb2amodq
+/**
+ * Boolean-to-Arithmetic conversion mod q = 3329.
  *
- * Return arithmetic shares mod q = 3329 of x, given its Boolean shares mod 2^k,
- * with k = 12 (q < 2**k).
+ * Return arithmetic shares r of x mod q = 3329, given its Boolean
+ * shares mod 2^k, with k = 12 (q < 2^k).
  * Bitsliced.
  *
- *   rand <- poly_rej_samp()      uniform polynomial mod q
+ *   rand <- poly_rej_samp()      (uniform polynomial mod q)
  *   zp   <- q - rand
  *   a    <- seca2bmodq(zp)
  *   b    <- secaddmodq(a, x)
@@ -1275,12 +1307,17 @@ seconebitb2amodq:
  *
  * Source: Alg.11 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[out] x12: dptr_r, dmem pointer to the output arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x8, x10 to x21, x28 to x31, w0 to w16, w28 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl secb2amodq
 .type secb2amodq, @function
 secb2amodq:
@@ -1511,27 +1548,28 @@ secb2amodq:
   addi x2, x2, 609
   ret
 
-/*
- * Name: poly_hocompress
+/**
+ * First-order masked compression of a polynomial with dv in {4, 5}.
  *
- * Return Boolean shares of Compressq(x, d) = round((2^d / q) * x) mod 2^d for
- * d in {4, 5}, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, dv) = round((2^dv / q) * x) mod
+ * 2^dv for dv in {4, 5}, given arithmetic shares mod q of x. Here dv = 5 for
+ * k = 4, and 4 otherwise.
+ * Bitsliced.
  *
- * Each share is compressed to d + alpha bits, recombined (seca2b), then the low
- * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
- * (2^alpha > q * nshares); nshares = 2 gives d + alpha = 18 (alpha = 13 for
- * d = 5, 14 for d = 4).
+ * Each share is compressed to dv + alpha bits, recombined (seca2b), then the
+ * low alpha bits dropped. The alpha extra bits absorb the per-share rounding
+ * error (2^alpha > q * nshares); nshares = 2 gives dv + alpha = 18 (alpha = 13
+ * for dv = 5, 14 for dv = 4).
  *
- *   z[0] <- Compressq(x[0], d + alpha) + 2^(alpha - 1)
- *   z[1] <- Compressq(x[1], d + alpha)
- *   c    <- seca2b(z[0], z[1])
+ *   z_0  <- Compressq(x_0, dv + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, dv + alpha)
+ *   c    <- seca2b(z)
  *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input arithmetic shares of x
- * @param[in]  x11: indicates du or dv (0: dv, 1: du)
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
@@ -1716,32 +1754,35 @@ _dv_params_done:
   addi x2, x2, 1024
   ret
 
-/*
- * Name: polyvec_hocompress
+/**
+ * First-order masked compression of a polynomial with du in {10, 11}.
  *
- * Return Boolean shares of Compressq(x, d) = round((2^d / q) * x) mod 2^d for
- * d in {10, 11}, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, du) = round((2^du / q) * x) mod
+ * 2^du for du in {10, 11}, given arithmetic shares mod q of x. Here du = 11
+ * for k = 4, and 10 otherwise.
+ * Bitsliced.
  *
- * Each share is compressed to d + alpha bits, recombined (seca2b), then the low
- * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
- * (2^alpha > q * nshares); nshares = 2 gives d + alpha = 24 (alpha = 13 for
- * d = 11, 14 for d = 10).
+ * Each share is compressed to du + alpha bits, recombined (seca2b), then the
+ * low alpha bits dropped. The alpha extra bits absorb the per-share rounding
+ * error (2^alpha > q * nshares); nshares = 2 gives du + alpha = 24 (alpha = 13
+ * for du = 11, 14 for du = 10).
  *
- *   z[0] <- Compressq(x[0], d + alpha) + 2^(alpha - 1)
- *   z[1] <- Compressq(x[1], d + alpha)
- *   c    <- seca2b(z[0], z[1])
+ *   z_0  <- Compressq(x_0, du + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, du + alpha)
+ *   c    <- seca2b(z)
  *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input arithmetic shares of x
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x19, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
  * clobbered flag groups: FG0
  */
+
 .globl polyvec_hocompress
 .type polyvec_hocompress, @function
 polyvec_hocompress:
@@ -1931,27 +1972,31 @@ _du_params_done:
   addi x2, x2, 1024
   ret
 
-/*
- * Name: onebitdecompress
+/**
+ * Masked decompression of a 1-bit message.
  *
- * Given Boolean shares of a 32-byte message m, return arithmetic shares
- * mod q = 3329 of mp = Decompress_q(m, 1): coefficient i is (q + 1) / 2
- * if bit i of m is set, else 0. Vectorized for a polynomial.
+ * Return arithmetic shares mod q = 3329 of mp = Decompressq(m, 1), given
+ * Boolean shares of a 32-byte message m: coefficient i is (q + 1) / 2 if
+ * bit i of m is set, else 0.
+ * Vectorized for polynomial.
  *
- *   m  <- unpack(m)                ; one message bit per coefficient
- *   mp <- seconebitb2amodq(m)      ; Boolean to arithmetic shares mod q
+ *   m  <- unpack(m)                 (one message bit per coefficient)
+ *   mp <- seconebitb2amodq(m)       (Boolean to arithmetic shares mod q)
  *   mp <- mp * (q + 1) / 2   mod q
  *
  * Source: Section 3.3 [BGR+21]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_m, dmem pointer to Boolean shares of m (bitsliced)
+ * @param[in]  x10: dmem pointer to Boolean shares of m (bitsliced)
+ * @param[out] x12: dmem pointer to arithmetic shares of mp
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
- * @param[out] x12: dptr_mp, dmem pointer to arithmetic shares of mp
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl onebitdecompress
 .type onebitdecompress, @function
 onebitdecompress:
@@ -2002,27 +2047,33 @@ onebitdecompress:
   addi x2, x2, 32
   ret
 
-/*
- * Name: masked_cbd
+/**
+ * First-order masked binomial sampler for q = 3329.
  *
  * Return arithmetic shares mod q = 3329 of the centered binomial sample
  * r = HW(x) - HW(y), given Boolean shares of the eta-bit values x and y.
  * Since HW(y) = eta - HW(~y), this sums the 2 * eta bit-planes of x and ~y.
- * k = 12 (q < 2**k). Bitsliced.
+ * k = 12 (q < 2^k).
+ * Bitsliced.
  *
- *   sum <- Hamming weight of (x, ~y) via a secfulladder tree
- *   r   <- secb2amodq(sum) - eta   mod q
+ *   a <- Hamming weight of (x, ~y) via a secfulladder tree
+ *   r <- secb2amodq(a) - eta   mod q
  *
  * Source: Alg.17 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x12: eta
- * @param[out] x14: dptr_r, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: dmem pointer to Boolean shares of y
+ * @param[in]  x12: eta in {2, 3}
+ * @param[out] x14: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w16, w28 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_cbd
 .type masked_cbd, @function
 masked_cbd:
@@ -2274,18 +2325,23 @@ _continue_1:
 /* Config to start a SHAKE-256 operation. */
 #define SHAKE256_CFG 0xA
 
-/*
- * Name: masked_poly_getnoise_eta_init
+/**
+ * Initialization of the SHAKE-256 operation for masked_poly_getnoise_eta_{1,2}.
  *
- * Initialize a SHAKE-256 operation for CBD noise sampling, absorbing the seed
- * and nonce. Call before masked_poly_getnoise_eta_1 or eta_2.
+ * Configure a SHAKE-256 operation for a 33-byte message and absorb
+ * seed || nonce, so that a subsequent call to `masked_poly_getnoise_eta_1`
+ * or `masked_poly_getnoise_eta_2` can squeeze the bytes it samples from.
+ * The seed is Boolean-shared across two 32-byte shares; the nonce is
+ * public, so its second share is zero.
  *
- * @param[in]  x10: dptr_seed, dmem pointer to the seed
- * @param[in]  x11: dptr_nonce, dmem pointer to the nonce
+ * @param[in]  x10: dmem pointer to the seed
+ * @param[in]  x11: dmem pointer to the nonce
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x5 to x6, x10, w0
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_init
 .type masked_poly_getnoise_eta_init, @function
 masked_poly_getnoise_eta_init:
@@ -2314,40 +2370,59 @@ masked_poly_getnoise_eta_init:
 
   ret
 
-/*
- * Name: masked_poly_getnoise_eta_2
+/**
+ * Sampling of a masked polynomial from the centered binomial distribution
+ * with parameter KYBER_ETA2.
  *
- * Sample a polynomial deterministically from a seed and a nonce, with output
- * polynomial close to centered binomial distribution with parameter KYBER_ETA2;
- * this function assumes `masked_poly_getnoise_eta_init` has been called first with the
- * appropriate seed and nonce.
+ * Deterministically sample a polynomial whose coefficients follow a centered
+ * binomial distribution with parameter eta = KYBER_ETA2, and assume that
+ * `masked_poly_getnoise_eta_init` has been called beforehand with the
+ * appropriate seed and nonce. Since KYBER_ETA2 = 2 for every parameter set,
+ * callers pass eta = 2, and this entry point falls through into
+ * masked_poly_getnoise_eta_1.
  *
- * @param[in]  x10: eta
+ * On return, x10 holds the eta it was called with and x11 has been advanced
+ * by one polynomial (512 bytes).
+ *
+ * @param[in]  x10: eta, always 2
+ * @param[out] x11: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
- * @param[out] x11: ptr_ra, dmem pointer to arithmetic shares of r
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_2
 .type masked_poly_getnoise_eta_2, @function
 masked_poly_getnoise_eta_2:
 
-/*
- * Name: masked_poly_getnoise_eta_1
+/**
+ * Sampling of a masked polynomial from the centered binomial distribution
+ * with parameter KYBER_ETA1.
  *
- * Sample a polynomial deterministically from a seed and a nonce, with output
- * polynomial close to centered binomial distribution with parameter KYBER_ETA1;
- * this function assumes `masked_poly_getnoise_eta_init` has been called first with the
+ * Deterministically sample a polynomial whose coefficients follow a centered
+ * binomial distribution with parameter eta = KYBER_ETA1, which is 3 for
+ * KYBER_K = 2 and 2 for KYBER_K = 3 and KYBER_K = 4. Assumes that
+ * `masked_poly_getnoise_eta_init` has been called beforehand with the
  * appropriate seed and nonce.
  *
- * @param[in]  x10: eta
+ * On return, x10 holds the eta it was called with and x11 has been advanced
+ * by one polynomial (512 bytes).
+ *
+ * @param[in]  x10: eta in {2, 3}
+ * @param[out] x11: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
- * @param[out] x11: ptr_ra, dmem pointer to arithmetic shares of r
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_1
 .type masked_poly_getnoise_eta_1, @function
 masked_poly_getnoise_eta_1:
@@ -2504,9 +2579,23 @@ _getnoise_common:
   addi x2, x2, 416
   ret
 
-/* Bitslice the SHAKE-256 digests in w17-w22 into the eta = 3 x and y
- * bit-planes for masked_cbd. Called by masked_poly_getnoise_eta_1 on the
- * KYBER_K == 2 path. */
+/**
+ * Bitslicing of the SHAKE-256 digests for eta = 3.
+ *
+ * Split the six digest words in w17 to w22 into the 3 x and 3 y bit-planes
+ * that masked_cbd consumes, one share per call. Called by
+ * masked_poly_getnoise_eta_1 on the KYBER_K = 2 path.
+ *
+ * @param[in]     x7: dmem pointer to const_zero
+ * @param[in,out] x10: dmem pointer to the x bit-planes
+ * @param[in,out] x11: dmem pointer to the y bit-planes
+ * @param[in]     w17 to w22: the six digest words to bitslice
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w28 to w29
+ * clobbered flag groups: FG0
+ */
+
 _bitslice_eta_3:
   /* Whitening. */
   bn.xor w0, w0, w0
@@ -2642,26 +2731,27 @@ _bitslice_eta_3:
 /* Undefine gadget-local macros. */
 #undef SHAKE256_CFG
 
-/*
- * Name: masked_poly_tomsg
+/**
+ * First-order masked compression of a polynomial to a message.
  *
- * Return Boolean shares of Compressq(x, 1) = round((2 / q) * x) mod 2, the
- * one-bit message compression, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, 1) = round((2 / q) * x) mod 2, the
+ * one-bit message compression, given arithmetic shares mod q of x.
+ * Bitsliced.
  *
  * Each share is compressed to 1 + alpha bits, recombined (seca2b), then the low
  * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
  * (2^alpha > q * nshares); nshares = 2 gives 1 + alpha = 16 (alpha = 15).
  *
- *   y[0] <- Compressq(x[0], 1 + alpha) + 2^(alpha - 1)
- *   y[1] <- Compressq(x[1], 1 + alpha)
- *   z    <- seca2b(y[0], y[1])
- *   r    <- z >> alpha
+ *   z_0  <- Compressq(x_0, 1 + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, 1 + alpha)
+ *   c    <- seca2b(z)
+ *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to arithmetic shares of x
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  w31: all-zero register
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
  *
  * clobbered registers: x2 to x8, x10 to x17, x28 to x31, w0 to w15, w17 to w21, w28 to w29
  * clobbered flag groups: FG0
@@ -2784,24 +2874,27 @@ masked_poly_tomsg:
 
 #define N_COEFFS 16
 
-/*
- * Name: poly_masked_compare_dv
+/**
+ * First-order masked comparison of a polynomial compressed with dv in {4, 5}.
  *
- * For every coefficient of the polynomial, return 1 if Compressq(cprime, dv)
- * == c, else 0. Bitsliced.
+ * For every coefficient of the polynomial, AND into r a 1 if
+ * Compressq(c', dv) == c, else a 0. Here dv = 5 for k = 4, and 4 otherwise.
+ * Bitsliced.
  *
  * Source: Section 6.2 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to arithmetic shares of cprime
- * @param[in]  x11: dptr_y, dmem pointer to the reference compressed polynomial c
- * @param[in]  x12: share stride, distance between shares
- * @param[in]  w31: all-zero register
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
- * @param[in]  x15: k, the security level
+ * @param[in]     x10: dmem pointer to arithmetic shares of c'
+ * @param[in]     x11: dmem pointer to reference compressed polynomial c
+ * @param[in]     x12: share stride of compressed c', i.e. dv * 32
+ * @param[in,out] x14: dmem pointer to Boolean shares of r, which must
+ *                     hold all-ones on entry
+ * @param[in]     x15: k, the security level
+ * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w29
  * clobbered flag groups: FG0
  */
+
 .globl poly_masked_compare_dv
 .type poly_masked_compare_dv, @function
 poly_masked_compare_dv:
@@ -3099,25 +3192,27 @@ _skip_bit_4:
   addi x2, x2, 352
   ret
 
-
-/*
- * Name: poly_masked_compare_du
+/**
+ * First-order masked comparison of a polynomial compressed with du in {10, 11}.
  *
- * For every coefficient of the polynomial, return 1 if Compressq(cprime, du)
- * == c, else 0. Bitsliced.
+ * For every coefficient of the polynomial, AND into r a 1 if
+ * Compressq(c', du) == c, else a 0. Here du = 11 for k = 4, and 10 otherwise.
+ * Bitsliced.
  *
  * Source: Section 6.2 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to arithmetic shares of cprime
- * @param[in]  x11: dptr_y, dmem pointer to the reference compressed polynomial c
- * @param[in]  x12: share stride, distance between shares
- * @param[in]  w31: all-zero register
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
- * @param[in]  x15: k, the security level
+ * @param[in]     x10: dmem pointer to arithmetic shares of c'
+ * @param[in]     x11: dmem pointer to reference compressed polynomial c
+ * @param[in]     x12: share stride of compressed c', i.e. du * 32
+ * @param[in,out] x14: dmem pointer to Boolean shares of r, which must
+ *                     hold all-ones on entry
+ * @param[in]     x15: k, the security level
+ * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
  * clobbered flag groups: FG0
  */
+
 .globl poly_masked_compare_du
 .type poly_masked_compare_du, @function
 poly_masked_compare_du:
@@ -3520,20 +3615,23 @@ _skip_bit_10:
   addi x2, x2, 736
   ret
 
-/*
- * Name: finalize_cmp
+/**
+ * First-order reduction of the masked comparison result to a single bit.
  *
- * Reduce the masked_compare output in place to Boolean shares of the single
- * comparison bit. Bitsliced.
+ * Reduce the masked_poly_compare_{du, dv} output in place to Boolean shares of
+ * the single comparison bit.
+ * Bitsliced.
  *
  * Source: Section 6.2 [BC22]
  *
- * @param[in/out] x10: dptr_x, dmem pointer to Boolean shares of output of masked_compare
+ * @param[in,out] x10: dmem pointer to Boolean shares of r, the output
+ *                     of masked_poly_compare_{du, dv}
  * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2, x4 to x8, x10 to x13, x15 to x16, w0 to w3, w5 to w8
  * clobbered flag groups: FG0
  */
+
 .globl finalize_cmp
 .type finalize_cmp, @function
 finalize_cmp:
