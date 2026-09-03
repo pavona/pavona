@@ -426,48 +426,43 @@ refreshios:
 .type poly_rej_samp, @function
 poly_rej_samp:
   /* Load 19 * q - 1. */
-  addi      x5, x0, 1
-  la        x6, modulus_times_19_minus_1
-  bn.lid    x5++, 0(x6)
-  bn.shv.8s w1, w1 >> 16
+  addi   x4, x0, 1
+  la     x5, modulus_times_19_minus_1
+  bn.lid x4++, 0(x5)
 
   /* Load mont = 2^16 % q. */
-  la     x6, mont
-  bn.lid x5, 0(x6)
+  la     x5, mont
+  bn.lid x4, 0(x5)
 
   /* x10 + 512 is the last valid address. */
-  addi x5, x10, 512
-
-#if defined(MLKEM_REJ_SAMPLE_TEST)
-  addi x30, x0, 3
-#endif
+  addi x4, x10, 512
 
   /* Loop until 256 coefficients have been written to the output. */
 _rej_sample_loop:
   /* Get 16 randoms. */
 #if defined(MLKEM_REJ_SAMPLE_TEST)
-  bn.lid      x30, 0(x11++)
+  bn.lid      x0, 0(x11++)
 #else
-  bn.wsrr     w3, urnd
+  bn.wsrr     w0, urnd
 #endif
-  bn.trn1.16h w4, w3, w31
+  bn.trn1.16h w3, w0, w31
+  bn.subv.8s  w3, w1, w3
+  bn.shv.8s   w3, w3 >> 31
+  bn.trn2.16h w4, w0, w31
   bn.subv.8s  w4, w1, w4
   bn.shv.8s   w4, w4 >> 31
-  bn.trn2.16h w5, w3, w31
-  bn.subv.8s  w5, w1, w5
-  bn.shv.8s   w5, w5 >> 31
-  bn.trn1.16h w4, w4, w5
-  bn.xor      w4, w4, w31, FG0
-  csrrs       x6, fg0, x0 /* Read flag fg0. */
-  srli        x6, x6, 3   /* Extract fg0.z */
+  bn.trn1.16h w3, w3, w4
+  bn.xor      w3, w3, w31, FG0
+  csrrs       x5, fg0, x0 /* Read flag fg0. */
+  srli        x5, x5, 3   /* Extract fg0.z */
 
   /* If fg0.z == 0, there is at least one bad coeff. We throw away this
    * vector and sample again. */
-  beq x6, x0, _rej_sample_loop
+  beq x5, x0, _rej_sample_loop
 
   /* Once the whole vector is accepted, reduce the accepted candidates mod Q
    * using Montgomery. */
-  bn.mulv.16h.acc.z.lo w0, w3, w2
+  bn.mulv.16h.acc.z.lo w0, w0, w2
   bn.mulv.l.16h.lo     w0, w0, sw0.2
   bn.mulv.l.16h.acc.hi w0, w0, sw0.0
   bn.addvm.16h         w0, w0, w31
@@ -475,7 +470,7 @@ _rej_sample_loop:
 
   /* If we reach the last valid address, we've filled up a polynomial.
    * Otherwise, continue to sample. */
-  beq x10, x5, _end_rej_sample_loop
+  beq x10, x4, _end_rej_sample_loop
   beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
