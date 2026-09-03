@@ -1670,31 +1670,30 @@ _dv_params_done:
 .globl polyvec_hocompress
 .type polyvec_hocompress, @function
 polyvec_hocompress:
-  /* Allocate t_0..1, z scratch and save callee-saved registers. */
+  /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
   addi x2, x2, -1024
   add  x7, x2, x0 /* t */
   addi x2, x2, -1568
-  sw   x9, 1536(x2)
-  sw   x18, 1540(x2)
-  sw   x19, 1544(x2)
-  add  x9, x12, x0
+  sw   x12, 1536(x2)
+  sw   x8, 1540(x2)
+  sw   x9, 1544(x2)
 
   /* Create 2^(alpha - 1). */
   bn.subi   w30, w31, 1
   bn.shv.8s w30, w30 >> 31
   bn.shv.8s w30, w30 << 12
 
-  /* Select alpha-dependent parameters: w30 = 2^(alpha - 1), x18 = the
-   * extraction byte offset alpha * 32, x19 = dv. */
+  /* Select alpha-dependent parameters: w30 = 2^(alpha - 1), x8 = the
+   * extraction byte offset alpha * 32, x9 = dv. */
   addi      x4, x0, 4
-  addi      x18, x0, 416  /* alpha * 32, alpha = 13 */
-  addi      x19, x0, 11
+  addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x9, x0, 11
   beq       x13, x4, _du_params_done
   bn.shv.8s w30, w30 << 1
-  addi      x18, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-  addi      x19, x0, 10
-_du_params_done:
+  addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x9, x0, 10
 
+_du_params_done:
   /* Load all constants. */
   addi       x4, x0, 17
   la         x5, const_m_du
@@ -1702,9 +1701,7 @@ _du_params_done:
   la         x5, const_1664
   bn.lid     x4, 0(x5)
 
-  addi x5, x0, 21
-  add  x6, x2, x0   /* z */
-  addi x28, x6, 512 /* Skip the first 16 bits. */
+  add x6, x2, x0 /* z */
 
   /* Compute z_0 = Compressq(x_0, du + alpha) + 2^(alpha - 1),
    *         z_1 = Compressq(x_1, du + alpha).
@@ -1717,7 +1714,7 @@ _du_params_done:
    *  - x >>= s
    *  - x &= ((1 << (du + alpha)) - 1).
    */
-  loopi 2, 85
+  loopi 2, 83
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
@@ -1743,7 +1740,7 @@ _du_params_done:
 
     addi x4, x0, 15
     loopi 16, 44
-      bn.lid           x0, 0(x10++)
+      bn.lid          x0, 0(x10++)
       /* Handle even-positioned coeffs. */
       bn.trn1.16h      w19, w0, w31
       /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
@@ -1794,16 +1791,12 @@ _du_params_done:
       bn.addv.8s      w19, w19, w30
       bn.addv.8s      w20, w20, w30
       /* Combine the results before bitslicing. */
-      bn.trn1.16h     w21, w19, w20
-      bn.movr         x4, x5
+      bn.trn2.16h     w0, w19, w20
+      bn.sid          x0, 0(x7++)
+      bn.trn1.16h     w0, w19, w20
+      bn.movr         x4, x0
       addi            x4, x4, -1
-      bn.trn2.16h     w21, w19, w20
-      bn.sid          x5, 0(x7++)
     endloop
-
-    /* For the first share, w30 holds 2^(alpha - 1).
-     * After that, we clear w30 for the 2nd share. */
-    bn.xor w30, w30, w30
 
     /* Bitslice the first 16 bits. */
     jal x1, _bitslice_transpose
@@ -1813,7 +1806,6 @@ _du_params_done:
       bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi x6, x6, 256 /* Skip the last 8 bits. */
 
     /* Bitslice the last 8 bits. */
     addi x4, x0, 15
@@ -1827,10 +1819,13 @@ _du_params_done:
 
     add x4, x0, x0
     loopi 8, 2
-      bn.sid x4, 0(x28++)
+      bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi x28, x28, 512 /* Skip the first 16 bits. */
+
+    /* For the first share, w30 holds 2^(alpha - 1).
+     * After that, we clear w30 for the 2nd share. */
+    bn.xor w30, w30, w30
   endloop
 
   /* Compute c = seca2b(z), k = du + alpha = 24, share bytes = 768. */
@@ -1841,23 +1836,21 @@ _du_params_done:
   jal  x1, seca2b
 
   /* Compute r = c >> alpha: keep the bits c[alpha]...c[du + alpha]. */
-  add x5, x2, x0
-  add x5, x5, x18
-  add x6, x9, x0
+  add x5, x2, x8
+  lw  x12, 1536(x2)
   loopi 2, 5
-    loop x19, 3
+    loop x9, 3
       /* Whitening. */
       bn.xor w0, w0, w0
       bn.lid x0, 0(x5++)
-      bn.sid x0, 0(x6++)
+      bn.sid x0, 0(x12++)
     endloop
-    add x5, x5, x18
+    add x5, x5, x8
   endloop
 
   /* Restore registers. */
-  lw   x9, 1536(x2)
-  lw   x18, 1540(x2)
-  lw   x19, 1544(x2)
+  lw   x8, 1540(x2)
+  lw   x9, 1544(x2)
   addi x2, x2, 1568
   addi x2, x2, 1024
   ret
