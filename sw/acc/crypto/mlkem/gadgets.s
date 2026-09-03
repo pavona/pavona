@@ -1966,26 +1966,20 @@ masked_cbd:
    *   x2 +  832 : s ( 384 B)
    *   x2 + 1216 : save registers. */
   addi x2, x2, -1248
-  addi x2, x2, -1248
-  sw x8, 1216(x2)
-  sw x9, 1220(x2)
-  sw x18, 1224(x2)
-  sw x20, 1228(x2)
-  sw x21, 1232(x2)
-  sw x22, 1236(x2)
+  sw   x14, 1216(x2)
+  sw   x8, 1220(x2)
+  sw   x9, 1224(x2)
+  sw   x18, 1228(x2)
 
   /* Save input/output addresses and set the scratch pointers. */
-  add  x8, x10, x0
-  add  x9, x11, x0
+  addi x8, x2, 832 /* s */
+  addi x9, x2, 768 /* a */
   add  x18, x12, x0
-  add  x20, x14, x0
-  addi x21, x2, 832 /* s */
-  addi x22, x2, 768 /* a */
 
   /* Copy x to s[0..eta - 1] and ~y to s[eta..2 * eta - 1]. */
-  add  x5, x21, x0
-  slli x4, x12, 5 /* eta * 32 */
-  add  x6, x21, x4
+  add  x5, x8, x0
+  slli x4, x18, 5 /* eta * 32 */
+  add  x6, x8, x4
   /* Share 0. */
   loop x12, 7
     /* Whitening. */
@@ -2028,24 +2022,22 @@ masked_cbd:
    */
   /********** Iteration i = 0, ell = 2 * eta. **********/
   /* Since ell mod 2 = 0, we clear a. */
-  add    x5, x22, x0
   bn.xor w0, w0, w0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.sid x0, 0(x9)
+  bn.sid x0, 32(x9)
 
   /* Loop j = 0..eta - 1. */
   /* Compute (a, s[j]) = secfulladder(s[2 * j], s[2 * j + 1], a). */
-  slli x5, x12, 6 /* (2 * eta) * 32 */
-  add  x10, x21, x0
+  slli x5, x18, 6 /* (2 * eta) * 32 */
+  add  x10, x8, x0
   add  x11, x5, x0
-  addi x12, x21, 32
+  addi x12, x8, 32
   add  x13, x5, x0
-  add  x15, x22, x0
+  add  x15, x9, x0
   addi x16, x0, 32
-  add  x17, x22, x0
+  add  x17, x9, x0
   addi x29, x0, 32
-  add  x30, x21, x0
+  add  x30, x8, x0
   add  x31, x5, x0
   loop x18, 5
     jal  x1, secfulladder
@@ -2060,7 +2052,7 @@ masked_cbd:
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(x15++)
+    bn.lid x0, 0(x17++)
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
   endloop
@@ -2069,40 +2061,37 @@ masked_cbd:
   addi x5, x0, 2
   beq  x18, x5, _cbd_eta_2
   /* Since ell mod 2 = 1 if eta = 3, we compute a = s[ell - 1]. */
-  add  x5, x22, x0
-  add  x6, x21, x0
-  addi x6, x6, 64
+  add  x5, x9, x0
+  addi x6, x8, 64
   slli x4, x18, 6 /* (2 * eta) * 32 */
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.lid x0, 0(x6)
-    bn.sid x0, 0(x5++)
     add    x6, x6, x4
+    bn.sid x0, 0(x5++)
   endloop
   beq x0, x0, _continue_1
 
 _cbd_eta_2:
   /* Since ell mod 2 = 0 if eta = 2, we clear a. */
-  add    x5, x22, x0
   bn.xor w0, w0, w0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.sid x0, 0(x9)
+  bn.sid x0, 32(x9)
 
 _continue_1:
   /* Loop j = 0. */
   /* Compute (a, s[0]) = secfulladder(s[0], s[1], a). */
   slli x5, x18, 6
-  add  x10, x21, x0
+  add  x10, x8, x0
   add  x11, x5, x0
-  addi x12, x21, 32
+  addi x12, x8, 32
   add  x13, x5, x0
-  add  x15, x22, x0
+  add  x15, x9, x0
   addi x16, x0, 32
-  add  x17, x22, x0
+  add  x17, x9, x0
   addi x29, x0, 32
-  add  x30, x21, x0
+  add  x30, x8, x0
   add  x31, x5, x0
   jal  x1, secfulladder
 
@@ -2118,24 +2107,21 @@ _continue_1:
 
   /********** Iteration i = 2, ell = eta // 2 = 1. **********/
   /* Since ell mod 2 = 1, we compute b[2] = s[ell - 1] = s[0] directly. */
-  add  x5, x2, x0
-  addi x5, x5, 64
-  add  x6, x21, x0
+  addi x5, x2, 64
+  add  x6, x8, x0
   slli x7, x18, 6
-
   loopi 2, 5
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.lid x0, 0(x6)
-    bn.sid x0, 0(x5)
     add    x6, x6, x7
+    bn.sid x0, 0(x5)
     addi   x5, x5, 384
   endloop
 
   /* Clear bits b[3..k - 1]. */
-  add    x5, x2, x0
-  addi   x5, x5, 96
   bn.xor w0, w0, w0
+  addi   x5, x2, 96
   loopi 2, 3
     loopi 9, 1
       bn.sid x0, 0(x5++)
@@ -2145,17 +2131,18 @@ _continue_1:
 
   /* Compute r = secb2amodq(b). */
   add x10, x2, x0
-  add x12, x20, x0
+  lw  x12, 1216(x2)
   jal x1, secb2amodq
 
-  /* Compute r_0 = (r_0 - eta) mod q. */
-  add    x5, x20, x0
-  add    x6, x21, x0
-  sw     x18, 0(x6)
-  bn.lid x0, 0(x6)
-  loopi 16, 1
-    bn.rshi w1, w0, w1 >> 16
+  /* Generate eta in 16 16-bit lanes. */
+  bn.subi    w0, w31, 1
+  bn.shv.16h w0, w0 >> 15
+  bn.xor     w1, w31, w31
+  loop x18, 1
+    bn.add w1, w1, w0
   endloop
+  /* Compute r_0 = (r_0 - eta) mod q. */
+  lw x5, 1216(x2)
   loopi 16, 3
     bn.lid       x0, 0(x5)
     bn.subvm.16h w0, w0, w1
@@ -2163,12 +2150,9 @@ _continue_1:
   endloop
 
   /* Restore registers and stack. */
-  lw x8, 1216(x2)
-  lw x9, 1220(x2)
-  lw x18, 1224(x2)
-  lw x20, 1228(x2)
-  lw x21, 1232(x2)
-  lw x22, 1236(x2)
+  lw   x8, 1220(x2)
+  lw   x9, 1224(x2)
+  lw   x18, 1228(x2)
   addi x2, x2, 1248
   ret
 
