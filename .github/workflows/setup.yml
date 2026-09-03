@@ -89,17 +89,17 @@ jobs:
           echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
           ~/.local/share/venv/bin/pip install -r python-requirements.txt --require-hashes
       - name: Build device software
-        run: bazelisk build //sw/device/examples/hello_world:hello_world_sim_dv
+        run: ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_sim_dv
       - name: Run UART smoketest on Verilator
         run: |
-          bazelisk test \
+          ./bazelisk.sh test \
             --build_tests_only=true \
             --test_timeout=2400,2400,4000,-1 \
             --test_output=errors \
             --//hw:verilator_options=--threads,1 \
             //sw/device/tests:uart_smoketest_sim_verilator
       - name: Run ACC ISS test
-        run: make -C hw/ip/acc/dv/accsim test bazel=bazelisk
+        run: make -C hw/ip/acc/dv/accsim test
 
   container_verilator_smoketest:
     name: Container Verilator smoketest (${{ matrix.image }}, ${{ matrix.runner }})

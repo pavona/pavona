@@ -6,7 +6,6 @@
 #
 # Keep it sorted.
 brew "autoconf"
-brew "bazelisk"
 brew "bison"
 brew "flex"
 brew "help2man"
