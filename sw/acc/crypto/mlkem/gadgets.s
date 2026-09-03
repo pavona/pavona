@@ -337,7 +337,7 @@ secadd:
 bitcopymask:
   /* Since q = 3329 = 0b110100000001, we copy x to bits 0, 8, 10 and 11 of r
    * and zeroize the remaining bits. */
-  addi   x4, x0, 31
+  addi x4, x0, 31
   loopi 2, 10
     /* Whitening. */
     bn.xor w0, w0, w0
