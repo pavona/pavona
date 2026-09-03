@@ -1488,14 +1488,13 @@ secb2amodq:
 .globl poly_hocompress
 .type poly_hocompress, @function
 poly_hocompress:
-  /* Allocate t_0..1, z scratch and save callee-saved registers. */
+  /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
   addi x2, x2, -1024
   add  x7, x2, x0 /* t */
   addi x2, x2, -1184
-  sw   x9, 1152(x2)
-  sw   x18, 1156(x2)
-  sw   x19, 1160(x2)
-  add  x9, x12, x0
+  sw   x12, 1152(x2)
+  sw   x8, 1156(x2)
+  sw   x9, 1160(x2)
 
   /* Load all constants. */
   addi      x4, x0, 17
@@ -1510,19 +1509,18 @@ poly_hocompress:
   bn.shv.8s w19, w19 >> 31
   bn.shv.8s w19, w19 << 12
 
-  /* Select alpha-dependent parameters: w19 = 2^(alpha - 1), x18 = the
-   * extraction byte offset alpha * 32, x19 = dv. */
+  /* Select alpha-dependent parameters: w19 = 2^(alpha - 1), x8 = the
+   * extraction byte offset alpha * 32, x9 = dv. */
   addi      x4, x0, 4
-  addi      x18, x0, 416  /* alpha * 32, alpha = 13 */
-  addi      x19, x0, 5
+  addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x9, x0, 5
   beq       x13, x4, _dv_params_done
   bn.shv.8s w19, w19 << 1
-  addi      x18, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-  addi      x19, x0, 4
-_dv_params_done:
+  addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x9, x0, 4
 
-  add  x6, x2, x0 /* z */
-  addi x28, x6, 512
+_dv_params_done:
+  add x6, x2, x0 /* z */
 
   /* Compute z_0 = Compressq(x_0, dv + alpha) + 2^(alpha - 1),
    *         z_1 = Compressq(x_1, dv + alpha).
@@ -1535,7 +1533,7 @@ _dv_params_done:
    *  - x >>= s
    *  - x &= ((1 << (dv + alpha)) - 1).
    */
-  loopi 2, 58
+  loopi 2, 56
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
@@ -1583,10 +1581,6 @@ _dv_params_done:
       addi               x4, x4, -1
     endloop
 
-    /* For the first share, w19 holds 2^(alpha - 1).
-     * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w19, w19
-
     /* Bitslice the first 16 bits. */
     jal x1, _bitslice_transpose
 
@@ -1595,7 +1589,6 @@ _dv_params_done:
       bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi x6, x6, 64 /* Skip the last 2 bits. */
 
     /* Bitslice the last 2 bits. */
     addi x4, x0, 15
@@ -1609,10 +1602,13 @@ _dv_params_done:
 
     add x4, x0, x0
     loopi 2, 2
-      bn.sid x4, 0(x28++)
+      bn.sid x4, 0(x6++)
       addi   x4, x4, 1
     endloop
-    addi x28, x28, 512 /* Skip the first 16 bits. */
+
+    /* For the first share, w19 holds 2^(alpha - 1).
+     * After that, we clear w19 so that bn.add acts as a shift. */
+    bn.xor w19, w19, w19
   endloop
 
   /* Compute c = seca2b(z), k = dv + alpha = 18, share bytes = 576. */
@@ -1623,23 +1619,21 @@ _dv_params_done:
   jal  x1, seca2b
 
   /* Compute r = c >> alpha: keep the bits c[alpha]...c[dv + alpha]. */
-  add x5, x2, x0
-  add x5, x5, x18
-  add x6, x9, x0
+  add x5, x2, x8
+  lw  x12, 1152(x2)
   loopi 2, 5
-    loop x19, 3
+    loop x9, 3
       /* Whitening. */
       bn.xor w0, w0, w0
       bn.lid x0, 0(x5++)
-      bn.sid x0, 0(x6++)
+      bn.sid x0, 0(x12++)
     endloop
-    add x5, x5, x18
+    add x5, x5, x8
   endloop
 
   /* Restore registers. */
-  lw   x9, 1152(x2)
-  lw   x18, 1156(x2)
-  lw   x19, 1160(x2)
+  lw   x8, 1156(x2)
+  lw   x9, 1160(x2)
   addi x2, x2, 1184
   addi x2, x2, 1024
   ret
