@@ -900,18 +900,18 @@ seca2b:
   endloop
 
   /* Save registers. */
-  add x5, x11, x0
-  add x6, x12, x0
-  add x28, x14, x0
+  add x4, x11, x0
+  add x5, x12, x0
+  add x6, x14, x0
 
   /* Compute r = secadd(s, s', k). */
   add x10, x7, x0
-  add x11, x6, x0
+  add x11, x5, x0
   add x12, x2, x0
-  add x13, x6, x0
-  add x15, x28, x0
-  add x16, x6, x0
-  add x17, x5, x0
+  add x13, x5, x0
+  add x15, x6, x0
+  add x16, x5, x0
+  add x17, x4, x0
   jal x1, secadd
 
   /* Restore x2 and x3. */
