@@ -497,7 +497,10 @@ To run the known-answer tests with the software backend, both configuration sett
 ML-DSA (Module-Lattice-Based Digital Signature Algorithm) is a post-quantum signature scheme standardized in [FIPS 204][fips-204].
 Cryptolib supports the ML-DSA-44, ML-DSA-65, and ML-DSA-87 parameter sets, each offering key-pair generation, signing, and verification.
 Public keys are unblinded keys and secret keys are blinded keys.
-Signing and verification take an optional context string (which may be empty) and a signature mode selected with **otcrypto\_mldsa\_sign\_mode\_t**; currently only pure ML-DSA is supported (HashML-DSA is not yet integrated).
+Signing and verification take an optional context string (which may be empty) and a signature mode selected with **otcrypto\_mldsa\_sign\_mode\_t**.
+Pure ML-DSA, HashML-DSA, and external-mu signing are supported.
+HashML-DSA is available with the pre-hash functions the cryptolib implements: SHA2-{256,384,512}, SHA3-{224,256,384,512}, and SHAKE{128,256}.
+In external-mu mode the caller passes the 64-byte message representative mu in place of the message, and the context string must be empty.
 Each operation takes a caller-allocated work buffer sized by the `kOtcryptoMldsa*WorkBuffer*Words` constants in `mldsa.h`.
 The `keygen` and `sign` functions sample randomness internally; the `_derand` variants instead take caller-supplied randomness and are intended only for testing.
 
