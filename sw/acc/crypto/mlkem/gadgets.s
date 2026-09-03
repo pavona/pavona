@@ -2588,10 +2588,10 @@ _bitslice_eta_3:
 .globl masked_poly_tomsg
 .type masked_poly_tomsg, @function
 masked_poly_tomsg:
-  /* Allocate the z scratch and save callee-saved registers. */
+  /* Allocate the z scratch, save x8 and spill the output pointer. */
   addi x2, x2, -1056
   sw   x8, 1024(x2)
-  add  x8, x12, x0
+  sw   x12, 1028(x2)
 
   /* Load all constants. */
   addi      x4, x0, 17
@@ -2617,7 +2617,6 @@ masked_poly_tomsg:
    *  - x >>= s
    *  - x &= ((1 << (1 + alpha)) - 1).
    */
-  addi x5, x0, 21
   add  x6, x2, x0 /* z */
 
   loopi 2, 44
@@ -2661,8 +2660,8 @@ masked_poly_tomsg:
       bn.mulv.8s.odd.hi  w20, w20, w17
       bn.add             w20, w19, w20 >> 8
       /* Combine results. */
-      bn.trn1.16h        w21, w21, w20
-      bn.movr            x4, x5
+      bn.trn1.16h        w0, w21, w20
+      bn.movr            x4, x0
       addi               x4, x4, -1
     endloop
 
@@ -2687,15 +2686,14 @@ masked_poly_tomsg:
   jal  x1, seca2b
 
   /* Compute c >>= alpha, i.e. keep only bit c[alpha], the message bit. */
-  add  x5, x2, x0
-  addi x5, x5, 480
-  add  x6, x8, x0
+  addi x5, x2, 480
+  lw   x6, 1028(x2)
   loopi 2, 4
     /* Whitening. */
     bn.xor w0, w0, w0
-    bn.lid x0, 0(x5++)
+    bn.lid x0, 0(x5)
+    addi   x5, x5, 512
     bn.sid x0, 0(x6++)
-    addi   x5, x5, 480
   endloop
 
   /* Restore registers. */
