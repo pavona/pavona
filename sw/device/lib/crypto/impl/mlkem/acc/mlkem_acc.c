@@ -26,6 +26,7 @@ ACC_DECLARE_APP_SYMBOLS(run_mlkem_hardened);
 static const acc_app_t kAccAppMlkem = ACC_APP_T_INIT(run_mlkem_hardened);
 
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, mode);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, key_ok);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, coins);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, dk);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ek);
@@ -33,6 +34,8 @@ ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ct);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem_hardened, ss);
 
 static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_mlkem_hardened, mode);
+static const acc_addr_t kAccVarKeyOk =
+    ACC_ADDR_T_INIT(run_mlkem_hardened, key_ok);
 static const acc_addr_t kAccVarCoins =
     ACC_ADDR_T_INIT(run_mlkem_hardened, coins);
 static const acc_addr_t kAccVarDk = ACC_ADDR_T_INIT(run_mlkem_hardened, dk);
@@ -72,6 +75,7 @@ ACC_DECLARE_APP_SYMBOLS(run_mlkem);
 static const acc_app_t kAccAppMlkem = ACC_APP_T_INIT(run_mlkem);
 
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, mode);
+ACC_DECLARE_SYMBOL_ADDR(run_mlkem, key_ok);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, coins);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, dk);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, ek);
@@ -79,6 +83,7 @@ ACC_DECLARE_SYMBOL_ADDR(run_mlkem, ct);
 ACC_DECLARE_SYMBOL_ADDR(run_mlkem, ss);
 
 static const acc_addr_t kAccVarMode = ACC_ADDR_T_INIT(run_mlkem, mode);
+static const acc_addr_t kAccVarKeyOk = ACC_ADDR_T_INIT(run_mlkem, key_ok);
 static const acc_addr_t kAccVarCoins = ACC_ADDR_T_INIT(run_mlkem, coins);
 static const acc_addr_t kAccVarDk = ACC_ADDR_T_INIT(run_mlkem, dk);
 static const acc_addr_t kAccVarEk = ACC_ADDR_T_INIT(run_mlkem, ek);
@@ -169,6 +174,16 @@ static status_t mlkem_decap_hardened(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
 
+  // Read the code indicating if the decapsulation key passed the FIPS 203
+  // Sec. 7.3 hash check.
+  uint32_t key_ok;
+  ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
+  if (launder32(key_ok) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
+
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   uint32_t ss_shares[2 * kMlkemSsShareWords];
   ACC_WIPE_IF_ERROR(acc_dmem_read(ARRAYSIZE(ss_shares), kAccVarSs, ss_shares));
@@ -210,6 +225,16 @@ static status_t mlkem_decap(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
 
+  // Read the code indicating if the decapsulation key passed the FIPS 203
+  // Sec. 7.3 hash check.
+  uint32_t key_ok;
+  ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
+  if (launder32(key_ok) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
+
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
   return acc_dmem_sec_wipe();
@@ -231,6 +256,16 @@ static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_dmem_write(pk_words, pk, kAccVarEk));
   HARDENED_TRY(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
+
+  // Read the code indicating if the encapsulation key passed the FIPS 203
+  // Sec. 7.2 modulus check.
+  uint32_t key_ok;
+  ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
+  if (launder32(key_ok) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
 
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(ct_words, kAccVarCt, ct));

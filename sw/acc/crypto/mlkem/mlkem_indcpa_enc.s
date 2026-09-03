@@ -8,6 +8,10 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+/* Hardened boolean values. Should match the values in `hardened_asm.h`. */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
 .text
 
 /**
@@ -43,7 +47,7 @@
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x13, x18 to x19, x21 to x24, x26 to x28,
+ * clobbered registers: x4 to x14, x18 to x19, x21 to x24, x26 to x28,
  *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */
@@ -105,6 +109,15 @@ _continue_compute_v:
   la  x11, poly_pk
   jal x1, poly_frombytes
   add x9, x10, x0
+
+  /*** FIPS 203 Sec. 7.2 modulus check on pk[0]. ***/
+  la   x12, poly_pk
+  addi x14, x0, 1
+  jal  x1, check_pk
+  addi x5, x0, HARDENED_BOOL_TRUE
+  beq  x10, x5, _pk_check1_ok
+  jal  x0, _pk_check_fail
+_pk_check1_ok:
 
   /* Generate sp[0]. */
   add x10, x22, x0
@@ -170,6 +183,15 @@ _handle_k4_compute_v:
   jal x1, poly_frombytes
   add x9, x10, x0
 
+  /*** FIPS 203 Sec. 7.2 modulus check on pk[i]. ***/
+  la   x12, poly_pk
+  addi x14, x0, 1
+  jal  x1, check_pk
+  addi x5, x0, HARDENED_BOOL_TRUE
+  beq  x10, x5, _pk_check2_ok
+  jal  x0, _pk_check_fail
+_pk_check2_ok:
+
   /* Compute sp[1] = ntt(sp[1]). */
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
@@ -206,6 +228,15 @@ _handle_k3_compute_v:
   la  x11, poly_pk
   jal x1, poly_frombytes
   add x9, x10, x0
+
+  /*** FIPS 203 Sec. 7.2 modulus check on pk[i]. ***/
+  la   x12, poly_pk
+  addi x14, x0, 1
+  jal  x1, check_pk
+  addi x5, x0, HARDENED_BOOL_TRUE
+  beq  x10, x5, _pk_check3_ok
+  jal  x0, _pk_check_fail
+_pk_check3_ok:
 
   /* Compute sp[i] = ntt(sp[i]). */
   bn.shv.16h w0, w16 << 1
@@ -250,6 +281,21 @@ _handle_k2_compute_v:
   la  x11, poly_pk
   jal x1, poly_frombytes
   add x9, x10, x0
+
+  /*** FIPS 203 Sec. 7.2 modulus check on pk[k - 1]. ***/
+  la   x12, poly_pk
+  addi x14, x0, 1
+  jal  x1, check_pk
+  addi x5, x0, HARDENED_BOOL_TRUE
+  beq  x10, x5, _pk_check4_ok
+  jal  x0, _pk_check_fail
+_pk_check4_ok:
+
+  /* All FIPS 203 Sec. 7.2 modulus checks passed (this is always the last
+   * check executed, regardless of k). */
+  la   x5, key_ok
+  addi x6, x0, HARDENED_BOOL_TRUE
+  sw   x6, 0(x5)
 
   /* Compute v += ek_pke[3] * sp[3]. */
   la  x10, poly_pk
@@ -655,3 +701,17 @@ _handle_k2_compute_b:
   jal  x1, poly_polyvec_compress
   /**************************************************************************/
   ret
+
+/**
+ * All FIPS 203 Sec. 7.2 modulus checks on the encapsulation key jump here on
+ * failure.
+ *
+ * @param[out] dmem[key_ok]: Set to HARDENED_BOOL_FALSE.
+ */
+_pk_check_fail:
+  la   x5, key_ok
+  addi x6, x0, HARDENED_BOOL_FALSE
+  sw   x6, 0(x5)
+
+  /* End the program. */
+  ecall
