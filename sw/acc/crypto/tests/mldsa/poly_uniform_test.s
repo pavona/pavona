@@ -13,16 +13,16 @@ main:
   bn.xor w31, w31, w31
 
   /* Set up the SHAKE128 configuration for poly_uniform. */
-  addi  x2, zero, 34
+  addi  x2, x0, 34
   slli  x2, x2, 5
   addi  x2, x2, 0x2 /* SHAKE128 */
   csrrw x0, kmac_cfg, x2
 
   /* Send the input (34 zero bytes) */
-  bn.wsrw   kmac_msg, w31
-  li        x2, 2
-  csrrw     x0, kmac_partial_write, x2
-  bn.wsrw   kmac_msg, w31
+  bn.wsrw kmac_msg, w31
+  li      x2, 2
+  csrrw   x0, kmac_partial_write, x2
+  bn.wsrw kmac_msg, w31
 
   /* Call poly_uniform. */
   la  x11, result

@@ -9,7 +9,6 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 .text
-.equ x5, t0
 
 /**
  * Send a variable-length message to the Keccak core.
@@ -21,48 +20,48 @@
  * This function can be called repeatedly before reading the digest. On return,
  * dptr_msg is updated to point to the end of the source buffer.
  *
- * @param[in]   a1: len, byte-length of the message
- * @param[in]   a0: dptr_msg, pointer to message in DMEM
- * @param[in]   w31: all-zero
- * @param[in] dmem[dptr_msg..dptr_msg+len]: msg, hash function input
+ * @param[in]  x11: len, byte-length of the message
+ * @param[in]  x10: dptr_msg, pointer to message in DMEM
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[dptr_msg..dptr_msg+len]: msg, hash function input
  *
- * clobbered registers: t0, a1, w0
- * clobbered flag groups: None
+ * clobbered registers: x5, x10, w0
+ * clobbered flag groups: none
  */
 .globl keccak_send_message
 .type keccak_send_message, @function
 keccak_send_message:
   /* Compute the number of full 256-bit message chunks.
-  t0 <= x11 >> 5 = floor(len / 32) */
-  srli t0, x11, 5
+  x5 <= x11 >> 5 = floor(len / 32) */
+  srli x5, x11, 5
 
   /* Write all full 256-bit sections of the test message. */
-  beq  t0, zero, _no_full_wdr
+  beq x5, x0, _no_full_wdr
 
-  loop t0, 2
-      /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
-         x10 <= x10 + 32 */
-      bn.lid  x0, 0(x10++)
-      /* Write to the KECCAK_MSG wide special register (index 9).
-         KECCAK_MSG <= w0 */
-      bn.wsrw kmac_msg, w0
+  loop x5, 2
+    /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
+       x10 <= x10 + 32 */
+    bn.lid  x0, 0(x10++)
+    /* Write to the KECCAK_MSG wide special register (index 9).
+       KECCAK_MSG <= w0 */
+    bn.wsrw kmac_msg, w0
   endloop
 
 _no_full_wdr:
   /* Compute the remaining message length.
-       t0 <= x11 & 31 = len mod 32 */
-  andi t0, x11, 31
+       x5 <= x11 & 31 = len mod 32 */
+  andi x5, x11, 31
 
   /* If the remaining length is zero, return early. */
-  beq t0, x0, _keccak_send_message_end
+  beq x5, x0, _keccak_send_message_end
 
   /* Send a partial-word write. */
-  csrrw   x0, kmac_partial_write, t0
+  csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x10)
   bn.wsrw kmac_msg, w0
 
   /* Increment the source pointer to reflect the partial write. */
-  add     x10, x10, t0
+  add x10, x10, x5
 
   _keccak_send_message_end:
   ret

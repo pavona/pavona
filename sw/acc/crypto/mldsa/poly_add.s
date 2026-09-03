@@ -17,25 +17,24 @@
  *
  * This implements the polynomial addition for e.g. Dilithium, where n=256.
  *
- * Flags: -
- *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4-x6, w2-w4
+ * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered flag groups: none
  */
-.global poly_add
+.globl poly_add
 .type poly_add, @function
 poly_add:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 4
-        bn.lid      x0, 0(x10++)
-        bn.lid      x4, 0(x11++)
-        bn.addvm.8S w0, w0, w1
-        bn.sid      x0, 0(x12++)
-    endloop
-    ret
+  loopi 32, 4
+    bn.lid      x0, 0(x10++)
+    bn.lid      x4, 0(x11++)
+    bn.addvm.8s w0, w0, w1
+    bn.sid      x0, 0(x12++)
+  endloop
+  ret

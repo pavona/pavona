@@ -17,26 +17,24 @@
  *
  * This implements the polynomial subtraction for Dilithium, where n=256,q=8380417.
  *
- * Flags: -
- *
  * @param[in]  x10: dptr_input1, dmem pointer to first word of input1 polynomial
  * @param[in]  x11: dptr_input2, dmem pointer to first word of input2 polynomial
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4 to x5
- *                      w2 to w3
+ * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered flag groups: none
  */
 .globl poly_sub
 .type poly_sub, @function
 poly_sub:
-    /* Set up constants for input/state */
-    li x4, 1
+  /* Set up constants for input/state */
+  li x4, 1
 
-    loopi 32, 4
-        bn.lid      x0, 0(x10++)
-        bn.lid      x4, 0(x11++)
-        bn.subvm.8S w0, w0, w1
-        bn.sid      x0, 0(x12++)
-    endloop
-    ret
+  loopi 32, 4
+    bn.lid      x0, 0(x10++)
+    bn.lid      x4, 0(x11++)
+    bn.subvm.8s w0, w0, w1
+    bn.sid      x0, 0(x12++)
+  endloop
+  ret

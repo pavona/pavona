@@ -18,40 +18,40 @@
 .section .text.start
 
 #if DILITHIUM_MODE == 2
-    #define CRYPTO_PUBLICKEYBYTES 1312
-    #define MLDSA_K 4
-    #define MLDSA_L 4
-    #define GAMMA1_MINUS_BETA 130994
-    #define GAMMA2 95232
-    #define GAMMA2_MINUS_BETA 95154
-    #define NUM_ETA_POLYS 8
-    #define POLYETA_PACKEDBYTES 96
-    #define POLYETA_WDRS 3
+  #define CRYPTO_PUBLICKEYBYTES 1312
+  #define MLDSA_K 4
+  #define MLDSA_L 4
+  #define GAMMA1_MINUS_BETA 130994
+  #define GAMMA2 95232
+  #define GAMMA2_MINUS_BETA 95154
+  #define NUM_ETA_POLYS 8
+  #define POLYETA_PACKEDBYTES 96
+  #define POLYETA_WDRS 3
 #elif DILITHIUM_MODE == 3
-    #define CRYPTO_PUBLICKEYBYTES 1952
-    #define MLDSA_K 6
-    #define MLDSA_L 5
-    #define GAMMA1_MINUS_BETA 524092
-    #define GAMMA2 261888
-    #define GAMMA2_MINUS_BETA 261692
-    #define NUM_ETA_POLYS 11
-    #define POLYETA_PACKEDBYTES 128
-    #define POLYETA_WDRS 4
+  #define CRYPTO_PUBLICKEYBYTES 1952
+  #define MLDSA_K 6
+  #define MLDSA_L 5
+  #define GAMMA1_MINUS_BETA 524092
+  #define GAMMA2 261888
+  #define GAMMA2_MINUS_BETA 261692
+  #define NUM_ETA_POLYS 11
+  #define POLYETA_PACKEDBYTES 128
+  #define POLYETA_WDRS 4
 #elif DILITHIUM_MODE == 5
-    #define CRYPTO_PUBLICKEYBYTES 2592
-    #define MLDSA_K 8
-    #define MLDSA_L 7
-    #define GAMMA1_MINUS_BETA 524168
-    #define GAMMA2 261888
-    #define GAMMA2_MINUS_BETA 261768
-    #define NUM_ETA_POLYS 15
-    #define POLYETA_PACKEDBYTES 96
-    #define POLYETA_WDRS 3
+  #define CRYPTO_PUBLICKEYBYTES 2592
+  #define MLDSA_K 8
+  #define MLDSA_L 7
+  #define GAMMA1_MINUS_BETA 524168
+  #define GAMMA2 261888
+  #define GAMMA2_MINUS_BETA 261768
+  #define NUM_ETA_POLYS 15
+  #define POLYETA_PACKEDBYTES 96
+  #define POLYETA_WDRS 3
 #endif
 
 .globl main
 main:
-  bn.xor  w31, w31, w31
+  bn.xor w31, w31, w31
 
   /* MOD = R | Q. */
   li      x5, 2
@@ -91,17 +91,17 @@ main:
   bn.sid x0, 0(x6)
 
   /* Unmask s1/s2 shares, compacting in place. */
-  la   x28, s1s2_shares
-  la   x29, s1s2_shares
-  li   x30, NUM_ETA_POLYS
+  la x28, s1s2_shares
+  la x29, s1s2_shares
+  li x30, NUM_ETA_POLYS
 expsk_unmask_loop:
   addi x5, x28, 0
   addi x6, x28, POLYETA_PACKEDBYTES
   loopi POLYETA_WDRS, 4
-      bn.lid x0, 0(x5++)
-      bn.lid x4, 0(x6++)
-      bn.xor w0, w0, w1
-      bn.sid x0, 0(x29++)
+    bn.lid x0, 0(x5++)
+    bn.lid x4, 0(x6++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x29++)
   endloop
   addi x28, x28, POLYETA_PACKEDBYTES
   addi x28, x28, POLYETA_PACKEDBYTES
