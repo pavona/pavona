@@ -59,6 +59,7 @@
  * @param[in]  x13: share stride of y
  * @param[out] x15: dmem pointer to Boolean shares of r
  * @param[in]  x16: share stride of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x7, x10, x12, x15, w0 to w3, w5 to w8
  * clobbered flag groups: FG0
@@ -67,56 +68,52 @@
 .globl secand
 .type secand, @function
 secand:
-  /* Save addresses. */
-  add x5, x10, x0
-  add x6, x12, x0
-  add x7, x15, x0
-
-  /* Load x. */
-  bn.xor w0, w0, w0   /* Whitening. */
-  bn.lid x0, 0(x5)    /* w0 = x_0 */
-  bn.xor w1, w1, w1   /* Whitening. */
-  add    x5, x5, x11
+  /* Compute t_0 = x_0 & y_0. */
   addi   x4, x0, 1
-  bn.lid x4++, 0(x5)  /* w1 = x_1 */
+  bn.lid x4++, 0(x10)  /* w1 = x_0 */
+  bn.lid x4++, 0(x12)  /* w2 = y_0 */
+  bn.and w5, w1, w2    /* w5 = t_0 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
-  /* Load y. */
-  bn.xor w2, w2, w2   /* Whitening. */
-  bn.lid x4++, 0(x6)  /* w2 = y_0 */
-  bn.xor w3, w3, w3   /* Whitening. */
-  add    x6, x6, x13
-  bn.lid x4, 0(x6)    /* w3 = y_1 */
+  /* Compute t_1 = x_1 & y_1. */
+  add    x5, x10, x11
+  bn.lid x4++, 0(x5)   /* w3 = x_1 */
+  add    x5, x12, x13
+  bn.lid x4, 0(x5)     /* w4 = y_1 */
+  bn.and w6, w3, w4    /* w6 = t_1 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
   /* Refresh with one fresh random. */
-  bn.wsrr w5, urnd    /* w5 = s */
+  bn.wsrr w7, urnd    /* w7 = s */
 
   /* Pair (i, j) = (0, 1). */
-  bn.xor  w6, w6, w6  /* Whitening. */
-  bn.and  w6, w0, w2  /* w6 = x_0 & y_0 */
-  bn.xor  w7, w7, w7  /* Whitening. */
-  bn.xor  w7, w3, w5  /* w7 = y_1 ^ r */
-  bn.and  w7, w0, w7  /* w7 &= x_0 */
-  bn.xor  w8, w8, w8  /* Whitening. */
-  bn.not  w8, w0      /* w8 = x_0 ^ 1 */
-  bn.and  w8, w8, w5  /* w8 &= s */
-  bn.xor  w7, w7, w8  /* w7 ^= w8 */
-  bn.xor  w6, w6, w7  /* r_0 = (w6 ^ w7) */
-  addi    x4, x0, 6
-  bn.sid  x4, 0(x7)
-  add     x7, x7, x16
+  bn.xor w0, w4, w7   /* w0 = y_1 ^ s */
+  bn.and w0, w0, w1   /* w0 &= x_0 */
+  bn.not w1, w1       /* w1 = x_0 ^ 1 */
+  bn.and w1, w1, w7   /* w1 &= s */
+  bn.xor w0, w0, w1   /* w0 ^= w1 */
+  bn.xor w0, w0, w5   /* r_0 = (w0 ^= t_0) */
+  bn.sid x0, 0(x15)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
 
   /* Pair (i, j) = (1, 0). */
-  bn.xor  w6, w6, w6  /* Whitening. */
-  bn.and  w6, w1, w3  /* w6 = x_1 & y_1 */
-  bn.xor  w7, w7, w7  /* Whitening. */
-  bn.xor  w7, w2, w5  /* w7 = y_0 ^ r */
-  bn.and  w7, w1, w7  /* w7 &= x_1 */
-  bn.xor  w8, w8, w8  /* Whitening. */
-  bn.not  w8, w1      /* w8 = x_1 ^ 1 */
-  bn.and  w8, w8, w5  /* w8 &= s */
-  bn.xor  w7, w7, w8  /* w7 ^= w8 */
-  bn.xor  w6, w6, w7  /* r_1 = (w6 ^ w7) */
-  bn.sid  x4, 0(x7)
+  bn.xor w0, w2, w7   /* w0 = y_0 ^ s */
+  bn.and w0, w0, w3   /* w0 &= x_1 */
+  bn.not w3, w3       /* w3 = x_1 ^ 1 */
+  bn.and w3, w3, w7   /* w3 &= s */
+  bn.xor w0, w0, w3   /* w0 ^= w3 */
+  bn.xor w0, w0, w6   /* r_1 = (w0 ^= t_1) */
+  add    x5, x15, x16
+  bn.sid x0, 0(x5)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w6, w31, w31
 
   /* Advance x10, x12, x15 to the next bit. */
   addi x10, x10, 32
