@@ -2184,9 +2184,9 @@ masked_poly_getnoise_eta_init:
   addi  x5, x0, 33
   slli  x5, x5, 5
   addi  x5, x5, SHAKE256_CFG
-  addi  x6, x0, 1
-  slli  x6, x6, 20
-  add   x5, x5, x6
+  addi  x4, x0, 1
+  slli  x4, x4, 20
+  add   x5, x5, x4
   csrrw x0, kmac_cfg, x5
 
   /* Send seed. */
@@ -2268,16 +2268,14 @@ masked_poly_getnoise_eta_1:
   addi x2, x2, -416
   sw   x8, 384(x2)
   sw   x9, 388(x2)
-  sw   x18, 392(x2)
-  sw   x19, 396(x2)
   add  x8, x10, x0
   add  x9, x11, x0
-  addi x18, x2, 192
+
+  addi x10, x2, 192 /* x */
+  add  x11, x2, x0  /* y */
 
   addi x4, x0, 3
-  bne  x10, x4, _getnoise_eta_2
-
-  add  x5, x2, x0
+  bne  x8, x4, _getnoise_eta_2
 
   bn.wsrr w17, kmac_digest
   bn.wsrr w23, kmac_digest1
@@ -2297,11 +2295,11 @@ masked_poly_getnoise_eta_1:
 
   add x4, x0, x0
   loopi 3, 2
-    bn.sid x4, 0(x18++)
+    bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
   loopi 3, 2
-    bn.sid x4, 0(x5++)
+    bn.sid x4, 0(x11++)
     addi   x4, x4, 1
   endloop
 
@@ -2322,18 +2320,17 @@ masked_poly_getnoise_eta_1:
 
   add x4, x0, x0
   loopi 3, 2
-    bn.sid x4, 0(x18++)
+    bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
   loopi 3, 2
-    bn.sid x4, 0(x5++)
+    bn.sid x4, 0(x11++)
     addi   x4, x4, 1
   endloop
 
   beq  x0, x0, _getnoise_common
 
 _getnoise_eta_2:
-
   bn.wsrr w17, kmac_digest
   bn.wsrr w21, kmac_digest1
   bn.wsrr w18, kmac_digest
@@ -2343,11 +2340,9 @@ _getnoise_eta_2:
   bn.wsrr w20, kmac_digest
   bn.wsrr w24, kmac_digest1
 
-  addi x5, x0, 25
+  addi x5, x0, 17
   addi x6, x0, 17
-  addi x7, x0, 26
-  add  x28, x2, x0
-  loopi 2, 38
+  loopi 2, 37
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
@@ -2365,8 +2360,6 @@ _getnoise_eta_2:
     bn.xor w13, w13, w13
     bn.xor w14, w14, w14
     bn.xor w15, w15, w15
-    bn.xor w25, w25, w25
-    bn.xor w26, w26, w26
     bn.xor w28, w28, w28
     bn.xor w29, w29, w29
 
@@ -2375,10 +2368,10 @@ _getnoise_eta_2:
       bn.movr x5, x6
       loopi 4, 5
         loopi 16, 2
-          bn.rshi w26, w25, w26 >> 16
-          bn.rshi w25, w31, w25 >> 4
+          bn.rshi w0, w17, w0 >> 16
+          bn.rshi w17, w31, w17 >> 4
         endloop
-        bn.movr x4, x7
+        bn.movr x4, x0
         addi    x4, x4, -1
       endloop
       addi x6, x6, 1
@@ -2386,13 +2379,16 @@ _getnoise_eta_2:
 
     jal x1, _bitslice_transpose
 
-    bn.sid x0, 0(x18++)
+    bn.sid x0, 0(x10++)
     addi   x4, x0, 1
-    bn.sid x4, 0(x18++)
+    bn.sid x4, 0(x10++)
     addi   x4, x4, 1
-    bn.sid x4, 0(x28++)
+    bn.sid x4, 0(x11++)
     addi   x4, x4, 1
-    bn.sid x4, 0(x28++)
+    bn.sid x4, 0(x11++)
+
+    /* Whitening. */
+    bn.xor w17, w17, w17
   endloop
 
 _getnoise_common:
@@ -2411,8 +2407,6 @@ _getnoise_common:
   /* Restore registers and stack. */
   lw   x8, 384(x2)
   lw   x9, 388(x2)
-  lw   x18, 392(x2)
-  lw   x19, 396(x2)
   addi x2, x2, 416
   ret
 
