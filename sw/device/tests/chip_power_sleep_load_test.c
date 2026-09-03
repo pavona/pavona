@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -136,8 +137,7 @@ bool test_main(void) {
       dif_pwm_init(mmio_region_from_addr(TOP_EGRET_PWM_AON_BASE_ADDR), &pwm));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_adc_ctrl_init(

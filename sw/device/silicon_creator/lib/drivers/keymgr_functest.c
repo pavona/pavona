@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
@@ -277,8 +278,7 @@ bool test_main(void) {
   info = rstmgr_testutils_reason_get();
 
   dif_otp_ctrl_t otp;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
 
   if (info & kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");

@@ -5,6 +5,7 @@
 // Note that since rma process takes more than 100ms in dvsim,
 // the test runs 1.6h (110ms in simtime).
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -288,8 +289,7 @@ bool rom_test_main(void) {
       mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
 
   dif_otp_ctrl_t otp;
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
 
   dif_otp_ctrl_config_t otp_config = {
       .check_timeout = 100000,

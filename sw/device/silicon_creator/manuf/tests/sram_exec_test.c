@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -45,8 +46,7 @@ static const uint32_t kTestDeviceId[kDeviceIdSizeIn32BitWords] = {
 static status_t peripheral_handles_init(void) {
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR),
                       &pinmux));
-  TRY(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   return OK_STATUS();
 }
 
