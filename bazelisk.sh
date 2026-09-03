@@ -1,5 +1,6 @@
 #!/bin/bash
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -13,10 +14,8 @@ set -eo pipefail
 cd "$(dirname "$0")"
 
 : "${CURL_FLAGS:=--silent}"
-: "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
-: "${REPO_TOP:=$(dirname $0)}"
 : "${BINDIR:=.bin}"
-: "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
+: "${BAZEL_BIN:=$(command -v bazel 2>/dev/null)}"
 
 # Bazelisk (not Bazel) release. Keep this in sync with `util/container/Dockerfile`.
 readonly release="v1.24.1"
@@ -46,16 +45,19 @@ function check_hash() {
 }
 
 function prepare() {
+    local file="$1"
     local target
     target="$(os_arch)"
-    local bindir="${REPO_TOP}/${BINDIR}"
-    local file="${bindir}/bazelisk"
     local url="https://github.com/bazelbuild/bazelisk/releases/download/${release}/bazelisk-${target}"
+    local tmp
 
-    mkdir -p "$bindir"
-    echo "Downloading bazelisk ${release} (${url})." >> $bindir/bazelisk.log
-    curl ${CURL_FLAGS} --location "$url" --output "$file"
-    chmod +x "$file"
+    mkdir -p "$BINDIR"
+    echo "Downloading bazelisk ${release} (${url})." >> "${BINDIR}/bazelisk.log"
+    tmp="$(mktemp "${BINDIR}/bazelisk.XXXXXX")"
+    curl ${CURL_FLAGS} --location "$url" --output "$tmp"
+    chmod 755 "$tmp"
+    # Install atomically, so concurrent runs never see a partial download.
+    mv -f "$tmp" "$file"
 }
 
 function up_to_date() {
@@ -109,29 +111,17 @@ function do_outquery() {
 }
 
 function main() {
-    local bindir="${REPO_TOP}/${BINDIR}"
-    local file="${BAZEL_BIN:-${bindir}/bazelisk}"
-    local lockfile="${bindir}/bazelisk.lock"
+    local file="${BINDIR}/bazelisk"
 
     # If the user has Bazel in their PATH, check its version.
     # Fallback to bazelisk if it doesn't match.
-    if [ -x "$BAZEL_BIN" ]; then
-        if [ "$("$BAZEL_BIN" --version)" != "bazel $(cat .bazelversion)" ]; then
-            file="${bindir}/bazelisk"
-        fi
-    fi
-
-    # Are we using bazel from the user's PATH or using bazelisk?
-    if expr match "${file}" ".*bazelisk$" >/dev/null; then
+    if [ -x "$BAZEL_BIN" ] &&
+       [ "$("$BAZEL_BIN" --version)" = "bazel $(cat .bazelversion)" ]; then
+        file="$BAZEL_BIN"
+    elif ! up_to_date "$file"; then
+        prepare "$file"
         if ! up_to_date "$file"; then
-            # Grab the lock, blocking until success. Upon success, check again
-            # whether we're up to date (because some other process might have
-            # downloaded bazelisk in the meantime). If not, download it ourselves.
-            mkdir -p "$bindir"
-            (flock -x 9; up_to_date "$file" || prepare) 9>>"$lockfile"
-        fi
-        if ! check_hash "$file"; then
-            echo "sha256sum doesn't match expected value"
+            echo "sha256sum doesn't match expected value" >&2
             exit 1
         fi
     fi
