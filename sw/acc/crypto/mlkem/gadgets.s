@@ -3033,34 +3033,25 @@ _skip_bit_4:
 poly_masked_compare_du:
   /* Allocate t scratch (2 shares * 352 B, du = 11 worst case) + saves. */
   addi x2, x2, -736
-  sw   x8, 708(x2)
-  sw   x9, 712(x2)
-  sw   x18, 716(x2)
-  sw   x20, 724(x2)
-  sw   x15, 728(x2)
+  sw   x11, 708(x2)
+  sw   x12, 712(x2)
+  sw   x14, 716(x2)
+  sw   x15, 720(x2)
+  sw   x8, 724(x2)
 
-  /* Save input/output addresses. */
-  add x8, x10, x0
-  add x9, x11, x0
-  add x18, x12, x0
-  add x20, x14, x0
-
-  /* Compute t = poly_hocompress(c'). */
-  add x10, x8, x0
+  /* Compute t = polyvec_hocompress(c'). */
+  /* x10 already points to c'. */
   add x12, x2, x0
   add x13, x15, x0
   jal x1, polyvec_hocompress
 
   /* Decode + bitslice c. */
-  add  x11, x9, x0
-
-  addi x4, x0, 4
-  lw   x15, 728(x2)
-  bne  x15, x4, _handle_kn4_du
-
-_handle_k4_du:
+  lw   x11, 708(x2)
+  addi x5, x0, 4
+  lw   x15, 720(x2)
+  addi x4, x0, 17
+  bne  x15, x5, _handle_kn4_du
   /* group 0 -> w15 */
-  addi   x4, x0, 17
   bn.lid x4, 0(x11++)
   loopi 16, 2
     bn.rshi w15, w17, w15 >> 16
@@ -3234,114 +3225,112 @@ _handle_k4_du:
   endloop
   jal x1, _bitslice_transpose
 
-  addi x9, x0, 11
+  addi x8, x0, 11
   beq  x0, x0, _handle_common_du
 
 _handle_kn4_du:
-  addi x4, x0, 17
   addi x5, x0, 15
-  addi x6, x0, 18
   loopi 2, 69
     /* group i + 0 */
     bn.lid x4, 0(x11++)
     loopi 16, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 1 */
     loopi 9, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.rshi w18, w17, w18 >> 6
+    bn.rshi w0, w17, w0 >> 6
     bn.lid  x4, 0(x11++)
-    bn.rshi w18, w17, w18 >> 10
+    bn.rshi w0, w17, w0 >> 10
     bn.rshi w17, w31, w17 >> 4
     loopi 6, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 2 */
     loopi 16, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 3 */
     loopi 3, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.rshi w18, w17, w18 >> 2
+    bn.rshi w0, w17, w0 >> 2
     bn.lid  x4, 0(x11++)
-    bn.rshi w18, w17, w18 >> 14
+    bn.rshi w0, w17, w0 >> 14
     bn.rshi w17, w31, w17 >> 8
     loopi 12, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 4 */
     loopi 12, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.rshi w18, w17, w18 >> 8
+    bn.rshi w0, w17, w0 >> 8
     bn.lid  x4, 0(x11++)
-    bn.rshi w18, w17, w18 >> 8
+    bn.rshi w0, w17, w0 >> 8
     bn.rshi w17, w31, w17 >> 2
     loopi 3, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 5 */
     loopi 16, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 6 */
     loopi 6, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.rshi w18, w17, w18 >> 4
+    bn.rshi w0, w17, w0 >> 4
     bn.lid  x4, 0(x11++)
-    bn.rshi w18, w17, w18 >> 12
+    bn.rshi w0, w17, w0 >> 12
     bn.rshi w17, w31, w17 >> 6
     loopi 9, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
 
     /* group i + 7 */
     loopi 16, 2
-      bn.rshi w18, w17, w18 >> 16
+      bn.rshi w0, w17, w0 >> 16
       bn.rshi w17, w31, w17 >> 10
     endloop
-    bn.movr x5, x6
+    bn.movr x5, x0
     addi    x5, x5, -1
   endloop
   jal x1, _bitslice_transpose
 
-  addi x9, x0, 10
+  addi x8, x0, 10
 
 _handle_common_du:
   /* t_0 ^= ~c, so that t is 1 exactly where the bits match. The c
@@ -3400,7 +3389,7 @@ _handle_common_du:
   bn.sid x4, 0(x5++)
 
   addi   x6, x0, 10
-  beq    x9, x6, _skip_bit_10
+  beq    x8, x6, _skip_bit_10
 
   bn.lid x4, 0(x5)
   bn.xor w10, w10, w15
@@ -3409,25 +3398,22 @@ _handle_common_du:
 
 _skip_bit_10:
   /* Compute r = secand(r, t). */
+  lw   x10, 716(x2)
   addi x11, x0, 32
   add  x12, x2, x0
-  add  x13, x18, x0
+  lw   x13, 712(x2)
+  add  x15, x10, x0
   addi x16, x0, 32
   /* After the secand, the input and output pointers will point to
    * next bit so we don't have to pass all the arguments above to secand again. */
-  loop x9, 4
-    add x10, x20, x0
-    add x15, x20, x0
-    jal x1, secand
-    nop
+  loop x8, 3
+    jal  x1, secand
+    addi x10, x10, -32
+    addi x15, x15, -32
   endloop
 
   /* Restore registers. */
-  lw   x8, 708(x2)
-  lw   x9, 712(x2)
-  lw   x18, 716(x2)
-  lw   x20, 724(x2)
-  lw   x15, 728(x2)
+  lw   x8, 724(x2)
   addi x2, x2, 736
   ret
 
