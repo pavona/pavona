@@ -510,26 +510,27 @@ refreshmodq:
   add x10, x2, x0
   jal x1, poly_rej_samp
 
-  add  x5, x2, 0    /* rand */
+  add  x5, x2, x0   /* rand */
   lw   x10, 512(x2)
   addi x6, x10, 512 /* x_1 */
   lw   x12, 516(x2)
   addi x7, x12, 512 /* r_1 */
   addi x4, x0, 1
-  addi x28, x0, 2
   loopi 16, 9
-    /* r_0 = x_0 + rand. */
-    bn.lid       x0, 0(x5++)
-    bn.lid       x4, 0(x10++)
-    bn.addvm.16h w2, w1, w0
-    bn.sid       x28, 0(x12++)
+    /* Load rand. */
+    bn.lid       x4, 0(x5++)
     /* Whitening. */
-    bn.xor       w1, w1, w1
-    bn.xor       w2, w2, w2
+    bn.xor       w0, w0, w0
+    /* r_0 = x_0 + rand. */
+    bn.lid       x0, 0(x10++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x12++)
+    /* Whitening. */
+    bn.xor       w0, w0, w0
     /* r_1 = x_1 - rand. */
-    bn.lid       x4, 0(x6++)
-    bn.subvm.16h w2, w1, w0
-    bn.sid       x28, 0(x7++)
+    bn.lid       x0, 0(x6++)
+    bn.subvm.16h w0, w0, w1
+    bn.sid       x0, 0(x7++)
   endloop
 
   /* Restore stack. */
