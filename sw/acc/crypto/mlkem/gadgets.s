@@ -384,26 +384,23 @@ bitcopymask:
 .globl refreshios
 .type refreshios, @function
 refreshios:
-  add  x5, x10, x12 /* x_1 */
-  add  x6, x14, x12 /* r_1 */
-  addi x4, x0, 1
-  loop x11, 11
+  add x5, x10, x12 /* x_1 */
+  add x6, x14, x12 /* r_1 */
+  loop x11, 9
     /* s <- urnd. */
-    bn.wsrr w2, urnd
+    bn.wsrr w1, urnd
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
     /* r_0 = x_0 ^ s. */
     bn.lid  x0, 0(x10++)
-    bn.xor  w1, w0, w2
-    bn.sid  x4, 0(x14++)
+    bn.xor  w0, w0, w1
+    bn.sid  x0, 0(x14++)
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
     /* r_1 = x_1 ^ s. */
     bn.lid  x0, 0(x5++)
-    bn.xor  w1, w0, w2
-    bn.sid  x4, 0(x6++)
+    bn.xor  w0, w0, w1
+    bn.sid  x0, 0(x6++)
   endloop
   ret
 
