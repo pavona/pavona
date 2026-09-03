@@ -65,14 +65,14 @@ modulus_over_2_m2_16:
 /* 19 * q - 1. */
 .globl modulus_times_19_minus_1
 modulus_times_19_minus_1:
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
-  .word 0xf712f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
+  .word 0x0000f712
 
 /* 2^16 mod q. */
 .globl mont
