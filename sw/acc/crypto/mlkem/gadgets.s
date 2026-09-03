@@ -1163,18 +1163,15 @@ seca2bmodq:
 .globl seconebitb2amodq
 .type seconebitb2amodq, @function
 seconebitb2amodq:
-  /* Frame: v_0..1 at x2+0 (1024 B), saved x8/x18 above. */
+  /* Frame: v_0..1 at x2+0 (1024 B), saved x10/x12 above. */
   addi x2, x2, -1056
-  sw   x8, 1024(x2)
-  sw   x18, 1028(x2)
-  add  x8, x10, x0
-  add  x18, x12, x0
+  sw   x10, 1024(x2)
+  sw   x12, 1028(x2)
 
   /* Build v = (x_0, 0). */
   add x5, x2, x0
-  add x6, x10, x0
   loopi 16, 2
-    bn.lid x0, 0(x6++)
+    bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
   endloop
 
@@ -1183,13 +1180,9 @@ seconebitb2amodq:
     bn.sid x0, 0(x5++)
   endloop
 
-  /* Construct the vector of 1s. */
-  bn.subi    w30, w0, 1
-  bn.shv.16h w30, w30 >> 15
-
   /* Compute v = refreshmodq(v). */
   add x10, x2, x0
-  add x12, x10, x0
+  add x12, x2, x0
   jal x1, refreshmodq
 
   /* We need to compute r = (1 - 2 * x_1) * v_j for j = 0..1.
@@ -1210,13 +1203,18 @@ seconebitb2amodq:
    *  - if x_1 = 1, then t1 = 0.
    *    Then (t1 - v_j) mod q = (-v_j) mod q.
    */
-  addi x5, x8, 512 /* x_1 */
-  add  x6, x2, x0  /* v */
+
+  /* Generate 1 in each of the 16 16-bit lanes. */
+  bn.subi    w4, w31, 1
+  bn.shv.16h w4, w4 >> 15
+
   addi x4, x0, 1
-  loopi 16, 16
-    bn.lid         x0, 0(x5++)
-    bn.subv.16h    w2, w0, w30
-    add            x7, x6, x0
+  lw   x5, 1024(x2)
+  addi x5, x5, 512 /* x_1 */
+  add  x6, x2, x0  /* v */
+  loopi 16, 14
+    bn.lid       x0, 0(x5++)
+    bn.subv.16h  w2, w0, w4
     /* Handle v_0. */
     bn.lid       x4, 0(x6)
     bn.and       w3, w1, w2
@@ -1224,24 +1222,21 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.addvm.16h w1, w0, w1
     bn.sid       x4, 0(x6)
-    addi         x6, x6, 512
     /* Handle v_1. */
-    bn.lid       x4, 0(x6)
+    bn.lid       x4, 512(x6)
     bn.and       w3, w1, w2
     bn.shv.16h   w3, w3 << 1
     bn.subvm.16h w1, w3, w1
-    bn.sid       x4, 0(x6)
-    addi x6, x7, 32
+    bn.sid       x4, 512(x6)
+    addi         x6, x6, 32
   endloop
 
   /* Compute r = refreshmodq(v). */
   add x10, x2, x0
-  add x12, x18, x0
+  lw  x12, 1028(x2)
   jal x1, refreshmodq
 
-  /* Restore registers and frame. */
-  lw   x8, 1024(x2)
-  lw   x18, 1028(x2)
+  /* Restore frame. */
   addi x2, x2, 1056
   ret
 
