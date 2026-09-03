@@ -113,6 +113,8 @@ jobs:
         image:
           - debian:12
           - debian:13
+          - almalinux:9
+          - almalinux:10
         runner:
           - ubuntu-24.04
           - ubuntu-24.04-arm
@@ -120,10 +122,30 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Bootstrap container
-        run: apt-get update && apt-get install -y sudo git curl wget ca-certificates
+        run: |
+          if command -v apt-get > /dev/null; then
+            apt-get update && apt-get install -y sudo git curl wget ca-certificates
+          else
+            # curl conflicts with the preinstalled curl-minimal.
+            dnf install -y --allowerasing sudo git curl
+            # python3-wheel is only in CRB, which AlmaLinux 9 disables.
+            dnf config-manager --set-enabled crb
+          fi
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
+      - name: Build and install srecord
+        if: startsWith(matrix.image, 'almalinux')
+        run: |
+          # There is no srecord package available on AlmaLinux.
+          dnf install -y rpm-build rpmdevtools which
+          git clone --depth 1 --branch f39 \
+            https://src.fedoraproject.org/rpms/srecord.git "$RUNNER_TEMP/srecord"
+          dnf builddep -y "$RUNNER_TEMP/srecord/srecord.spec"
+          rpmdev-setuptree
+          spectool -g -R "$RUNNER_TEMP/srecord/srecord.spec"
+          rpmbuild -bb "$RUNNER_TEMP/srecord/srecord.spec"
+          dnf localinstall -y ~/rpmbuild/RPMS/*/srecord-1*.rpm
       - name: Build device software
         run: ./bazelisk.sh build //sw/device/examples/hello_world:hello_world_sim_dv
       - name: Run UART smoketest on Verilator
