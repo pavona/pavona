@@ -456,18 +456,18 @@ poly_rej_samp:
   la        x6, modulus_times_19_minus_1
   bn.lid    x5++, 0(x6)
   bn.shv.8s w1, w1 >> 16
-  
+
   /* Load mont = 2^16 % q. */
   la     x6, mont
   bn.lid x5, 0(x6)
-  
+
   /* x10 + 512 is the last valid address. */
   addi x5, x10, 512
 
 #if defined(MLKEM_REJ_SAMPLE_TEST)
   addi x30, x0, 3
 #endif
-  
+
   /* Loop until 256 coefficients have been written to the output. */
 _rej_sample_loop:
   /* Get 16 randoms. */
@@ -486,11 +486,11 @@ _rej_sample_loop:
   bn.xor      w4, w4, w31, FG0
   csrrs       x6, fg0, x0 /* Read flag fg0. */
   srli        x6, x6, 3   /* Extract fg0.z */
-  
+
   /* If fg0.z == 0, there is at least one bad coeff. We throw away this
    * vector and sample again. */
   beq x6, x0, _rej_sample_loop
-  
+
   /* Once the whole vector is accepted, reduce the accepted candidates mod Q
    * using Montgomery. */
   bn.mulv.16h.acc.z.lo w0, w3, w2
@@ -498,7 +498,7 @@ _rej_sample_loop:
   bn.mulv.l.16h.acc.hi w0, w0, sw0.0
   bn.addvm.16h         w0, w0, w31
   bn.sid               x0, 0(x10++)
-  
+
   /* If we reach the last valid address, we've filled up a polynomial.
    * Otherwise, continue to sample. */
   beq x10, x5, _end_rej_sample_loop
@@ -3192,7 +3192,7 @@ _handle_k4_du:
     bn.rshi w15, w17, w15 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
     /* group 1 -> w14 */
   loopi 7, 2
     bn.rshi w14, w17, w14 >> 16
@@ -3206,7 +3206,7 @@ _handle_k4_du:
     bn.rshi w14, w17, w14 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 2 -> w13 */
   loopi 14, 2
     bn.rshi w13, w17, w13 >> 16
@@ -3218,13 +3218,13 @@ _handle_k4_du:
   bn.rshi w17, w31, w17 >> 5
   bn.rshi w13, w17, w13 >> 16
   bn.rshi w17, w31, w17 >> 11
-  
+
   /* group 3 -> w12 */
   loopi 16, 2
     bn.rshi w12, w17, w12 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 4 -> w11 */
   loopi 5, 2
     bn.rshi w11, w17, w11 >> 16
@@ -3238,7 +3238,7 @@ _handle_k4_du:
     bn.rshi w11, w17, w11 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 5 -> w10 */
   loopi 13, 2
     bn.rshi w10, w17, w10 >> 16
@@ -3252,13 +3252,13 @@ _handle_k4_du:
     bn.rshi w10, w17, w10 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 6 -> w9 */
   loopi 16, 2
     bn.rshi w9, w17, w9 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 7 -> w8 */
   loopi 4, 2
     bn.rshi w8, w17, w8 >> 16
@@ -3272,7 +3272,7 @@ _handle_k4_du:
     bn.rshi w8, w17, w8 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 8 -> w7 */
   loopi 11, 2
     bn.rshi w7, w17, w7 >> 16
@@ -3286,13 +3286,13 @@ _handle_k4_du:
     bn.rshi w7, w17, w7 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 9 -> w6 */
   loopi 16, 2
     bn.rshi w6, w17, w6 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 10 -> w5 */
   loopi 2, 2
     bn.rshi w5, w17, w5 >> 16
@@ -3306,7 +3306,7 @@ _handle_k4_du:
     bn.rshi w5, w17, w5 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 11 -> w4 */
   loopi 10, 2
     bn.rshi w4, w17, w4 >> 16
@@ -3320,13 +3320,13 @@ _handle_k4_du:
     bn.rshi w4, w17, w4 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 12 -> w3 */
   loopi 16, 2
     bn.rshi w3, w17, w3 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 13 -> w2 */
   bn.rshi w2, w17, w2 >> 16
   bn.rshi w17, w31, w17 >> 11
@@ -3338,7 +3338,7 @@ _handle_k4_du:
     bn.rshi w2, w17, w2 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 14 -> w1 */
   loopi 8, 2
     bn.rshi w1, w17, w1 >> 16
@@ -3352,14 +3352,14 @@ _handle_k4_du:
     bn.rshi w1, w17, w1 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
-  
+
   /* group 15 -> w0 */
   loopi 16, 2
     bn.rshi w0, w17, w0 >> 16
     bn.rshi w17, w31, w17 >> 11
   endloop
   jal x1, _bitslice_transpose
-  
+
   addi x9, x0, 11
   beq  x0, x0, _handle_common_du
 
@@ -3376,7 +3376,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 1 */
     loopi 9, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3392,7 +3392,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 2 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3400,7 +3400,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 3 */
     loopi 3, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3416,7 +3416,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 4 */
     loopi 12, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3432,7 +3432,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 5 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3440,7 +3440,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 6 */
     loopi 6, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3456,7 +3456,7 @@ _handle_kn4_du:
     endloop
     bn.movr x5, x6
     addi    x5, x5, -1
-    
+
     /* group i + 7 */
     loopi 16, 2
       bn.rshi w18, w17, w18 >> 16
@@ -3466,7 +3466,7 @@ _handle_kn4_du:
     addi    x5, x5, -1
   endloop
   jal x1, _bitslice_transpose
-    
+
   addi x9, x0, 10
 
 _handle_common_du:
