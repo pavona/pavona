@@ -3437,190 +3437,184 @@ _skip_bit_10:
 .globl finalize_cmp
 .type finalize_cmp, @function
 finalize_cmp:
-  /* Allocate t scratch (2 shares * 32 B) and save x8. */
-  addi x2, x2, -96
-  sw x8, 68(x2)
-
-  /* Save the in/out address. */
-  add  x8, x10, x0
+  /* Allocate t scratch (2 shares * 32 B). */
+  addi x2, x2, -64
 
   /* Compute r &= (r >> 128). */
   /* Compute t = r >> 128. */
-  addi x4, x0, 1
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 128
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 128
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   addi x11, x0, 32
   add  x12, x2, x0
   addi x13, x0, 32
-  add  x15, x8, x0
+  add  x15, x10, x0
   addi x16, x0, 32
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 64). */
   /* Compute t = r >> 64. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 64
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 64
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 32). */
   /* Compute t = r >> 32. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 32
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 32
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 16). */
   /* Compute t = r >> 16. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 16
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 16
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 8). */
   /* Compute t = r >> 8. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 8
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 8
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 4). */
   /* Compute t = r >> 4. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 4
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 4
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 2). */
   /* Compute t = r >> 2. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 2
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 2
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
   /* Compute r &= (r >> 1). */
   /* Compute t = r >> 1. */
-  addi x4, x0, 1
-  add  x10, x8, x0
   add  x5, x2, x0
-  loopi 2, 5
+  add  x6, x10, x0
+  loopi 2, 4
     /* Whitening. */
     bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.lid  x0, 0(x10++)
-    bn.rshi w1, w31, w0 >> 1
-    bn.sid  x4, 0(x5++)
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 1
+    bn.sid  x0, 0(x5++)
   endloop
   /* Compute r &= t. */
-  add  x10, x8, x0
+  /* x10 already points to r. */
   /* x11 is still 32. */
   add  x12, x2, x0
   /* x13 is still 32. */
-  add  x15, x8, x0
+  /* x15 already points to r. */
   /* x16 is still 32. */
   jal  x1, secand
+  addi x10, x10, -32
+  addi x15, x15, -32
 
-  /* Restore x8. */
-  lw x8, 68(x2)
-
-  addi x2, x2, 96
+  addi x2, x2, 64
   ret
