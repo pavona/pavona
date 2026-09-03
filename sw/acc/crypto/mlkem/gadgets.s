@@ -2727,33 +2727,24 @@ masked_poly_tomsg:
 poly_masked_compare_dv:
   /* Allocate t scratch (2 shares * 160 B, dv = 5 worst case) + saves. */
   addi x2, x2, -352
-  sw   x8, 324(x2)
-  sw   x9, 328(x2)
-  sw   x18, 332(x2)
-  sw   x20, 340(x2)
-  sw   x15, 344(x2)
-
-  /* Save input/output addresses. */
-  add x8, x10, x0
-  add x9, x11, x0
-  add x18, x12, x0
-  add x20, x14, x0
+  sw   x11, 320(x2)
+  sw   x12, 324(x2)
+  sw   x14, 328(x2)
+  sw   x15, 332(x2)
+  sw   x8, 336(x2)
 
   /* Compute t = poly_hocompress(c'). */
-  add x10, x8, x0
+  /* x10 already points to c'. */
   add x12, x2, x0
   add x13, x15, x0
   jal x1, poly_hocompress
 
   /* Decode + bitslice c. */
-  add  x11, x9, x0
-
-  addi x4, x0, 4
-  lw   x15, 344(x2)
-  bne  x15, x4, _handle_kn4_dv
-
-_handle_k4_dv:
+  lw     x11, 320(x2)
   addi   x4, x0, 17
+  addi   x5, x0, 4
+  lw     x15, 332(x2)
+  bne    x15, x5, _handle_kn4_dv
   bn.lid x4, 0(x11++)
   /* group 0 -> w15 */
   loopi 16, 2
@@ -2869,11 +2860,10 @@ _handle_k4_dv:
   endloop
   jal x1, _bitslice_transpose
 
-  addi    x9, x0, 5
-  beq     x0, x0, _handle_common_dv
+  addi x8, x0, 5
+  beq  x0, x0, _handle_common_dv
 
 _handle_kn4_dv:
-  addi x4, x0, 17
   bn.lid x4, 0(x11++)
   /* group 0 -> w15 */
   loopi 16, 2
@@ -2960,13 +2950,13 @@ _handle_kn4_dv:
   endloop
   jal x1, _bitslice_transpose
 
-  addi    x9, x0, 4
+  addi x8, x0, 4
 
 _handle_common_dv:
   /* t_0 ^= ~c, so that t is 1 exactly where the bits match. The c
    * bit-planes are w0..w3 for dv = 4 and w0..w4 for dv = 5. */
   bn.subi w15, w31, 1
-  add     x5, x2, x0 /* ptr_t */
+  add     x5, x2, x0
 
   bn.lid  x4, 0(x5)
   bn.xor  w0, w0, w15
@@ -2989,7 +2979,7 @@ _handle_common_dv:
   bn.sid  x4, 0(x5++)
 
   addi    x6, x0, 4
-  beq     x9, x6, _skip_bit_4
+  beq     x8, x6, _skip_bit_4
 
   bn.lid  x4, 0(x5)
   bn.xor  w4, w4, w15
@@ -2998,25 +2988,22 @@ _handle_common_dv:
 
 _skip_bit_4:
   /* Compute r = secand(r, t). */
+  lw   x10, 328(x2)
   addi x11, x0, 32
   add  x12, x2, x0
-  add  x13, x18, x0
+  lw   x13, 324(x2)
+  add  x15, x10, x0
   addi x16, x0, 32
   /* After the secand, the input and output pointers will point to
    * next bit so we don't have to pass all the arguments above to secand again. */
-  loop x9, 4
-    add x10, x20, x0
-    add x15, x20, x0
-    jal x1, secand
-    nop
+  loop x8, 3
+    jal  x1, secand
+    addi x10, x10, -32
+    addi x15, x15, -32
   endloop
 
   /* Restore registers. */
-  lw   x8, 324(x2)
-  lw   x9, 328(x2)
-  lw   x18, 332(x2)
-  lw   x20, 340(x2)
-  lw   x15, 344(x2)
+  lw   x8, 336(x2)
   addi x2, x2, 352
   ret
 
