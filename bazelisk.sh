@@ -19,35 +19,37 @@ cd "$(dirname "$0")"
 
 # Bazelisk (not Bazel) release. Keep this in sync with `util/container/Dockerfile`.
 readonly release="v1.24.1"
-declare -A hashes=(
-    # sha256sums for v1.24.1.  Update this if you update the release.
-    [linux-amd64]="0aee09c71828b0012750cb9b689ce3575da8e230f265bf8d6dcd454eee6ea842"
-    [linux-arm64]="2a0e5d397f7ddbdac1deff4167c7681d9d1d025c5dfa979c2b37f091f032d01a"
-)
 
-declare -A architectures=(
-    # Map `uname -m -o` to bazelisk's precompiled binary target names.
-    [aarch64 GNU/Linux]="linux-arm64"
-    [x86_64 GNU/Linux]="linux-amd64"
-)
+case "$(uname -s -m)" in
+    "Linux x86_64")
+        readonly target="linux-amd64"
+        readonly hash="0aee09c71828b0012750cb9b689ce3575da8e230f265bf8d6dcd454eee6ea842"
+        ;;
+    "Linux aarch64")
+        readonly target="linux-arm64"
+        readonly hash="2a0e5d397f7ddbdac1deff4167c7681d9d1d025c5dfa979c2b37f091f032d01a"
+        ;;
+    "Darwin arm64")
+        readonly target="darwin-arm64"
+        readonly hash="1fb16a7fcf5b014e8a4179a3588a79e9b953ed69f2f22b612b2770150485e8d9"
+        ;;
+    *)
+        echo "No bazelisk release for $(uname -s -m)." >&2
+        exit 1
+        ;;
+esac
 
-function os_arch() {
-    local arch
-    arch="$(uname -m -o)"
-    echo "${architectures[$arch]:-${arch}}"
-}
-
-function check_hash() {
-    local file target
-    file="$1"
-    target="$(os_arch)"
-    echo "${hashes[$target]}  $file" | sha256sum --check --quiet
+# macOS has no `sha256sum`.
+function sha256() {
+    if command -v sha256sum >/dev/null; then
+        sha256sum "$1"
+    else
+        shasum -a 256 "$1"
+    fi | cut -d" " -f1
 }
 
 function prepare() {
     local file="$1"
-    local target
-    target="$(os_arch)"
     local url="https://github.com/bazelbuild/bazelisk/releases/download/${release}/bazelisk-${target}"
     local tmp
 
@@ -64,8 +66,7 @@ function up_to_date() {
     local file="$1"
     # We need an update if the file doesn't exist or it has the wrong hash
     test -f "$file" || return 1
-    check_hash "$file" || return 1
-    return 0
+    test "$(sha256 "$file")" = "$hash"
 }
 
 function outquery_starlark_expr() {
