@@ -1271,74 +1271,68 @@ seconebitb2amodq:
 .type secb2amodq, @function
 secb2amodq:
   /* Frame (2656 B, 2 shares):
-   *   x2 +    0 : saved x8, x18, x19, x20, x21
+   *   x2 +    0 : saved x10, x12, x8, x9
    *   x2 +   32 : zp / scratch (1024 B)
    *   x2 + 1056 : s            ( 832 B)
    *   x2 + 1888 : a, b, c, zp  (bitsliced, 768 B) */
   addi x2, x2, -2048
   addi x2, x2, -608
-  sw x8, 0(x2)
-  sw x18, 4(x2)
-  sw x19, 8(x2)
-  sw x20, 12(x2)
-  sw x21, 16(x2)
+  sw   x10, 0(x2)
+  sw   x12, 4(x2)
+  sw   x8, 8(x2)
+  sw   x9, 12(x2)
 
   /* Save input/output addresses and buffer bases. */
-  add  x8, x10, x0
-  add  x18, x12, x0
-  addi x19, x2, 1888 /* a, b, c, zp (bitsliced) */
-  addi x20, x2, 1056 /* s */
+  addi x8, x2, 1888 /* a, b, c, zp (bitsliced) */
+  addi x9, x2, 1056 /* s */
   /* zp = x2 + 32 */
 
   /* Sample r_0 = rand, then compute zp = q - rand. */
-  addi    x4, x0, 30
+  bn.wsrr w16, mod
+  add     x10, x12, x0
+  jal x1, poly_rej_samp
+  addi    x4, x0, 1
   la      x5, modulus_bn
   bn.lid  x4, 0(x5)
-  add     x10, x12, x0
-  addi    x7, x2, 32
-  bn.wsrr w16, mod
-  jal x1, poly_rej_samp
+  addi    x5, x2, 32
   loopi 16, 3
     bn.lid      x0, 0(x12++)
-    bn.subv.16h w0, w30, w0
-    bn.sid      x0, 0(x7++)
+    bn.subv.16h w0, w1, w0
+    bn.sid      x0, 0(x5++)
   endloop
 
   /* Bitslice zp_0 and clear zp_1 (bitsliced). */
-  addi x10, x2, 32
-  add  x11, x19, x0
-  jal  x1, poly_to_bitsliced
-  addi x11, x11, 384
+  addi   x10, x2, 32
+  add    x11, x8, x0  /* zp (bitsliced) */
+  jal    x1, poly_to_bitsliced
+  addi   x11, x11, 384
   bn.xor w0, w0, w0
   loopi 12, 1
     bn.sid x0, 0(x11++)
   endloop
 
   /* Compute a = seca2bmodq(zp). */
-  add  x10, x19, x0
-  add  x12, x19, x0
-  jal  x1, seca2bmodq
+  add x10, x8, x0
+  add x12, x8, x0
+  jal x1, seca2bmodq
 
   /* Compute b = secaddmodq(a, x). */
   /********** Start inline b = secaddmodq(a, x). **********/
   /********** Start inline s = secadd(a, x, k + 1). **********/
   /* Initialize c = 0. */
   bn.xor w0, w0, w0
-  addi   x5, x20, 384
-  loopi 2, 2
-    bn.sid x0, 0(x5)
-    addi   x5, x5, 416
-  endloop
+  bn.sid x0, 384(x9)
+  bn.sid x0, 800(x9)
 
-  add  x10, x19, x0
+  add  x10, x8, x0
   addi x11, x0, 384
-  add  x12, x8, x0
+  lw   x12, 0(x2)
   addi x13, x0, 384
-  add  x15, x20, x0
+  add  x15, x9, x0
   addi x16, x0, 416
-  addi x17, x20, 384
+  addi x17, x9, 384
   addi x29, x0, 416
-  addi x30, x20, 384
+  addi x30, x9, 384
   addi x31, x0, 416
   loopi 12, 2
     jal  x1, secfulladder
@@ -1350,130 +1344,114 @@ secb2amodq:
 
   /********** Start inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
   /* Initialize c = 0. */
-  addi   x5, x2, 32
   bn.xor w0, w0, w0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
-  add x21, x5, x0 /* p */
+  bn.sid x0, 32(x2)
+  bn.sid x0, 64(x2)
 
-  add     x5, x21, x0
-  bn.subi w1, w0, 1
-  addi    x4, x0, 1
-  bn.sid  x4, 0(x5++)
-  bn.sid  x0, 0(x5++)
+  bn.sid  x0, 128(x2)
+  bn.subi w0, w31, 1
+  bn.sid  x0, 96(x2)
 
-  add  x10, x21, x0
+  addi x10, x2, 96
   addi x11, x0, 32
-  add  x12, x20, x0
+  add  x12, x9, x0
   addi x13, x0, 416
-  add  x15, x20, x0
+  add  x15, x9, x0
   addi x16, x0, 416
   addi x17, x2, 32
   addi x29, x0, 32
   addi x30, x2, 32
   addi x31, x0, 32
+
   /* Bits 0..7: p[i] = 1. */
   loopi 8, 2
     jal  x1, secfulladder
     addi x10, x10, -32
   endloop
-
   /* Bit 8: p[i] = 0. */
-  bn.xor w0, w0, w0
-  bn.sid x0, 0(x10)
-  add    x10, x21, x0
-  jal    x1, secfulladder
-  /* Bit 9: p[i] = 1. */
-  bn.xor  w0, w0, w0
-  bn.subi w0, w0, 1
-  add     x10, x21, x0
+  bn.xor  w0, w31, w31
   bn.sid  x0, 0(x10)
   jal     x1, secfulladder
+  addi    x10, x10, -32
+  /* Bit 9: p[i] = 1. */
+  bn.subi w0, w31, 1
+  bn.sid  x0, 0(x10)
+  jal     x1, secfulladder
+  addi    x10, x10, -32
   /* Bits 10..11: p[i] = 0. */
-  bn.xor w0, w0, w0
-  add    x10, x21, x0
-  bn.sid x0, 0(x10)
-  jal    x1, secfulladder
-  add    x10, x21, x0
-  jal    x1, secfulladder
-
+  bn.xor  w0, w31, w31
+  bn.sid  x0, 0(x10)
+  jal     x1, secfulladder
+  addi    x10, x10, -32
+  jal     x1, secfulladder
   /* Bit 12: p[i] = 1. */
-  addi x4, x0, 1
-  addi x6, x0, 2
+  addi   x4, x0, 1
   /* s[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
   /* s_0 */
   bn.lid x0, 0(x12)
   bn.lid x4, 0(x17)
-  bn.xor w3, w0, w1
-  bn.not w2, w3
-  bn.sid x6, 0(x12)
-  add    x12, x12, x13
   add    x17, x17, x29
+  bn.xor w0, w0, w1
+  bn.not w0, w0
+  bn.sid x0, 0(x12)
+  add    x12, x12, x13
 
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
   /* s_1 */
   bn.lid x0, 0(x12)
   bn.lid x4, 0(x17)
-  bn.xor w2, w0, w1
-  bn.sid x6, 0(x12)
+  bn.xor w0, w0, w1
+  bn.sid x0, 0(x12)
   /********** End inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
 
   /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
-  addi x10, x20, 384
+  addi x10, x9, 384
   addi x11, x0, 416
-  add  x13, x19, x0
+  add  x13, x8, x0
   jal  x1, bitcopymask
 
   /* Compute r = secadd(a, s, k). */
-  add  x10, x19, x0
+  add  x10, x8, x0
   addi x11, x0, 384
-  add  x12, x20, x0
+  add  x12, x9, x0
   addi x13, x0, 416
-  add  x15, x19, x0
+  add  x15, x8, x0
   addi x16, x0, 384
   addi x17, x0, 12
   jal  x1, secadd
   /********** End inline b = secaddmodq(a, x). **********/
 
   /* Compute c = refreshios(b, k, k * 32). */
-  add  x10, x19, x0
+  add  x10, x8, x0
   addi x11, x0, 12
   addi x12, x0, 384
-  add  x14, x19, x0
+  add  x14, x8, x0
   jal  x1, refreshios
 
   /* Unmask c. */
-  add  x5, x19, x0
+  add  x5, x8, x0
   addi x4, x0, 1
-  loopi 12, 5
-    addi   x6, x5, 384
+  loopi 12, 4
     bn.lid x0, 0(x5)
-    bn.lid x4, 0(x6)
+    bn.lid x4, 384(x5)
     bn.xor w0, w0, w1
     bn.sid x0, 0(x5++)
   endloop
 
   /* Convert c from bitsliced to normal representation, into r_1. */
-  add  x10, x19, x0
-  add  x11, x18, x0
+  add  x10, x8, x0
+  lw   x11, 4(x2)
   addi x11, x11, 512
   jal x1, poly_from_bitsliced
 
-  /* Restore registers. */
-  lw x8, 0(x2)
-  lw x18, 4(x2)
-  lw x19, 8(x2)
-  lw x20, 12(x2)
-  lw x21, 16(x2)
+  /* Restore registers and frame. */
+  lw   x8, 8(x2)
+  lw   x9, 12(x2)
   addi x2, x2, 2047
   addi x2, x2, 609
   ret
