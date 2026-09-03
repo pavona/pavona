@@ -266,17 +266,14 @@ secfulladder:
 .globl secadd
 .type secadd, @function
 secadd:
-  /* Reserve frame: 64 B carry c at 0(x2), plus saved x8, x17. */
+  /* Reserve frame: 64 B carry c at 0(x2), plus saved x8. */
   addi x2, x2, -96
   sw   x8, 64(x2)
-  sw   x17, 68(x2)
 
   /* Initialize c = 0. */
   bn.xor w0, w0, w0
-  add    x5, x2, x0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.sid x0, 0(x2)
+  bn.sid x0, 32(x2)
 
   /* Ripple-carry adder. */
   addi x8, x17, -1
@@ -291,33 +288,28 @@ secadd:
   endloop
 
   /* Handle bit k - 1. */
-  add  x5, x2, x0
   addi x4, x0, 1
-  addi x6, x0, 2
-  addi x7, x0, 3
-  loopi 2, 14
+  loopi 2, 11
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
     /* r[k - 1] = x[k - 1] ^ y[k - 1] ^ c. */
     bn.lid x0, 0(x10)
-    bn.lid x4, 0(x12)
-    bn.lid x6, 0(x5)
-    bn.xor w3, w0, w1
-    bn.xor w3, w3, w2
-    bn.sid x7, 0(x15)
-    /* Adjust addresses. */
     add    x10, x10, x11
+    bn.lid x4, 0(x12)
     add    x12, x12, x13
-    add    x5, x5, x29
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
     add    x15, x15, x16
   endloop
 
+  /* Restore x17. */
+  addi x17, x8, 1
+
   /* Restore registers and frame. */
   lw   x8, 64(x2)
-  lw   x17, 68(x2)
   addi x2, x2, 96
   ret
 
