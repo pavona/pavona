@@ -950,10 +950,9 @@ seca2bmodq:
    *   x2 +    0 : s' / a   (832 B)
    *   x2 +  832 : carry c  ( 64 B)
    *   x2 +  896 : s / u    (832 B)
-   *   x2 + 1728 : saved x18 */
+   *   x2 + 1728 : saved x12 */
   addi x2, x2, -1760
-  sw   x18, 1728(x2)
-  add  x18, x12, x0
+  sw   x12, 1728(x2)
 
   /* Compute s = p + x_0, k + 1 bits (one share).
    * p = 2^(k + 1) - q = 4863 = 0b1001011111111.
@@ -985,8 +984,8 @@ seca2bmodq:
     bn.not w3, w0
     bn.xor w1, w3, w2
     bn.sid x4, 0(x5++)
-    bn.xor w2, w0, w2
-    bn.and w2, w3, w2
+    bn.xor w2, w2, w0
+    bn.and w2, w2, w3
     bn.xor w2, w2, w0
   endloop
 
@@ -1008,8 +1007,8 @@ seca2bmodq:
   bn.not w3, w0
   bn.xor w1, w3, w2
   bn.sid x4, 0(x5++)
-  bn.xor w2, w0, w2
-  bn.and w2, w3, w2
+  bn.xor w2, w2, w0
+  bn.and w2, w2, w3
   bn.xor w2, w2, w0
 
   /* Bits 10..11: p[i] = 0. */
@@ -1052,11 +1051,8 @@ seca2bmodq:
 
   /********** Start inline u = secadd(s, s', k + 1). **********/
   /* Initialize c = 0. */
-  addi  x5, x2, 832
-  bn.xor w0, w0, w0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.sid x0, 832(x2)
+  bn.sid x0, 864(x2)
 
   addi x10, x2, 896
   addi x11, x0, 416
@@ -1074,25 +1070,19 @@ seca2bmodq:
   endloop
 
   addi x4, x0, 1
-  addi x6, x0, 2
-  addi x7, x0, 3
-  loopi 2, 14
+  loopi 2, 11
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
     /* u[12] = s[12] ^ s'[12] ^ c. */
     bn.lid x0, 0(x10)
-    bn.lid x4, 0(x12)
-    bn.lid x6, 0(x17)
-    bn.xor w3, w0, w1
-    bn.xor w3, w3, w2
-    bn.sid x7, 0(x15)
-    /* Adjust addresses. */
     add    x10, x10, x11
+    bn.lid x4, 0(x12)
     add    x12, x12, x13
-    add    x17, x17, x29
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
     add    x15, x15, x16
   endloop
   /********** End inline u = secadd(s, s', k + 1). **********/
@@ -1105,17 +1095,15 @@ seca2bmodq:
 
   /********** Start inline r = secadd(a, u, k). **********/
   /* Initialize c = 0. */
-  addi  x5, x2, 832
   bn.xor w0, w0, w0
-  loopi 2, 1
-    bn.sid x0, 0(x5++)
-  endloop
+  bn.sid x0, 832(x2)
+  bn.sid x0, 864(x2)
 
   add  x10, x2, x0
   addi x11, x0, 384
   addi x12, x2, 896
   addi x13, x0, 416
-  add  x15, x18, x0
+  lw   x15, 1728(x2)
   addi x16, x0, 384
   addi x17, x2, 832
   addi x29, x0, 32
@@ -1127,31 +1115,24 @@ seca2bmodq:
   endloop
 
   addi x4, x0, 1
-  addi x6, x0, 2
-  addi x7, x0, 3
-  loopi 2, 14
+  loopi 2, 11
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
     /* r[11] = a[11] ^ u[11] ^ c. */
     bn.lid x0, 0(x10)
-    bn.lid x4, 0(x12)
-    bn.lid x6, 0(x17)
-    bn.xor w3, w0, w1
-    bn.xor w3, w3, w2
-    bn.sid x7, 0(x15)
-    /* Adjust addresses. */
     add    x10, x10, x11
+    bn.lid x4, 0(x12)
     add    x12, x12, x13
-    add    x17, x17, x29
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
     add    x15, x15, x16
   endloop
   /********** End inline r = secadd(a, u, k). **********/
 
-  /* Restore x18 and frame. */
-  lw   x18, 1728(x2)
+  /* Restore frame. */
   addi x2, x2, 1760
   ret
 
