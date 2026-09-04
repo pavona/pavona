@@ -47,7 +47,7 @@
       description: "list of resets",
     }
     reset_requests: {
-      type: "object",
+      $ref: "urn:topgen:reset_requests",
       description: "define reset requests grouped by type"
     }
 
@@ -72,6 +72,9 @@
     // info for modules (IP blocks) within top and their connections
     module: {
       type: "array",
+      items: {
+        $ref: "urn:topgen:module"
+      }
       description: "list of modules to instantiate",
     }
     port: {
@@ -123,6 +126,7 @@
     }
     wakeups: {
       type: "array",
+      items: { $ref: "urn:topgen:wakeup" },
       description: "list of wakeup requests each holding name, width, and module; added property"
     }
     unmanaged_resets: {
@@ -135,6 +139,7 @@
     }
     alert: {
       type: "array",
+      items: { $ref: "urn:topgen:alert" }
       description: "alerts; added property"
     }
     outgoing_alert: {
@@ -143,6 +148,7 @@
     }
     interrupt: {
       type: "array",
+      items: { $ref: "urn:topgen:interrupt" }
       description: "interrupts; added property"
     }
     outgoing_interrupt: {
