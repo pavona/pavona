@@ -63,7 +63,7 @@
  * @param[in]  x16: share stride of r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x7, x10, x12, x15, w0 to w3, w5 to w8
+ * clobbered registers: x4 to x5, w0 to w7
  * clobbered flag groups: FG0
  */
 
@@ -145,7 +145,7 @@ secand:
  * @param[in]  x31: share stride of cout
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x7, x10, x12, x15, x28, w0 to w9
+ * clobbered registers: x4 to x5, w0 to w9
  * clobbered flag groups: FG0
  */
 
@@ -256,7 +256,8 @@ secfulladder:
  * @param[in]  x17: k, bitsize of x and y
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x15, x17, x28 to x31, w0 to w9
+ * clobbered registers: x2, x4 to x5, x8, x10, x12, x15, x17, x29 to x31,
+ *                      w0 to w9
  * clobbered flag groups: FG0
  */
 
@@ -378,7 +379,7 @@ bitcopymask:
  * @param[out] x14: dmem pointer to Boolean shares of r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x6, x10, x14, w0 to w2
+ * clobbered registers: x5 to x6, x10, x14, w0 to w1
  * clobbered flag groups: FG0
  */
 
@@ -419,7 +420,7 @@ refreshios:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x5 to x6, x10, w0 to w5, acch, acc
+ * clobbered registers: x4 to x5, x10, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -500,7 +501,7 @@ _end_rej_sample_loop:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x7, x10, x12, x28, w0 to w5, acch, acc
+ * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -559,7 +560,7 @@ refreshmodq:
  * @param[out] x11: dmem pointer to bitsliced representation r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4, x10, w0 to w15, w28 to w29
+ * clobbered registers: x4, x10, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -601,7 +602,7 @@ poly_to_bitsliced:
  * @param[out] x11: dmem pointer to r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4, x10 to x11, w0 to w15, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -640,7 +641,7 @@ poly_from_bitsliced:
  * @param[in,out] w0 to w15: bit matrices to transpose
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: w0 to w15, w28 to w29
+ * clobbered registers: w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -869,7 +870,7 @@ _bitslice_transpose:
  * @param[out] x14: dmem pointer to Boolean shares of r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x28 to x31, w0 to w9
+ * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x29 to x31, w0 to w9
  * clobbered flag groups: FG0
  */
 
@@ -950,7 +951,8 @@ seca2b:
  * @param[out] x12: dmem pointer to Boolean shares of r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2, x4 to x7, x10 to x13, x15 to x18, x28 to x31, w0 to w9
+ * clobbered registers: x2, x4 to x5, x10 to x13, x15 to x17, x29 to x31,
+ *                      w0 to w9
  * clobbered flag groups: FG0
  */
 
@@ -1162,7 +1164,7 @@ seca2bmodq:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
+ * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -1278,7 +1280,8 @@ seconebitb2amodq:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10 to x21, x28 to x31, w0 to w16, w28 to w30, acch, acc
+ * clobbered registers: x2, x4 to x6, x8 to x17, x29 to x31,
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -1505,7 +1508,8 @@ secb2amodq:
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x19, x28 to x31, w0 to w15, w17 to w21, w28 to w29
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -1667,7 +1671,8 @@ _dv_params_done:
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x19, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
  * clobbered flag groups: FG0
  */
 
@@ -1861,7 +1866,7 @@ _du_params_done:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
+ * clobbered registers: x2, x4 to x8, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -1937,7 +1942,8 @@ masked_poly_frommsg:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w16, w28 to w30, acch, acc
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -2154,7 +2160,7 @@ _continue_1:
  * @param[in]  x11: dmem pointer to the nonce
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x5 to x6, x10, w0
+ * clobbered registers: x4 to x5, x10, w0
  * clobbered flag groups: FG0
  */
 
@@ -2209,7 +2215,8 @@ masked_poly_getnoise_eta_init:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w17 to w30, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -2237,7 +2244,8 @@ masked_poly_getnoise_eta_2:
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w17 to w30, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -2374,7 +2382,7 @@ _getnoise_common:
  * @param[in]     w17 to w22: the six digest words to bitslice
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -2527,7 +2535,8 @@ _bitslice_eta_3:
  * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x8, x10 to x17, x28 to x31, w0 to w15, w17 to w21, w28 to w29
+ * clobbered registers: x2 to x8, x10 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -2644,7 +2653,8 @@ masked_poly_tomsg:
  * @param[in]     x15: k, the security level
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w29
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -2951,7 +2961,8 @@ _skip_bit_4:
  * @param[in]     x15: k, the security level
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
  * clobbered flag groups: FG0
  */
 
@@ -3358,7 +3369,7 @@ _skip_bit_10:
  *                     of masked_poly_compare_{du, dv}
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x2, x4 to x8, x10 to x13, x15 to x16, w0 to w3, w5 to w8
+ * clobbered registers: x2, x4 to x6, x11 to x13, x15 to x16, w0 to w7
  * clobbered flag groups: FG0
  */
 
