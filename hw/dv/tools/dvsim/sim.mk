@@ -32,8 +32,13 @@ ifneq (${sv_flist_gen_cmd},)
 endif
 
 do_build: gen_sv_flist
-	@echo -e "\n[make]: build"
+	@echo "\n"
+	@echo "[make]: build"
+ifeq (${tool},verilator)
+	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts} BUILD_PLUSARGS='${BUILD_PLUSARGS}'
+else
 	cd ${sv_flist_gen_dir} && ${build_cmd} ${build_opts}
+endif
 
 post_build: do_build
 	@echo -e "\n[make]: post_build"
@@ -60,8 +65,13 @@ ifneq (${sw_images},)
 endif
 
 simulate: sw_build
-	@echo -e "\n[make]: simulate"
+	@echo "\n"
+	@echo "[make]: simulate"
+ifeq (${tool},verilator)
+	cd ${run_dir} && ${run_cmd} ${run_opts} RUN_PLUSARGS='${RUN_PLUSARGS}'
+else
 	cd ${run_dir} && ${run_cmd} ${run_opts}
+endif
 
 post_run: simulate
 	@echo -e "\n[make]: post_run"

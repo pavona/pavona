@@ -25,6 +25,8 @@ def get_cov_summary_table(cov_report_txt, tool):
             return xcelium_cov_summary_table(f)
         if tool == 'vcs':
             return vcs_cov_summary_table(f)
+        if tool == 'verilator':
+            return vcs_cov_summary_table(f)
         raise NotImplementedError(f"{tool} is unsupported for cov extraction.")
 
 
@@ -119,6 +121,8 @@ def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
         return xcelium_job_runtime(log_text)
     elif tool == 'vcs':
         return vcs_job_runtime(log_text)
+    elif tool == 'verilator':
+        return verilator_job_runtime(log_text)
     else:
         raise NotImplementedError(f"{tool} is unsupported for job runtime "
                                   "extraction.")
@@ -198,6 +202,59 @@ def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
         if m:
             t = int(m.group(1)) * 3600 + int(m.group(2)) * 60 + int(m.group(3))
             return t, "s"
+    raise RuntimeError("Job runtime not found in the log.")
+
+
+def verilator_job_runtime(log_text: List) -> Tuple[float, str]:
+    """Returns the Verilator job runtime (wall clock time) along with units.
+
+    Verilator build logs include a "Walltime" line, while pyUVM / cocotb run
+    logs include a regression summary table with a "REAL TIME (s)" column.
+    Prefer the native Verilator walltime, then fall back to the cocotb summary.
+
+    Returns the runtime, units as a tuple.
+    Raises RuntimeError exception if the search pattern is not found.
+    """
+    total_pattern = (
+        r"^\s*\*\*\s*TESTS=\d+\s+PASS=\d+\s+FAIL=\d+\s+SKIP=\d+\s+"
+        r"\d+\.?\d*\s+(\d+\.?\d*)\s+\d+\.?\d*\s+\*\*\s*$")
+    test_pattern = (r"^\s*\*\*\s+\S+\s+(?:PASS|FAIL|SKIP)\s+\d+\.?\d*\s+"
+                    r"(\d+\.?\d*)\s+\d+\.?\d*\s+\*\*\s*$")
+    walltime_pattern = (
+        r"^\s*-\s*Verilator:\s*Walltime\s+(\d+\.?\d*)\s+"
+        r"(s|sec|secs|seconds|m|min|mins|minutes|h|hr|hrs|hours)"
+        r"\b.*$")
+
+    unit_map = {
+        "s": "s",
+        "sec": "s",
+        "secs": "s",
+        "seconds": "s",
+        "m": "m",
+        "min": "m",
+        "mins": "m",
+        "minutes": "m",
+        "h": "h",
+        "hr": "h",
+        "hrs": "h",
+        "hours": "h",
+    }
+
+    for line in reversed(log_text):
+        m = re.search(walltime_pattern, line)
+        if m:
+            return float(m.group(1)), unit_map[m.group(2)]
+
+    for line in reversed(log_text):
+        m = re.search(total_pattern, line)
+        if m:
+            return float(m.group(1)), "s"
+
+    for line in reversed(log_text):
+        m = re.search(test_pattern, line)
+        if m:
+            return float(m.group(1)), "s"
+
     raise RuntimeError("Job runtime not found in the log.")
 
 
