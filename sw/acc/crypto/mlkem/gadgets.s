@@ -472,6 +472,10 @@ _rej_sample_loop:
   beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w3, w3, w3
+  bn.xor w4, w4, w4
   ret
 
 /**
@@ -530,6 +534,8 @@ refreshmodq:
     /* Whitening. */
     bn.xor       w0, w0, w0
   endloop
+  /* Whitening. */
+  bn.xor w1, w1, w1
 
   /* Restore stack. */
   addi x2, x2, 544
@@ -572,6 +578,26 @@ poly_to_bitsliced:
     bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
+
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
+  bn.xor w2, w2, w2
+  bn.xor w3, w3, w3
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+  bn.xor w6, w6, w6
+  bn.xor w7, w7, w7
+  bn.xor w8, w8, w8
+  bn.xor w9, w9, w9
+  bn.xor w10, w10, w10
+  bn.xor w11, w11, w11
+  bn.xor w12, w12, w12
+  bn.xor w13, w13, w13
+  bn.xor w14, w14, w14
+  bn.xor w15, w15, w15
+  bn.xor w28, w28, w28
+  bn.xor w29, w29, w29
   ret
 
 /**
@@ -615,6 +641,26 @@ poly_from_bitsliced:
     bn.sid x4, 0(x11++)
     addi   x4, x4, -1
   endloop
+
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
+  bn.xor w2, w2, w2
+  bn.xor w3, w3, w3
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+  bn.xor w6, w6, w6
+  bn.xor w7, w7, w7
+  bn.xor w8, w8, w8
+  bn.xor w9, w9, w9
+  bn.xor w10, w10, w10
+  bn.xor w11, w11, w11
+  bn.xor w12, w12, w12
+  bn.xor w13, w13, w13
+  bn.xor w14, w14, w14
+  bn.xor w15, w15, w15
+  bn.xor w28, w28, w28
+  bn.xor w29, w29, w29
   ret
 
 /**
@@ -1202,7 +1248,7 @@ seconebitb2amodq:
   lw   x5, 1024(x2)
   addi x5, x5, 512 /* x_1 */
   add  x6, x2, x0  /* v */
-  loopi 16, 14
+  loopi 16, 18
     bn.lid       x0, 0(x5++)
     bn.subv.16h  w2, w0, w4
     /* Handle v_0. */
@@ -1212,6 +1258,9 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.addvm.16h w1, w0, w1
     bn.sid       x4, 0(x6)
+    /* Whitening. */
+    bn.xor       w1, w1, w1
+    bn.xor       w3, w3, w3
     /* Handle v_1. */
     bn.lid       x4, 512(x6)
     bn.and       w3, w1, w2
@@ -1219,7 +1268,13 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.sid       x4, 512(x6)
     addi         x6, x6, 32
+    /* Whitening. */
+    bn.xor       w1, w1, w1
+    bn.xor       w3, w3, w3
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w2, w2, w2
 
   /* Compute r = refreshmodq(v). */
   add x10, x2, x0
@@ -1289,6 +1344,8 @@ secb2amodq:
     bn.subv.16h w0, w1, w0
     bn.sid      x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
 
   /* Bitslice zp_0 and clear zp_1 (bitsliced). */
   addi   x10, x2, 32
@@ -1889,7 +1946,7 @@ masked_poly_frommsg:
 
   /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
   addi x4, x0, 1
-  loopi 2, 6
+  loopi 2, 7
     bn.lid x0, 0(x10++)
     loopi 16, 3
       bn.shv.16h w1, w0 >> 15
@@ -1898,6 +1955,7 @@ masked_poly_frommsg:
     endloop
     /* Whitening. */
     bn.xor w0, w0, w0
+    bn.xor w1, w1, w1
   endloop
 
   /* Compute mp = seconebitb2amodq(m). */
@@ -2140,6 +2198,8 @@ _continue_1:
     bn.subvm.16h w0, w0, w1
     bn.sid       x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
 
   /* Restore registers and stack. */
   lw   x8, 1220(x2)
@@ -2285,20 +2345,22 @@ masked_poly_getnoise_eta_1:
 
   jal x1, _bitslice_eta_3
 
-  bn.xor w17, w17, w17
   bn.mov w17, w23
-  bn.xor w18, w18, w18
   bn.mov w18, w24
-  bn.xor w19, w19, w19
   bn.mov w19, w25
-  bn.xor w20, w20, w20
   bn.mov w20, w26
-  bn.xor w21, w21, w21
   bn.mov w21, w27
-  bn.xor w22, w22, w22
   bn.mov w22, w30
 
   jal x1, _bitslice_eta_3
+
+  /* Whitening. */
+  bn.xor w23, w23, w23
+  bn.xor w24, w24, w24
+  bn.xor w25, w25, w25
+  bn.xor w26, w26, w26
+  bn.xor w27, w27, w27
+  bn.xor w30, w30, w30
 
   beq  x0, x0, _getnoise_common
 
@@ -2361,6 +2423,15 @@ _getnoise_eta_2:
     bn.xor w29, w29, w29
   endloop
 
+  /* Whitening. */
+  bn.xor w18, w18, w18
+  bn.xor w19, w19, w19
+  bn.xor w20, w20, w20
+  bn.xor w21, w21, w21
+  bn.xor w22, w22, w22
+  bn.xor w23, w23, w23
+  bn.xor w24, w24, w24
+
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
   addi x10, x2, 192
@@ -2387,6 +2458,8 @@ _getnoise_common:
  * that masked_cbd consumes, one share per call. Called by
  * masked_poly_getnoise_eta_1 on the KYBER_K = 2 path.
  *
+ * @param[in,out] x10: dmem pointer to the x bit-planes
+ * @param[in,out] x11: dmem pointer to the y bit-planes
  * @param[in]     w17 to w22: the six digest words to bitslice
  * @param[in]     w31: all-zero register
  *
@@ -2532,6 +2605,12 @@ _bitslice_eta_3:
   bn.xor w13, w13, w13
   bn.xor w14, w14, w14
   bn.xor w15, w15, w15
+  bn.xor w17, w17, w17
+  bn.xor w18, w18, w18
+  bn.xor w19, w19, w19
+  bn.xor w20, w20, w20
+  bn.xor w21, w21, w21
+  bn.xor w22, w22, w22
   bn.xor w28, w28, w28
   bn.xor w29, w29, w29
   ret
@@ -2967,6 +3046,9 @@ _handle_common_dv:
   bn.sid  x4, 0(x5++)
 
 _skip_bit_4:
+  /* Whitening. */
+  bn.xor w17, w17, w17
+
   /* Compute r = secand(r, t). */
   lw   x10, 328(x2)
   addi x11, x0, 32
@@ -3375,6 +3457,9 @@ _handle_common_du:
   bn.sid x4, 0(x5++)
 
 _skip_bit_10:
+  /* Whitening. */
+  bn.xor w17, w17, w17
+
   /* Compute r = secand(r, t). */
   lw   x10, 716(x2)
   addi x11, x0, 32
