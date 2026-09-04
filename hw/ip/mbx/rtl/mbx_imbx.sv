@@ -45,12 +45,16 @@ module mbx_imbx #(
   // Status signals from the FSM
   logic mbx_empty, mbx_write, mbx_read, mbx_sys_abort;
 
+  logic imbx_range_invalid;
+  assign imbx_range_invalid = hostif_base_i > hostif_limit_i;
+
   // hostif_sram_write_req_o is actually sticky because the sys-side tlul_adapter_reg is
   // NOT ack'ed until the command is granted by the host-side tlul_adapter_host
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
   logic write_req;
-  assign write_req = (mbx_empty & sysif_data_write_valid_i) |
-                     (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
+  assign write_req = (mbx_empty & sysif_data_write_valid_i & !imbx_range_invalid) |
+                     (mbx_write & sysif_data_write_valid_i &
+                      (sram_write_ptr_q <= hostif_limit_i) &!imbx_range_invalid);
 
   // Waiting for a write request to be accepted onto the TL-UL bus; reset state if the host side
   // is acknowledging an Abort request from the SoC side.
@@ -59,8 +63,8 @@ module mbx_imbx #(
                        ~hostif_control_abort_clear_i;
 
   // Raise an error if the requester tries to write beyond the limit
-  assign imbx_overflow_error_set_o = mbx_write & sysif_data_write_valid_i &
-                                    (sram_write_ptr_q > hostif_limit_i);
+  assign imbx_overflow_error_set_o = sysif_data_write_valid_i &
+      (imbx_range_invalid | (mbx_write & (sram_write_ptr_q > hostif_limit_i)));
 
   // Create a sticky TL-UL write request until it's granted
   logic req_q;
