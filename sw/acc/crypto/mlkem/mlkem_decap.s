@@ -145,10 +145,6 @@ _continue:
   la   x6, mtmp
   addi x4, x0, 1
   loopi 2, 11
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
     bn.lid x0, 0(x5++)
     loopi 16, 5
       bn.shv.16h w2, w0 >> 15
@@ -159,6 +155,10 @@ _continue:
       bn.shv.16h w0, w0 << 1
     endloop
     bn.sid x4, 0(x6++)
+    /* Whitening. */
+    bn.xor w0, w0, w0
+    bn.xor w1, w1, w1
+    bn.xor w2, w2, w2
   endloop
 
   /* Initialize SHA3-512 operation. */
@@ -171,12 +171,12 @@ _continue:
   csrrw   x0, kmac_cfg, x5
   /* Send m. */
   la      x5, mtmp
-  bn.xor  w0, w0, w0    /* Whitening. */
   bn.lid  x0, 0(x5++)
   bn.wsrw kmac_msg, w0  /* m[0] */
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg1, w0 /* m[1] */
+  bn.xor  w0, w0, w0    /* Whitening. */
   /* Send h. */
   la      x5, dptr_h
   lw      x5, 0(x5)
@@ -186,19 +186,19 @@ _continue:
   bn.wsrw kmac_msg1, w0 /* 0 */
   /* Retrieve K_true. */
   la      x5, kr
-  bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
+  bn.xor  w0, w0, w0    /* Whitening. */
   /* Retrieve r'. */
-  bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
+  bn.xor  w0, w0, w0    /* Whitening. */
 
 #else
   /* Initialize SHA3-512 operation. */
@@ -247,6 +247,7 @@ _continue:
   bn.xor  w0, w0, w0 /* Whitening. */
   bn.lid  x0, 64(x5)
   bn.wsrw kmac_msg1, w0
+  bn.xor  w0, w0, w0 /* Whitening. */
 #endif
 
   /* Send c. */
@@ -263,12 +264,12 @@ _continue:
   endloop
   /* Retrieve K_false. */
   la      x5, ss_false
-  bn.xor  w0, w0, w0 /* Whitening. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
   bn.xor  w0, w0, w0 /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5)
+  bn.xor  w0, w0, w0 /* Whitening. */
 #else
   loop x5, 2
     bn.lid  x0, 0(x10++)

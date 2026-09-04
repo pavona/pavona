@@ -867,8 +867,8 @@ _continue_compute_v:
   la         x11, twiddles_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
 
@@ -879,8 +879,8 @@ _continue_compute_v:
   la  x12, twiddles_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul
+    jal x1, whitening
     add x10, x8, x0
   endloop
   add     x24, x11, x0
@@ -928,8 +928,8 @@ _handle_k4_compute_v:
   la         x11, twiddles_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
 
@@ -940,8 +940,8 @@ _handle_k4_compute_v:
   la  x12, twiddles_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x8, x0
   endloop
   add     x24, x11, x0
@@ -974,8 +974,8 @@ _handle_k3_compute_v:
   la         x11, twiddles_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
 
@@ -986,8 +986,8 @@ _handle_k3_compute_v:
   la  x12, twiddles_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x8, x0
   endloop
   add     x24, x11, x0
@@ -1013,8 +1013,8 @@ _handle_k2_compute_v:
   la         x11, twiddles_ntt
   add        x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
 
@@ -1031,8 +1031,8 @@ _handle_k2_compute_v:
   la  x12, twiddles_basemul
   la  x13, mpoly_v
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x8, x0
   endloop
 
@@ -1041,8 +1041,8 @@ _handle_k2_compute_v:
   la  x11, twiddles_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -1051,12 +1051,11 @@ _handle_k2_compute_v:
   la  x10, mpoly_v
   la  x11, mpoly_k
   add x12, x10, x0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal    x1, poly_add
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    jal    x1, poly_add
-    nop
   endloop
 
   /* Generate epp. */
@@ -1074,12 +1073,11 @@ _handle_k2_compute_v:
   la  x10, mpoly_v
   la  x11, mpoly_epp
   add x12, x10, x0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal    x1, poly_add
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    jal    x1, poly_add
-    nop
   endloop
 
   /* Generate ep[0]. */
@@ -1135,7 +1133,7 @@ _handle_k2_compute_v:
   slli x23, x8, 8   /* (k - 1) * 0x0100 */
   addi x23, x23, -1
 
-  loop x8, 117
+  loop x8, 116
     /* Generate at[i][0]. */
     la   x11, poly_at
     jal  x1, poly_gen_matrix
@@ -1157,8 +1155,8 @@ _handle_k2_compute_v:
     la         x12, twiddles_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul
+      jal x1, whitening
       add x10, x22, x0
     endloop
     add     x24, x11, x0
@@ -1186,8 +1184,8 @@ _handle_k2_compute_v:
       la         x12, twiddles_basemul
       la         x13, mpoly_b
       loopi NSHARES, 3
-        jal x1, whitening
         jal x1, basemul_acc
+        jal x1, whitening
         add x10, x22, x0
       endloop
       add     x24, x11, x0
@@ -1207,8 +1205,8 @@ _handle_k2_compute_v:
     la         x12, twiddles_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul_acc
+      jal x1, whitening
       add x10, x22, x0
     endloop
 
@@ -1217,8 +1215,8 @@ _handle_k2_compute_v:
     la  x11, twiddles_intt
     add x12, x10, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, intt
+      jal x1, whitening
       nop
     endloop
     bn.wsrw mod, w16
@@ -1235,12 +1233,11 @@ _handle_k2_compute_v:
     la  x10, mpoly_b
     la  x11, mpoly_ep
     add x12, x10, x0
-    loopi NSHARES, 4
+    loopi NSHARES, 3
+      jal    x1, poly_add
       /* Whitening. */
       bn.xor w0, w0, w0
       bn.xor w1, w1, w1
-      jal    x1, poly_add
-      nop
     endloop
 
     /* Generate ep[i + 1]. */
@@ -1287,8 +1284,8 @@ _handle_k2_compute_v:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul
+    jal x1, whitening
     add x10, x22, x0
   endloop
   add     x24, x11, x0
@@ -1316,8 +1313,8 @@ _handle_k2_compute_v:
     la         x12, twiddles_basemul
     la         x13, mpoly_b
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul_acc
+      jal x1, whitening
       add x10, x22, x0
     endloop
     add     x24, x11, x0
@@ -1337,8 +1334,8 @@ _handle_k2_compute_v:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x22, x0
   endloop
 
@@ -1347,8 +1344,8 @@ _handle_k2_compute_v:
   la  x11, twiddles_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -1357,12 +1354,11 @@ _handle_k2_compute_v:
   la  x10, mpoly_b
   la  x11, mpoly_ep
   add x12, x10, x0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal    x1, poly_add
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    jal    x1, poly_add
-    nop
   endloop
 
   /* Compare b and c[i * cu : (i + 1) * cu]. Accumulate output to r. */
@@ -1397,8 +1393,8 @@ _handle_k2_compute_b:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul
+    jal x1, whitening
     add x10, x22, x0
   endloop
   add     x24, x11, x0
@@ -1417,8 +1413,8 @@ _handle_k2_compute_b:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x22, x0
   endloop
 
@@ -1427,8 +1423,8 @@ _handle_k2_compute_b:
   la  x11, twiddles_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -1445,12 +1441,11 @@ _handle_k2_compute_b:
   la   x10, mpoly_b
   la   x11, mpoly_ep
   addi x12, x10, 0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal    x1, poly_add
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    jal    x1, poly_add
-    nop
   endloop
 
   /* Generate ep[1]. */
@@ -1494,8 +1489,8 @@ _handle_k2_compute_b:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul
+    jal x1, whitening
     add x10, x22, x0
   endloop
   add     x24, x11, x0
@@ -1514,8 +1509,8 @@ _handle_k2_compute_b:
   la         x12, twiddles_basemul
   la         x13, mpoly_b
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x22, x0
   endloop
 
@@ -1524,8 +1519,8 @@ _handle_k2_compute_b:
   la  x11, twiddles_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -1534,12 +1529,11 @@ _handle_k2_compute_b:
   la  x10, mpoly_b
   la  x11, mpoly_ep
   add x12, x10, x0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal    x1, poly_add
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
-    jal    x1, poly_add
-    nop
   endloop
 
   /* Compare b and c[i * cu : (i + 1) * cu]. Accumulate output to r. */

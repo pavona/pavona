@@ -125,6 +125,7 @@ _continue:
   bn.xor w0, w0, w0 /* Whitening. */
   bn.lid x0, 96(x5)
   bn.sid x0, 32(x6)
+  bn.xor w0, w0, w0 /* Whitening. */
 #else
   bn.lid x0, 32(x5)
   bn.sid x0, 0(x6)

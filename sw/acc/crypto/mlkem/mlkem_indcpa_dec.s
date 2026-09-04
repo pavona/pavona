@@ -173,12 +173,11 @@ indcpa_dec:
   /* Unpack dk_pke[0]. */
   add x10, x9, x0
   add x11, x21, x0
-  loopi NSHARES, 4
+  loopi NSHARES, 3
+    jal     x1, poly_frombytes
     /* Whitening. */
     bn.xor  w0, w0, w0
     bn.xor  w1, w1, w1
-    jal     x1, poly_frombytes
-    nop
   endloop
   add x9, x10, x0
 
@@ -207,24 +206,23 @@ indcpa_dec:
   add x12, x25, x0
   add x13, x23, x0
   loopi NSHARES, 4
-    jal x1, whitening
     add x10, x22, x0
     jal x1, basemul
+    jal x1, whitening
     nop
   endloop
 
   /*** Step 2: accumulate the remaining products, for j = 1..k - 1. ***/
   addi x19, x19, -1
-  loop x19, 32
+  loop x19, 31
     /* Unpack dk_pke[j]. */
     add x10, x9, x0
     add x11, x21, x0
-    loopi NSHARES, 4
+    loopi NSHARES, 3
+      jal    x1, poly_frombytes
       /* Whitening. */
       bn.xor w0, w0, w0
       bn.xor w1, w1, w1
-      jal    x1, poly_frombytes
-      nop
     endloop
     add x9, x10, x0
 
@@ -254,9 +252,9 @@ indcpa_dec:
     add x12, x25, x0
     add x13, x23, x0
     loopi NSHARES, 4
-      jal x1, whitening
       add x10, x22, x0
       jal x1, basemul_acc
+      jal x1, whitening
       nop
     endloop
     nop
@@ -267,8 +265,8 @@ indcpa_dec:
   la  x11, twiddles_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
