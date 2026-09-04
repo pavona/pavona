@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/aon_timer/data:all_files",
+        "//hw/ip/aon_timer/rtl:all_files",
     ],
 )
 

@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/otp_macro/data:all_files",
+        "//hw/ip/otp_macro/rtl:all_files",
     ],
 )
 

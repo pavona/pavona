@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_dragonfly/ip_autogen/ac_range_check/rtl:all_files"],
 )
 
 filegroup(

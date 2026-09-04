@@ -19,6 +19,14 @@ Currently, it can output:
 The standard `--help` and `--version` command line flags are supported to print the usage and version information.
 Because the version includes information on libraries (which may be different between systems) reporting the version output is sometimes useful when issues are reported.
 
+### Running from Bazel
+
+The register tool can also generate register RTL with an IP block's `gen_regs` Bazel target.
+For example:
+```shell
+$ ./bazelisk.sh run //hw/ip/uart/rtl:gen_regs  # generates uart_reg_pkg.sv and uart_reg_top.sv
+```
+
 ### Setup and Examples
 
 Setup and examples of the tool are given in the README.md file in the `util/reggen` directory.
