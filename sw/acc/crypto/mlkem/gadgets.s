@@ -505,6 +505,12 @@ _rej_sample_loop:
   beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
+  /* Whitening. */
+  bn.xor  w0, w0, w0
+  bn.xor  w3, w3, w3
+  bn.xor  w4, w4, w4
+  bn.wsrw acc, w31
+  bn.wsrw acch, w31
   ret
 
 /**
@@ -567,6 +573,8 @@ refreshmodq:
     /* Whitening. */
     bn.xor       w0, w0, w0
   endloop
+  /* Whitening. */
+  bn.xor w1, w1, w1
 
   /* Restore stack. */
   addi x2, x2, 544
@@ -613,6 +621,26 @@ poly_to_bitsliced:
     bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
+
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
+  bn.xor w2, w2, w2
+  bn.xor w3, w3, w3
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+  bn.xor w6, w6, w6
+  bn.xor w7, w7, w7
+  bn.xor w8, w8, w8
+  bn.xor w9, w9, w9
+  bn.xor w10, w10, w10
+  bn.xor w11, w11, w11
+  bn.xor w12, w12, w12
+  bn.xor w13, w13, w13
+  bn.xor w14, w14, w14
+  bn.xor w15, w15, w15
+  bn.xor w28, w28, w28
+  bn.xor w29, w29, w29
   ret
 
 /**
@@ -660,6 +688,26 @@ poly_from_bitsliced:
     bn.sid x4, 0(x11++)
     addi   x4, x4, -1
   endloop
+
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
+  bn.xor w2, w2, w2
+  bn.xor w3, w3, w3
+  bn.xor w4, w4, w4
+  bn.xor w5, w5, w5
+  bn.xor w6, w6, w6
+  bn.xor w7, w7, w7
+  bn.xor w8, w8, w8
+  bn.xor w9, w9, w9
+  bn.xor w10, w10, w10
+  bn.xor w11, w11, w11
+  bn.xor w12, w12, w12
+  bn.xor w13, w13, w13
+  bn.xor w14, w14, w14
+  bn.xor w15, w15, w15
+  bn.xor w28, w28, w28
+  bn.xor w29, w29, w29
   ret
 
 /**
@@ -1265,7 +1313,7 @@ seconebitb2amodq:
   lw   x5, 1024(x2)
   addi x5, x5, 512 /* x_1 */
   add  x6, x2, x0  /* v */
-  loopi 16, 14
+  loopi 16, 18
     bn.lid       x0, 0(x5++)
     bn.subv.16h  w2, w0, w4
     /* Handle v_0. */
@@ -1275,6 +1323,9 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.addvm.16h w1, w0, w1
     bn.sid       x4, 0(x6)
+    /* Whitening. */
+    bn.xor       w1, w1, w1
+    bn.xor       w3, w3, w3
     /* Handle v_1. */
     bn.lid       x4, 512(x6)
     bn.and       w3, w1, w2
@@ -1282,7 +1333,13 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.sid       x4, 512(x6)
     addi         x6, x6, 32
+    /* Whitening. */
+    bn.xor       w1, w1, w1
+    bn.xor       w3, w3, w3
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w2, w2, w2
 
   /* Compute r = refreshmodq(v). */
   add x10, x2, x0
@@ -1357,6 +1414,8 @@ secb2amodq:
     bn.subv.16h w0, w1, w0
     bn.sid      x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
 
   /* Bitslice zp_0 and clear zp_1 (bitsliced). */
   addi   x10, x2, 32
@@ -1791,7 +1850,7 @@ _du_params_done:
    *  - x >>= s
    *  - x &= ((1 << (du + alpha)) - 1).
    */
-  loopi 2, 83
+  loopi 2, 84
     addi x4, x0, 15
     loopi 16, 44
       bn.lid          x0, 0(x10++)
@@ -1882,27 +1941,28 @@ _du_params_done:
     bn.xor w30, w30, w30
 
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w19, w19, w19
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
+    bn.xor  w0, w0, w0
+    bn.xor  w1, w1, w1
+    bn.xor  w2, w2, w2
+    bn.xor  w3, w3, w3
+    bn.xor  w4, w4, w4
+    bn.xor  w5, w5, w5
+    bn.xor  w6, w6, w6
+    bn.xor  w7, w7, w7
+    bn.xor  w8, w8, w8
+    bn.xor  w9, w9, w9
+    bn.xor  w10, w10, w10
+    bn.xor  w11, w11, w11
+    bn.xor  w12, w12, w12
+    bn.xor  w13, w13, w13
+    bn.xor  w14, w14, w14
+    bn.xor  w15, w15, w15
+    bn.xor  w19, w19, w19
+    bn.xor  w20, w20, w20
+    bn.xor  w21, w21, w21
+    bn.xor  w28, w28, w28
+    bn.xor  w29, w29, w29
+    bn.wsrw acc, w31
   endloop
 
   /* Compute c = seca2b(z), k = du + alpha = 24, share bytes = 768. */
@@ -1971,7 +2031,7 @@ masked_poly_frommsg:
 
   /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
   addi x4, x0, 1
-  loopi 2, 6
+  loopi 2, 7
     bn.lid x0, 0(x10++)
     loopi 16, 3
       bn.shv.16h w1, w0 >> 15
@@ -1980,6 +2040,7 @@ masked_poly_frommsg:
     endloop
     /* Whitening. */
     bn.xor w0, w0, w0
+    bn.xor w1, w1, w1
   endloop
 
   /* Compute mp = seconebitb2amodq(m). */
@@ -1991,7 +2052,7 @@ masked_poly_frommsg:
   la      x5, const_qp1_half_mul_2_16_modq /* ((q + 1) / 2) * (2^16) mod q. */
   addi    x4, x0, 1
   bn.lid  x4, 0(x5)
-  loopi 2, 8
+  loopi 2, 10
     loopi 16, 6
       bn.lid               x0, 0(x8)
       bn.mulv.16h.acc.z.lo w0, w0, w1
@@ -2001,7 +2062,9 @@ masked_poly_frommsg:
       bn.sid               x0, 0(x8++)
     endloop
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor  w0, w0, w0
+    bn.wsrw acc, w31
+    bn.wsrw acch, w31
   endloop
 
   /* Restore the output base pointer and stack. */
@@ -2227,6 +2290,8 @@ _continue_1:
     bn.subvm.16h w0, w0, w1
     bn.sid       x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
 
   /* Restore registers and stack. */
   lw   x8, 1220(x2)
@@ -2371,47 +2436,99 @@ masked_poly_getnoise_eta_1:
   bne  x8, x4, _getnoise_eta_2
 
   bn.wsrr w17, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w23, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w18, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w24, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w19, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w25, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
 
   bn.wsrr w20, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w26, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w21, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w27, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w22, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w30, kmac_digest1
+  /* Dummy instruction to whiten write path after reading kmac_digest1. */
+  bn.xor  w0, w0, w0
 
   jal x1, _bitslice_eta_3
 
-  bn.xor w17, w17, w17
   bn.mov w17, w23
-  bn.xor w18, w18, w18
+  /* Whiten used register and write path at the same time. */
+  bn.xor w23, w23, w23
   bn.mov w18, w24
-  bn.xor w19, w19, w19
+  /* Whiten used register and write path at the same time. */
+  bn.xor w24, w24, w24
   bn.mov w19, w25
-  bn.xor w20, w20, w20
+  /* Whiten used register and write path at the same time. */
+  bn.xor w25, w25, w25
   bn.mov w20, w26
-  bn.xor w21, w21, w21
+  /* Whiten used register and write path at the same time. */
+  bn.xor w26, w26, w26
   bn.mov w21, w27
-  bn.xor w22, w22, w22
+  /* Whiten used register and write path at the same time. */
+  bn.xor w27, w27, w27
   bn.mov w22, w30
+  /* Whiten used register and write path at the same time. */
+  bn.xor w30, w30, w30
 
   jal x1, _bitslice_eta_3
-
-  beq  x0, x0, _getnoise_common
+  beq x0, x0, _getnoise_common
 
 _getnoise_eta_2:
   bn.wsrr w17, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w21, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w18, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w22, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w19, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w23, kmac_digest1
+  /* Dummy instruction to whiten write path before reading kmac_digest. */
+  bn.xor  w0, w0, w0
+
   bn.wsrr w20, kmac_digest
+  /* Dummy instruction to whiten write path before reading kmac_digest1. */
+  bn.xor  w0, w0, w0
   bn.wsrr w24, kmac_digest1
+  /* Dummy instruction to whiten write path after reading kmac_digest1. */
+  bn.xor  w0, w0, w0
 
   addi x5, x0, 17
   addi x6, x0, 17
@@ -2460,6 +2577,15 @@ _getnoise_eta_2:
     bn.xor w28, w28, w28
     bn.xor w29, w29, w29
   endloop
+
+  /* Whitening. */
+  bn.xor w18, w18, w18
+  bn.xor w19, w19, w19
+  bn.xor w20, w20, w20
+  bn.xor w21, w21, w21
+  bn.xor w22, w22, w22
+  bn.xor w23, w23, w23
+  bn.xor w24, w24, w24
 
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
@@ -2639,6 +2765,12 @@ _bitslice_eta_3:
   bn.xor w13, w13, w13
   bn.xor w14, w14, w14
   bn.xor w15, w15, w15
+  bn.xor w17, w17, w17
+  bn.xor w18, w18, w18
+  bn.xor w19, w19, w19
+  bn.xor w20, w20, w20
+  bn.xor w21, w21, w21
+  bn.xor w22, w22, w22
   bn.xor w28, w28, w28
   bn.xor w29, w29, w29
   ret
@@ -3084,6 +3216,9 @@ _handle_common_dv:
   bn.sid  x4, 0(x5++)
 
 _skip_bit_4:
+  /* Whitening. */
+  bn.xor w17, w17, w17
+
   /* Compute r = secand(r, t). */
   lw   x10, 328(x2)
   addi x11, x0, 32
@@ -3490,6 +3625,9 @@ _handle_common_du:
   bn.sid x4, 0(x5++)
 
 _skip_bit_10:
+  /* Whitening. */
+  bn.xor w17, w17, w17
+
   /* Compute r = secand(r, t). */
   lw   x10, 716(x2)
   addi x11, x0, 32
