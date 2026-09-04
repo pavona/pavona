@@ -8,6 +8,7 @@ The ROM needs to prepare the system for executing a ROM_EXT, including ensuring 
 
 - [Secure Boot Specification](../../../../doc/security/specs/secure_boot/README.md)
 - [Mask ROM Specification](doc/rom_overview_specification.md)
+- [Memory Protection](doc/memory_protection.md)
 - [Manifest Format](../rom_ext/doc/manifest.md)
 - [Root Keys](doc/root_keys.md)
 - [Signature Verification](doc/sigverify.md)
