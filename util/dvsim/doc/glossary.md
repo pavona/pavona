@@ -1,5 +1,16 @@
 # Glossary of Terms
 
+## Batch group
+
+A batch group is a named subset of the configurations in a [primary configuration](#primary-configuration), used to divide the summary report of a [batch run](#batch-run) into sections.
+Groups are declared by writing `use_cfgs` as a dict of name to list of configurations instead of as a flat list, and each name becomes a heading row above its configurations in the summary table.
+The grouping affects only how the results are presented, not which jobs run or the order they run in.
+
+## Batch run
+
+A batch run is a single invocation over a [primary configuration](#primary-configuration), which runs the [regressions](#regressions) for every configuration it names and collates them into one summary report.
+This is how a whole top level, or the whole project, is exercised in one command rather than one DUT at a time.
+
 ## Build
 
 "Build" refers to the invocation of the EDA tool to compile and elaborate the provided top levels which results in the generation of an executable / database and all of its pre-requisites.
@@ -94,6 +105,25 @@ A filelist (a.k.a. "dot-f" file, since it typically has a `.f` extension) is a d
 While it is not formalized into a standard, it is widely supported by most, if not all, EDA tool vendors.
 In Pavona, this step is accomplished by [FuseSoC](https://fusesoc.readthedocs.io/).
 
+## Job
+
+A job is a single invocation of an EDA tool that DVSim dispatches to a machine and then monitors: one build, one run, a coverage merge or a coverage report.
+Each step of an [EDA tool flow](#eda-tool-flow) becomes one job, so the flows that build the design and run it in the same invocation have one job per DUT, while simulations have one build job plus one job per test iteration.
+A job is the unit the scheduler queues, that a [launcher](#launcher) sends to the [compute infrastructure](#compute-infrastructure), and whose pass or fail state is decided by matching patterns in its log rather than by its exit code.
+
+## Launcher
+
+A launcher is the part of DVSim that knows how to send a [job](#job) to one particular kind of [compute infrastructure](#compute-infrastructure), poll its status, measure how long it took, and clean up after it.
+Keeping it separate from the scheduler is what allows the same DUT configuration file to run unchanged on a single workstation or on a compute farm.
+DVSim ships launchers for local execution and for LSF, SGE, NC and Slurm.
+Which one is used is set by the `DVSIM_LAUNCHER` environment variable rather than by the DUT configuration file, because it is a property of the site rather than of the design.
+
+## Primary configuration
+
+A primary configuration is a [DUT configuration file](#dut-configuration-file) that lists other configuration files instead of test specifications, so that a single invocation covers many DUTs and produces a summary report across all of them.
+`--select-cfgs` narrows such a run to the named configurations.
+A primary configuration may also define `cfg_groups`, which are named sets of configurations carrying their own reseed and timeout overrides, selected with `--cfg-groups`.
+
 ## Random seed
 
 A random seed is an integer value used to initialize the pseudo-random number generator (PRNG) used during a simulation run.
@@ -105,13 +135,13 @@ Different seeds will produce different random sequences, allowing the same test 
 
 A regression is a group of tests that are labeled with a target name.
 When a regression is run, all of the tests it encapsulates are run.
-Please see [TBD]() for more details.
+Please see [running a regression](../README.md#choosing-what-to-run) for how to select one.
 
 DVSim provides these standard regression targets for all DUTs:
 - `smoke` (typically run in CI checks)
 - `nightly` (a full regression with a single seed and coverage enabled, that is run every night)
 - `weekly` (a full regression with coverage enabled, that is run every weekend)
-- `v1` / `v2` / `v3` (DVSim automatically extracts tests that are tagged V1 / V2 / V3 and creates a regression target).
+- `V1` / `V2` / `V2S` / `V3` (DVSim creates one target per verification stage, holding the tests mapped to the testpoints at that stage). These names are matched as written, so the uppercase form is the one to pass.
 - `all` (runs all tests with the preset reseeds, without coverage)
 - `all_once` (run all tests with only a single randomly chosen seed)
 
@@ -120,6 +150,7 @@ DVSim provides these standard regression targets for all DUTs:
 Reseeding refers to the number of times a test is run with a different random seed.
 Running a test multiple times with different seeds increases the probability of hitting corner cases and bugs.
 The reseed value for a test can be specified in the DUT configuration file or overridden on the command line via `--reseed`.
+`--reseed-multiplier` scales every configured value instead of replacing it, which runs more of everything while keeping the ratio between tests intact.
 
 ## Run
 
@@ -139,12 +170,19 @@ These are typically runtime plusargs (e.g. `+myarg=value`) or tool-specific runt
 A test specification may specify one or more run modes to be applied to it.
 Run modes may also be enabled on the command line.
 
+## Scratch directory
+
+The scratch directory (a.k.a. the scratch path) is where DVSim writes everything a flow produces: build databases, run directories, logs, coverage databases and reports.
+None of it belongs in the repository, and its location is set by the `scratch_path` variable in the project configuration, which for Pavona resolves to `{scratch_root}/{branch}/{name}-{flow}-{tool}`.
+Keying it on the branch is what keeps two branches built from the same DUT out of each other's way.
+Artifacts from earlier invocations are moved aside rather than overwritten, so a failure from a previous run is still there to debug.
+
 ## Sim modes
 
 Sim modes are the same as [build modes](#build-modes), but with the following distinctions:
 - A test specification cannot specify a sim mode as its build configuration.
 - Sim modes are additional build time options that are appended to each build configuration.
-- The can only be set on the command-line.
+- They can only be set on the command-line.
 
 ## TB
 
