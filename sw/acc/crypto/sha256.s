@@ -500,7 +500,6 @@ sha256_K:
 
 /* Working state. */
 .balign 32
-.globl state
 .weak state
 state:
 .zero 32

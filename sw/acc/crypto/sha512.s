@@ -866,7 +866,6 @@ ret
 .bss
 
 /* number of chunks to process */
-.globl n_chunks
 .weak n_chunks
 .balign 4
 n_chunks:

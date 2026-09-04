@@ -342,7 +342,6 @@ sha512_compact:
 .bss
 
 /* number of chunks to process */
-.globl sha512_n_chunks
 .weak sha512_n_chunks
 .balign 4
 sha512_n_chunks:

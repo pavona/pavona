@@ -351,43 +351,36 @@ p384_sign:
 .balign 32
 
 /* message to be signed */
-.globl msg
 .weak msg
 msg:
   .zero 64
 
 /* r component of signature */
-.globl r
 .weak r
 r:
   .zero 64
 
 /* s component of signature */
-.globl s
 .weak s
 s:
   .zero 64
 
 /* 1st scalar share d0 */
-.globl k0
 .weak k0
 k0:
   .zero 64
 
 /* 2nd scalar share d1 */
-.globl k1
 .weak k1
 k1:
   .zero 64
 
 /* 1st private key share d0 */
-.globl d0
 .weak d0
 d0:
   .zero 64
 
 /* 2nd private key share d1 */
-.globl d1
 .weak d1
 d1:
   .zero 64

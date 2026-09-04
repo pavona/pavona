@@ -450,37 +450,31 @@ p384_verify:
 .balign 32
 
 /* message to be signed */
-.globl msg
 .weak msg
 msg:
   .zero 64
 
 /* r component of signature */
-.globl r
 .weak r
 r:
   .zero 64
 
 /* s component of signature */
-.globl s
 .weak s
 s:
   .zero 64
 
 /* public key x-coordinate */
-.globl x
 .weak x
 x:
   .zero 64
 
 /* public key y-coordinate */
-.globl y
 .weak y
 y:
   .zero 64
 
 /* verification result (x1-coordinate) */
-.globl x_r
 .weak x_r
 x_r:
   .zero 64

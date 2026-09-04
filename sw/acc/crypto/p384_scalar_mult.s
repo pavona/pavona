@@ -199,25 +199,21 @@ p384_scalar_mult:
 .balign 32
 
 /* 1st scalar share d0 */
-.globl d0
 .weak d0
 d0:
   .zero 64
 
 /* 2nd scalar share d1 */
-.globl d1
 .weak d1
 d1:
   .zero 64
 
 /* x-coordinate */
-.globl x
 .weak x
 x:
   .zero 64
 
 /* y-coordinate */
-.globl y
 .weak y
 y:
   .zero 64

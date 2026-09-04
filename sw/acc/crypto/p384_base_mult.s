@@ -135,25 +135,21 @@ p384_base_mult:
 .balign 32
 
 /* 1st private key share d0 */
-.globl d0
 .weak d0
 d0:
   .zero 64
 
 /* 2nd private key share d1 */
-.globl d1
 .weak d1
 d1:
   .zero 64
 
 /* buffer for x-coordinate */
-.globl x
 .weak x
 x:
   .zero 64
 
 /* buffer for y-coordinate */
-.globl y
 .weak y
 y:
   .zero 64

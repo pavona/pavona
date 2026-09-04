@@ -357,28 +357,24 @@ ok:
   .zero 4
 
 /* x-coordinate */
-.globl x
 .weak x
 .balign 32
 x:
   .zero 64
 
 /* y-coordinate */
-.globl y
 .weak y
 .balign 32
 y:
   .zero 64
 
 /* Right side of Weierstrass equation */
-.globl rhs
 .weak rhs
 .balign 32
 rhs:
   .zero 64
 
 /* Left side of Weierstrass equation */
-.globl lhs
 .weak lhs
 .balign 32
 lhs:
