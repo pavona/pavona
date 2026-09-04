@@ -23,7 +23,6 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
     "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
@@ -32,6 +31,7 @@ load(
     "pavona_test",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "pavona_require_top", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -49,17 +49,20 @@ otp_json(
             count = 1,
             state = "TEST_UNLOCKED0",
         ),
-    ] + select({
-        "//hw/top:egret": [
-            otp_partition(
-                name = "CREATOR_SW_CFG",
-                items = {
-                    "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
-                },
-            ),
-        ],
-        "//hw/top:dragonfly": [],
-    }),
+    ] + pavona_select_top(
+        {
+            "egret": [
+                otp_partition(
+                    name = "CREATOR_SW_CFG",
+                    items = {
+                        "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+                    },
+                ),
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 otp_image(
@@ -97,6 +100,7 @@ pavona_test(
             "//hw/top_egret:sim_dv",
             "//hw/top_egret:sim_verilator",
             "//hw/top_dragonfly:sim_dv",
+            "//hw/top_dragonfly:sim_verilator",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -136,6 +140,7 @@ pavona_test(
             "//hw/top_egret:sim_dv",
             "//hw/top_egret:sim_verilator",
             "//hw/top_dragonfly:sim_dv",
+            "//hw/top_dragonfly:sim_verilator",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -161,6 +166,7 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
             "//hw/top_egret:sim_verilator": None,
             "//hw/top_dragonfly:sim_dv": None,
+            "//hw/top_dragonfly:sim_verilator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # We need to specify the manifest because the simulation environments do not
@@ -292,13 +298,16 @@ pavona_test(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_egret:sim_verilator_rom_with_fake_keys": None,
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_dragonfly:sim_verilator_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # Note: This test never prints a failure message so it will fail only
@@ -323,7 +332,8 @@ pavona_test(
     name = "rom_e2e_smoke",
     srcs = [":empty_test"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
@@ -332,11 +342,14 @@ pavona_test(
         "//hw/top_egret:silicon_creator": None,
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_dragonfly:sim_verilator": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     deps = [
         "//sw/device/lib/dif:spi_device",
@@ -348,18 +361,22 @@ pavona_test(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:sim_verilator": None,
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_dragonfly:sim_verilator": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     deps = [
         "//sw/device/lib/dif:hmac",
@@ -383,7 +400,6 @@ pavona_test(
         "//hw/top:pinmux_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",

@@ -4,7 +4,18 @@
 
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
+#if defined(PAVONA_IS_EGRET)
 #include "hw/top_egret/sw/autogen/top_egret_memory.h"
+
+#define TOPLEVEL_CONST(x) TOP_EGRET_##x
+
+#define TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR
+#define TOP_EGRET_ROM_CTRL0_ROM_SIZE_BYTES TOP_EGRET_ROM_CTRL_ROM_SIZE_BYTES
+#elif defined(PAVONA_IS_DRAGONFLY)
+#include "hw/top_dragonfly/sw/autogen/top_dragonfly_memory.h"
+
+#define TOPLEVEL_CONST(x) TOP_DRAGONFLY_##x
+#endif
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg
@@ -62,45 +73,44 @@ rom_epmp_init:
   csrw pmpaddr1, t0
 
   // ROM
-  li   t0, NAPOT(TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR, TOP_EGRET_ROM_CTRL_ROM_SIZE_BYTES)
+  li   t0, NAPOT(TOPLEVEL_CONST(ROM_CTRL0_ROM_BASE_ADDR), TOPLEVEL_CONST(ROM_CTRL0_ROM_SIZE_BYTES))
   csrw pmpaddr2, t0
 
-  // ROM_EXT TEXT (configured after signature verification)
-  csrw pmpaddr3, zero // ROM_EXT TEXT low
-  csrw pmpaddr4, zero // ROM_EXT TEXT high
-
-  // eFLASH
-  li   t0, NAPOT(TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR, TOP_EGRET_FLASH_CTRL_MEM_SIZE_BYTES)
-  csrw pmpaddr5, t0
-
   // MMIO
-  li   t0, TOR(TOP_EGRET_MMIO_BASE_ADDR)
+  li   t0, TOR(TOPLEVEL_CONST(MMIO_BASE_ADDR))
   csrw pmpaddr10, t0
-  li   t0, TOR(TOP_EGRET_MMIO_BASE_ADDR + TOP_EGRET_MMIO_SIZE_BYTES)
+  li   t0, TOR(TOPLEVEL_CONST(MMIO_BASE_ADDR) + TOPLEVEL_CONST(MMIO_SIZE_BYTES))
   csrw pmpaddr11, t0
 
-  // Debug ROM
-  li   t0, NAPOT(TOP_EGRET_RV_DM_MEM_BASE_ADDR, TOP_EGRET_RV_DM_MEM_SIZE_BYTES)
+  // FLASH memory containing silicon creator firmware at rest. Unset here in
+  // designs with a second metal ROM stage.
+#ifndef HAS_ROM_CTRL1
+  li   t0, NAPOT(TOPLEVEL_CONST(FLASH_CTRL_MEM_BASE_ADDR), TOPLEVEL_CONST(FLASH_CTRL_MEM_SIZE_BYTES))
   csrw pmpaddr13, t0
+#endif
 
   // Stack guard
   la   t0, _epmp_stack_guard_na4
   csrw pmpaddr14, t0
 
   // RAM
-  li   t0, NAPOT(TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR, TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES)
+  li   t0, NAPOT(TOPLEVEL_CONST(SRAM_CTRL_MAIN_RAM_BASE_ADDR), TOPLEVEL_CONST(SRAM_CTRL_MAIN_RAM_SIZE_BYTES))
   csrw pmpaddr15, t0
 
   // Set PMP configuration registers.
-  li   t0, CFG_INDEX(1  % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX) | /* ROM TEXT    */ \
-           CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
-  li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
-  li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
-           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
-           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
+  li   t0, CFG_INDEX(1 %  4, EPMP_CFG_A_TOR   | EPMP_CFG_LRX)  | /* ROM TEXT    */ \
+           CFG_INDEX(2 %  4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)     /* ROM         */
+  li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)    /* MMIO        */
+#ifdef HAS_ROM_CTRL1
+  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)    | /* Stack Guard */ \
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)    /* RAM         */
+#else
+  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)   | /* FLASH       */ \
+           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)    | /* Stack Guard */ \
+           CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)    /* RAM         */
+#endif
   csrw pmpcfg0, t0
-  csrw pmpcfg1, t1
+  csrw pmpcfg1, zero
   csrw pmpcfg2, t2
   csrw pmpcfg3, t3
 

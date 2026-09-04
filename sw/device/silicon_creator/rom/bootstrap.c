@@ -8,17 +8,22 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top/flash_ctrl_regs.h"
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
+
+#ifdef HAS_FLASH_CTRL
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+
+#include "hw/top/flash_ctrl_regs.h"
+#endif
 
 static const dt_gpio_t kGpioDt = kDtGpio;
 
 rom_error_t bootstrap_chip_erase(void) {
+#ifdef HAS_FLASH_CTRL
   flash_ctrl_bank_erase_perms_set(kHardenedBoolTrue);
   rom_error_t err_0 = flash_ctrl_data_erase(0, kFlashCtrlEraseTypeBank);
   rom_error_t err_1 = flash_ctrl_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
@@ -27,23 +32,32 @@ rom_error_t bootstrap_chip_erase(void) {
 
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 rom_error_t bootstrap_erase_verify(void) {
+#ifdef HAS_FLASH_CTRL
   rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
   rom_error_t err_1 = flash_ctrl_data_erase_verify(
       FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
   HARDENED_RETURN_IF_ERROR(err_0);
   return err_1;
+#else
+  return kErrorBootstrapNotSupported;
+#endif
 }
 
 hardened_bool_t bootstrap_requested(void) {
+#ifdef DISCRETE_OTP_MAP
   uint32_t bootstrap_dis =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);
   if (launder32(bootstrap_dis) == kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
   HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
+#endif
 
   // A single read is sufficient since we expect strong pull-ups on the strap
   // pins.  We assume pinmux has already been configured (by pinmux_init) to

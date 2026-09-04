@@ -24,7 +24,7 @@ bool test_main(void) {
 #endif
 
   // Check image of the expected size.
-  const manifest_t *manifest = boot_policy_manifest_a_get();
+  const manifest_t *manifest = boot_policy_manifest_get(kSlotA);
   LOG_INFO("Image Length (bytes) = %d", manifest->length);
   CHECK(manifest->length > CHIP_ROM_EXT_SIZE_MAX);
   CHECK(manifest->length <= CHIP_ROM_EXT_RESIZABLE_SIZE_MAX);

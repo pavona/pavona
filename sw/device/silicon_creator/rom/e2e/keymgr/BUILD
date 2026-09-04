@@ -22,6 +22,7 @@ load(
     "qemu_params",
     "verilator_params",
 )
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -58,7 +59,13 @@ rom_e2e_keymgr_init_configs = [
 [
     otp_image(
         name = "otp_img_keymgr_{}".format(config["name"]),
-        src = "//hw/top_egret/data/otp:otp_json_rma",
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_rma",
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
         visibility = ["//visibility:private"],
     )
@@ -71,7 +78,8 @@ rom_e2e_keymgr_init_configs = [
         srcs = [":rom_e2e_keymgr_init_test.c"],
         dv = dv_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom:mask_rom",
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
         ),
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
@@ -80,6 +88,8 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_egret:sim_dv": None,
             "//hw/top_egret:sim_verilator": None,
             "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_dragonfly:sim_dv": None,
+            "//hw/top_dragonfly:sim_verilator": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
@@ -94,7 +104,8 @@ rom_e2e_keymgr_init_configs = [
         verilator = verilator_params(
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom:mask_rom",
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
         ),
         deps = [
             "//sw/device/lib/dif:keymgr",

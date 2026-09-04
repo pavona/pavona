@@ -178,17 +178,6 @@ _second_rom_start_boot:
   li x30, 0x0
   li x31, 0x0
 
-  // 2nd stage PMP setting
-  // Reset ROM0 slots
-  li   t0, 0
-  csrw pmpaddr0, t0
-  csrw pmpaddr1, t0
-  csrw pmpaddr2, t0
-  csrw pmpcfg0, t0
-  // Update end of text region for ROM1
-  la   t0, _epmp_second_text_tor_hi
-  csrw pmpaddr5, t0
-
   /**
    * Setup C Runtime
    */

@@ -154,10 +154,8 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  // Reclaim entries 0 ~ 7 from ROM and ROM_EXT IMM_SECTION.
-  for (int8_t i = 7; i >= 0; --i) {
-    epmp_clear((uint8_t)i);
-  }
+  // Clear metal ROM/immutable section access slots in ePMP.
+  epmp_advance_boot_stage();
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Check that the retention RAM is initialized.
@@ -269,8 +267,6 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  epmp_clear_lock_bits();
-
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Configure address translation, compute the epmp regions and the entry
@@ -289,33 +285,29 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                           (uintptr_t)manifest, (size_t)_owner_virtual_size);
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
-      // Unlock read-only for the whole rom_ext virtual memory.
-      HARDENED_RETURN_IF_ERROR(epmp_state_check());
-      epmp_set_napot(
-          4,
-          (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
-                          .end = (uintptr_t)_owner_virtual_start_address +
-                                 (uintptr_t)_owner_virtual_size},
-          kEpmpPermReadOnly);
-      HARDENED_RETURN_IF_ERROR(epmp_state_check());
-
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
       // TODO(#13513): Harden these calculations.
       text_region.start = owner_vma_get(manifest, text_region.start);
       text_region.end = owner_vma_get(manifest, text_region.end);
       entry_point = owner_vma_get(manifest, entry_point);
+      // Unlock read-only for the whole owner virtual memory.
+      epmp_region_t owner_virtual = {
+          .start = (uintptr_t)_owner_virtual_start_address,
+          .end = (uintptr_t)_owner_virtual_start_address +
+                 (uintptr_t)_owner_virtual_size};
+      epmp_prepare_boot_stage(text_region, owner_virtual);
+      HARDENED_RETURN_IF_ERROR(epmp_state_check());
       break;
     case kHardenedBoolFalse:
       HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
+      // Allow execution of owner stage executable code (text) sections.
+      epmp_prepare_boot_stage_rx(text_region);
+      HARDENED_RETURN_IF_ERROR(epmp_state_check());
       break;
     default:
       HARDENED_TRAP();
   }
-
-  // Allow execution of owner stage executable code (text) sections.
-  epmp_set_tor(2, text_region, kEpmpPermReadExecute);
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Lock the address translation windows.
   ibex_addr_remap_lockdown(0);

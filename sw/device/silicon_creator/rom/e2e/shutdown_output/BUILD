@@ -36,13 +36,20 @@ load(
     "MSG_PASS",
     "MSG_TEMPLATE_BFV_LCV",
 )
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
 [
     otp_image(
         name = "otp_img_shutdown_output_{}".format(lc_state),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_" + lc_state,
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_" + lc_state,
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()
@@ -62,7 +69,8 @@ manifest(
         dv = dv_params(
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},
             otp = ":otp_img_shutdown_output_{}".format(lc_state),
-            rom = "//sw/device/silicon_creator/rom:mask_rom",
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
         ),
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_ONLY_KEY_STRUCTS,
@@ -71,6 +79,7 @@ manifest(
         exec_env = {
             "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_egret:sim_dv": None,
+            "//hw/top_dragonfly:sim_dv": None,
         },
         fpga = fpga_params(
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},

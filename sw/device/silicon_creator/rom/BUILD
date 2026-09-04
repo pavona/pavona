@@ -1,10 +1,11 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("//hw/top:defs.bzl", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_ip", "pavona_select_top")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
@@ -45,6 +46,8 @@ dual_cc_library(
         shared = ["boot_policy_ptrs.h"],
     ),
     deps = dual_inputs(
+        # On designs with onboard flash, ROM_EXT is held there; otherwise it
+        # lives in CTN memory, which is governed by the soc_proxy.
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -52,8 +55,11 @@ dual_cc_library(
         ],
         shared = [
             "//sw/device/silicon_creator/lib:manifest",
-            "//hw/top_egret/sw/autogen:top_egret",
-        ],
+        ] + pavona_if_ip(
+            "flash_ctrl",
+            ["//hw/top/dt:flash_ctrl"],
+            ["//hw/top/dt:soc_proxy"],
+        ),
     ),
 )
 
@@ -64,297 +70,27 @@ cc_library(
     deps = [
         ":boot_policy_ptrs",
         "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
-    ],
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib:boot_data"],
+        [],
+    ),
 )
 
 cc_test(
     name = "boot_policy_unittest",
     srcs = ["boot_policy_unittest.cc"],
+    # This test checks boot_data and manifest priority order, both of which are
+    # irrelevant in designs where the ROM_EXT is loaded to CTN SRAM.
+    target_compatible_with = pavona_require_ip("flash_ctrl"),
     deps = [
         ":boot_policy",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
-    ],
-)
-
-ld_library(
-    name = "linker_script",
-    script = "rom.ld",
-    deps = [
-        "//hw/top_egret/sw/autogen:top_egret_memory",
-        "//sw/device:info_sections",
-    ],
-)
-
-cc_library(
-    name = "rom_isrs",
-    srcs = [
-        "rom_isrs.c",
-        "//sw/device/silicon_creator/lib:flash_exc_handler",
-    ],
-    hdrs = ["rom_isrs.h"],
-    defines = [
-        "INTERRUPT_HANDLER=rom_interrupt_handler",
-    ],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:shutdown",
-    ],
-)
-
-cc_library(
-    name = "mask_rom_lib",
-    srcs = ["rom_start.S"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":rom_common",
-        ":rom_epmp",
-        "//hw/top:aon_timer_c_regs",
-        "//hw/top:ast_c_regs",
-        "//hw/top:clkmgr_c_regs",
-        "//hw/top:csrng_c_regs",
-        "//hw/top:edn_c_regs",
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top:gpio_c_regs",
-        "//hw/top:lc_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:pinmux_c_regs",
-        "//hw/top:pwrmgr_c_regs",
-        "//hw/top:rstmgr_c_regs",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:sensor_ctrl_c_regs",
-        "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib/base:chip",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "rom_common",
-    srcs = [
-        "rom.c",
-        "rom.h",
-    ],
-    deps = [
-        ":boot_policy",
-        ":boot_policy_ptrs",
-        ":bootstrap",
-        ":rom_epmp",
-        ":rom_state",
-        ":sigverify_keys_ecdsa_p256",
-        ":sigverify_keys_spx",
-        ":sigverify_otp_keys",
-        "//hw/top:aon_timer_c_regs",
-        "//hw/top/dt",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:acc_boot_services",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:chip_info",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:irq_asm",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:shutdown",
-        "//sw/device/silicon_creator/lib:stack_utilization",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/drivers:alert",
-        "//sw/device/silicon_creator/lib/drivers:ast",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:pwrmgr",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:sensor_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/device/silicon_creator/lib/drivers:watchdog",
-        "//sw/device/silicon_creator/lib/sigverify",
-        "@rom_hooks",
-    ],
-)
-
-[
-    # Generate targets with `sim_dv` and `sim_verilator` suffixes as expected
-    # by dvsim.
-    alias(
-        name = "mask_rom_{}".format(env),
-        actual = ":mask_rom",
-    )
-    for env in [
-        "sim_dv",
-        "sim_verilator",
-    ]
-]
-
-pavona_binary(
-    name = "mask_rom",
-    collect_code_coverage = 0,
-    exec_env = [
-        "//hw/top_egret:fpga_cw310",
-        "//hw/top_egret:fpga_cw340",
-        "//hw/top_egret:sim_dv_base",
-        "//hw/top_egret:sim_verilator_base",
-        "//hw/top_egret:sim_qemu_base",
-        "//hw/top_egret:silicon_creator",
-    ],
-    kind = "rom",
-    linker_script = ":linker_script",
-    transitive_features = [
-        "use_lld",
-        "lto",
-        "minsize",
-    ],
-    deps = [
-        ":mask_rom_lib",
-        # We depend on rom_isrs here rather than in mask_rom_lib so that the
-        # `rom_exception_handler` symbol remains unresolved and can be supplied
-        # by tests such as `rom_epmp_test`.
-        ":rom_isrs",
-    ],
-)
-
-# Create the legacy ROM target names so that existing splicing rules can find
-# the rom VMEM files.
-legacy_rom_targets(
-    suffixes = {
-        "fpga_cw310": ["//hw/top_egret:fpga_cw310"],
-        "fpga_cw340": ["//hw/top_egret:fpga_cw340"],
-    },
-    target = "mask_rom",
-)
-
-[
-    filegroup(
-        name = "mask_rom_{}_hashfile".format(dev),
-        testonly = True,
-        srcs = [":mask_rom"],
-        output_group = "{}_hashfile".format(dev),
-    )
-    for dev in [
-        "fpga_cw310",
-        "fpga_cw340",
-        "silicon_creator",
-    ]
-]
-
-cc_library(
-    name = "rom_epmp",
-    srcs = [
-        "rom_epmp.c",
-        "rom_epmp_init.S",
-    ],
-    hdrs = ["rom_epmp.h"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
-)
-
-cc_library(
-    name = "rom_state",
-    srcs = ["rom_state.c"],
-    hdrs = ["rom_state.h"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:shutdown",
-    ],
-    alwayslink = True,
-)
-
-pavona_test(
-    name = "rom_epmp_test",
-    srcs = [
-        "rom_epmp_test.c",
-    ],
-    # This test doesn't use the OTTF and can only run in verilator right now.
-    #
-    # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting `kind = "rom"` makes the `pavona_test` rule aware
-    # of this, and instructs it to load the test image into ROM (rather than
-    # loading the default test ROM, or any other ROM that may be specified via
-    # Verilator or CW310 params).
-    exec_env = {
-        "//hw/top_dragonfly:sim_verilator": None,
-        "//hw/top_egret:sim_verilator": None,
-    },
-    kind = "rom",
-    linker_script = ":linker_script",
-    linkopts = [
-        "-Wl,--defsym=rom_test=1",
-    ],
-    deps = [
-        ":mask_rom_lib",
-        "//hw/top:flash_ctrl_c_regs",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:sram_ctrl",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:status",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:epmp_test_unlock",
-        "//sw/device/silicon_creator/lib:irq_asm",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
-)
-
-filegroup(
-    name = "scafi_deprecated_test_rom_bootstrap_srcs",
-    srcs = [
-        "bootstrap.c",
-        "bootstrap.h",
-        "//sw/device/silicon_creator/lib:bootstrap_srcs",
     ],
 )
 
@@ -363,20 +99,24 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        [
+            "//hw/top:flash_ctrl_c_regs",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        ],
+        [],
+    ),
 )
 
 cc_test(
@@ -387,7 +127,6 @@ cc_test(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
         "@googletest//:gtest_main",
     ],
@@ -405,6 +144,101 @@ cc_fuzz_test(
         ":bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_fuzzer_util",
         "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "boot_second_rom",
+    srcs = ["boot_second_rom.c"],
+    hdrs = ["boot_second_rom.h"],
+    deps = [
+        ":boot_policy",
+        ":rom_cfi",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:csr",
+        "//sw/device/silicon_creator/lib:rom_patch",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+    ],
+)
+
+cc_library(
+    name = "boot_rom_ext",
+    srcs = ["boot_rom_ext.c"],
+    hdrs = ["boot_rom_ext.h"],
+    defines = pavona_if_ip(
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
+        ["HAS_KEYMGR"],
+    ) + pavona_select_top(
+        {
+            "egret": ["DISCRETE_OTP_MAP"],
+            "dragonfly": ["INTEGRATED_OTP_MAP"],
+        },
+        [],
+    ),
+    deps = [
+        ":boot_policy",
+        ":boot_policy_ptrs",
+        ":rom_cfi",
+        ":rom_epmp",
+        ":sigverify_keys_ecdsa_p256",
+        ":sigverify_keys_spx",
+        ":sigverify_otp_keys",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:acc_boot_services",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:cfi",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib:stack_utilization",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:alert",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        [],
+    ) + pavona_if_ip(
+        "keymgr_dpe",
+        ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
+        ["//sw/device/silicon_creator/lib/drivers:keymgr"],
+    ),
+)
+
+cc_library(
+    name = "rom_isrs",
+    srcs = [
+        "rom_isrs.c",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib:flash_exc_handler"],
+        [],
+    ),
+    hdrs = ["rom_isrs.h"],
+    defines = [
+        "INTERRUPT_HANDLER=rom_interrupt_handler",
+    ],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
 
@@ -487,19 +321,339 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rom_cfi",
+    srcs = ["rom_cfi.c"],
+    hdrs = ["rom_cfi.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib:cfi",
+    ],
+)
+
+cc_library(
+    name = "rom_epmp",
+    srcs = [
+        "rom_epmp.c",
+        "rom_epmp_init.S",
+    ],
+    hdrs = ["rom_epmp.h"],
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + pavona_select_top(
+        {
+            "egret": ["PAVONA_IS_EGRET"],
+            "dragonfly": [
+                "PAVONA_IS_DRAGONFLY",
+                "HAS_ROM_CTRL1",
+            ],
+        },
+        [],
+    ),
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        "//hw/top/dt:rom_ctrl",
+        "//hw/top/dt:sram_ctrl",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//hw/top/dt:flash_ctrl"],
+        ["//hw/top/dt:soc_proxy"],
+    ) + pavona_select_top(
+        {
+            "egret": ["//hw/top_egret/sw/autogen:top_egret"],
+            "dragonfly": ["//hw/top_dragonfly/sw/autogen:top_dragonfly"],
+        },
+        [],
+    ),
+)
+
+cc_library(
+    name = "rom_state",
+    srcs = ["rom_state.c"],
+    hdrs = ["rom_state.h"],
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:cfi",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "rom_lib",
+    srcs = [
+        "rom.c",
+        "rom.h",
+        "rom_start.S",
+    ],
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + pavona_if_ip(
+        "sensor_ctrl",
+        ["HAS_SENSOR_CTRL"],
+        [],
+    ) + pavona_select_top(
+        {
+            "egret": ["DISCRETE_OTP_MAP"],
+            "dragonfly": [
+                "INTEGRATED_OTP_MAP",
+                "HAS_ROM_CTRL1",
+            ],
+        },
+        [],
+    ),
+    target_compatible_with = [PAVONA_CPU],
+    deps = [
+        ":bootstrap",
+        ":rom_cfi",
+        ":rom_epmp",
+        ":rom_state",
+        "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rstmgr_c_regs",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:irq_asm",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:ast",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:pwrmgr",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+        "@rom_hooks",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        [],
+    ) + pavona_if_ip(
+        "sensor_ctrl",
+        [
+            "//hw/top:sensor_ctrl_c_regs",
+            "//sw/device/silicon_creator/lib/drivers:sensor_ctrl",
+        ],
+        [],
+    ) + pavona_select_top(
+        {
+            "egret": [":boot_rom_ext"],
+            "dragonfly": [":boot_second_rom"],
+        },
+        [],
+    ),
+    alwayslink = True,
+)
+
+[
+    # Generate targets with `sim_dv` and `sim_verilator` suffixes as expected
+    # by dvsim.
+    alias(
+        name = "rom_{}".format(env),
+        actual = ":rom",
+    )
+    for env in [
+        "sim_dv",
+        "sim_verilator",
+    ]
+]
+
+ld_library(
+    name = "rom_common",
+    includes = ["rom_common.ld"],
+    deps = ["//sw/device:info_sections"],
+)
+
+ld_library(
+    name = "rom_single_stage",
+    script = "rom_single_stage.ld",
+    deps = [
+        ":rom_common",
+        "//hw/top:top_memory_ld",
+    ],
+)
+
+ld_library(
+    name = "rom_dual_stage",
+    script = "rom_dual_stage.ld",
+    deps = [
+        ":rom_common",
+        "//hw/top:top_memory_ld",
+    ],
+)
+
+pavona_binary(
+    name = "rom",
+    collect_code_coverage = 0,
+    exec_env = [
+        "//hw/top_egret:fpga_cw310",
+        "//hw/top_egret:fpga_cw340",
+        "//hw/top_egret:sim_dv_base",
+        "//hw/top_egret:sim_verilator_base",
+        "//hw/top_egret:sim_qemu_base",
+        "//hw/top_egret:silicon_creator",
+        "//hw/top_dragonfly:sim_dv_base",
+        "//hw/top_dragonfly:sim_verilator_base",
+    ],
+    kind = "rom",
+    linker_script = pavona_select_top(
+        {
+            "egret": ":rom_single_stage",
+            "dragonfly": ":rom_dual_stage",
+        },
+        ":rom_single_stage_ld",
+    ),
+    transitive_features = [
+        "use_lld",
+        "lto",
+        "minsize",
+    ],
+    deps = [
+        ":rom_lib",
+        # We depend on rom_isrs here rather than in rom_lib so that the
+        # `rom_exception_handler` symbol remains unresolved and can be supplied
+        # by tests such as `rom_epmp_test`.
+        ":rom_isrs",
+    ],
+)
+
+# Create the legacy ROM target names so that existing splicing rules can find
+# the rom VMEM files.
+legacy_rom_targets(
+    suffixes = {
+        "fpga_cw310": ["//hw/top_egret:fpga_cw310"],
+        "fpga_cw340": ["//hw/top_egret:fpga_cw340"],
+    },
+    target = "rom",
+)
+
+[
+    filegroup(
+        name = "rom_{}_hashfile".format(dev),
+        testonly = True,
+        srcs = [":rom"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in [
+        "fpga_cw310",
+        "fpga_cw340",
+        "silicon_creator",
+    ]
+]
+
+pavona_test(
+    name = "rom_epmp_test",
+    srcs = [
+        "rom_epmp_test.c",
+    ],
+    # This test doesn't use the OTTF and can only run in verilator right now.
+    #
+    # This test is designed to run and complete entirely in the ROM boot stage.
+    # Setting `kind = "rom"` makes the `pavona_test` rule aware
+    # of this, and instructs it to load the test image into ROM (rather than
+    # loading the default test ROM, or any other ROM that may be specified via
+    # Verilator or CW310 params).
+    exec_env = {
+        "//hw/top_egret:sim_verilator": None,
+        "//hw/top_dragonfly:sim_verilator": None,
+    },
+    kind = "rom",
+    linker_script = pavona_select_top(
+        {
+            "egret": ":rom_single_stage",
+            "dragonfly": ":rom_dual_stage",
+        },
+        ":rom_single_stage_ld",
+    ),
+    linkopts = [
+        "-Wl,--defsym=rom_test=1",
+    ],
+    deps = [
+        ":rom_epmp",
+        "//hw/top/dt",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:epmp_test_unlock",
+        "//sw/device/silicon_creator/lib:irq_asm",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        [
+            "//hw/top:flash_ctrl_c_regs",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        ],
+        [],
+    ) + pavona_if_ip(
+        "soc_proxy",
+        ["//hw/top:soc_proxy_c_regs"],
+        [],
+    ),
+)
+
+filegroup(
+    name = "scafi_deprecated_test_rom_bootstrap_srcs",
+    srcs = [
+        "bootstrap.c",
+        "bootstrap.h",
+        "//sw/device/silicon_creator/lib:bootstrap_srcs",
+    ],
+)
+
 output_groups(
     name = "pre_package",
     testonly = True,
-    srcs = [":mask_rom"],
+    srcs = [":rom"],
     groups = [
-        "fpga_cw310_binary",
-        "fpga_cw310_elf",
-        "fpga_cw310_rom",
-        "fpga_cw310_mapfile",
-        "fpga_cw340_binary",
-        "fpga_cw340_elf",
-        "fpga_cw340_rom",
-        "fpga_cw340_mapfile",
         "sim_dv_elf",
         "sim_dv_rom",
         "sim_dv_logs",
@@ -507,18 +661,33 @@ output_groups(
         "sim_verilator_elf",
         "sim_verilator_rom",
         "sim_verilator_mapfile",
-        "silicon_creator_binary",
-        "silicon_creator_elf",
-        "silicon_creator_rom",
-        "silicon_creator_mapfile",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "fpga_cw310_binary",
+                "fpga_cw310_elf",
+                "fpga_cw310_rom",
+                "fpga_cw310_mapfile",
+                "fpga_cw340_binary",
+                "fpga_cw340_elf",
+                "fpga_cw340_rom",
+                "fpga_cw340_mapfile",
+                "silicon_creator_binary",
+                "silicon_creator_elf",
+                "silicon_creator_rom",
+                "silicon_creator_mapfile",
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 pkg_files(
     name = "package",
     testonly = True,
     srcs = [":pre_package"],
-    prefix = "egret/rom",
+    prefix = "rom",
 )
 
 pavona_manual_test(
@@ -531,39 +700,53 @@ pavona_manual_test(
 )
 
 output_groups(
-    name = "mask_rom_binaries",
-    srcs = [":mask_rom"],
+    name = "rom_binaries",
+    srcs = [":rom"],
     groups = [
-        "fpga_cw310_binary",
-        "fpga_cw340_binary",
         "sim_dv_binary",
         "sim_verilator_binary",
-        "silicon_creator_binary",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "fpga_cw310_binary",
+                "fpga_cw340_binary",
+                "silicon_creator_binary",
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 output_groups(
-    name = "mask_rom_disassembly",
-    srcs = [":mask_rom"],
+    name = "rom_disassembly",
+    srcs = [":rom"],
     groups = [
-        "fpga_cw310_disassembly",
-        "fpga_cw340_disassembly",
         "sim_dv_disassembly",
         "sim_verilator_disassembly",
-        "silicon_creator_disassembly",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "fpga_cw310_disassembly",
+                "fpga_cw340_disassembly",
+                "silicon_creator_disassembly",
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 genrule(
     name = "rom_hashes",
     testonly = True,
     srcs = [
-        ":mask_rom_binaries",
+        ":rom_binaries",
     ],
     outs = ["rom_hashes.txt"],
     cmd = """
         echo "SHA256 of rom with real keys" > $@
-    for f in $(locations :mask_rom_binaries); do
+    for f in $(locations :rom_binaries); do
         if [[ "$$f" == *bin ]]; then
             name=$$(basename $$f)
         echo $$f >> $@
@@ -656,241 +839,4 @@ pavona_test(
     exec_env = {
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
     },
-)
-
-# First-stage boot ROM for integrated top-level designs.
-cc_library(
-    name = "base_rom_common",
-    srcs = [
-        "base_rom.c",
-        "base_rom.h",
-    ],
-    deps = [
-        ":base_rom_epmp",
-        ":sigverify_keys_ecdsa_p256",
-        ":sigverify_keys_spx",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:irq_asm",
-        "//sw/device/silicon_creator/lib:rom_patch",
-        "//sw/device/silicon_creator/lib:shutdown",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/drivers:alert",
-        "//sw/device/silicon_creator/lib/drivers:ast",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/device/silicon_creator/lib/drivers:watchdog",
-        "//sw/device/silicon_creator/lib/sigverify",
-    ],
-)
-
-cc_library(
-    name = "base_rom_lib",
-    srcs = ["base_rom_start.S"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":base_rom_common",
-        ":base_rom_epmp",
-        "//hw/top:aon_timer_c_regs",
-        "//hw/top:ast_c_regs",
-        "//hw/top:clkmgr_c_regs",
-        "//hw/top:csrng_c_regs",
-        "//hw/top:edn_c_regs",
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top:gpio_c_regs",
-        "//hw/top:lc_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:pinmux_c_regs",
-        "//hw/top:pwrmgr_c_regs",
-        "//hw/top:rstmgr_c_regs",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib/base:chip",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "base_rom_epmp",
-    srcs = [
-        "base_rom_epmp.c",
-        "base_rom_epmp_init.S",
-    ],
-    hdrs = ["base_rom_epmp.h"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
-        "//sw/device/silicon_creator/lib:epmp_state",
-    ],
-)
-
-ld_library(
-    name = "base_rom_linker_script",
-    script = "base_rom.ld",
-    deps = [
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly_memory",
-        "//sw/device:info_sections",
-        "//sw/device/silicon_creator/lib/base:static_critical_sections",
-    ],
-)
-
-pavona_binary(
-    name = "base_rom",
-    exec_env = [
-        "//hw/top_dragonfly:sim_dv_base",
-        "//hw/top_dragonfly:sim_verilator_base",
-    ],
-    kind = "rom",
-    linker_script = ":base_rom_linker_script",
-    transitive_features = [
-        "use_lld",
-        "lto",
-        "minsize",
-    ],
-    deps = [
-        ":base_rom_lib",
-    ],
-)
-
-cc_library(
-    name = "second_rom_common",
-    srcs = [
-        "second_rom.c",
-        "second_rom.h",
-    ],
-    deps = [
-        ":second_rom_epmp",
-        ":sigverify_keys_ecdsa_p256",
-        ":sigverify_keys_spx",
-        "//hw/top:aon_timer_c_regs",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:acc_boot_services",
-        "//sw/device/silicon_creator/lib:cfi",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:irq_asm",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:shutdown",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/drivers:alert",
-        "//sw/device/silicon_creator/lib/drivers:ast",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:keymgr_dpe",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:pwrmgr",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/device/silicon_creator/lib/drivers:watchdog",
-        "//sw/device/silicon_creator/lib/sigverify",
-    ],
-)
-
-cc_library(
-    name = "second_rom_lib",
-    srcs = ["second_rom_start.S"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":second_rom_common",
-        ":second_rom_epmp",
-        "//hw/top:aon_timer_c_regs",
-        "//hw/top:ast_c_regs",
-        "//hw/top:clkmgr_c_regs",
-        "//hw/top:csrng_c_regs",
-        "//hw/top:edn_c_regs",
-        "//hw/top:gpio_c_regs",
-        "//hw/top:lc_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:pinmux_c_regs",
-        "//hw/top:pwrmgr_c_regs",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib/base:chip",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "second_rom_epmp",
-    srcs = [
-        "second_rom_epmp.c",
-        "second_rom_epmp_init.S",
-    ],
-    hdrs = ["second_rom_epmp.h"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:epmp_state",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-    ],
-)
-
-ld_library(
-    name = "second_rom_linker_script",
-    script = "second_rom.ld",
-    deps = [
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly_memory",
-        "//sw/device:info_sections",
-        "//sw/device/silicon_creator/lib/base:static_critical_sections",
-    ],
-)
-
-pavona_binary(
-    name = "second_rom",
-    exec_env = [
-        "//hw/top_dragonfly:sim_dv_base",
-        "//hw/top_dragonfly:sim_verilator_base",
-    ],
-    kind = "rom",
-    linker_script = ":second_rom_linker_script",
-    rom_scramble_mode = "second-rom",
-    transitive_features = [
-        "use_lld",
-        "lto",
-        "minsize",
-    ],
-    deps = [
-        ":second_rom_lib",
-    ],
 )

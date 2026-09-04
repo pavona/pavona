@@ -918,12 +918,20 @@ dual_cc_library(
     copts = [
         "-Wno-gnu-flexible-array-initializer",
     ],
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ),
     deps = dual_inputs(
         device = [
-            "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
             "//hw/top/dt",
-        ],
+        ] + pavona_if_ip(
+            "flash_ctrl",
+            ["//hw/top:flash_ctrl_c_regs"],
+            [],
+        ),
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -1003,7 +1011,6 @@ cc_library(
     srcs = ["epmp.c"],
     hdrs = ["epmp.h"],
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",

@@ -98,6 +98,8 @@ pavona_binary(
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
         "//hw/top_egret:sim_dv",
         "//hw/top_egret:sim_verilator",
+        "//hw/top_dragonfly:sim_dv",
+        "//hw/top_dragonfly:sim_verilator",
     ],
     kind = "flash",
     spx_key = spx_key_for_lc_state(
@@ -106,7 +108,7 @@ pavona_binary(
     ),
     deps = [
         "//hw/top:otp_ctrl_c_regs",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        #"//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",

@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_EPMP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_EPMP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_EPMP_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_EPMP_H_
 
 #include <stdint.h>
 
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 
 #ifdef __cplusplus
@@ -36,31 +37,38 @@ extern "C" {
 
 /**
  * Initialise the ePMP in-memory copy of the register state to reflect the
- * hardware configuration expected at entry to the Base ROM C code.
+ * hardware configuration expected at entry to the ROM C code.
  *
  * The actual hardware configuration is performed separately, either by reset
  * logic or in assembly. This code must be kept in sync with any changes
  * to the hardware configuration.
  *
+ * @param lc_state The current lifecycle state to check for debug enable.
  */
-void base_rom_epmp_state_init(void);
+void second_rom_epmp_state_init(void);
 
 /**
- * Unlocks the Second ROM region for Read-Execute.
- *
- * The ePMP state is also updated to reflect the changes made to the hardware
- * configuration.
+ * Base address of the Mbox RAM.
  */
-void base_rom_epmp_unlock_second_rom_rx(void);
+uint32_t sram_ctrl_mbox_ram_base(void);
 
 /**
- * Unlocks the region for the Second ROM patches for Read-Execute.
- *
- * The ePMP state is also updated to reflect the changes made to the hardware
- * configuration.
- *
- * @param region Region covering the patch content to unlock.
+ * Size of the Mbox RAM.
  */
-void base_rom_epmp_unlock_second_rom_patch_ram(epmp_region_t region);
+uint32_t sram_ctrl_mbox_ram_size(void);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_BASE_ROM_EPMP_H_
+/**
+ * Base address of the CTN SRAM.
+ */
+uint32_t soc_proxy_ctn_base(void);
+
+/**
+ * Size of the CTN SRAM.
+ */
+uint32_t soc_proxy_ctn_size(void);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_SECOND_ROM_SECOND_ROM_EPMP_H_

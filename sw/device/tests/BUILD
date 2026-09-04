@@ -2688,17 +2688,17 @@ _KMAC_APP_ROM_LIST = [
         ["//hw/top_egret"],
     ),
     (
-        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
+        "//sw/device/silicon_creator/rom:rom_fpga_cw310_hashfile",
         "fpga_cw310_rom_with_fake_keys",
         ["//hw/top_egret"],
     ),
     (
-        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
+        "//sw/device/silicon_creator/rom:rom_fpga_cw310_hashfile",
         "fpga_cw310_sival",
         ["//hw/top_egret"],
     ),
     (
-        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile",
+        "//sw/device/silicon_creator/rom:rom_fpga_cw340_hashfile",
         "fpga_cw340_sival",
         ["//hw/top_egret"],
     ),

@@ -20,7 +20,7 @@ extern "C" {
  * The entry point address obtained from the ROM_EXT manifest must be cast to a
  * pointer to this type before being called.
  */
-typedef void rom_ext_entry_point(void);
+typedef void entry_point(void);
 
 /**
  * Manifests of ROM_EXTs in descending order according to their security
@@ -61,7 +61,6 @@ boot_policy_manifests_t boot_policy_manifests_get(void);
 OT_WARN_UNUSED_RESULT
 rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
                                        const boot_data_t *boot_data);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

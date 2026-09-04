@@ -32,12 +32,12 @@
         "//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke:1:new_rules",
         "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma:4"
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40000000",
         "+use_otp_image=OtpTypeCustom",
       ]
-      run_timeout_mins: 240
+      run_timeout_mins: 1440
     }
     {
       name: rom_e2e_shutdown_exception_c
@@ -46,7 +46,7 @@
         "//sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:new_rules",
         "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma:4"
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40000000",
         "+use_otp_image=OtpTypeCustom",
@@ -61,7 +61,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_unsigned:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/shutdown_output:otp_img_shutdown_output_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=20000000",
         "+use_otp_image=OtpTypeCustom",
@@ -76,7 +76,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -92,7 +92,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -108,7 +108,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -124,7 +124,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -140,7 +140,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -156,7 +156,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -172,7 +172,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -188,7 +188,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -204,7 +204,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -220,7 +220,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -236,7 +236,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -252,7 +252,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -268,7 +268,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -284,7 +284,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -300,7 +300,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0:2:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/boot_policy_valid:otp_img_boot_policy_valid_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -316,7 +316,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_test_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=600_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -332,7 +332,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -348,7 +348,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -364,7 +364,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -380,7 +380,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -396,7 +396,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_ecdsa_test_key_0:new_rules",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -412,7 +412,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_ecdsa_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -428,7 +428,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -444,7 +444,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -460,7 +460,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -476,7 +476,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_ecdsa_test_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -492,7 +492,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_ecdsa_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -508,7 +508,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -524,7 +524,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -540,7 +540,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_ecdsa_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e/sigverify_always:otp_img_sigverify_always_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=100_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -555,7 +555,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_test_unlocked0:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeCustom",
         "+sw_test_timeout_ns=410_000_000",
@@ -569,7 +569,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_dev:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeCustom",
         "+sw_test_timeout_ns=20000000",
@@ -583,7 +583,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeCustom",
         "+sw_test_timeout_ns=20000000",
@@ -597,7 +597,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_prod_end:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeCustom",
         "+sw_test_timeout_ns=20000000",
@@ -611,7 +611,7 @@
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0:1:ot_flash_binary",
         "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_rma:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeCustom",
         "+sw_test_timeout_ns=20000000",
@@ -624,7 +624,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_test_unlocked0_exec_disabled:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
@@ -638,7 +638,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
@@ -652,7 +652,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_rma_exec_disabled:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+use_jtag_dmi=1",
         "+use_otp_image=OtpTypeCustom",
@@ -667,7 +667,7 @@
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_test_unlocked0_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
@@ -683,7 +683,7 @@
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_dev_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
@@ -699,7 +699,7 @@
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:img_rma_exec_disabled:4",
         "//sw/device/examples/sram_program:sram_program:5",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_jtag_dmi=1",
@@ -715,7 +715,7 @@
         "//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:new_rules"
         "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma:4"
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40000000",
         "+use_otp_image=OtpTypeCustom",
@@ -729,7 +729,7 @@
         "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_meas:1:new_rules",
         "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_meas:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -743,7 +743,7 @@
         "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_no_meas:1:new_rules",
         "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_no_meas:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -757,7 +757,7 @@
         "//sw/device/silicon_creator/rom/e2e/keymgr:rom_e2e_keymgr_init_otp_invalid_meas:1:new_rules",
         "//sw/device/silicon_creator/rom/e2e/keymgr:otp_img_keymgr_otp_invalid_meas:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=40_000_000",
         "+use_otp_image=OtpTypeCustom",
@@ -772,7 +772,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_test_key_0:1:ot_flash_binary",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=200_000_000",
         "+use_otp_image=OtpTypeLcStRaw",
@@ -788,7 +788,7 @@
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_test_key_0:1:ot_flash_binary",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+do_creator_sw_cfg_ast_cfg=0",
         "+sw_test_timeout_ns=200_000_000",
@@ -808,7 +808,7 @@
         "//sw/device/silicon_creator/rom/e2e/release:rom_e2e_self_hash_test:1:new_rules",
         "//sw/device/silicon_creator/rom/e2e/release:otp_img_sigverify_spx_prod:4",
       ]
-      en_run_modes: ["sw_test_mode_mask_rom"]
+      en_run_modes: ["sw_test_mode_rom"]
       run_opts: [
         "+sw_test_timeout_ns=200_000_000",
         "+use_otp_image=OtpTypeCustom",

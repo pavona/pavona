@@ -40,15 +40,31 @@ dual_cc_library(
     hdrs = dual_inputs(
         host = ["mock_boot_data.h"],
     ),
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + pavona_select_top(
+        {
+            "egret": ["DISCRETE_OTP_MMAP"],
+            "dragonfly": ["INTEGRATED_OTP_MMAP"],
+        },
+        [],
+    ),
     deps = dual_inputs(
         device = [
             "//hw/top/dt",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_egret/sw/autogen:top_egret",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
-        ],
+        ] + pavona_if_ip(
+            "flash_ctrl",
+            [
+                "//hw/top:flash_ctrl_c_regs",
+                "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            ],
+            [],
+        ),
         host = [
             "//sw/device/lib/base:global_mock",
             "//sw/device/silicon_creator/testing:rom_test",
@@ -59,7 +75,6 @@ dual_cc_library(
             ":error",
             ":nonce",
             "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -457,15 +472,23 @@ cc_library(
     name = "bootstrap",
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
+    defines = pavona_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ),
     deps = [
         ":stack_utilization",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
-    ],
+    ] + pavona_if_ip(
+        "flash_ctrl",
+        ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+        [],
+    ),
 )
 
 filegroup(
@@ -652,16 +675,14 @@ cc_library(
     name = "rom_patch",
     srcs = ["rom_patch.c"],
     hdrs = ["rom_patch.h"],
-    target_compatible_with = pavona_require_top("dragonfly"),
     deps = [
         ":error",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
-        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify",
