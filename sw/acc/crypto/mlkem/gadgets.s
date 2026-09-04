@@ -883,9 +883,7 @@ seca2b:
 
   /* Build s = (x_0, 0). */
   add x7, x6, x0
-  loop x11, 3
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loop x11, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x6++)
   endloop
@@ -899,12 +897,12 @@ seca2b:
   loop x11, 1
     bn.sid x0, 0(x5++)
   endloop
-  loop x11, 3
+  loop x11, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
   endloop
+  /* Whitening. */
+  bn.xor w0, w0, w0
 
   /* Save registers. */
   add x4, x11, x0
@@ -983,11 +981,13 @@ seca2bmodq:
   /* Initialize cin = 0. */
   bn.xor w2, w2, w2
 
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
+  bn.xor w3, w3, w3
+
   /* Bits 0..7: p[i] = 1. */
-  loopi 8, 9
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi 8, 7
     bn.lid x0, 0(x10++)
     bn.not w3, w0
     bn.xor w1, w3, w2
@@ -998,9 +998,6 @@ seca2bmodq:
   endloop
 
   /* Bit 8: p[i] = 0. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
   bn.lid x0, 0(x10++)
   bn.xor w1, w0, w2
   bn.sid x4, 0(x5++)
@@ -1008,9 +1005,6 @@ seca2bmodq:
   bn.xor w2, w2, w0
 
   /* Bit 9: p[i] = 1. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
   bn.lid x0, 0(x10++)
   bn.not w3, w0
   bn.xor w1, w3, w2
@@ -1020,10 +1014,7 @@ seca2bmodq:
   bn.xor w2, w2, w0
 
   /* Bits 10..11: p[i] = 0. */
-  loopi 2, 7
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi 2, 5
     bn.lid x0, 0(x10++)
     bn.xor w1, w0, w2
     bn.sid x4, 0(x5++)
@@ -1032,8 +1023,6 @@ seca2bmodq:
   endloop
 
   /* Bit 12: p[i] = 1 and x_0[i] = 0. */
-  /* Whitening. */
-  bn.xor w1, w1, w1
   bn.not w1, w2
   bn.sid x4, 0(x5++)
   /********** End inline s = secadd(p, x_0, k + 1). **********/
@@ -1049,12 +1038,11 @@ seca2bmodq:
   loopi 13, 1
     bn.sid x0, 0(x5++)
   endloop
-  loopi 12, 3
+  loopi 12, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
   endloop
+  bn.xor w0, w0, w0
   bn.sid x0, 0(x5++)
 
   /********** Start inline u = secadd(s, s', k + 1). **********/
@@ -1643,9 +1631,9 @@ _dv_params_done:
   add x5, x2, x8
   lw  x12, 1152(x2)
   loopi 2, 5
-    loop x9, 3
-      /* Whitening. */
-      bn.xor w0, w0, w0
+    /* Whitening. */
+    bn.xor w0, w0, w0
+    loop x9, 2
       bn.lid x0, 0(x5++)
       bn.sid x0, 0(x12++)
     endloop
@@ -1863,9 +1851,9 @@ _du_params_done:
   add x5, x2, x8
   lw  x12, 1536(x2)
   loopi 2, 5
-    loop x9, 3
-      /* Whitening. */
-      bn.xor w0, w0, w0
+    /* Whitening. */
+    bn.xor w0, w0, w0
+    loop x9, 2
       bn.lid x0, 0(x5++)
       bn.sid x0, 0(x12++)
     endloop
@@ -2006,30 +1994,26 @@ masked_cbd:
   slli x4, x18, 5 /* eta * 32 */
   add  x6, x8, x4
   /* Share 0. */
-  loop x12, 7
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  loop x12, 5
     /* Copy x_0. */
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
     /* Copy ~y_0. */
     bn.lid x0, 0(x11++)
     bn.not w0, w0
     bn.sid x0, 0(x6++)
   endloop
   /* Share 1. */
+  /* Whitening. */
+  bn.xor w0, w0, w0
   add x5, x5, x4
   add x6, x6, x4
-  loop x12, 6
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loop x12, 4
     /* Copy x_1. */
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
     /* Copy y_1. */
     bn.lid x0, 0(x11++)
     bn.sid x0, 0(x6++)
