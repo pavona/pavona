@@ -120,7 +120,7 @@ jobs:
       DEBIAN_FRONTEND: noninteractive
     steps:
       - name: Bootstrap container
-        run: apt-get update && apt-get install -y sudo git curl wget ca-certificates
+        run: apt-get update && apt-get install -y sudo git curl wget ca-certificates clang
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
