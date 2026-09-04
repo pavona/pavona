@@ -837,7 +837,7 @@ _continue_compute_v:
   /* Prepare for initial `poly_getnoise_eta_1` call: generate sp. */
   add    x10, x18, x0
   la     x11, nonce
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x11)
   jal    x1, masked_poly_getnoise_eta_init
 
@@ -1054,8 +1054,8 @@ _handle_k2_compute_v:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Generate epp. */
@@ -1076,8 +1076,8 @@ _handle_k2_compute_v:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Generate ep[0]. */
@@ -1088,7 +1088,7 @@ _handle_k2_compute_v:
   /* Prepare for generating at[0][0]. */
   add    x10, x9, x0
   la     x11, seed_ij
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
@@ -1236,8 +1236,8 @@ _handle_k2_compute_v:
     loopi NSHARES, 3
       jal    x1, poly_add
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
 
     /* Generate ep[i + 1]. */
@@ -1357,8 +1357,8 @@ _handle_k2_compute_v:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compare b and c[i * cu : (i + 1) * cu]. Accumulate output to r. */
@@ -1444,8 +1444,8 @@ _handle_k2_compute_b:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Generate ep[1]. */
@@ -1532,8 +1532,8 @@ _handle_k2_compute_b:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compare b and c[i * cu : (i + 1) * cu]. Accumulate output to r. */

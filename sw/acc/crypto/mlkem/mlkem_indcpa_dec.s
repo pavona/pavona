@@ -176,8 +176,8 @@ indcpa_dec:
   loopi NSHARES, 3
     jal     x1, poly_frombytes
     /* Whitening. */
-    bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
+    bn.xor  w0, w31, w31
+    bn.xor  w1, w31, w31
   endloop
   add x9, x10, x0
 
@@ -221,8 +221,8 @@ indcpa_dec:
     loopi NSHARES, 3
       jal    x1, poly_frombytes
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x9, x10, x0
 
@@ -283,8 +283,8 @@ indcpa_dec:
   add x12, x11, x0
   jal x1, poly_sub
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
@@ -294,7 +294,7 @@ indcpa_dec:
     bn.sid       x0, 0(x11++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/
   la  x10, mpoly_m
