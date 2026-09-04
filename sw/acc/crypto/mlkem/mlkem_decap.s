@@ -57,7 +57,8 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2 to x31, w0 to w30, acc, acch, mod
+ * clobbered registers: x2 to x19, x21 to x31,
+ *                      w0 to w15, w17 to w30, acc, mod, acch
  * clobbered flag groups: FG0
  */
 
