@@ -1,0 +1,119 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: tl_agent_python
+
+  tool: verilator
+
+  // Nominal DUT / TB names for reporting and scratch layout.
+  dut: tl_agent_smoke
+  tb: tl_agent_pyuvm
+  fusesoc_core: lowrisc:dv:tl_agent_pyuvm_sim:0.1
+
+  import_cfgs: [
+    "{proj_root}/hw/dv/tools/dvsim/verilator_pyuvm.hjson"
+  ]
+
+  py_tb_dir: "{proj_root}/hw/dv/py/tl_agent/dv/tb"
+
+  // Default Python UVM selectors and TB-specific knobs.
+  uvm_test: tl_agent_base_test
+  uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_base_vseq.tl_agent_base_vseq
+  tx_count: 100
+  test_timeout_us: 80
+  reseed: 10
+
+  tests: [
+    {
+      name: tl_agent_smoke
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+    {
+      name: tl_agent_reset_smoke
+      run_opts: [
+        "TX_COUNT={tx_count}",
+        "+en_reset_testing=1"
+      ]
+    }
+    {
+      name: tl_agent_single
+      uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_single_vseq.tl_agent_single_vseq
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+    {
+      name: tl_agent_protocol_err
+      uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_protocol_err_vseq.tl_agent_protocol_err_vseq
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+    {
+      name: tl_agent_put_full_data
+      uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_put_full_data_vseq.tl_agent_put_full_data_vseq
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+    {
+      name: tl_agent_pending_reset
+      uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_pending_reset_vseq.tl_agent_pending_reset_vseq
+      run_opts: [
+        "TX_COUNT={tx_count}",
+        "+en_reset_testing=1"
+      ]
+    }
+    {
+      name: tl_agent_custom
+      uvm_test_seq: tl_agent.dv.env.seq_lib.tl_agent_custom_vseq.tl_agent_custom_vseq
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+    {
+      name: tl_agent_report_demotion
+      uvm_test: tl_agent_report_demotion_test
+      run_opts: [
+        "TX_COUNT=1"
+      ]
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: [
+        "tl_agent_smoke",
+        "tl_agent_reset_smoke"
+      ]
+    }
+    {
+      name: directed
+      tests: [
+        "tl_agent_single",
+        "tl_agent_put_full_data",
+        "tl_agent_protocol_err",
+        "tl_agent_custom",
+        "tl_agent_pending_reset",
+        "tl_agent_report_demotion"
+      ]
+    }
+    {
+      name: all
+      tests: [
+        "tl_agent_smoke",
+        "tl_agent_reset_smoke",
+        "tl_agent_single",
+        "tl_agent_put_full_data",
+        "tl_agent_protocol_err",
+        "tl_agent_custom",
+        "tl_agent_pending_reset",
+        "tl_agent_report_demotion"
+      ]
+    }
+  ]
+}
