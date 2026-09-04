@@ -79,10 +79,6 @@ rom_epmp_init:
   li   t0, TOR(TOP_EGRET_MMIO_BASE_ADDR + TOP_EGRET_MMIO_SIZE_BYTES)
   csrw pmpaddr11, t0
 
-  // Debug ROM
-  li   t0, NAPOT(TOP_EGRET_RV_DM_MEM_BASE_ADDR, TOP_EGRET_RV_DM_MEM_SIZE_BYTES)
-  csrw pmpaddr13, t0
-
   // Stack guard
   la   t0, _epmp_stack_guard_na4
   csrw pmpaddr14, t0
@@ -96,8 +92,7 @@ rom_epmp_init:
            CFG_INDEX(2  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* ROM         */
   li   t1, CFG_INDEX(5  % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LR)    /* eFLASH      */
   li   t2, CFG_INDEX(11 % 4, EPMP_CFG_A_TOR   | EPMP_CFG_LRW)   /* MMIO        */
-  li   t3, CFG_INDEX(13 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRWX)| /* Debug ROM   */ \
-           CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
+  li   t3, CFG_INDEX(14 % 4, EPMP_CFG_A_NA4   | EPMP_CFG_L)   | /* Stack Guard */ \
            CFG_INDEX(15 % 4, EPMP_CFG_A_NAPOT | EPMP_CFG_LRW)   /* RAM         */
   csrw pmpcfg0, t0
   csrw pmpcfg1, t1

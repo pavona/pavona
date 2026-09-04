@@ -197,9 +197,6 @@ static rom_error_t rom_init(void) {
 
   lc_state = lifecycle_state_get();
 
-  // Update epmp config for debug rom according to lifecycle state.
-  rom_epmp_config_debug_rom(lc_state);
-
   if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
     // Re-initialize the watchdog timer, if the RESET was caused by anything
