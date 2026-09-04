@@ -274,6 +274,7 @@ secfulladder:
  * @param[out] x15: dmem pointer to Boolean shares of r
  * @param[in]  x16: share stride of r
  * @param[in]  x17: k, bitsize of x and y
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2, x4 to x5, x8, x10, x12, x15, x17, x29 to x31,
  *                      w0 to w9
@@ -288,7 +289,7 @@ secadd:
   sw   x8, 64(x2)
 
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x2)
   bn.sid x0, 32(x2)
 
@@ -320,8 +321,8 @@ secadd:
     bn.sid x0, 0(x15)
     add    x15, x15, x16
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Restore x17. */
@@ -350,6 +351,7 @@ secadd:
  * @param[in]  x10: dmem pointer to Boolean shares of x
  * @param[in]  x11: share stride of x
  * @param[out] x13: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10, x13, w0
  * clobbered flag groups: FG0
@@ -378,7 +380,7 @@ bitcopymask:
     bn.sid x0, 0(x13++)
     bn.sid x0, 0(x13++)
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
   ret
 
@@ -403,6 +405,7 @@ bitcopymask:
  * @param[in]  x11: k, bitsize of x
  * @param[in]  x12: share stride of x and r
  * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x5 to x6, x10, x14, w0 to w1
  * clobbered flag groups: FG0
@@ -421,13 +424,13 @@ refreshios:
     bn.xor  w0, w0, w1
     bn.sid  x0, 0(x14++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
     /* r_1 = x_1 ^ s. */
     bn.lid  x0, 0(x5++)
     bn.xor  w0, w0, w1
     bn.sid  x0, 0(x6++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   ret
 
@@ -506,9 +509,9 @@ _rej_sample_loop:
 
 _end_rej_sample_loop:
   /* Whitening. */
-  bn.xor  w0, w0, w0
-  bn.xor  w3, w3, w3
-  bn.xor  w4, w4, w4
+  bn.xor  w0, w31, w31
+  bn.xor  w3, w31, w31
+  bn.xor  w4, w31, w31
   bn.wsrw acc, w31
   bn.wsrw acch, w31
   ret
@@ -533,6 +536,7 @@ _end_rej_sample_loop:
  * @param[out] x12: dmem pointer to arithmetic shares of r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
@@ -565,16 +569,16 @@ refreshmodq:
     bn.addvm.16h w0, w0, w1
     bn.sid       x0, 0(x12++)
     /* Whitening. */
-    bn.xor       w0, w0, w0
+    bn.xor       w0, w31, w31
     /* r_1 = x_1 - rand. */
     bn.lid       x0, 0(x6++)
     bn.subvm.16h w0, w0, w1
     bn.sid       x0, 0(x7++)
     /* Whitening. */
-    bn.xor       w0, w0, w0
+    bn.xor       w0, w31, w31
   endloop
   /* Whitening. */
-  bn.xor w1, w1, w1
+  bn.xor w1, w31, w31
 
   /* Restore stack. */
   addi x2, x2, 544
@@ -623,24 +627,24 @@ poly_to_bitsliced:
   endloop
 
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
-  bn.xor w4, w4, w4
-  bn.xor w5, w5, w5
-  bn.xor w6, w6, w6
-  bn.xor w7, w7, w7
-  bn.xor w8, w8, w8
-  bn.xor w9, w9, w9
-  bn.xor w10, w10, w10
-  bn.xor w11, w11, w11
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
-  bn.xor w28, w28, w28
-  bn.xor w29, w29, w29
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
+  bn.xor w6, w31, w31
+  bn.xor w7, w31, w31
+  bn.xor w8, w31, w31
+  bn.xor w9, w31, w31
+  bn.xor w10, w31, w31
+  bn.xor w11, w31, w31
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
   ret
 
 /**
@@ -675,10 +679,10 @@ poly_from_bitsliced:
     bn.lid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
 
   jal x1, _bitslice_transpose
 
@@ -690,24 +694,24 @@ poly_from_bitsliced:
   endloop
 
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
-  bn.xor w4, w4, w4
-  bn.xor w5, w5, w5
-  bn.xor w6, w6, w6
-  bn.xor w7, w7, w7
-  bn.xor w8, w8, w8
-  bn.xor w9, w9, w9
-  bn.xor w10, w10, w10
-  bn.xor w11, w11, w11
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
-  bn.xor w28, w28, w28
-  bn.xor w29, w29, w29
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
+  bn.xor w6, w31, w31
+  bn.xor w7, w31, w31
+  bn.xor w8, w31, w31
+  bn.xor w9, w31, w31
+  bn.xor w10, w31, w31
+  bn.xor w11, w31, w31
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
   ret
 
 /**
@@ -955,6 +959,7 @@ _bitslice_transpose:
  * @param[in]  x11: k, bitsize of x
  * @param[in]  x12: share stride of x and r
  * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x29 to x31, w0 to w9
  * clobbered flag groups: FG0
@@ -980,7 +985,7 @@ seca2b:
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x6++)
   endloop
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loop x11, 1
     bn.sid x0, 0(x6++)
   endloop
@@ -995,7 +1000,7 @@ seca2b:
     bn.sid x0, 0(x5++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
 
   /* Save registers. */
   add x4, x11, x0
@@ -1076,7 +1081,7 @@ seca2bmodq:
   addi x5, x2, 896 /* s */
   addi x4, x0, 1
   /* Initialize cin = 0. */
-  bn.xor w2, w2, w2
+  bn.xor w2, w31, w31
 
   /* Bits 0..7: p[i] = 1. */
   loopi 8, 7
@@ -1119,10 +1124,10 @@ seca2bmodq:
   bn.sid x4, 0(x5++)
 
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
   /********** End inline s = secadd(p, x_0, k + 1). **********/
 
   /* Build s = (s, 0) for (k + 1) bits. */
@@ -1139,7 +1144,7 @@ seca2bmodq:
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
   endloop
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x5++)
 
   /********** Start inline u = secadd(s, s', k + 1). **********/
@@ -1177,8 +1182,8 @@ seca2bmodq:
     bn.sid x0, 0(x15)
     add    x15, x15, x16
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
   /********** End inline u = secadd(s, s', k + 1). **********/
 
@@ -1190,7 +1195,7 @@ seca2bmodq:
 
   /********** Start inline r = secadd(a, u, k). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 832(x2)
   bn.sid x0, 864(x2)
 
@@ -1224,8 +1229,8 @@ seca2bmodq:
     bn.sid x0, 0(x15)
     add    x15, x15, x16
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
   /********** End inline r = secadd(a, u, k). **********/
 
@@ -1255,6 +1260,7 @@ seca2bmodq:
  * @param[out] x12: dmem pointer to arithmetic shares of r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
@@ -1276,7 +1282,7 @@ seconebitb2amodq:
     bn.sid x0, 0(x5++)
   endloop
 
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loopi 16, 1
     bn.sid x0, 0(x5++)
   endloop
@@ -1324,8 +1330,8 @@ seconebitb2amodq:
     bn.addvm.16h w1, w0, w1
     bn.sid       x4, 0(x6)
     /* Whitening. */
-    bn.xor       w1, w1, w1
-    bn.xor       w3, w3, w3
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
     /* Handle v_1. */
     bn.lid       x4, 512(x6)
     bn.and       w3, w1, w2
@@ -1334,12 +1340,12 @@ seconebitb2amodq:
     bn.sid       x4, 512(x6)
     addi         x6, x6, 32
     /* Whitening. */
-    bn.xor       w1, w1, w1
-    bn.xor       w3, w3, w3
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w2, w2, w2
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
 
   /* Compute r = refreshmodq(v). */
   add x10, x2, x0
@@ -1415,14 +1421,14 @@ secb2amodq:
     bn.sid      x0, 0(x5++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
 
   /* Bitslice zp_0 and clear zp_1 (bitsliced). */
   addi   x10, x2, 32
   add    x11, x8, x0  /* zp (bitsliced) */
   jal    x1, poly_to_bitsliced
   addi   x11, x11, 384
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loopi 12, 1
     bn.sid x0, 0(x11++)
   endloop
@@ -1436,7 +1442,7 @@ secb2amodq:
   /********** Start inline b = secaddmodq(a, x). **********/
   /********** Start inline s = secadd(a, x, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 384(x9)
   bn.sid x0, 800(x9)
 
@@ -1462,7 +1468,7 @@ secb2amodq:
 
   /********** Start inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 32(x2)
   bn.sid x0, 64(x2)
 
@@ -1520,8 +1526,8 @@ secb2amodq:
   bn.sid x0, 0(x12)
   add    x12, x12, x13
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
 
   /* s_1 */
   bn.lid x0, 0(x12)
@@ -1529,8 +1535,8 @@ secb2amodq:
   bn.xor w0, w0, w1
   bn.sid x0, 0(x12)
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
   /********** End inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
 
   /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
@@ -1715,29 +1721,29 @@ _dv_params_done:
 
     /* For the first share, w19 holds 2^(alpha - 1).
      * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w19, w19
+    bn.xor w19, w31, w31
 
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+    bn.xor w2, w31, w31
+    bn.xor w3, w31, w31
+    bn.xor w4, w31, w31
+    bn.xor w5, w31, w31
+    bn.xor w6, w31, w31
+    bn.xor w7, w31, w31
+    bn.xor w8, w31, w31
+    bn.xor w9, w31, w31
+    bn.xor w10, w31, w31
+    bn.xor w11, w31, w31
+    bn.xor w12, w31, w31
+    bn.xor w13, w31, w31
+    bn.xor w14, w31, w31
+    bn.xor w15, w31, w31
+    bn.xor w20, w31, w31
+    bn.xor w21, w31, w31
+    bn.xor w28, w31, w31
+    bn.xor w29, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = dv + alpha = 18, share bytes = 576. */
@@ -1757,7 +1763,7 @@ _dv_params_done:
     endloop
     add x5, x5, x8
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -1938,30 +1944,30 @@ _du_params_done:
 
     /* For the first share, w30 holds 2^(alpha - 1).
      * After that, we clear w30 for the 2nd share. */
-    bn.xor w30, w30, w30
+    bn.xor w30, w31, w31
 
     /* Whitening. */
-    bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
-    bn.xor  w2, w2, w2
-    bn.xor  w3, w3, w3
-    bn.xor  w4, w4, w4
-    bn.xor  w5, w5, w5
-    bn.xor  w6, w6, w6
-    bn.xor  w7, w7, w7
-    bn.xor  w8, w8, w8
-    bn.xor  w9, w9, w9
-    bn.xor  w10, w10, w10
-    bn.xor  w11, w11, w11
-    bn.xor  w12, w12, w12
-    bn.xor  w13, w13, w13
-    bn.xor  w14, w14, w14
-    bn.xor  w15, w15, w15
-    bn.xor  w19, w19, w19
-    bn.xor  w20, w20, w20
-    bn.xor  w21, w21, w21
-    bn.xor  w28, w28, w28
-    bn.xor  w29, w29, w29
+    bn.xor  w0, w31, w31
+    bn.xor  w1, w31, w31
+    bn.xor  w2, w31, w31
+    bn.xor  w3, w31, w31
+    bn.xor  w4, w31, w31
+    bn.xor  w5, w31, w31
+    bn.xor  w6, w31, w31
+    bn.xor  w7, w31, w31
+    bn.xor  w8, w31, w31
+    bn.xor  w9, w31, w31
+    bn.xor  w10, w31, w31
+    bn.xor  w11, w31, w31
+    bn.xor  w12, w31, w31
+    bn.xor  w13, w31, w31
+    bn.xor  w14, w31, w31
+    bn.xor  w15, w31, w31
+    bn.xor  w19, w31, w31
+    bn.xor  w20, w31, w31
+    bn.xor  w21, w31, w31
+    bn.xor  w28, w31, w31
+    bn.xor  w29, w31, w31
     bn.wsrw acc, w31
   endloop
 
@@ -1982,7 +1988,7 @@ _du_params_done:
     endloop
     add x5, x5, x8
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -2039,8 +2045,8 @@ masked_poly_frommsg:
       bn.sid     x4, 0(x12++)
     endloop
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compute mp = seconebitb2amodq(m). */
@@ -2062,7 +2068,7 @@ masked_poly_frommsg:
       bn.sid               x0, 0(x8++)
     endloop
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
     bn.wsrw acc, w31
     bn.wsrw acch, w31
   endloop
@@ -2138,7 +2144,7 @@ masked_cbd:
     bn.sid x0, 0(x6++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   /* Share 1. */
   add x5, x5, x4
   add x6, x6, x4
@@ -2151,7 +2157,7 @@ masked_cbd:
     bn.sid x0, 0(x6++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
 
   /* The block below does as follows:
    *  - ell <- 2 * eta
@@ -2165,7 +2171,7 @@ masked_cbd:
    */
   /********** Iteration i = 0, ell = 2 * eta. **********/
   /* Since ell mod 2 = 0, we clear a. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x9)
   bn.sid x0, 32(x9)
 
@@ -2196,7 +2202,7 @@ masked_cbd:
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /********** Iteration i = 1, ell = eta. **********/
@@ -2211,13 +2217,13 @@ masked_cbd:
     add    x6, x6, x4
     bn.sid x0, 0(x5++)
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
   beq x0, x0, _continue_1
 
 _cbd_eta_2:
   /* Since ell mod 2 = 0 if eta = 2, we clear a. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x9)
   bn.sid x0, 32(x9)
 
@@ -2244,7 +2250,7 @@ _continue_1:
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /********** Iteration i = 2, ell = eta // 2 = 1. **********/
@@ -2258,11 +2264,11 @@ _continue_1:
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /* Clear bits b[3..k - 1]. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   addi   x5, x2, 96
   loopi 2, 3
     loopi 9, 1
@@ -2291,7 +2297,7 @@ _continue_1:
     bn.sid       x0, 0(x5++)
   endloop
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
 
   /* Restore registers and stack. */
   lw   x8, 1220(x2)
@@ -2340,17 +2346,17 @@ masked_poly_getnoise_eta_init:
   /* Send seed. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg1, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 
   /* Send nonce. */
   li      x5, 1
   csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x11)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrw kmac_msg1, w0
 
   ret
@@ -2437,66 +2443,66 @@ masked_poly_getnoise_eta_1:
 
   bn.wsrr w17, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w23, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w18, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w24, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w19, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w25, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w20, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w26, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w21, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w27, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w22, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w30, kmac_digest1
   /* Dummy instruction to whiten write path after reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   jal x1, _bitslice_eta_3
 
   bn.mov w17, w23
   /* Whiten used register and write path at the same time. */
-  bn.xor w23, w23, w23
+  bn.xor w23, w31, w31
   bn.mov w18, w24
   /* Whiten used register and write path at the same time. */
-  bn.xor w24, w24, w24
+  bn.xor w24, w31, w31
   bn.mov w19, w25
   /* Whiten used register and write path at the same time. */
-  bn.xor w25, w25, w25
+  bn.xor w25, w31, w31
   bn.mov w20, w26
   /* Whiten used register and write path at the same time. */
-  bn.xor w26, w26, w26
+  bn.xor w26, w31, w31
   bn.mov w21, w27
   /* Whiten used register and write path at the same time. */
-  bn.xor w27, w27, w27
+  bn.xor w27, w31, w31
   bn.mov w22, w30
   /* Whiten used register and write path at the same time. */
-  bn.xor w30, w30, w30
+  bn.xor w30, w31, w31
 
   jal x1, _bitslice_eta_3
   beq x0, x0, _getnoise_common
@@ -2504,31 +2510,31 @@ masked_poly_getnoise_eta_1:
 _getnoise_eta_2:
   bn.wsrr w17, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w21, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w18, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w22, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w19, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w23, kmac_digest1
   /* Dummy instruction to whiten write path before reading kmac_digest. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   bn.wsrr w20, kmac_digest
   /* Dummy instruction to whiten write path before reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrr w24, kmac_digest1
   /* Dummy instruction to whiten write path after reading kmac_digest1. */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
 
   addi x5, x0, 17
   addi x6, x0, 17
@@ -2558,34 +2564,34 @@ _getnoise_eta_2:
     bn.sid x4, 0(x11++)
 
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+    bn.xor w2, w31, w31
+    bn.xor w3, w31, w31
+    bn.xor w4, w31, w31
+    bn.xor w5, w31, w31
+    bn.xor w6, w31, w31
+    bn.xor w7, w31, w31
+    bn.xor w8, w31, w31
+    bn.xor w9, w31, w31
+    bn.xor w10, w31, w31
+    bn.xor w11, w31, w31
+    bn.xor w12, w31, w31
+    bn.xor w13, w31, w31
+    bn.xor w14, w31, w31
+    bn.xor w15, w31, w31
+    bn.xor w28, w31, w31
+    bn.xor w29, w31, w31
   endloop
 
   /* Whitening. */
-  bn.xor w18, w18, w18
-  bn.xor w19, w19, w19
-  bn.xor w20, w20, w20
-  bn.xor w21, w21, w21
-  bn.xor w22, w22, w22
-  bn.xor w23, w23, w23
-  bn.xor w24, w24, w24
+  bn.xor w18, w31, w31
+  bn.xor w19, w31, w31
+  bn.xor w20, w31, w31
+  bn.xor w21, w31, w31
+  bn.xor w22, w31, w31
+  bn.xor w23, w31, w31
+  bn.xor w24, w31, w31
 
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
@@ -2749,30 +2755,30 @@ _bitslice_eta_3:
   endloop
 
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
-  bn.xor w4, w4, w4
-  bn.xor w5, w5, w5
-  bn.xor w6, w6, w6
-  bn.xor w7, w7, w7
-  bn.xor w8, w8, w8
-  bn.xor w9, w9, w9
-  bn.xor w10, w10, w10
-  bn.xor w11, w11, w11
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
-  bn.xor w17, w17, w17
-  bn.xor w18, w18, w18
-  bn.xor w19, w19, w19
-  bn.xor w20, w20, w20
-  bn.xor w21, w21, w21
-  bn.xor w22, w22, w22
-  bn.xor w28, w28, w28
-  bn.xor w29, w29, w29
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
+  bn.xor w6, w31, w31
+  bn.xor w7, w31, w31
+  bn.xor w8, w31, w31
+  bn.xor w9, w31, w31
+  bn.xor w10, w31, w31
+  bn.xor w11, w31, w31
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
+  bn.xor w17, w31, w31
+  bn.xor w18, w31, w31
+  bn.xor w19, w31, w31
+  bn.xor w20, w31, w31
+  bn.xor w21, w31, w31
+  bn.xor w22, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
   ret
 
 /* Undefine gadget-local macros. */
@@ -2877,29 +2883,29 @@ masked_poly_tomsg:
 
     /* For the first share, w19 holds 2^(alpha - 1).
      * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w19, w19
+    bn.xor w19, w31, w31
 
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+    bn.xor w2, w31, w31
+    bn.xor w3, w31, w31
+    bn.xor w4, w31, w31
+    bn.xor w5, w31, w31
+    bn.xor w6, w31, w31
+    bn.xor w7, w31, w31
+    bn.xor w8, w31, w31
+    bn.xor w9, w31, w31
+    bn.xor w10, w31, w31
+    bn.xor w11, w31, w31
+    bn.xor w12, w31, w31
+    bn.xor w13, w31, w31
+    bn.xor w14, w31, w31
+    bn.xor w15, w31, w31
+    bn.xor w20, w31, w31
+    bn.xor w21, w31, w31
+    bn.xor w28, w31, w31
+    bn.xor w29, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = 1 + alpha = 16, share bytes = 512. */
@@ -2917,7 +2923,7 @@ masked_poly_tomsg:
     addi   x5, x5, 512
     bn.sid x0, 0(x6++)
     /* Whitening. */
-    bn.xor w0, w0, w0
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -3217,7 +3223,7 @@ _handle_common_dv:
 
 _skip_bit_4:
   /* Whitening. */
-  bn.xor w17, w17, w17
+  bn.xor w17, w31, w31
 
   /* Compute r = secand(r, t). */
   lw   x10, 328(x2)
@@ -3626,7 +3632,7 @@ _handle_common_du:
 
 _skip_bit_10:
   /* Whitening. */
-  bn.xor w17, w17, w17
+  bn.xor w17, w31, w31
 
   /* Compute r = secand(r, t). */
   lw   x10, 716(x2)
@@ -3683,7 +3689,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 128
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   /* x10 already points to r. */
@@ -3703,7 +3709,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 64
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3717,7 +3723,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 32
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3731,7 +3737,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 16
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3745,7 +3751,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 8
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3759,7 +3765,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 4
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3773,7 +3779,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 2
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3787,7 +3793,7 @@ finalize_cmp:
     bn.rshi w0, w31, w0 >> 1
     bn.sid  x0, 0(x5++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
