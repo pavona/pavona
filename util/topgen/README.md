@@ -298,7 +298,7 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the alert signal.
 - <a id="properties/width"></a>**`width`** *(integer, required)*: the number of alerts in this signal, typically 1.
 - <a id="properties/type"></a>**`type`** *(string)*: should contain 'alert'.
-- <a id="properties/async"></a>**`async`** *(string, required)*: string interpreted as boolean.
+- <a id="properties/async"></a>**`async`** *(boolean, required)*: alert is asynchronous.
 - <a id="properties/handler"></a>**`handler`** *(string, required)*: alert handler managing this alert.
 - <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
 - <a id="properties/desc"></a>**`desc`** *(string)*: the description of the alert.

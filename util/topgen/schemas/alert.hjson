@@ -12,7 +12,7 @@
     name: { type: "string", description: "name of the alert signal" },
     width: { type: "integer", description: "the number of alerts in this signal, typically 1" },
     type: { type: "string", description: "should contain 'alert'" },
-    async: { type: "string", description: "string interpreted as boolean" },
+    async: { type: "boolean", description: "alert is asynchronous" },
     handler: { type: "string", description: "alert handler managing this alert" },
     module_name: { type: "string", description: "The module name of the source" },
     desc: { type: "string", description: "the description of the alert" },
