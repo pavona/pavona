@@ -23,6 +23,7 @@
  * @param[in]  x10: dmem pointer to the input polynomial
  * @param[out] x11: dmem pointer to the output byte array
  * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
  * clobbered registers: x4, x10 to x11, w0 to w1
  * clobbered flag groups: none
