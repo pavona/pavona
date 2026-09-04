@@ -176,8 +176,8 @@ indcpa_dec:
   loopi NSHARES, 3
     jal     x1, poly_frombytes
     /* Whitening. */
-    bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
+    bn.xor  w0, w31, w31
+    bn.xor  w1, w31, w31
   endloop
   add x9, x10, x0
 
@@ -221,8 +221,8 @@ indcpa_dec:
     loopi NSHARES, 3
       jal    x1, poly_frombytes
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x9, x10, x0
 
@@ -286,7 +286,7 @@ indcpa_dec:
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
   /* Whitening. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loopi 16, 3
     bn.lid       x0, 0(x11)
     bn.subvm.16h w0, w31, w0

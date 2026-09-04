@@ -156,9 +156,9 @@ _continue:
     endloop
     bn.sid x4, 0(x6++)
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+    bn.xor w2, w31, w31
   endloop
 
   /* Initialize SHA3-512 operation. */
@@ -173,32 +173,32 @@ _continue:
   la      x5, mtmp
   bn.lid  x0, 0(x5++)
   bn.wsrw kmac_msg, w0  /* m[0] */
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg1, w0 /* m[1] */
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
   /* Send h. */
   la      x5, dptr_h
   lw      x5, 0(x5)
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0  /* h */
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrw kmac_msg1, w0 /* 0 */
   /* Retrieve K_true. */
   la      x5, kr
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
   /* Retrieve r'. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0    /* Whitening. */
+  bn.xor  w0, w31, w31  /* Whitening. */
 
 #else
   /* Initialize SHA3-512 operation. */
@@ -244,10 +244,10 @@ _continue:
   bn.lid  x0, 32(x5)
   bn.wsrw kmac_msg, w0
 #ifdef HARDENED
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.lid  x0, 64(x5)
   bn.wsrw kmac_msg1, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 #endif
 
   /* Send c. */
@@ -266,10 +266,10 @@ _continue:
   la      x5, ss_false
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5)
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 #else
   loop x5, 2
     bn.lid  x0, 0(x10++)

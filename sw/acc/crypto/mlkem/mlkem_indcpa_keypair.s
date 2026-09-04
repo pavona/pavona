@@ -450,20 +450,20 @@ _continue:
   /* Send seed. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.lid  x0, 0(x10)
   bn.wsrw kmac_msg1, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   /* Send k. */
   addi    x5, x0, 1
   csrrw   x0, kmac_partial_write, x5
   la      x5, buf
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.sid  x0, 0(x5)
   sw      x13, 0(x5)
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrw kmac_msg1, w0
   /* Retrieve publicseed. */
   bn.wsrr w0, kmac_digest
@@ -473,10 +473,10 @@ _continue:
   /* Retrieve noiseseed. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 
   /*** Step 2: Generate dk_pke. ***/
   /* The following block will:
@@ -486,7 +486,7 @@ _continue:
   /**************************************************************************/
   la     x8, buf
   la     x21, nonce
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x21)
   /* Prepare for generating sk[0]. */
   addi   x10, x8, 32
@@ -529,8 +529,8 @@ _continue:
     loopi NSHARES, 3
       jal x1, poly_tobytes
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x22, x10, x0
     add x18, x11, x0
@@ -558,7 +558,7 @@ _continue:
   /* Prepare for generating a[0][0]. */
   add    x10, x8, x0
   la     x11, seed_ij
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
@@ -568,8 +568,8 @@ _continue:
   loopi NSHARES, 3
     jal    x1, poly_tobytes
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Save current addresses of sk. */
@@ -702,8 +702,8 @@ _continue:
     loopi NSHARES, 3
       jal    x1, poly_tomont
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
 
     /* Compute e[i] = ntt(e[i]). */
@@ -726,8 +726,8 @@ _continue:
     loopi NSHARES, 3
       jal    x1, poly_add
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
 
     /* Unmask pk. */
@@ -841,8 +841,8 @@ _continue:
   loopi NSHARES, 3
     jal    x1, poly_tomont
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compute e[k - 1] = ntt(e[k - 1]). */
@@ -865,8 +865,8 @@ _continue:
   loopi NSHARES, 3
     jal    x1, poly_add
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Unmask pk. */

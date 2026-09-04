@@ -122,10 +122,10 @@ _continue:
 #ifdef HARDENED
   bn.lid x0, 64(x5)
   bn.sid x0, 0(x6)
-  bn.xor w0, w0, w0 /* Whitening. */
+  bn.xor w0, w31, w31 /* Whitening. */
   bn.lid x0, 96(x5)
   bn.sid x0, 32(x6)
-  bn.xor w0, w0, w0 /* Whitening. */
+  bn.xor w0, w31, w31 /* Whitening. */
 #else
   bn.lid x0, 32(x5)
   bn.sid x0, 0(x6)
