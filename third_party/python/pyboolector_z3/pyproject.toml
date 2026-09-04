@@ -1,0 +1,23 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyboolector"
+version = "3.2.4.19342042739+pavona.z3.1"
+description = "Pavona PyBoolector compatibility layer backed by z3-solver"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+dependencies = [
+  "z3-solver==4.15.4.0",
+]
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+]
+
+[tool.setuptools]
+py-modules = ["pyboolector"]
