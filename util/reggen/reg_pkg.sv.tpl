@@ -393,6 +393,13 @@ package ${lblock}${"_" + block.alias_impl if block.alias_impl else ""}_reg_pkg;
     Alert${lib.Name.to_camel_case(alert.name)}Idx = ${idx}${"" if idx == len(block.alerts) - 1 else ","}
 % endfor
   } ${block.name.lower()}_alert_idx_t;
+
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+% for idx, alert in enumerate(reversed(block.alerts)):
+    1'b${int(alert.fatal)}${"" if idx == len(block.alerts) - 1 else ","} // ${alert.name}
+% endfor
+  };
 % endif
 <%
   just_default = len(block.reg_blocks) == 1 and None in block.reg_blocks

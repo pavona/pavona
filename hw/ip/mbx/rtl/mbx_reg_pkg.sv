@@ -23,6 +23,12 @@ package mbx_reg_pkg;
     AlertRecovFaultIdx = 1
   } mbx_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b0, // recov_fault
+    1'b1 // fatal_fault
+  };
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

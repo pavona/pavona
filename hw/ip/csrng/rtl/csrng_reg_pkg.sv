@@ -22,6 +22,12 @@ package csrng_reg_pkg;
     AlertFatalAlertIdx = 1
   } csrng_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1, // fatal_alert
+    1'b0 // recov_alert
+  };
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

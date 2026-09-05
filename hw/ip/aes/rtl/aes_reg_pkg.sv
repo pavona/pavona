@@ -24,6 +24,12 @@ package aes_reg_pkg;
     AlertFatalFaultIdx = 1
   } aes_alert_idx_t;
 
+  // Fatal alert classification
+  localparam bit [NumAlerts-1:0] AlertIsFatal = {
+    1'b1, // fatal_fault
+    1'b0 // recov_ctrl_update_err
+  };
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
