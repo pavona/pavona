@@ -1,0 +1,26 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reggen:inter_signal",
+  "title": "Inter-Module Signal",
+  "description": "Configuration of direct signal between IP blocks",
+  "type": "object",
+  "properties": {
+
+    // required
+    "name": {"type": "string"},
+    "struct": {"type": "string"},
+    "type": { "type": "string"},
+    "act": {"type": "string"},
+
+    // optional
+    "desc": {"type": "string"},
+    "package": {"type": "string"},
+    "width": {},     // can be parameterized width
+    "default": {"type": "string"},
+  }
+
+  "required": ["name", "struct", "type", "act"]
+}

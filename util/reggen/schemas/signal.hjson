@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:signal",
+  title: "Signal",
+  description: "Generic signal description for an IP block",
+  type: "object",
+  required: ["name", "desc"]
+  properties: {
+    name: { type: "string" },
+    desc: { type: "string" },
+    width: { type: "integer", "exclusiveMinimum": 0 },
+    enabled_after_reset: { type: "boolean" }
+  }
+}

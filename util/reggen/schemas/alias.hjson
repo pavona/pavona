@@ -1,0 +1,19 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:alias",
+  title: "Alias",
+  description: "Register aliasing configuration",
+  type: "object",
+  required: ["alias_impl", "alias_target", "registers", "bus_interfaces"]
+  properties: {
+    "alias_impl": {type: "string", description: "identifier for this alias implementation"},
+    "alias_target": {type: "string", description: "name of the component to apply the alias file to"},
+    "registers": {type: "array", description: "list of alias register definition groups"},
+    "bus_interfaces": {type: "array", description: "bus interfaces for the device"},
+
+    // TODO: we may want to support for countermeasure and parameter aliases in the future.
+  }
+}
