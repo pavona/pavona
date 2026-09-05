@@ -15,37 +15,6 @@ permissions:
   id-token: write
 
 jobs:
-  build_docs:
-    name: Build documentation
-    runs-on:
-      group: pavona-basic
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/configure-pages@v6
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-      - name: Build documentation
-        run: ./util/site/build-docs.sh build
-      - name: Upload files as artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
-        with:
-          path: build-site/
-
-  upload_docs:
-    name: Upload documentation to GitHub Pages
-    needs: build_docs
-    runs-on:
-      group: pavona-basic
-    permissions:
-      pages: write
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
-
   chip_egret_cw310:
     name: Egret for CW310
     uses: ./.github/workflows/bitstream.yml
