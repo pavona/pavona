@@ -11,24 +11,31 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+Q = 3329
 
 
-def bitslice_vec(x: List[int], k: int) -> List[int]:
-    r = [0] * k
-    one = sum(1 << (i * 16) for i in range(16))
+def bitslice_vec(x: List[int], k: int) -> bytes:
     mask = (1 << N) - 1
-    x_int = sum(x[i] << (i * 16) for i in range(N))
-    for i in range(16):
+    # Generate 1 in 16 16-bit lanes.
+    vone = sum(1 << (lane * 16) for lane in range(16))
+
+    r = [0] * k
+    x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
+    for _ in range(16):
         t = x_int & mask
         x_int >>= N
-        for j in range(k):
-            r[j] <<= 1
-            r[j] |= (t & one)
+        for bit in range(k):
+            r[bit] <<= 1
+            r[bit] |= (t & vone)
             t >>= 1
-    return r
+
+    r_bytes = bytes()
+    for bit in range(k):
+        r_bytes += int.to_bytes(r[bit], byteorder="little", length=32)
+    return r_bytes
 
 
-def tomsg(x: List[int], q: int) -> List[int]:
+def tomsg(x: List[int], q: int) -> bytes:
     """Convert polynomial to 32-byte message."""
     for i in range(N):
         x[i] = (((x[i] << 1) + q // 2) // q) & 1
@@ -43,25 +50,25 @@ def gen_masked_poly_tomsg_test(
     if seed is not None:
         random.seed(seed)
 
-    q = 3329
-
     # Generate input.
     x = [0] * N
+    r = [0] * N
     x_bytes = bytes()
     for _ in range(NSHARES):
-        t = [random.randint(0, q - 1) for _ in range(N)]
-        x = [(x[j] + t[j]) % q for j in range(N)]
-        tmp = sum(t[j] << (j * 16) for j in range(N))
-        x_bytes += int.to_bytes(tmp, byteorder="little", length=512)
+        for coeff in range(N):
+            x[coeff] = random.randint(0, Q - 1)
+            r[coeff] = (r[coeff] + x[coeff]) % Q
+        x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
+        x_bytes += int.to_bytes(x_int, byteorder="little", length=512)
 
     # Generate expected result.
-    r = tomsg(x, q)
-    r_bytes = int.to_bytes(r[0], byteorder="little", length=32)
-
-    rb_bytes = int.to_bytes(0, byteorder='little', length=32 * NSHARES)
+    r_bytes = tomsg(r, Q)
 
     # Write input values.
-    inputs = {'xa': x_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xa': x_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=32 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

@@ -31,7 +31,7 @@
 .globl poly_frommsg
 .type poly_frommsg, @function
 poly_frommsg:
-  la     x5, modulus_over_2
+  la     x5, const_qp1_half
   addi   x4, x0, 3
   bn.lid x4, 0(x5)
 
@@ -72,7 +72,7 @@ poly_frommsg:
 .type poly_tomsg, @function
 poly_tomsg:
   /* Load constants. */
-  la        x5, modulus_over_2
+  la        x5, const_qp1_half
   addi      x4, x0, 2
   bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv
@@ -191,7 +191,7 @@ poly_sub:
 .globl poly_tomont
 .type poly_tomont, @function
 poly_tomont:
-  la     x5, const_tomont
+  la     x5, const_2_32_modq
   add    x4, x0, x0
   bn.lid x4++, 0(x5)
 

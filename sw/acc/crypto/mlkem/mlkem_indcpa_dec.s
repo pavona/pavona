@@ -59,8 +59,8 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2 to x19, x21 to x25, x28 to x31,
- *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
+ * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
+ *                      w0 to w15, w17 to w26, acch, acc, mod
  * clobbered flag groups: FG0
  */
 
@@ -81,8 +81,8 @@ indcpa_dec:
   la x21, mpoly_sk
   la x22, poly_b
   la x23, mpoly_m
-  la x24, twiddles_ntt
-  la x25, twiddles_basemul
+  la x24, const_tw_ntt
+  la x25, const_tw_basemul
 
 #ifndef HARDENED
   /*** Step 1: unpack dk_pke[0] and compute the first product. ***/
@@ -147,7 +147,7 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add    x10, x23, x0
-  la     x11, twiddles_intt
+  la     x11, const_tw_intt
   add    x12, x10, x0
   jal    x1, intt
   bn.wsrw mod, w16
@@ -173,12 +173,11 @@ indcpa_dec:
   /* Unpack dk_pke[0]. */
   add x10, x9, x0
   add x11, x21, x0
-  loopi NSHARES, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
+  loopi NSHARES, 3
     jal     x1, poly_frombytes
-    nop
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+    bn.xor  w1, w31, w31
   endloop
   add x9, x10, x0
 
@@ -207,24 +206,23 @@ indcpa_dec:
   add x12, x25, x0
   add x13, x23, x0
   loopi NSHARES, 4
-    jal x1, whitening
     add x10, x22, x0
     jal x1, basemul
+    jal x1, whitening
     nop
   endloop
 
   /*** Step 2: accumulate the remaining products, for j = 1..k - 1. ***/
   addi x19, x19, -1
-  loop x19, 32
+  loop x19, 31
     /* Unpack dk_pke[j]. */
     add x10, x9, x0
     add x11, x21, x0
-    loopi NSHARES, 4
-      /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+    loopi NSHARES, 3
       jal    x1, poly_frombytes
-      nop
+      /* Whitening. */
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x9, x10, x0
 
@@ -254,9 +252,9 @@ indcpa_dec:
     add x12, x25, x0
     add x13, x23, x0
     loopi NSHARES, 4
-      jal x1, whitening
       add x10, x22, x0
       jal x1, basemul_acc
+      jal x1, whitening
       nop
     endloop
     nop
@@ -264,11 +262,11 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add x10, x23, x0
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -287,17 +285,12 @@ indcpa_dec:
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
-  addi   x5, x0, NSHARES
-  addi   x5, x5, -1
-  bn.xor w0, w0, w0
-  loop x5, 5
-    loopi 16, 3
-      bn.lid       x0, 0(x11)
-      bn.subvm.16h w0, w31, w0
-      bn.sid       x0, 0(x11++)
-    endloop
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  loopi 16, 3
+    bn.lid       x0, 0(x11)
+    bn.subvm.16h w0, w31, w0
+    bn.sid       x0, 0(x11++)
   endloop
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/

@@ -4,39 +4,6 @@
 
 .text
 
-/* Register aliases */
-.equ x0, zero
-.equ x2, sp
-.equ x3, fp
-.equ x5, t0
-#define t1 x6
-.equ x7, t2
-.equ x8, s0
-.equ x9, s1
-.equ x10, a0
-.equ x11, a1
-.equ x12, a2
-.equ x13, a3
-.equ x14, a4
-.equ x15, a5
-.equ x16, a6
-.equ x17, a7
-.equ x18, s2
-.equ x19, s3
-.equ x20, s4
-.equ x21, s5
-.equ x22, s6
-.equ x23, s7
-.equ x24, s8
-.equ x25, s9
-.equ x26, s10
-.equ x27, s11
-.equ x28, t3
-.equ x29, t4
-.equ x30, t5
-.equ x31, t6
-
-
 /*
  * Bibliography
  *
@@ -75,1231 +42,1229 @@
  *           https://eprint.iacr.org/2019/910
  */
 
-/*
- * Name: secand
+/**
+ * Bitwise AND of two 1-bit Boolean-shared values.
  *
- * Return new Boolean shares of a value r = x & y.
- * Bitsliced.
+ * Return Boolean shares of r = x & y, given 1-bit Boolean shares of x and y.
  *
- *   s   <- URND
+ *   s   <- urnd
  *   r_0 <- (x_0 & y_0) ^ (x_0 & (y_1 ^ s)) ^ ((x_0 ^ 1) & s)
  *   r_1 <- (x_1 & y_1) ^ (x_1 & (y_0 ^ s)) ^ ((x_1 ^ 1) & s)
  *
  * Source: Alg.2 [CS20]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_yb, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_rb, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
+ * On return, x10, x12 and x15 are unchanged.
  *
- * clobbered registers: x4 to x7, x10, x12, x15, w0 to w3, w5 to w8
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x4 to x5, w0 to w7
  * clobbered flag groups: FG0
  */
+
 .globl secand
 .type secand, @function
 secand:
-    /* Save addresses. */
-    addi t0, a0, 0
-    addi t1, a2, 0
-    addi t2, a5, 0
+  /* Compute t_0 = x_0 & y_0. */
+  addi   x4, x0, 1
+  bn.lid x4++, 0(x10)  /* w1 = x_0 */
+  bn.lid x4++, 0(x12)  /* w2 = y_0 */
+  bn.and w5, w1, w2    /* w5 = t_0 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
-    /* Load x. */
-    bn.xor w0, w0, w0
-    bn.lid x0, 0(t0) /* x[0] */
-    bn.xor w1, w1, w1
-    add    t0, t0, a1
-    addi   x4, x0, 1
-    bn.lid x4++, 0(t0) /* x[1] */
+  /* Compute t_1 = x_1 & y_1. */
+  add    x5, x10, x11
+  bn.lid x4++, 0(x5)   /* w3 = x_1 */
+  add    x5, x12, x13
+  bn.lid x4, 0(x5)     /* w4 = y_1 */
+  bn.and w6, w3, w4    /* w6 = t_1 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
-    /* Load y. */
-    bn.xor w2, w2, w2
-    bn.lid x4++, 0(t1) /* y[0] */
-    bn.xor w3, w3, w3
-    add    t1, t1, a3
-    bn.lid x4, 0(t1) /* y[1] */
+  /* Refresh with one fresh random. */
+  bn.wsrr w7, urnd    /* w7 = s */
 
-    addi    x4, x0, 6
-    bn.wsrr w5, urnd
-    /* Handle z_01. */
-    bn.xor  w6, w6, w6
-    bn.and  w6, w0, w2 /* x[0] & y[0] */
-    bn.xor  w7, w7, w7
-    bn.xor  w7, w3, w5 /* y[1] ^ r */
-    bn.and  w7, w0, w7 /* &= x[0] */
-    bn.xor  w8, w8, w8
-    bn.not  w8, w0 /* x[0] ^ 1 */
-    bn.and  w8, w8, w5 /* &= r */
-    bn.xor  w7, w7, w8 /* w7 ^= w8 */
-    bn.xor  w6, w6, w7
-    bn.sid  x4, 0(t2) /* Save r[0]. */
-    add     t2, t2, a6
-    /* Handle z_10. */
-    bn.xor  w6, w6, w6
-    bn.and  w6, w1, w3 /* x[1] & y[1] */
-    bn.xor  w7, w7, w7
-    bn.xor  w7, w2, w5 /* y[0] ^ r */
-    bn.and  w7, w1, w7 /* &= x[1] */
-    bn.xor  w8, w8, w8
-    bn.not  w8, w1 /* x[1] ^ 1 */
-    bn.and  w8, w8, w5 /* &= r */
-    bn.xor  w7, w7, w8 /* w7 ^= w8 */
-    bn.xor  w6, w6, w7
-    bn.sid  x4, 0(t2) /* Save r[1]. */
+  /* Pair (i, j) = (0, 1). */
+  bn.xor w0, w4, w7   /* w0 = y_1 ^ s */
+  bn.and w0, w0, w1   /* w0 &= x_0 */
+  bn.not w1, w1       /* w1 = x_0 ^ 1 */
+  bn.and w1, w1, w7   /* w1 &= s */
+  bn.xor w0, w0, w1   /* w0 ^= w1 */
+  bn.xor w0, w0, w5   /* r_0 = (w0 ^= t_0) */
+  bn.sid x0, 0(x15)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
 
-    /* Advance a0, a2, a5 to the next bit. */
-    addi a0, a0, 32
-    addi a2, a2, 32
-    addi a5, a5, 32
-    ret
+  /* Pair (i, j) = (1, 0). */
+  bn.xor w0, w2, w7   /* w0 = y_0 ^ s */
+  bn.and w0, w0, w3   /* w0 &= x_1 */
+  bn.not w3, w3       /* w3 = x_1 ^ 1 */
+  bn.and w3, w3, w7   /* w3 &= s */
+  bn.xor w0, w0, w3   /* w0 ^= w3 */
+  bn.xor w0, w0, w6   /* r_1 = (w0 ^= t_1) */
+  add    x5, x15, x16
+  bn.sid x0, 0(x5)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w6, w31, w31
 
-/*
- * Name: secfulladder
+  ret
+
+/**
+ * Full adder on 1-bit Boolean-shared values.
  *
- * Return Boolean shares of a value r = (x + y + c) mod 2^2, given Boolean
- * shares of x and y mod 2.
- * Bitsliced.
+ * Return Boolean shares of (cout, r) = (x + y + cin), given 1-bit Boolean
+ * shares of x, y and cin.
  *
  *   a    <- x ^ y                   (sharewise)
  *   r    <- a ^ cin                 (sharewise; sum bit)
- *   cout <- x ^ SecAnd(a, x ^ cin)  (carry bit)
+ *   cout <- x ^ secand(a, x ^ cin)  (carry bit)
  *
  * Source: Alg.5 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_r, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
- * @param[in]  x17: dptr_c, dmem pointer to the Boolean shares of cin
- * @param[in]  x29: share stride, distance between shares of cin
- * @param[out] x30: dptr_c, dmem pointer to the Boolean shares of cout
- * @param[in]  x31: share stride, distance between shares of cout
+ * On return, x10, x12, x15, x17, x30 are unchanged.
  *
- * clobbered registers: x4 to x7, x10, x12, x15, x28, w0 to w9
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
+ * @param[in]  x17: dmem pointer to Boolean shares of cin
+ * @param[in]  x29: share stride of cin
+ * @param[out] x30: dmem pointer to Boolean shares of cout
+ * @param[in]  x31: share stride of cout
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x4 to x5, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl secfulladder
 .type secfulladder, @function
 secfulladder:
-    /* Save addresses. */
-    add t0, a0, x0
-    add t1, a2, x0
-    add t2, a5, x0
-    add t3, a7, x0
+  /* Load share 0. */
+  addi   x4, x0, 1
+  bn.lid x0, 0(x12)   /* w0 = y_0 */
+  bn.lid x4++, 0(x10) /* w1 = x_0 */
+  bn.lid x4++, 0(x17) /* w2 = cin_0 */
+  /* Compute a_0 = x_0 ^ y_0. */
+  bn.xor w5, w1, w0
+  /* Compute r_0 = cin_0 ^ a_0. */
+  bn.xor w0, w2, w5
+  bn.sid x0, 0(x15)
+  /* Compute t_0 = x_0 ^ cin_0. */
+  bn.xor w7, w1, w2
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* Load x. */
-    bn.xor w0, w0, w0
-    bn.lid x0, 0(t0) /* x[0] */
-    add    t0, t0, a1
-    addi   x4, x0, 1
-    bn.xor w1, w1, w1
-    bn.lid x4++, 0(t0) /* x[1] */
-    /* Load y. */
-    bn.xor w2, w2, w2
-    bn.lid x4++, 0(t1) /* y[0] */
-    add    t1, t1, a3
-    bn.xor w3, w3, w3
-    bn.lid x4, 0(t1) /* y[1] */
+  /* Load share 1. */
+  add    x5, x12, x13
+  bn.lid x0, 0(x5)     /* w0 = y_1 */
+  add    x5, x10, x11
+  bn.lid x4++, 0(x5)   /* w3 = x_1 */
+  add    x5, x17, x29
+  bn.lid x4, 0(x5)     /* w4 = cin_1 */
+  /* Compute a_1 = x_1 ^ y_1. */
+  bn.xor w6, w3, w0
+  /* Compute r_1 = cin_1 ^ a_1. */
+  bn.xor w0, w4, w6
+  add    x5, x15, x16
+  bn.sid x0, 0(x5)
+  /* Compute t_1 = x_1 ^ cin_1. */
+  bn.xor w8, w3, w4
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* Compute sharewise a = x ^ y. */
-    bn.xor w4, w4, w4
-    bn.xor w4, w0, w2
-    bn.xor w5, w5, w5
-    bn.xor w5, w1, w3
+  /* Compute cout = x ^ secand(a, x ^ cin). */
+  /* Inline t = secand(a, x ^ cin) = secand(a, t).
+   *  - (a_0, a_1) -> (w5, w6)
+   *  - (t_0, t_1) -> (w7, w8)
+   *  - (x_0, x_1) -> (w1, w3) */
 
-    /* Compute r = cin ^ a. */
-    bn.xor w2, w2, w2
-    addi   x4, x0, 2
-    bn.lid x4++, 0(t3)
-    add    t3, t3, t4
-    bn.xor w3, w3, w3
-    bn.lid x4++, 0(t3)
+  /* Refresh with one fresh random. */
+  bn.wsrr w9, urnd     /* w9 = r */
 
-    bn.xor w6, w6, w6
-    bn.xor w6, w4, w2
-    addi   x4, x0, 6
-    bn.sid x4, 0(t2)
-    add    t2, t2, a6
-    bn.xor w6, w6, w6
-    bn.xor w6, w5, w3
-    bn.sid x4, 0(t2)
+  bn.and  w2, w5, w7   /* a_0 & t_0 */
+  bn.xor  w0, w31, w31 /* Whitening. */
+  bn.and  w4, w6, w8   /* a_1 & t_1. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 
-    /* Compute cout = x ^ secand(a, x ^ cin). */
-    /* a: w4 -- w5
-     * x: w0 -- w1
-     * cin: w2 -- w3 */
-    bn.xor w6, w6, w6
-    bn.xor w6, w0, w2
-    bn.xor w7, w7, w7
-    bn.xor w7, w1, w3
+  /* Pair (i, j) = (0, 1). */
+  bn.xor  w0, w8, w9   /* w0 = t_1 ^ r */
+  bn.and  w0, w0, w5   /* w0 &= a_0 */
+  bn.not  w5, w5       /* w5 = a_0 ^ 1 */
+  bn.and  w5, w5, w9   /* w5 &= r */
+  bn.xor  w0, w0, w5   /* w0 ^= w5 */
+  bn.xor  w0, w0, w2   /* w0 ^= w2 */
+  bn.xor  w0, w0, w1   /* cout_0 = x_0 ^ w0 */
+  bn.sid  x0, 0(x30)
+  /* Whitening. */
+  bn.xor  w0, w31, w31
+  bn.xor  w1, w31, w31
+  bn.xor  w2, w31, w31
+  bn.xor  w5, w31, w31
+  bn.xor  w8, w31, w31
 
-    /* a: w4 -- w5
-     * x ^ cin: w6 -- w7
-     * x: w0 -- w1.  */
-    bn.wsrr w8, urnd
-    /* Handle cout_01. */
-    bn.xor  w2, w2, w2
-    bn.and  w2, w4, w6
-    bn.xor  w3, w3, w3
-    bn.xor  w3, w7, w8
-    bn.and  w3, w4, w3
-    bn.xor  w9, w9, w9
-    bn.not  w9, w4
-    bn.and  w9, w9, w8
-    bn.xor  w3, w3, w9
-    bn.xor  w2, w2, w3
-    bn.xor  w3, w3, w3
-    bn.xor  w3, w2, w0
-    add     t2, t5, x0
-    addi    x4, x0, 3
-    bn.sid  x4, 0(t2)
-    add     t2, t2, t6
-    /* Handle cout_10. */
-    bn.xor  w2, w2, w2
-    bn.and  w2, w5, w7
-    bn.xor  w3, w3, w3
-    bn.xor  w3, w6, w8
-    bn.and  w3, w5, w3
-    bn.xor  w9, w9, w9
-    bn.not  w9, w5
-    bn.and  w9, w9, w8
-    bn.xor  w3, w3, w9
-    bn.xor  w2, w2, w3
-    bn.xor  w3, w3, w3
-    bn.xor  w3, w2, w1
-    bn.sid  x4, 0(t2)
+  /* Pair (i, j) = (1, 0). */
+  bn.xor  w0, w7, w9   /* w0 = t_0 ^ r */
+  bn.and  w0, w0, w6   /* w0 &= a_1 */
+  bn.not  w6, w6       /* w6 = a_1 ^ 1 */
+  bn.and  w6, w6, w9   /* w6 &= r */
+  bn.xor  w0, w0, w6   /* w0 ^= w6 */
+  bn.xor  w0, w0, w4   /* w0 ^= w4 */
+  bn.xor  w0, w0, w3   /* cout_1 = x_1 ^ w0 */
+  add     x5, x30, x31
+  bn.sid  x0, 0(x5)
+  /* Whitening. */
+  bn.xor  w0, w31, w31
+  bn.xor  w3, w31, w31
+  bn.xor  w4, w31, w31
+  bn.xor  w6, w31, w31
+  bn.xor  w7, w31, w31
 
-    /* Point to next bit. */
-    addi a0, a0, 32
-    addi a2, a2, 32
-    addi a5, a5, 32
-    ret
+  ret
 
-/*
- * Name: secadd
+/**
+ * Addition of two k-bit Boolean-shared values.
  *
- * Return Boolean shares of a value r = (x + y) mod 2^k, given Boolean shares of
- * x and y mod 2^k.
+ * Return Boolean shares of r = (x + y) mod 2^k, given k-bit Boolean shares of
+ * x and y.
  * Bitsliced.
  *
  *   c <- 0
- *   for i = 0, ..., k-2:  (c, r[i]) <- SecFullAdder(x[i], y[i], c)
- *   r[k-1] <- x[k-1] ^ y[k-1] ^ c
+ *   for i = 0..k - 2:  (c, r[i]) <- secfulladder(x[i], y[i], c)
+ *   r[k - 1] <- x[k - 1] ^ y[k - 1] ^ c
  *
  * Source: Alg.6 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[in]  x12: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x13: share stride, distance between shares of y
- * @param[out] x15: dptr_r, dmem pointer to Boolean shares of r
- * @param[in]  x16: share stride, distance between shares of r
- * @param[in]  x17: k, bitsize of x and y.
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[in]  x12: dmem pointer to Boolean shares of y
+ * @param[in]  x13: share stride of y
+ * @param[out] x15: dmem pointer to Boolean shares of r
+ * @param[in]  x16: share stride of r
+ * @param[in]  x17: k, bitsize of x and y
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x15, x17, x28 to x31, w0 to w9
+ * clobbered registers: x2, x4 to x5, x8, x10, x12, x15, x17, x29 to x31,
+ *                      w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl secadd
 .type secadd, @function
 secadd:
-    /* Reserve frame: 64 B carry c at 0(sp), plus saved s0, a7. */
-    addi sp, sp, -96
-    sw   s0, 64(sp)
-    sw   a7, 68(sp)
+  /* Reserve frame: 64 B carry c at 0(x2), plus saved x8. */
+  addi x2, x2, -96
+  sw   x8, 64(x2)
 
-    /* Initialize c = 0. */
-    bn.xor w0, w0, w0
-    addi   t0, sp, 0 /* ptr_c */
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
+  /* Initialize c = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x2)
+  bn.sid x0, 32(x2)
 
-    /* Ripple-carry adder. */
-    addi s0, a7, -1
-    addi a7, sp, 0 /* ptr_c = cin */
-    addi t4, x0, 32
-    addi t5, sp, 0 /* ptr_c = cout */
-    addi t6, x0, 32
-    /* Loop over i=0,...,k-2. */
-    loop s0, 2
-        /* a0 already points to x[i] */
-        /* a1 is already share stride of x. */
-        /* a2 already points to y[i] */
-        /* a3 is already share stride of y. */
-        /* a5 already points to r. */
-        /* a6 is already share stride of r. */
-        /* a7 already points to ptr_c = cin. */
-        /* t4 is already share stride of cin. */
-        /* t5 already points to ptr_c = cout. */
-        /* t6 is already share stride of cout. */
-        jal  x1, secfulladder
-        /* After secfulladder:
-         *  - a0 and a2 points to x[i + 1] and y[i + 1].
-         *  - a1 and a3 are still share stride of x and y.
-         *  - a5 points to r[i + 1].
-         *  - a6 is still share stride of r.
-         *  - a7 points to cin.
-         *  - t4 is still share stride of cin.
-         *  - t5 points to cout.
-         *  - t6 is still share stride of cout. */
-        nop
-    endloop
+  /* Ripple-carry adder. */
+  addi x8, x17, -1
+  add  x17, x2, x0
+  addi x29, x0, 32
+  add  x30, x2, x0
+  addi x31, x0, 32
+  /* Handle bit i = 0..k - 2. */
+  loop x8, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
+  endloop
 
-    /* Handle bit i = k-1. */
-    /* Compute r[k-1] = x[k-1] ^ y[k-1] ^ c. */
-    addi t0, sp, 0 /* ptr_c */
-    addi x4, x0, 1
-    addi t1, x0, 2
-    addi t2, x0, 3
-    loopi 2, 14
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        /* Computation. */
-        bn.lid x0, 0(a0)
-        bn.lid x4, 0(a2)
-        bn.lid t1, 0(t0)
-        bn.xor w3, w0, w1
-        bn.xor w3, w3, w2
-        bn.sid t2, 0(a5)
-        /* Adjust addresses. */
-        add    a0, a0, a1
-        add    a2, a2, a3
-        add    t0, t0, t4
-        add    a5, a5, a6
-    endloop
+  /* Handle bit k - 1. */
+  addi x4, x0, 1
+  loopi 2, 11
+    /* r[k - 1] = x[k - 1] ^ y[k - 1] ^ c. */
+    bn.lid x0, 0(x10)
+    add    x10, x10, x11
+    bn.lid x4, 0(x12)
+    add    x12, x12, x13
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
+    add    x15, x15, x16
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+  endloop
 
-    /* Restore registers and frame. */
-    lw   s0, 64(sp)
-    lw   a7, 68(sp)
-    addi sp, sp, 96
-    ret
+  /* Restore x17. */
+  addi x17, x8, 1
 
-/*
- * Name: bitcopymask
+  /* Restore registers and frame. */
+  lw   x8, 64(x2)
+  addi x2, x2, 96
+  ret
+
+/**
+ * Boolean-shared product of the modulus q = 3329 and a single bit.
  *
- * Return k-bit Boolean shares of q * x, given 1-bit Boolean shares of x for
- * q = 3329 and the bitsize k = 12 (since q < 2**k).
+ * Return k-bit Boolean shares of r = q * x, given 1-bit Boolean
+ * shares of x for q = 3329 and the bitsize k = 12 (since q < 2^k).
  * Bitsliced.
  *
- *   for j = 0, ..., k-1:  r[j] <- q_j & x   (q = 3329 = 0b110100000001)
+ *   for j = 0..k - 1:  r[j] <- q[j] & x   (q = 3329 = 0b110100000001)
  *
  * Source: Alg.1 [BC22]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input Boolean shares of x
- * @param[in]  x11: share stride, distance between shares of x
- * @param[out] x13: dptr_rb, dmem pointer to the output Boolean shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: share stride of x
+ * @param[out] x13: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10, x13, w0
  * clobbered flag groups: FG0
  */
+
 .globl bitcopymask
 .type bitcopymask, @function
 bitcopymask:
-    /* Since q = 3329 = b110100000001, we copy x to the 1st, 9th, 11th and 12th
-     * bit of r and zeroize the rest of r. */
-    addi   x4, x0, 31
-    loopi 2, 10
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(a0)
-        add    a0, a0, a1
-        /* Copy x to bit 0. */
-        bn.sid x0, 0(a3++)
-        /* Clear bit 1 -- 7. */
-        loopi 7, 1
-            bn.sid x4, 0(a3++)
-        endloop
-        /* Copy x to bit 8. */
-        bn.sid x0, 0(a3++)
-        /* Clear bit 9. */
-        bn.sid x4, 0(a3++)
-        /* Copy x to bit 10 -- 11. */
-        bn.sid x0, 0(a3++)
-        bn.sid x0, 0(a3++)
+  /* Since q = 3329 = 0b110100000001, we copy x to bits 0, 8, 10 and 11 of r
+   * and zeroize the remaining bits. */
+  addi x4, x0, 31
+  loopi 2, 10
+    bn.lid x0, 0(x10)
+    add    x10, x10, x11
+    /* Copy x to bit 0. */
+    bn.sid x0, 0(x13++)
+    /* Clear bit 1..7. */
+    loopi 7, 1
+      bn.sid x4, 0(x13++)
     endloop
-    ret
+    /* Copy x to bit 8. */
+    bn.sid x0, 0(x13++)
+    /* Clear bit 9. */
+    bn.sid x4, 0(x13++)
+    /* Copy x to bit 10..11. */
+    bn.sid x0, 0(x13++)
+    bn.sid x0, 0(x13++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+  ret
 
-/*
- * Name: refreshios
+/**
+ * Refresh of Boolean shares.
  *
- * Return new Boolean shares of x mod 2^k, given old Boolean shares of x.
+ * Return new k-bit Boolean shares of x, given k-bit Boolean shares of x.
  * Bitsliced.
  *
  *   for each bit-slice:
- *     s    <- URND
- *     r[0] <- x[0] ^ s
- *     r[1] <- x[1] ^ s
+ *     s   <- urnd
+ *     r_0 <- x_0 ^ s
+ *     r_1 <- x_1 ^ s
  *
  * Source: Alg.18 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: k, bitsize of x.
- * @param[in]  x12: share stride, distance between shares
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: k, bitsize of x
+ * @param[in]  x12: share stride of x and r
+ * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x6, x10, x14, w0 to w2
+ * clobbered registers: x5 to x6, x10, x14, w0 to w1
  * clobbered flag groups: FG0
  */
+
 .globl refreshios
 .type refreshios, @function
 refreshios:
-    add  t0, a0, a2 /* 2nd share of x */
-    add  t1, a4, a2 /* 2nd share of r */
-    addi x4, x0, 1
-    loop a1, 11
-        bn.wsrr w2, urnd
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.xor  w1, w0, w2
-        bn.sid  x4, 0(a4++)
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(t0++)
-        bn.xor  w1, w0, w2
-        bn.sid  x4, 0(t1++)
-    endloop
-    ret
+  add x5, x10, x12 /* x_1 */
+  add x6, x14, x12 /* r_1 */
+  loop x11, 9
+    /* s <- urnd. */
+    bn.wsrr w1, urnd
+    /* r_0 = x_0 ^ s. */
+    bn.lid  x0, 0(x10++)
+    bn.xor  w0, w0, w1
+    bn.sid  x0, 0(x14++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+    /* r_1 = x_1 ^ s. */
+    bn.lid  x0, 0(x5++)
+    bn.xor  w0, w0, w1
+    bn.sid  x0, 0(x6++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  ret
 
-/*
- * Name: poly_rej_samp
+/**
+ * Rejection sampling of a polynomial with coefficients mod q = 3329.
  *
  * Return a polynomial of random coefficients mod q, obtained by running
- * rejection sampling on uniform random bytes from URND.
+ * rejection sampling on uniform random bytes from urnd.
  *
- * @param[in]  w16: sw0, R | Q
- * @param[out] a0: ptr_r, dmem pointer to output polynomial
- * @param[in]  a1: dmem pointer to random input words (MLKEM_REJ_SAMPLE_TEST only)
+ * @param[out] x10: dmem pointer to output polynomial
+ * @param[in]  x11: dmem pointer to random input words
+ *                  (MLKEM_REJ_SAMPLE_TEST only)
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x5 to x6, x10, w0 to w5, acch, acc
+ * clobbered registers: x4 to x5, x10, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
 
 .globl poly_rej_samp
 .type poly_rej_samp, @function
 poly_rej_samp:
-	/* Load 19*Q - 1 into w1. */
-	addi      t0, x0, 1
-	la        t1, modulus_times_19_minus_1
-	bn.lid    t0++, 0(t1)
-	bn.shv.8s w1, w1 >> 16
+  /* Load 19 * q - 1. */
+  addi   x4, x0, 1
+  la     x5, const_q19m1
+  bn.lid x4++, 0(x5)
 
-	/* Load mont = 2**16 % Q into w2. */
-	la     t1, mont
-	bn.lid t0, 0(t1)
+  /* Load 2^16 mod q. */
+  la     x5, const_2_16_modq
+  bn.lid x4, 0(x5)
 
-	/* a0 + 512 is the last valid address. */
-	addi t0, a0, 512
+  /* x10 + 512 is the last valid address. */
+  addi x4, x10, 512
 
-#if defined(MLKEM_REJ_SAMPLE_TEST)
-	addi t5, x0, 3
-#endif
-
-	/* Loop until 256 coefficients have been written to the output */
+  /* Loop until 256 coefficients have been written to the output. */
 _rej_sample_loop:
-	/* Get 16 randoms. */
+  /* Get 16 randoms. */
 #if defined(MLKEM_REJ_SAMPLE_TEST)
-	bn.lid      t5, 0(a1++)
+  bn.lid      x0, 0(x11++)
 #else
-	bn.wsrr     w3, urnd
+  bn.wsrr     w0, urnd
 #endif
-	bn.trn1.16h w4, w3, w31
-	bn.subv.8s  w4, w1, w4
-	bn.shv.8s   w4, w4 >> 31
-	bn.trn2.16h w5, w3, w31
-	bn.subv.8s  w5, w1, w5
-	bn.shv.8s   w5, w5 >> 31
-	bn.trn1.16h w4, w4, w5
-	bn.xor      w4, w4, w31, FG0
-	csrrs       t1, fg0, x0 /* Read flag fg0. */
-	srli        t1, t1, 3 /* Extract FG0.z */
+  bn.trn1.16h w3, w0, w31
+  bn.subv.8s  w3, w1, w3
+  bn.shv.8s   w3, w3 >> 31
+  bn.trn2.16h w4, w0, w31
+  bn.subv.8s  w4, w1, w4
+  bn.shv.8s   w4, w4 >> 31
+  bn.trn1.16h w3, w3, w4
+  bn.xor      w3, w3, w31, FG0
+  csrrs       x5, fg0, x0 /* Read flag fg0. */
+  srli        x5, x5, 3   /* Extract fg0.z */
 
-	/* If FG0.z == 0, there is at least one bad coeff. We throw away this
-	 * vector and sample again. */
-	beq t1, x0, _rej_sample_loop
+  /* If fg0.z == 0, there is at least one bad coeff. We throw away this
+   * vector and sample again. */
+  beq x5, x0, _rej_sample_loop
 
-	/* Once the whole vector is accepted, reduce the accepted candidates mod Q
-	 * using Montgomery. */
-	bn.mulv.16h.acc.z.lo w0, w3, w2
-	bn.mulv.l.16h.lo     w0, w0, sw0.2
-	bn.mulv.l.16h.acc.hi w0, w0, sw0.0
-	bn.addvm.16h         w0, w0, w31
-	bn.sid               x0, 0(a0++)
+  /* Once the whole vector is accepted, reduce the accepted candidates mod Q
+   * using Montgomery. */
+  bn.mulv.16h.acc.z.lo w0, w0, w2
+  bn.mulv.l.16h.lo     w0, w0, sw0.2
+  bn.mulv.l.16h.acc.hi w0, w0, sw0.0
+  bn.addvm.16h         w0, w0, w31
+  bn.sid               x0, 0(x10++)
 
-	/* If a0 == t0, we've filled up a polynomial. Otherwise, continue to sample. */
-	beq a0, t0, _end_rej_sample_loop
-	beq x0, x0, _rej_sample_loop
+  /* If we reach the last valid address, we've filled up a polynomial.
+   * Otherwise, continue to sample. */
+  beq x10, x4, _end_rej_sample_loop
+  beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
-	ret
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w4, w31, w31
+  ret
 
-/*
- * Name: refreshmodq
+/**
+ * Refresh of arithmetic shares mod q = 3329.
  *
  * Return new arithmetic shares mod q = 3329 of the value x.
  * Vectorized for polynomial.
  *
  *   rand <- poly_rej_samp()      uniform polynomial mod q
- *   r[0] <- x[0] + rand   mod q
- *   r[1] <- x[1] - rand   mod q
+ *   r_0  <- x_0 + rand   mod q
+ *   r_1  <- x_1 - rand   mod q
  *
  * Source: [BBD+16]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_xa, dmem pointer to arithmetic shares of x
- * @param[out] x12: dptr_ra, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x7, x10, x12, x28, w0 to w5, acch, acc
+ * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl refreshmodq
 .type refreshmodq, @function
 refreshmodq:
-    /* Reserve frame: 512 B for rand at 0(sp), plus saved a0, a2. */
-    addi sp, sp, -544
-    sw a0, 512(sp)
-    sw a2, 516(sp)
+  /* Reserve frame: 512 B for rand at 0(x2), plus saved x10, x12. */
+  addi x2, x2, -544
+  sw x10, 512(x2)
+  sw x12, 516(x2)
 
-    /* Generate rand. */
-    add a0, sp, x0
-    jal x1, poly_rej_samp
+  /* Generate rand. */
+  add x10, x2, x0
+  jal x1, poly_rej_samp
 
-    /* r[0] = x[0] + rand. */
-    /* r[1] = x[1] - rand. */
-    add  t0, sp, 0 /* rand */
-    lw   a0, 512(sp)
-    addi t1, a0, 512 /* x[1] */
-    lw   a2, 516(sp)
-    addi t2, a2, 512 /* r[1] */
-    addi x4, x0, 1
-    addi t3, x0, 2
-    loopi 16, 9
-        bn.lid       x0, 0(t0++)
-        bn.lid       x4, 0(a0++)
-        bn.addvm.16h w2, w1, w0
-        bn.sid       t3, 0(a2++)
-        bn.xor       w1, w1, w1
-        bn.xor       w2, w2, w2
-        bn.lid       x4, 0(t1++)
-        bn.subvm.16h w2, w1, w0
-        bn.sid       t3, 0(t2++)
-    endloop
+  add  x5, x2, x0   /* rand */
+  lw   x10, 512(x2)
+  addi x6, x10, 512 /* x_1 */
+  lw   x12, 516(x2)
+  addi x7, x12, 512 /* r_1 */
+  addi x4, x0, 1
+  loopi 16, 9
+    /* Load rand. */
+    bn.lid       x4, 0(x5++)
+    /* r_0 = x_0 + rand. */
+    bn.lid       x0, 0(x10++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x12++)
+    /* Whitening. */
+    bn.xor       w0, w31, w31
+    /* r_1 = x_1 - rand. */
+    bn.lid       x0, 0(x6++)
+    bn.subvm.16h w0, w0, w1
+    bn.sid       x0, 0(x7++)
+    /* Whitening. */
+    bn.xor       w0, w31, w31
+  endloop
+  /* Whitening. */
+  bn.xor w1, w31, w31
 
-    /* Restore stack. */
-    addi sp, sp, 544
-    ret
+  /* Restore stack. */
+  addi x2, x2, 544
+  ret
 
-/*
- * Name: poly_to_bitsliced
+/**
+ * Bitsliced representation of a polynomial.
  *
- * Return bitsliced representation of a value x in [0, KYBER_Q).
+ * Return the bitsliced representation r of a value x in [0, q), q = 3329.
  * Vectorized for polynomial.
  *
- *   bs[j] <- bit j of x,  j = 0, ..., 11
+ *   r[j] <- bit j of x,  j = 0..11
  *
- * @param[in]  x10: dptr_x, dmem pointer to the input masked value
- * @param[out] x11: dptr_r, dmem pointer to the output bitslice representation
+ * Only 12 bitslices are needed since q < 2^12.
  *
- * clobbered registers: x4, x10, w0 to w15, w28 to w29
+ * @param[in]  x10: dmem pointer to x
+ * @param[out] x11: dmem pointer to bitsliced representation r
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x4, x10, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
+
 .globl poly_to_bitsliced
 .type poly_to_bitsliced, @function
 poly_to_bitsliced:
+  /* Reverse-load the 16 input WDRs: coefficient WDR i -> w[15 - i]. */
+  addi x4, x0, 15
+  loopi 16, 2
+    bn.lid x4, 0(x10++)
+    addi   x4, x4, -1
+  endloop
 
-    /* Reverse-load the 16 input WDRs: coefficient WDR i -> w[15 - i]. */
-    addi x4, x0, 15
-    loopi 16, 2
-        bn.lid x4, 0(a0++)
-        addi   x4, x4, -1
-    endloop
+  jal x1, _bitslice_transpose
 
-    jal x1, _bitslice_transpose
+  /* Store the 12 bitsliced words r[0..11] via x10 so x11 is left unchanged. */
+  add x4, x0, x0
+  add x10, x11, x0
+  loopi 12, 2
+    bn.sid x4, 0(x10++)
+    addi   x4, x4, 1
+  endloop
 
-    /* Store the 12 bitsliced words bs[0..11] via a0 so a1 is left unchanged. */
-    addi   x4, x0, 0
-    addi   a0, a1, 0
-    loopi 12, 2
-        bn.sid x4, 0(a0++)
-        addi   x4, x4, 1
-    endloop
-    ret
+  jal x1, whitening_bitslice_transpose
+  ret
 
-/*
- * Name: poly_from_bitsliced
+/**
+ * Normal representation of a bitsliced polynomial.
  *
- * Return normal representation of a bitsliced value x in [0, KYBER_Q).
+ * Return the normal representation r of a bitsliced value x in [0, q),
+ * q = 3329.
  * Vectorized for polynomial.
  *
- *   x <- sum_{j=0}^{11} bs[j] << j
+ *   r <- sum_{j=0..11} x[j] << j
  *
- * @param[in]  x10: dptr_x, dmem pointer to the input bitsliced representation
+ * Only 12 bitslices are needed since q < 2^12.
+ *
+ * @param[in]  x10: dmem pointer to bitsliced representation x
+ * @param[out] x11: dmem pointer to r
  * @param[in]  w31: all-zero register
- * @param[out] x11: dptr_r, dmem pointer to the output masked value
  *
- * clobbered registers: x4, x10 to x11, w0 to w15, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
+
 .globl poly_from_bitsliced
 .type poly_from_bitsliced, @function
 poly_from_bitsliced:
+  /* Load x[0..11] into w0..w11; zero the upper bit positions w12..w15. */
+  add x4, x0, x0
+  loopi 12, 2
+    bn.lid x4, 0(x10++)
+    addi   x4, x4, 1
+  endloop
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
 
-    /* Load bs[0..11] into w0..w11; zero the upper bit positions w12..w15. */
-    addi x4, x0, 0
-    loopi 12, 2
-        bn.lid x4, 0(a0++)
-        addi   x4, x4, 1
-    endloop
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
+  jal x1, _bitslice_transpose
 
-    jal x1, _bitslice_transpose
+  /* Reverse-store: w[b] -> coefficient WDR (15 - b). */
+  addi x4, x0, 15
+  loopi 16, 2
+    bn.sid x4, 0(x11++)
+    addi   x4, x4, -1
+  endloop
 
-    /* Reverse-store: w[b] -> coefficient WDR (15 - b). */
-    addi x4, x0, 15
-    loopi 16, 2
-        bn.sid x4, 0(a1++)
-        addi   x4, x4, -1
-    endloop
-    ret
+  jal x1, whitening_bitslice_transpose
+  ret
 
-/*
- * 16x16 per-lane bit transpose of w0..w15, shared by poly_to_bitsliced and
- * poly_from_bitsliced.
- */
-_bitslice_transpose:
-    /* Stage d=8. */
-    bn.not     w28, w31
-    bn.shv.16h w28, w28 >> 8      /* 0x00ff */
-    bn.shv.16h w29, w0 >> 8
-    bn.xor     w29, w29, w8
-    bn.and     w29, w29, w28
-    bn.xor     w8, w8, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w0, w0, w29
-    bn.shv.16h w29, w1 >> 8
-    bn.xor     w29, w29, w9
-    bn.and     w29, w29, w28
-    bn.xor     w9, w9, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w1, w1, w29
-    bn.shv.16h w29, w2 >> 8
-    bn.xor     w29, w29, w10
-    bn.and     w29, w29, w28
-    bn.xor     w10, w10, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w2, w2, w29
-    bn.shv.16h w29, w3 >> 8
-    bn.xor     w29, w29, w11
-    bn.and     w29, w29, w28
-    bn.xor     w11, w11, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w3, w3, w29
-    bn.shv.16h w29, w4 >> 8
-    bn.xor     w29, w29, w12
-    bn.and     w29, w29, w28
-    bn.xor     w12, w12, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w4, w4, w29
-    bn.shv.16h w29, w5 >> 8
-    bn.xor     w29, w29, w13
-    bn.and     w29, w29, w28
-    bn.xor     w13, w13, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w5, w5, w29
-    bn.shv.16h w29, w6 >> 8
-    bn.xor     w29, w29, w14
-    bn.and     w29, w29, w28
-    bn.xor     w14, w14, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w6, w6, w29
-    bn.shv.16h w29, w7 >> 8
-    bn.xor     w29, w29, w15
-    bn.and     w29, w29, w28
-    bn.xor     w15, w15, w29
-    bn.shv.16h w29, w29 << 8
-    bn.xor     w7, w7, w29
-    /* Stage d=4. */
-    bn.shv.16h w29, w28 << 4
-    bn.xor     w28, w28, w29      /* 0x0f0f */
-    bn.shv.16h w29, w0 >> 4
-    bn.xor     w29, w29, w4
-    bn.and     w29, w29, w28
-    bn.xor     w4, w4, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w0, w0, w29
-    bn.shv.16h w29, w1 >> 4
-    bn.xor     w29, w29, w5
-    bn.and     w29, w29, w28
-    bn.xor     w5, w5, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w1, w1, w29
-    bn.shv.16h w29, w2 >> 4
-    bn.xor     w29, w29, w6
-    bn.and     w29, w29, w28
-    bn.xor     w6, w6, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w2, w2, w29
-    bn.shv.16h w29, w3 >> 4
-    bn.xor     w29, w29, w7
-    bn.and     w29, w29, w28
-    bn.xor     w7, w7, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w3, w3, w29
-    bn.shv.16h w29, w8 >> 4
-    bn.xor     w29, w29, w12
-    bn.and     w29, w29, w28
-    bn.xor     w12, w12, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w8, w8, w29
-    bn.shv.16h w29, w9 >> 4
-    bn.xor     w29, w29, w13
-    bn.and     w29, w29, w28
-    bn.xor     w13, w13, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w9, w9, w29
-    bn.shv.16h w29, w10 >> 4
-    bn.xor     w29, w29, w14
-    bn.and     w29, w29, w28
-    bn.xor     w14, w14, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w10, w10, w29
-    bn.shv.16h w29, w11 >> 4
-    bn.xor     w29, w29, w15
-    bn.and     w29, w29, w28
-    bn.xor     w15, w15, w29
-    bn.shv.16h w29, w29 << 4
-    bn.xor     w11, w11, w29
-    /* Stage d=2. */
-    bn.shv.16h w29, w28 << 2
-    bn.xor     w28, w28, w29      /* 0x3333 */
-    bn.shv.16h w29, w0 >> 2
-    bn.xor     w29, w29, w2
-    bn.and     w29, w29, w28
-    bn.xor     w2, w2, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w0, w0, w29
-    bn.shv.16h w29, w1 >> 2
-    bn.xor     w29, w29, w3
-    bn.and     w29, w29, w28
-    bn.xor     w3, w3, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w1, w1, w29
-    bn.shv.16h w29, w4 >> 2
-    bn.xor     w29, w29, w6
-    bn.and     w29, w29, w28
-    bn.xor     w6, w6, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w4, w4, w29
-    bn.shv.16h w29, w5 >> 2
-    bn.xor     w29, w29, w7
-    bn.and     w29, w29, w28
-    bn.xor     w7, w7, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w5, w5, w29
-    bn.shv.16h w29, w8 >> 2
-    bn.xor     w29, w29, w10
-    bn.and     w29, w29, w28
-    bn.xor     w10, w10, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w8, w8, w29
-    bn.shv.16h w29, w9 >> 2
-    bn.xor     w29, w29, w11
-    bn.and     w29, w29, w28
-    bn.xor     w11, w11, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w9, w9, w29
-    bn.shv.16h w29, w12 >> 2
-    bn.xor     w29, w29, w14
-    bn.and     w29, w29, w28
-    bn.xor     w14, w14, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w12, w12, w29
-    bn.shv.16h w29, w13 >> 2
-    bn.xor     w29, w29, w15
-    bn.and     w29, w29, w28
-    bn.xor     w15, w15, w29
-    bn.shv.16h w29, w29 << 2
-    bn.xor     w13, w13, w29
-    /* Stage d=1. */
-    bn.shv.16h w29, w28 << 1
-    bn.xor     w28, w28, w29      /* 0x5555 */
-    bn.shv.16h w29, w0 >> 1
-    bn.xor     w29, w29, w1
-    bn.and     w29, w29, w28
-    bn.xor     w1, w1, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w0, w0, w29
-    bn.shv.16h w29, w2 >> 1
-    bn.xor     w29, w29, w3
-    bn.and     w29, w29, w28
-    bn.xor     w3, w3, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w2, w2, w29
-    bn.shv.16h w29, w4 >> 1
-    bn.xor     w29, w29, w5
-    bn.and     w29, w29, w28
-    bn.xor     w5, w5, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w4, w4, w29
-    bn.shv.16h w29, w6 >> 1
-    bn.xor     w29, w29, w7
-    bn.and     w29, w29, w28
-    bn.xor     w7, w7, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w6, w6, w29
-    bn.shv.16h w29, w8 >> 1
-    bn.xor     w29, w29, w9
-    bn.and     w29, w29, w28
-    bn.xor     w9, w9, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w8, w8, w29
-    bn.shv.16h w29, w10 >> 1
-    bn.xor     w29, w29, w11
-    bn.and     w29, w29, w28
-    bn.xor     w11, w11, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w10, w10, w29
-    bn.shv.16h w29, w12 >> 1
-    bn.xor     w29, w29, w13
-    bn.and     w29, w29, w28
-    bn.xor     w13, w13, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w12, w12, w29
-    bn.shv.16h w29, w14 >> 1
-    bn.xor     w29, w29, w15
-    bn.and     w29, w29, w28
-    bn.xor     w15, w15, w29
-    bn.shv.16h w29, w29 << 1
-    bn.xor     w14, w14, w29
-    ret
-
-/*
- * Name: seca2b
+/**
+ * Per-lane 16x16 bit transpose.
  *
- * Return Boolean shares mod 2**k of a value x given its arithmetic shares mod 2**k.
+ * Transpose in place the 16x16 bit matrix held by each 16-bit lane of
+ * w0 to w15. Shared by poly_to_bitsliced and poly_from_bitsliced.
+ *
+ * @param[in,out] w0 to w15: bit matrices to transpose
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: w0 to w15, w24 to w25
+ * clobbered flag groups: FG0
+ */
+
+_bitslice_transpose:
+  /* Stage d=8. */
+  bn.not     w24, w31
+  bn.shv.16h w24, w24 >> 8      /* 0x00ff */
+  bn.shv.16h w25, w0 >> 8
+  bn.xor     w25, w25, w8
+  bn.and     w25, w25, w24
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 8
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 8
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 8
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w4 >> 8
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 8
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w6 >> 8
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w7 >> 8
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w7, w7, w25
+  /* Stage d=4. */
+  bn.shv.16h w25, w24 << 4
+  bn.xor     w24, w24, w25      /* 0x0f0f */
+  bn.shv.16h w25, w0 >> 4
+  bn.xor     w25, w25, w4
+  bn.and     w25, w25, w24
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 4
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 4
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 4
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w8 >> 4
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 4
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w10 >> 4
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w11 >> 4
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w11, w11, w25
+  /* Stage d=2. */
+  bn.shv.16h w25, w24 << 2
+  bn.xor     w24, w24, w25      /* 0x3333 */
+  bn.shv.16h w25, w0 >> 2
+  bn.xor     w25, w25, w2
+  bn.and     w25, w25, w24
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 2
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w4 >> 2
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 2
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w8 >> 2
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 2
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w12 >> 2
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w13 >> 2
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w13, w13, w25
+  /* Stage d=1. */
+  bn.shv.16h w25, w24 << 1
+  bn.xor     w24, w24, w25      /* 0x5555 */
+  bn.shv.16h w25, w0 >> 1
+  bn.xor     w25, w25, w1
+  bn.and     w25, w25, w24
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w2 >> 1
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w4 >> 1
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w6 >> 1
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w8 >> 1
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w10 >> 1
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w12 >> 1
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w14 >> 1
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w14, w14, w25
+  ret
+
+/**
+ * Arithmetic-to-Boolean conversion mod 2^k.
+ *
+ * Return k-bit Boolean shares r of x, given arithmetic shares of x mod 2^k.
  * Bitsliced.
  *
- *   s  <- (x[0], 0)
- *   s' <- (0, x[1])
+ *   s  <- (x_0, 0)
+ *   s' <- (0, x_1)
  *   r  <- secadd(s, s')
  *
  * Source: Alg.8 [BC22]
  *
- * @param[in]  x10: dptr_xa, dmem pointer to the input arithmetic shares mod 2**k of x
- * @param[in]  x11: k, bitsize of x.
- * @param[in]  x12: share bytes, bytes per bitsliced share
- * @param[out] x14: dptr_rb, dmem pointer to the output Boolean shares
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[in]  x11: k, bitsize of x
+ * @param[in]  x12: share stride of x and r
+ * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x28 to x31, w0 to w9
+ * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x29 to x31, w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl seca2b
 .type seca2b, @function
 seca2b:
-    /* Save fp to stack */
-    addi sp, sp, -32
-    sw   fp, 0(sp)
-    addi fp, sp, 0
+  /* Save x3 to stack */
+  addi x2, x2, -32
+  sw   x3, 0(x2)
+  add  x3, x2, x0
 
-    /* Adjust stack for temp variables. */
-    slli t0, a2, 1
-    sub  sp, sp, t0 /* ptr_s */
-    add  t1, sp, x0
-    sub  sp, sp, t0 /* ptr_sp */
+  /* Adjust stack for temp variables. */
+  slli x5, x12, 1
+  sub  x2, x2, x5
+  add  x6, x2, x0 /* s */
+  sub  x2, x2, x5 /* s' */
 
-    /* Build s = (x[0], 0). */
-    add t2, t1, x0 /* Save ptr_s. */
-    loop a1, 3
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(a0++)
-        bn.sid x0, 0(t1++)
-    endloop
-    bn.xor w0, w0, w0
-    loop a1, 1
-        bn.sid x0, 0(t1++)
-    endloop
+  /* Build s = (x_0, 0). */
+  add x7, x6, x0
+  loop x11, 2
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x6++)
+  endloop
+  bn.xor w0, w31, w31
+  loop x11, 1
+    bn.sid x0, 0(x6++)
+  endloop
 
-    /* Build s' = (0, x[1]). */
-    add t0, sp, x0
-    loop a1, 1
-        bn.sid x0, 0(t0++)
-    endloop
-    loop a1, 3
-        bn.lid x0, 0(a0++)
-        bn.sid x0, 0(t0++)
-        bn.xor w0, w0, w0
-    endloop
+  /* Build s' = (0, x_1). */
+  add x5, x2, x0
+  loop x11, 1
+    bn.sid x0, 0(x5++)
+  endloop
+  loop x11, 2
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* Save registers. */
-    add t0, a1, x0
-    add t1, a2, x0
-    add t3, a4, x0
+  /* Save registers. */
+  add x4, x11, x0
+  add x5, x12, x0
+  add x6, x14, x0
 
-    /* Compute r = secadd(s, s', k). */
-    addi a0, t2, 0 /* ptr_s */
-    addi a1, t1, 0
-    addi a2, sp, 0 /* ptr_sp */
-    addi a3, t1, 0
-    addi a5, t3, 0 /* ptr_r */
-    addi a6, t1, 0
-    addi a7, t0, 0 /* k */
-    jal  x1, secadd
+  /* Compute r = secadd(s, s', k). */
+  add x10, x7, x0
+  add x11, x5, x0
+  add x12, x2, x0
+  add x13, x5, x0
+  add x15, x6, x0
+  add x16, x5, x0
+  add x17, x4, x0
+  jal x1, secadd
 
-    /* Restore sp and fp. */
-    addi sp, fp, 0
-    lw   fp, 0(sp)
-    addi sp, sp, 32
-    ret
+  /* Restore x2 and x3. */
+  add  x2, x3, x0
+  lw   x3, 0(x2)
+  addi x2, x2, 32
+  ret
 
-/*
- * Name: seca2bmodq
+/**
+ * Arithmetic-to-Boolean conversion mod q = 3329.
  *
- * Return Boolean shares mod 2**k (k = 12) of a value x mod q = 3329 given its
- * arithmetic shares. (It is required that q < 2**k).
+ * Return k-bit Boolean shares r of x, given arithmetic shares of x mod
+ * q = 3329, with the bitsize k = 12 (since q < 2^k).
  * Bitsliced.
  *
- *   s  <- ((2^(k+1) - q) + x[0], 0)
- *   s' <- (0, x[1])
- *   u  <- secadd(s, s')
+ *   s  <- ((2^(k + 1) - q) + x_0, 0)    (k + 1 bits)
+ *   s' <- (0, x_1)                      (k + 1 bits)
+ *   u  <- secadd(s, s')                 (k + 1 bits)
  *   a  <- bitcopymask(u[k])
- *   r  <- secadd(a, u)
+ *   r  <- secadd(a, u)                  (k bits)
  *
  * Source: Alg.10 [BC22]
  *
- * @param[in]  x10: dptr_xa, dmem pointer to the input arithmetic shares mod q of x
- * @param[out] x12: dptr_rb, dmem pointer to the output Boolean shares
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2, x4 to x7, x10 to x13, x15 to x18, x28 to x31, w0 to w9
+ * clobbered registers: x2, x4 to x5, x10 to x13, x15 to x17, x29 to x31,
+ *                      w0 to w9
  * clobbered flag groups: FG0
  */
+
 .globl seca2bmodq
 .type seca2bmodq, @function
 seca2bmodq:
-    /* Frame below sp:
-     *   sp +    0 : s' / a   (832 B)
-     *   sp +  832 : carry c  ( 64 B)
-     *   sp +  896 : s / u    (832 B)
-     *   sp + 1728 : saved s2 */
-    addi sp, sp, -1760
-    sw   s2, 1728(sp)
-    addi s2, a2, 0 /* output pointer */
+  /* Frame below x2:
+   *   x2 +    0 : s' / a   (832 B)
+   *   x2 +  832 : carry c  ( 64 B)
+   *   x2 +  896 : s / u    (832 B)
+   *   x2 + 1728 : saved x12 */
+  addi x2, x2, -1760
+  sw   x12, 1728(x2)
 
-    /* Compute s = p + x[0], k + 1 bits (one share).
-     * p = 2**(k + 1) - q = 4863 = b1001011111111. */
-    addi t0, sp, 896 /* ptr_s */
-    /* a0 already points to x[0]. */
-    addi x4, x0, 1
-    /* cin = 0 */
-    bn.xor w2, w2, w2
+  /* Compute s = p + x_0, k + 1 bits (one share).
+   * p = 2^(k + 1) - q = 4863 = 0b1001011111111.
+   *
+   * For i = 0..11:
+   *   If p[i] = 1:
+   *    - r[i] = x_0[i] ^ p[i] ^ cin = a[i] ^ cin
+   *    - cout = x_0[i] ^ (a[i] & (x_0[i] ^ cin))
+   *   If p[i] = 0:
+   *    - r[i] = x_0[i] ^ 0 ^ cin = x_0[i] ^ cin
+   *    - cout = x_0[i] ^ ((x_0[i] ^ p[i]) & (x_0[i] ^ cin))
+   *           = x_0[i] ^ ((x_0[i] ^ p[i]) & r[i]
+   *
+   * For i = 12, as x_0[12] = 0 and p[12] = 1:
+   *  - r[i] = o[i] ^ cin = ~cin
+   */
+  /********** Start inline s = secadd(p, x_0, k + 1). **********/
+  addi x5, x2, 896 /* s */
+  addi x4, x0, 1
+  /* Initialize cin = 0. */
+  bn.xor w2, w31, w31
 
-    /* Bit 0 -- 7: 1. */
-    loopi 8, 9
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        /* Compute r = x ^ p ^ cin. */
-        bn.lid x0, 0(a0++)
-        bn.not w3, w0 /* a = x ^ p */
-        bn.xor w1, w3, w2 /* r = a ^ cin */
-        bn.sid x4, 0(t0++) /* Save r. */
-        /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (a & (x ^ cin)). */
-        bn.xor w2, w0, w2 /* cout = x ^ cin */
-        bn.and w2, w3, w2 /* cout &= a */
-        bn.xor w2, w2, w0 /* cout ^= x */
-    endloop
+  /* Bits 0..7: p[i] = 1. */
+  loopi 8, 7
+    bn.lid x0, 0(x10++)
+    bn.not w3, w0
+    bn.xor w1, w3, w2
+    bn.sid x4, 0(x5++)
+    bn.xor w2, w2, w0
+    bn.and w2, w2, w3
+    bn.xor w2, w2, w0
+  endloop
 
-    /* Bit 8: 0. */
+  /* Bit 8: p[i] = 0. */
+  bn.lid x0, 0(x10++)
+  bn.xor w1, w0, w2
+  bn.sid x4, 0(x5++)
+  bn.and w2, w0, w1
+  bn.xor w2, w2, w0
+
+  /* Bit 9: p[i] = 1. */
+  bn.lid x0, 0(x10++)
+  bn.not w3, w0
+  bn.xor w1, w3, w2
+  bn.sid x4, 0(x5++)
+  bn.xor w2, w2, w0
+  bn.and w2, w2, w3
+  bn.xor w2, w2, w0
+
+  /* Bits 10..11: p[i] = 0. */
+  loopi 2, 5
+    bn.lid x0, 0(x10++)
+    bn.xor w1, w0, w2
+    bn.sid x4, 0(x5++)
+    bn.and w2, w0, w1
+    bn.xor w2, w2, w0
+  endloop
+
+  /* Bit 12: p[i] = 1 and x_0[i] = 0. */
+  bn.not w1, w2
+  bn.sid x4, 0(x5++)
+
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  /********** End inline s = secadd(p, x_0, k + 1). **********/
+
+  /* Build s = (s, 0) for (k + 1) bits. */
+  loopi 13, 1
+    bn.sid x0, 0(x5++)
+  endloop
+
+  /* Build s' = (0, x_1) for (k + 1) bits. */
+  add x5, x2, x0 /* s' */
+  loopi 13, 1
+    bn.sid x0, 0(x5++)
+  endloop
+  loopi 12, 2
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
+  endloop
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x5++)
+
+  /********** Start inline u = secadd(s, s', k + 1). **********/
+  /* Initialize c = 0. */
+  bn.sid x0, 832(x2)
+  bn.sid x0, 864(x2)
+
+  addi x10, x2, 896
+  addi x11, x0, 416
+  add  x12, x2, x0
+  addi x13, x0, 416
+  addi x15, x2, 896
+  addi x16, x0, 416
+  addi x17, x2, 832
+  addi x29, x0, 32
+  addi x30, x2, 832
+  addi x31, x0, 32
+  loopi 12, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
+  endloop
+
+  addi x4, x0, 1
+  loopi 2, 11
+    /* u[12] = s[12] ^ s'[12] ^ c. */
+    bn.lid x0, 0(x10)
+    add    x10, x10, x11
+    bn.lid x4, 0(x12)
+    add    x12, x12, x13
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
+    add    x15, x15, x16
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    /* Compute r = x ^ 0 ^ cin = x ^ cin. */
-    bn.lid x0, 0(a0++)
-    bn.xor w1, w0, w2 /* r = x ^ cin */
-    bn.sid x4, 0(t0++) /* Save r. */
-    /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (x & r). */
-    bn.and w2, w0, w1 /* cout = x & r */
-    bn.xor w2, w2, w0 /* cout ^= x */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+  endloop
+  /********** End inline u = secadd(s, s', k + 1). **********/
 
-    /* Bit 9: 1. */
+  /* Compute a = bitcopymask(u[k], (k + 1) * 32). */
+  addi x10, x2, 1280
+  addi x11, x0, 416
+  add  x13, x2, x0
+  jal  x1, bitcopymask
+
+  /********** Start inline r = secadd(a, u, k). **********/
+  /* Initialize c = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 832(x2)
+  bn.sid x0, 864(x2)
+
+  add  x10, x2, x0
+  addi x11, x0, 384
+  addi x12, x2, 896
+  addi x13, x0, 416
+  lw   x15, 1728(x2)
+  addi x16, x0, 384
+  addi x17, x2, 832
+  addi x29, x0, 32
+  addi x30, x2, 832
+  addi x31, x0, 32
+  loopi 11, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
+  endloop
+
+  addi x4, x0, 1
+  loopi 2, 11
+    /* r[11] = a[11] ^ u[11] ^ c. */
+    bn.lid x0, 0(x10)
+    add    x10, x10, x11
+    bn.lid x4, 0(x12)
+    add    x12, x12, x13
+    bn.xor w0, w0, w1
+    bn.lid x4, 0(x30++)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x15)
+    add    x15, x15, x16
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    /* Compute r = x ^ p ^ cin. */
-    bn.lid x0, 0(a0++)
-    bn.not w3, w0 /* a = x ^ p */
-    bn.xor w1, w3, w2 /* r = a ^ cin */
-    bn.sid x4, 0(t0++) /* Save r. */
-    /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (a & (x ^ cin)). */
-    bn.xor w2, w0, w2 /* cout = x ^ cin */
-    bn.and w2, w3, w2 /* cout &= a */
-    bn.xor w2, w2, w0 /* cout ^= x */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+  endloop
+  /********** End inline r = secadd(a, u, k). **********/
 
-    /* Bit 10 -- 11: 0. */
-    loopi 2, 7
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        /* Compute r = x ^ 0 ^ cin = x ^ cin. */
-        bn.lid x0, 0(a0++)
-        bn.xor w1, w0, w2 /* r = x ^ cin */
-        bn.sid x4, 0(t0++) /* Save r. */
-        /* Compute cout = x ^ ((x ^ p) & (x ^ cin)) = x ^ (x & r). */
-        bn.and w2, w0, w1 /* cout = x & r */
-        bn.xor w2, w2, w0 /* cout ^= x */
-    endloop
+  /* Restore frame. */
+  addi x2, x2, 1760
+  ret
 
-    /* Bit 12: 1. */
-    /* Whitening. */
-    bn.xor w1, w1, w1
-    /* Compute r = x ^ p ^ cin = p ^ cin. (x only has k bits, while p has k + 1 bits). */
-    bn.not w1, w2 /* r = p ^ cin */
-    bn.sid x4, 0(t0++) /* Save r. */
-
-    /* Extend s to 2 shares, i.e., clear next share of s. */
-    bn.xor w0, w0, w0
-    loopi 13, 1
-        bn.sid x0, 0(t0++)
-    endloop
-
-    /* Clear first share of sprime and copy x[1] to second share of sprime with
-     * share stride = 416. */
-    addi t0, sp, 0 /* ptr_sprime */
-    loopi 13, 1
-        bn.sid x0, 0(t0++)
-    endloop
-    loopi 12, 3
-        bn.lid x0, 0(a0++) /* a0 already points to x[1]. */
-        bn.sid x0, 0(t0++)
-        /* Whitening. */
-        bn.xor w0, w0, w0
-    endloop
-    bn.sid x0, 0(t0++)
-
-    /* Compute u = secadd(s, sprime, k + 1). */
-    /* Initialize c = 0. */
-    addi  t0, sp, 832 /* ptr_c */
-    bn.xor w0, w0, w0
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
-
-    addi a0, sp, 896 /* ptr_s */
-    addi a1, x0, 416
-    addi a2, sp, 0 /* ptr_sprime */
-    addi a3, x0, 416
-    addi a5, sp, 896 /* ptr_u */
-    addi a6, x0, 416
-    addi a7, sp, 832 /* ptr_c */
-    addi t4, x0, 32
-    addi t5, sp, 832 /* ptr_c */
-    addi t6, x0, 32
-    loopi 12, 2
-        jal x1, secfulladder
-        nop
-    endloop
-    /* Handle bit 12. */
-    /* Compute r[12] = x[12] ^ y[12] ^ c. */
-    addi x4, x0, 1
-    addi t1, x0, 2
-    addi t2, x0, 3
-    loopi 2, 14
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        /* Computation. */
-        bn.lid x0, 0(a0)
-        bn.lid x4, 0(a2)
-        bn.lid t1, 0(a7)
-        bn.xor w3, w0, w1
-        bn.xor w3, w3, w2
-        bn.sid t2, 0(a5)
-        /* Adjust addresses. */
-        add    a0, a0, a1
-        add    a2, a2, a3
-        add    a7, a7, t4
-        add    a5, a5, a6
-    endloop
-
-    /* Compute a = bitcopymask(u[k], (k + 1) * 32). */
-    addi a0, sp, 1280 /* ptr_u[k] */
-    addi a1, x0, 416
-    addi a3, sp, 0 /* ptr_a */
-    jal  x1, bitcopymask
-
-    /* Compute u = secadd(a, u, k). */
-    /* Initialize c = 0. */
-    addi  t0, sp, 832 /* ptr_c */
-    bn.xor w0, w0, w0
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
-
-    addi a0, sp, 0 /* ptr_a */
-    addi a1, x0, 384
-    addi a2, sp, 896 /* ptr_u */
-    addi a3, x0, 416
-    addi a5, s2, 0 /* ptr_r */
-    addi a6, x0, 384
-    addi a7, sp, 832 /* ptr_c */
-    addi t4, x0, 32
-    addi t5, sp, 832 /* ptr_c */
-    addi t6, x0, 32
-    loopi 11, 2
-        jal x1, secfulladder
-        nop
-    endloop
-    /* Handle bit 11. */
-    /* Compute r[11] = x[11] ^ y[11] ^ c. */
-    addi x4, x0, 1
-    addi t1, x0, 2
-    addi t2, x0, 3
-    loopi 2, 14
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        /* Computation. */
-        bn.lid x0, 0(a0)
-        bn.lid x4, 0(a2)
-        bn.lid t1, 0(a7)
-        bn.xor w3, w0, w1
-        bn.xor w3, w3, w2
-        bn.sid t2, 0(a5)
-        /* Adjust addresses. */
-        add    a0, a0, a1
-        add    a2, a2, a3
-        add    a7, a7, t4
-        add    a5, a5, a6
-    endloop
-
-    /* Restore s2 and frame. */
-    lw   s2, 1728(sp)
-    addi sp, sp, 1760
-    ret
-
-/*
- * Name: seconebitb2amodq
+/**
+ * One-bit Boolean-to-Arithmetic conversion mod q = 3329.
  *
- * Return arithmetic shares mod q = 3329 of a bit x, given its Boolean shares.
+ * Return arithmetic shares mod q = 3329 r of a bit x, given its Boolean shares.
  * Vectorized for polynomial.
  *
- *   v    <- (x[0], 0)
+ *   v    <- (x_0, 0)
  *   v    <- refreshmodq(v)
- *   v[0] <- (1 - 2*x[1])*v[0] + x[1]   mod q
- *   v[1] <- (1 - 2*x[1])*v[1]          mod q
- *   r    <- refreshmodq(v[0], v[1])
+ *   v_0  <- (1 - 2 * x_1) * v_0 + x_1   mod q
+ *   v_1  <- (1 - 2 * x_1) * v_1         mod q
+ *   r    <- refreshmodq(v)
  *
  * Source: Alg.5 [SPOG19]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[out] x12: dptr_r, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
+ * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl seconebitb2amodq
 .type seconebitb2amodq, @function
 seconebitb2amodq:
-    /* Frame: v[0..1] at sp+0 (1024 B), saved s0/s2 above. */
-    addi sp, sp, -1056
-    sw   s0, 1024(sp)
-    sw   s2, 1028(sp)
-    addi s0, a0, 0 /* ptr_x */
-    addi s2, a2, 0 /* ptr_r */
+  /* Frame: v_0..1 at x2+0 (1024 B), saved x10/x12 above. */
+  addi x2, x2, -1056
+  sw   x10, 1024(x2)
+  sw   x12, 1028(x2)
 
-    /* Copy x[0] to v[0]. */
-    addi t0, sp, 0 /* ptr_v */
-    add  t1, a0, x0 /* ptr_x[0] */
-    loopi 16, 2
-        bn.lid x0, 0(t1++)
-        bn.sid x0, 0(t0++)
-    endloop
-    /* Zeroize v[1]. */
-    bn.xor w0, w0, w0
-    loopi 16, 1
-        bn.sid x0, 0(t0++)
-    endloop
+  /* Build v = (x_0, 0). */
+  add x5, x2, x0
+  loopi 16, 2
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
+  endloop
 
-    /* Construct the vector of 1s. */
-    bn.subi    w30, w0, 1
-    bn.shv.16h w30, w30 >> 15
+  bn.xor w0, w31, w31
+  loopi 16, 1
+    bn.sid x0, 0(x5++)
+  endloop
 
-    /* Refresh v in place. */
-    addi a0, sp, 0 /* ptr_v */
-    addi a2, a0, 0 /* in-place */
-    jal  x1, refreshmodq
+  /* Compute v = refreshmodq(v). */
+  add x10, x2, x0
+  add x12, x2, x0
+  jal x1, refreshmodq
 
-    /* To avoid use modular multiplication, we compute (1 - 2*x[1]) * v[j]
-     * as follows:
-     *  - t0 = x[1] - 1
-     *  - We have t0 = 0xFFFF if x[1] = 0 and t0 = 0 if x[1] = 1.
-     *  - t1 = v[j] & t0
-     *  - t1 <<= 1
-     *  - r = bn.subvm(t1, v[j]) with MOD = Q. This works because if x[1] = 0,
-     *    then t1 = 2*v[j] and r = 2*v[j] - v[j] = v[j]. Otherwise,
-     *    t1 = (0 - v[j]) mod Q.
-     * For v[0], we continue with v[0] = (v[0] + x[1]) mod Q before
-     * saving the result to memory.
-     */
-    addi t0, s0, 512 /* ptr_x[1] */
-    addi t1, sp, 0 /* ptr_v */
-    addi x4, x0, 1
-    loopi 16, 16
-        bn.lid         x0, 0(t0++) /* x[1] */
-        bn.subv.16h    w2, w0, w30
-        addi           t2, t1, 0
-        /* v[0]: also add x[1] before storing. */
-        bn.lid       x4, 0(t1) /* v[0] */
-        bn.and       w3, w1, w2
-        bn.shv.16h   w3, w3 << 1
-        bn.subvm.16h w1, w3, w1
-        bn.addvm.16h w1, w0, w1
-        bn.sid       x4, 0(t1)
-        addi         t1, t1, 512 /* Point to v[1]. */
-        /* v[1]. */
-        bn.lid       x4, 0(t1) /* v[1] */
-        bn.and       w3, w1, w2
-        bn.shv.16h   w3, w3 << 1
-        bn.subvm.16h w1, w3, w1
-        bn.sid       x4, 0(t1)
-        addi t1, t2, 32
-    endloop
+  /* We need to compute r = (1 - 2 * x_1) * v_j for j = 0..1.
+   * Since x_1 is either 0 or 1, this translates to:
+   *  - r = v_j if x_1 = 0
+   *  - r = (-v_j) mod q if x_1 = 1
+   *
+   * To avoid using modular multiplication, we proceed as follows:
+   * (note that all the operations below are vectorized):
+   *  (1) t0    = x_1 - 1 (t0 = 0xffff if x_1 = 0 else t0 = 0)
+   *  (2) t1    = (v_j & t0) << 1
+   *  (3) v_j  = (t1 - v_j) mod q
+   *  (4) v_0 += x_1 mod q
+   *
+   * This works because:
+   *  - if x_1 = 0, then t1 = v_j << 1 = 2 * v_j.
+   *    Then (t1 - v_j) mod q = v_j.
+   *  - if x_1 = 1, then t1 = 0.
+   *    Then (t1 - v_j) mod q = (-v_j) mod q.
+   */
 
-    /* Final refresh: r = refreshmodq(v). */
-    addi a0, sp, 0 /* ptr_v */
-    addi a2, s2, 0 /* ptr_r */
-    jal  x1, refreshmodq
+  /* Generate 1 in each of the 16 16-bit lanes. */
+  bn.subi    w4, w31, 1
+  bn.shv.16h w4, w4 >> 15
 
-    /* Restore registers and frame. */
-    lw   s0, 1024(sp)
-    lw   s2, 1028(sp)
-    addi sp, sp, 1056
-    ret
+  addi x4, x0, 1
+  lw   x5, 1024(x2)
+  addi x5, x5, 512 /* x_1 */
+  add  x6, x2, x0  /* v */
+  loopi 16, 18
+    bn.lid       x0, 0(x5++)
+    bn.subv.16h  w2, w0, w4
+    /* Handle v_0. */
+    bn.lid       x4, 0(x6)
+    bn.and       w3, w1, w2
+    bn.shv.16h   w3, w3 << 1
+    bn.subvm.16h w1, w3, w1
+    bn.addvm.16h w1, w0, w1
+    bn.sid       x4, 0(x6)
+    /* Whitening. */
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
+    /* Handle v_1. */
+    bn.lid       x4, 512(x6)
+    bn.and       w3, w1, w2
+    bn.shv.16h   w3, w3 << 1
+    bn.subvm.16h w1, w3, w1
+    bn.sid       x4, 512(x6)
+    addi         x6, x6, 32
+    /* Whitening. */
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
 
-/*
- * Name: secb2amodq
+  /* Compute r = refreshmodq(v). */
+  add x10, x2, x0
+  lw  x12, 1028(x2)
+  jal x1, refreshmodq
+
+  /* Restore frame. */
+  addi x2, x2, 1056
+  ret
+
+/**
+ * Boolean-to-Arithmetic conversion mod q = 3329.
  *
- * Return arithmetic shares mod q = 3329 of x, given its Boolean shares mod 2^k,
- * with k = 12 (q < 2**k).
+ * Return arithmetic shares r of x mod q = 3329, given its Boolean
+ * shares mod 2^k, with k = 12 (q < 2^k).
  * Bitsliced.
  *
- *   rand <- poly_rej_samp()      uniform polynomial mod q
+ *   rand <- poly_rej_samp()      (uniform polynomial mod q)
  *   zp   <- q - rand
  *   a    <- seca2bmodq(zp)
  *   b    <- secaddmodq(a, x)
@@ -1308,2452 +1273,2229 @@ seconebitb2amodq:
  *
  * Source: Alg.11 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[out] x12: dptr_r, dmem pointer to the output arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[out] x12: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10 to x21, x28 to x31, w0 to w16, w28 to w30, acch, acc
+ * clobbered registers: x2, x4 to x6, x8 to x17, x29 to x31,
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl secb2amodq
 .type secb2amodq, @function
 secb2amodq:
-    /* Frame (2656 B, 2 shares):
-     *   sp +    0 : saved s0, s2, s3, s4, s5
-     *   sp +   32 : ptr_zp / scratch (1024 B)
-     *   sp + 1056 : ptr_s            ( 832 B)
-     *   sp + 1888 : ptr_a, ptr_b, ptr_c (bitsliced, 768 B) */
-    addi sp, sp, -2048
-    addi sp, sp, -608
-    sw s0, 0(sp)
-    sw s2, 4(sp)
-    sw s3, 8(sp)
-    sw s4, 12(sp)
-    sw s5, 16(sp)
+  /* Frame (2656 B, 2 shares):
+   *   x2 +    0 : saved x10, x12, x8, x9
+   *   x2 +   32 : zp / scratch (1024 B)
+   *   x2 + 1056 : s            ( 832 B)
+   *   x2 + 1888 : a, b, c, zp  (bitsliced, 768 B) */
+  addi x2, x2, -2048
+  addi x2, x2, -608
+  sw   x10, 0(x2)
+  sw   x12, 4(x2)
+  sw   x8, 8(x2)
+  sw   x9, 12(x2)
 
-    /* Save input/output addresses and buffer bases. */
-    addi s0, a0, 0 /* ptr_x */
-    addi s2, a2, 0 /* ptr_r */
-    addi s3, sp, 1888 /* ptr_a, ptr_b, ptr_c (bitsliced) */
-    addi s4, sp, 1056 /* ptr_s */
-    /* ptr_zp = sp + 32 */
+  /* Save input/output addresses and buffer bases. */
+  addi x8, x2, 1888 /* a, b, c, zp (bitsliced) */
+  addi x9, x2, 1056 /* s */
+  /* zp = x2 + 32 */
 
-    /* Sample rand, then compute zp = q - rand. */
-    addi    x4, x0, 30
-    la      t0, modulus_bn
-    bn.lid  x4, 0(t0)
-    addi    a0, a2, 0 /* ptr_r */
-    addi    t2, sp, 32 /* ptr_zp */
-    bn.wsrr w16, mod
-    jal x1, poly_rej_samp
-    loopi 16, 3
-        bn.lid      x0, 0(a2++)
-        bn.subv.16h w0, w30, w0 /* Since inputs are < q, we need to only use bn.subv. */
-        bn.sid      x0, 0(t2++)
-    endloop
+  /* Sample r_0 = rand, then compute zp = q - rand. */
+  add     x10, x12, x0
+  jal     x1, poly_rej_samp
+  addi    x4, x0, 1
+  la      x5, const_q
+  bn.lid  x4, 0(x5)
+  addi    x5, x2, 32
+  loopi 16, 3
+    bn.lid      x0, 0(x12++)
+    bn.subv.16h w0, w1, w0
+    bn.sid      x0, 0(x5++)
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* Bitslice share 0 of zp; the last share (bitsliced) is cleared below. */
-    addi a0, sp, 32 /* ptr_zp */
-    addi a1, s3, 0 /* ptr_zp (bitsliced) */
-    jal  x1, poly_to_bitsliced
-    addi a1, a1, 384
-    /* Clear the last share of zp (bitsliced). */
-    bn.xor w0, w0, w0
-    loopi 12, 1
-        bn.sid x0, 0(a1++)
-    endloop
+  /* Bitslice zp_0 and clear zp_1 (bitsliced). */
+  addi   x10, x2, 32
+  add    x11, x8, x0  /* zp (bitsliced) */
+  jal    x1, poly_to_bitsliced
+  addi   x11, x11, 384
+  bn.xor w0, w31, w31
+  loopi 12, 1
+    bn.sid x0, 0(x11++)
+  endloop
 
-    /* Compute a = seca2bmodq(zp). */
-    addi a0, s3, 0 /* ptr_zp (bitsliced) */
-    addi a2, s3, 0 /* ptr_a */
-    jal  x1, seca2bmodq
+  /* Compute a = seca2bmodq(zp). */
+  add x10, x8, x0
+  add x12, x8, x0
+  jal x1, seca2bmodq
 
-    /* Compute b = secaddmodq(a, x). */
-    /* Inline secaddmodq. */
-    /* Compute s = secadd(a, x, k + 1). */
-    /* Initialize c = 0. */
-    bn.xor w0, w0, w0
-    addi   t0, s4, 384 /* ptr_c */
-    loopi 2, 2
-        bn.sid x0, 0(t0)
-        addi   t0, t0, 416
-    endloop
+  /* Compute b = secaddmodq(a, x). */
+  /********** Start inline b = secaddmodq(a, x). **********/
+  /********** Start inline s = secadd(a, x, k + 1). **********/
+  /* Initialize c = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 384(x9)
+  bn.sid x0, 800(x9)
 
-    /* Ripple-carry adder. */
-    addi a0, s3, 0 /* ptr_a */
-    addi a1, x0, 384
-    addi a2, s0, 0 /* ptr_x */
-    addi a3, x0, 384
-    addi a5, s4, 0 /* ptr_s */
-    addi a6, x0, 416
-    addi a7, s4, 384 /* ptr_c = cin */
-    addi t4, x0, 416
-    addi t5, s4, 384 /* ptr_c = cout */
-    addi t6, x0, 416
-    /* Loop over i=1,...,k-1. */
-    loopi 12, 2
-        /* a0 already points to x[i] */
-        /* a1 is already share stride of x. */
-        /* a2 already points to y[i] */
-        /* a3 is already share stride of y. */
-        /* a5 already points to r. */
-        /* a6 is already share stride of r. */
-        /* a7 already points to ptr_c = cin. */
-        /* t4 is already share stride of cin. */
-        /* t5 already points to ptr_c = cout. */
-        /* t6 is already share stride of cout. */
-        jal  x1, secfulladder
-        /* After secfulladder:
-         *  - a0 and a2 points to x[i + 1] and y[i + 1].
-         *  - a1 and a3 are still share stride of x and y.
-         *  - a5 points to r[i + 1].
-         *  - a6 is still share stride of r.
-         *  - a7 points to cin.
-         *  - t4 is still share stride of cin.
-         *  - t5 points to cout.
-         *  - t6 is still share stride of cout. */
-        nop
-    endloop
-    /* Bit i = k + 1 is already x[k + 1] ^ y[k + 1] ^ c = cout since x[k + 1] = y[k + 1] = 0. */
+  add  x10, x8, x0
+  addi x11, x0, 384
+  lw   x12, 0(x2)
+  addi x13, x0, 384
+  add  x15, x9, x0
+  addi x16, x0, 416
+  addi x17, x9, 384
+  addi x29, x0, 416
+  addi x30, x9, 384
+  addi x31, x0, 416
+  loopi 12, 4
+    jal  x1, secfulladder
+    addi x10, x10, 32
+    addi x12, x12, 32
+    addi x15, x15, 32
+  endloop
+  /* Bit i = k is already a[k] ^ x[k] ^ cout = cout
+   * since a[k] = x[k] = 0. */
+  /********** End inline s = secadd(a, x, k + 1). **********/
 
-    /* Compute s = secadd(s, p, k + 1) where p = 2**(k + 1) - q = 4863 = b1001011111111. */
-    /* Initialize c = 0. */
-    addi   t0, sp, 32 /* ptr_c */
-    bn.xor w0, w0, w0
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
-    addi s5, t0, 0 /* ptr_p */
+  /********** Start inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
+  /* Initialize c = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 32(x2)
+  bn.sid x0, 64(x2)
 
-    addi    t0, s5, 0 /* ptr_p */
-    bn.subi w1, w0, 1
-    addi    x4, x0, 1
-    bn.sid  x4, 0(t0++)
-    bn.sid  x0, 0(t0++)
+  bn.sid  x0, 128(x2)
+  bn.subi w0, w31, 1
+  bn.sid  x0, 96(x2)
 
-    addi a0, s5, 0 /* ptr_p */
-    addi a1, x0, 32
-    addi a2, s4, 0 /* ptr_s */
-    addi a3, x0, 416
-    addi a5, s4, 0 /* ptr_s */
-    addi a6, x0, 416
-    addi a7, sp, 32 /* cin */
-    addi t4, x0, 32
-    addi t5, sp, 32 /* cout */
-    addi t6, x0, 32
-    /* Bit 0 -- 7: p = 1. */
-    loopi 8, 2
-        jal  x1, secfulladder
-        addi a0, a0, -32 /* Reset a0 to ptr_p. */
-    endloop
+  addi x10, x2, 96
+  addi x11, x0, 32
+  add  x12, x9, x0
+  addi x13, x0, 416
+  add  x15, x9, x0
+  addi x16, x0, 416
+  addi x17, x2, 32
+  addi x29, x0, 32
+  addi x30, x2, 32
+  addi x31, x0, 32
 
-    /* Bit 8: p = 0. */
-    bn.xor w0, w0, w0
-    bn.sid x0, 0(a0)
-    addi   a0, s5, 0
-    jal    x1, secfulladder
-    /* Bit 9: p = 1. */
-    bn.xor  w0, w0, w0
-    bn.subi w0, w0, 1
-    addi    a0, s5, 0
-    bn.sid  x0, 0(a0)
-    jal     x1, secfulladder
-    /* Bit 10 -- 11: p = 0. */
-    bn.xor w0, w0, w0
-    addi   a0, s5, 0
-    bn.sid x0, 0(a0)
-    jal    x1, secfulladder
-    addi   a0, s5, 0
-    jal    x1, secfulladder
+  /* Bits 0..7: p[i] = 1. */
+  loopi 8, 3
+    jal  x1, secfulladder
+    addi x12, x12, 32
+    addi x15, x15, 32
+  endloop
+  /* Bit 8: p[i] = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x10)
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
+  /* Bit 9: p[i] = 1. */
+  bn.subi w0, w31, 1
+  bn.sid  x0, 0(x10)
+  jal     x1, secfulladder
+  addi    x12, x12, 32
+  addi    x15, x15, 32
+  /* Bits 10..11: p[i] = 0. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x10)
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
+  jal    x1, secfulladder
+  addi   x12, x12, 32
+  addi   x15, x15, 32
+  /* Bit 12: p[i] = 1. */
+  addi   x4, x0, 1
+  /* s[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
+  /* s_0 */
+  bn.lid x0, 0(x12)
+  bn.lid x4, 0(x17)
+  add    x17, x17, x29
+  bn.xor w0, w0, w1
+  bn.not w0, w0
+  bn.sid x0, 0(x12)
+  add    x12, x12, x13
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
 
-    /* Bit 12: p = 1. */
-    /* Compute r[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
-    addi x4, x0, 1
-    addi t1, x0, 2
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    /* Computation. */
-    bn.lid x0, 0(a2)
-    bn.lid x4, 0(a7)
-    bn.xor w3, w0, w1
-    bn.not w2, w3
-    bn.sid t1, 0(a2)
-    add    a2, a2, a3
-    add    a7, a7, t4
+  /* s_1 */
+  bn.lid x0, 0(x12)
+  bn.lid x4, 0(x17)
+  bn.xor w0, w0, w1
+  bn.sid x0, 0(x12)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  /********** End inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
 
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    /* Computation. */
-    bn.lid x0, 0(a2)
-    bn.lid x4, 0(a7)
-    bn.xor w2, w0, w1
-    bn.sid t1, 0(a2)
+  /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
+  addi x10, x9, 384
+  addi x11, x0, 416
+  add  x13, x8, x0
+  jal  x1, bitcopymask
 
-    /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
-    addi a0, s4, 384 /* ptr_s[k] */
-    addi a1, x0, 416 /* share_str = (k + 1) * 32 */
-    addi a3, s3, 0 /* ptr_a */
-    jal  x1, bitcopymask
+  /* Compute r = secadd(a, s, k). */
+  add  x10, x8, x0
+  addi x11, x0, 384
+  add  x12, x9, x0
+  addi x13, x0, 416
+  add  x15, x8, x0
+  addi x16, x0, 384
+  addi x17, x0, 12
+  jal  x1, secadd
+  /********** End inline b = secaddmodq(a, x). **********/
 
-    /* Compute r = secadd(a, s, k). */
-    addi a0, s3, 0 /* ptr_a */
-    addi a1, x0, 384
-    addi a2, s4, 0 /* ptr_s */
-    addi a3, x0, 416
-    addi a5, s3, 0 /* ptr_b */
-    addi a6, x0, 384
-    addi a7, x0, 12 /* k */
-    jal  x1, secadd
-    /* End inlining secaddmodq. */
+  /* Compute c = refreshios(b, k, k * 32). */
+  add  x10, x8, x0
+  addi x11, x0, 12
+  addi x12, x0, 384
+  add  x14, x8, x0
+  jal  x1, refreshios
 
-    /* Compute c = refreshios(b, k, k * 32). */
-    addi a0, s3, 0 /* ptr_b */
-    addi a1, x0, 12 /* k */
-    addi a2, x0, 384 /* k * 32 */
-    addi a4, s3, 0 /* ptr_c */
-    jal  x1, refreshios
+  /* Unmask c. */
+  add  x5, x8, x0
+  addi x4, x0, 1
+  loopi 12, 4
+    bn.lid x0, 0(x5)
+    bn.lid x4, 384(x5)
+    bn.xor w0, w0, w1
+    bn.sid x0, 0(x5++)
+  endloop
 
-    /* Unmask c. */
-    addi t0, s3, 0 /* ptr_c */
-    addi x4, x0, 1
-    loopi 12, 5
-        addi   t1, t0, 384
-        bn.lid x0, 0(t0)
-        bn.lid x4, 0(t1)
-        bn.xor w0, w0, w1
-        bn.sid x0, 0(t0++)
-    endloop
+  /* Convert c from bitsliced to normal representation, into r_1. */
+  add  x10, x8, x0
+  lw   x11, 4(x2)
+  addi x11, x11, 512
+  jal x1, poly_from_bitsliced
 
-    /* Convert c from bitsliced to normal representation, into share 1. */
-    addi a0, s3, 0 /* ptr_c */
-    addi a1, s2, 0 /* ptr_r */
-    addi a1, a1, 512 /* r[1] */
-    jal x1, poly_from_bitsliced
+  /* Restore registers and frame. */
+  lw   x8, 8(x2)
+  lw   x9, 12(x2)
+  addi x2, x2, 2047
+  addi x2, x2, 609
+  ret
 
-    /* Restore registers. */
-    lw s0, 0(sp)
-    lw s2, 4(sp)
-    lw s3, 8(sp)
-    lw s4, 12(sp)
-    lw s5, 16(sp)
-    addi sp, sp, 2047
-    addi sp, sp, 609
-    ret
-
-/*
- * Name: poly_hocompress
+/**
+ * First-order masked compression of a polynomial with dv in {4, 5}.
  *
- * Return Boolean shares of Compressq(x, d) = round((2^d / q) * x) mod 2^d for
- * d in {4, 5}, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, dv) = round((2^dv / q) * x) mod
+ * 2^dv for dv in {4, 5}, given arithmetic shares mod q of x. Here dv = 5 for
+ * k = 4, and 4 otherwise.
+ * Bitsliced.
  *
- * Each share is compressed to d + alpha bits, recombined (seca2b), then the low
- * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
- * (2^alpha > q * nshares); nshares = 2 gives d + alpha = 18 (alpha = 13 for
- * d = 5, 14 for d = 4).
+ * Each share is compressed to dv + alpha bits, recombined (seca2b), then the
+ * low alpha bits dropped. The alpha extra bits absorb the per-share rounding
+ * error (2^alpha > q * nshares); nshares = 2 gives dv + alpha = 18 (alpha = 13
+ * for dv = 5, 14 for dv = 4).
  *
- *   z[0] <- Compressq(x[0], d + alpha) + 2^(alpha - 1)
- *   z[1] <- Compressq(x[1], d + alpha)
- *   c    <- seca2b(z[0], z[1])
+ *   z_0  <- Compressq(x_0, dv + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, dv + alpha)
+ *   c    <- seca2b(z)
  *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input arithmetic shares of x
- * @param[in]  x11: indicates du or dv (0: dv, 1: du)
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x19, x28 to x31, w0 to w15, w17 to w21, w28 to w29
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
-.globl poly_hocompress
-.type poly_hocompress, @function
-poly_hocompress:
-    /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-    addi sp, sp, -1024
-    add  t2, sp, x0
-    addi sp, sp, -1184
-    sw   s1, 1152(sp)
-    sw   s2, 1156(sp)
-    sw   s3, 1160(sp)
-    addi s1, a2, 0
+.globl poly_hocompress_dv
+.type poly_hocompress_dv, @function
+poly_hocompress_dv:
+  /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
+  addi x2, x2, -1024
+  add  x7, x2, x0 /* t */
+  addi x2, x2, -1184
+  sw   x12, 1152(x2)
+  sw   x8, 1156(x2)
+  sw   x9, 1160(x2)
 
-    /* Load all constants. */
-    addi      x4, x0, 17
-    la        t0, const_m_dv
-    bn.lid    x4++, 0(t0)
-    la        t0, modulus_over_2
-    bn.lid    x4++, 0(t0)
-    bn.shv.8s w18, w18 >> 16
+  /* Load all constants. */
+  addi      x4, x0, 20
+  la        x5, const_m_dv
+  bn.lid    x4++, 0(x5)
+  la        x5, const_qp1_half
+  bn.lid    x4++, 0(x5)
+  bn.shv.8s w21, w21 >> 16
 
-    /* Create 1-bit mask and 2**(alpha - 1). */
-    bn.subi   w19, w31, 1
-    bn.shv.8s w19, w19 >> 31
-    bn.shv.8s w19, w19 << 12  /* alpha - 1 */
+  /* Create 2^(alpha - 1). */
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
 
-    /* Select alpha-dependent parameters: w3 = 2**(alpha - 1), s2 = the
-     * extraction byte offset alpha * 32, s3 = dv. */
-    addi      x4, x0, 4
-    addi      s2, x0, 416  /* alpha * 32, alpha = 13 */
-    addi      s3, x0, 5
-    beq       a3, x4, _dv_params_done
-    bn.shv.8s w19, w19 << 1
-    addi      s2, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-    addi      s3, x0, 4
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
+   * extraction byte offset alpha * 32, x9 = dv. */
+  addi      x4, x0, 4
+  addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x9, x0, 5
+  beq       x13, x4, _dv_params_done
+  bn.shv.8s w22, w22 << 1
+  addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x9, x0, 4
+
 _dv_params_done:
+  add x6, x2, x0 /* z */
 
-    addi t1, sp, 0 /* ptr_z */
-    addi t3, t1, 512 /* Skip the first 16 bits. */
-
-    /* For DV in {4,5}, in order to avoid division by Q, we need to compute:
-     *  - x << (DV + ALPHA) --> x is maximum 20 bits.
-     *  - x += 1665
-     *  - x *=m where m = ((1 << 37) + Q // 2) // Q = 41285357 (m is 26 bits).
-     *  - x >>= k where k = 37.
-     *  - x &= ((1 << (DV + ALPHA)) - 1).
-     * where 37 is the smallest integer that makes this algorithm equivalent to
-     * the division by Q.
-     *
-     * Now for the first share, for performance reason after the step above, we
-     * want to also compute + 2**(ALPHA - 1) before saving the results to
-     * memory. This would result in two more bn.addv.8s instructions compared
-     * to the other shares. In order to reduce code size, we want the
-     * computation of the first share to be identical to subsequent shares. We
-     * realize that if k = 40, after the taking the high parts of the 64-bit
-     * products of x * m, we need to shift 8 bits more, instead of 5 bits.
-     * This shift of a multiple of 8 bits helps us to merge the final shift by
-     * 5 bits with the addition of 2**(alpha - 1) by using bn.add instead of
-     * bn.shv.8s and bn.addv.8s. Since alpha = 13 or 14, and (x * m) >> 40 is
-     * of size 19 bits, their sum is maximum 20 bits, which doesn't overflow
-     * 32-bit slot, ensuring that the addition with bn.add is equivalent to the
-     * vector addition with bn.addv.8s. This is for the first share.
-     *
-     * For subsequent shares, we only need to add (x * m) >> k with 0 with
-     * bn.add to make it a shift, thus reusing the same code for all the shares.
-     */
-
-    /* Compute z[0] = Compressq(x[0], dv + alpha) + 2**(alpha - 1). */
-    loopi 2, 58
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        bn.xor w4, w4, w4
-        bn.xor w5, w5, w5
-        bn.xor w6, w6, w6
-        bn.xor w7, w7, w7
-        bn.xor w8, w8, w8
-        bn.xor w9, w9, w9
-        bn.xor w10, w10, w10
-        bn.xor w11, w11, w11
-        bn.xor w12, w12, w12
-        bn.xor w13, w13, w13
-        bn.xor w14, w14, w14
-        bn.xor w15, w15, w15
-        bn.xor w20, w20, w20
-        bn.xor w21, w21, w21
-        bn.xor w28, w28, w28
-        bn.xor w29, w29, w29
-
-        addi x4, x0, 15
-        loopi 16, 18  /* 16 WDRs hold the 256 coeffs */
-            bn.lid             x0, 0(a0++)
-            /* Handle even-positioned coeffs. */
-            bn.trn1.16h        w20, w0, w31
-            bn.shv.8s          w20, w20 << 18
-            bn.addv.8s         w20, w20, w18
-            bn.mulv.8s.even.hi w20, w20, w17
-            bn.mulv.8s.odd.hi  w20, w20, w17
-            bn.add             w21, w19, w20 >> 8
-            /* Handle odd-positioned coeffs. */
-            bn.trn2.16h        w20, w0, w31
-            bn.shv.8s          w20, w20 << 18
-            bn.addv.8s         w20, w20, w18
-            bn.mulv.8s.even.hi w20, w20, w17
-            bn.mulv.8s.odd.hi  w20, w20, w17
-            bn.add             w20, w19, w20 >> 8
-            /* Combine the results before bitslicing. */
-            bn.trn2.16h        w0, w21, w20
-            bn.sid             x0, 0(t2++)
-            bn.trn1.16h        w0, w21, w20
-            bn.movr            x4, x0
-            addi               x4, x4, -1
-        endloop
-
-        /* For the first share, w19 is 2**(alpha - 1). After that, we need to
-         * clear w19 so that bn.add acts as a shift. */
-        bn.xor w19, w19, w19
-
-        /* Bitslice the first 16 bits. */
-        jal x1, _bitslice_transpose
-
-        add x4, x0, x0
-        loopi 16, 2
-            bn.sid x4, 0(t1++)
-            addi   x4, x4, 1
-        endloop
-        addi t1, t1, 64 /* Skip the last 2 bits. */
-
-        /* Bitslice the last 2 bits. */
-        addi x4, x0, 15
-        addi t2, t2, -512
-        loopi 16, 2
-            bn.lid x4, 0(t2++)
-            addi   x4, x4, -1
-        endloop
-
-        jal x1, _bitslice_transpose
-
-        add x4, x0, x0
-        loopi 2, 2
-            bn.sid x4, 0(t3++)
-            addi   x4, x4, 1
-        endloop
-        addi t3, t3, 512 /* Skip the first 16 bits. */
+  /* Compute z_0 = Compressq(x_0, dv + alpha) + 2^(alpha - 1),
+   *         z_1 = Compressq(x_1, dv + alpha).
+   *
+   * For dv in {4, 5}, in order to avoid division by q, let s = 40 and
+   * m = ((1 << s) + q // 2) // q = 0x13afb768 and do as follows:
+   *  - x << (dv + alpha)
+   *  - x += (q + 1) / 2 = 1665
+   *  - x *= m
+   *  - x >>= s
+   *  - x &= ((1 << (dv + alpha)) - 1).
+   */
+  loopi 2, 37
+    addi x4, x0, 15
+    loopi 16, 18
+      bn.lid             x0, 0(x10++)
+      /* Handle even-positioned coeffs. */
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
+      /* Handle odd-positioned coeffs. */
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
+      /* Combine the results before bitslicing. */
+      bn.trn2.16h        w0, w18, w17
+      bn.sid             x0, 0(x7++)
+      bn.trn1.16h        w0, w18, w17
+      bn.movr            x4, x0
+      addi               x4, x4, -1
     endloop
 
-    /* Compute c = seca2b(z), k = dv + alpha, share bytes = 576. */
-    addi a0, sp, 0 /* ptr_z */
-    addi a1, x0, 18 /* dv + alpha */
-    addi a2, x0, 576
-    addi a4, sp, 0 /* ptr_c */
-    jal  x1, seca2b
+    /* Bitslice the first 16 bits. */
+    jal x1, _bitslice_transpose
 
-    /* Compute r = c >> alpha: keep the bits c[alpha]...c[alpha + dv]. */
-    addi t0, sp, 0 /* ptr_c */
-    add  t0, t0, s2
-    addi t1, s1, 0 /* ptr_r */
-    loopi 2, 5
-        loop s3, 3
-            /* Whitening. */
-            bn.xor w0, w0, w0
-            bn.lid x0, 0(t0++)
-            bn.sid x0, 0(t1++)
-        endloop
-        /* After copy DV bits of z to r, we need to adjust address of z again. */
-        add t0, t0, s2
+    add x4, x0, x0
+    loopi 16, 2
+      bn.sid x4, 0(x6++)
+      addi   x4, x4, 1
     endloop
 
-    /* Restore registers. */
-    lw   s1, 1152(sp)
-    lw   s2, 1156(sp)
-    lw   s3, 1160(sp)
-    addi sp, sp, 1184
-    addi sp, sp, 1024
-    ret
+    /* Bitslice the last 2 bits. */
+    addi x4, x0, 15
+    addi x7, x7, -512
+    loopi 16, 2
+      bn.lid x4, 0(x7++)
+      addi   x4, x4, -1
+    endloop
 
-/*
- * Name: polyvec_hocompress
+    jal x1, _bitslice_transpose
+
+    add x4, x0, x0
+    loopi 2, 2
+      bn.sid x4, 0(x6++)
+      addi   x4, x4, 1
+    endloop
+
+    jal x1, whitening_dv
+
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
+  endloop
+
+  /* Compute c = seca2b(z), k = dv + alpha = 18, share bytes = 576. */
+  add  x10, x2, x0
+  addi x11, x0, 18
+  addi x12, x0, 576
+  add  x14, x2, x0
+  jal  x1, seca2b
+
+  /* Compute r = c >> alpha: keep the bits c[alpha]...c[dv + alpha]. */
+  add x5, x2, x8
+  lw  x12, 1152(x2)
+  loopi 2, 5
+    loop x9, 2
+      bn.lid x0, 0(x5++)
+      bn.sid x0, 0(x12++)
+    endloop
+    add x5, x5, x8
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+
+  /* Restore registers. */
+  lw   x8, 1156(x2)
+  lw   x9, 1160(x2)
+  addi x2, x2, 1184
+  addi x2, x2, 1024
+  ret
+
+/**
+ * First-order masked compression of a polynomial with du in {10, 11}.
  *
- * Return Boolean shares of Compressq(x, d) = round((2^d / q) * x) mod 2^d for
- * d in {10, 11}, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, du) = round((2^du / q) * x) mod
+ * 2^du for du in {10, 11}, given arithmetic shares mod q of x. Here du = 11
+ * for k = 4, and 10 otherwise.
+ * Bitsliced.
  *
- * Each share is compressed to d + alpha bits, recombined (seca2b), then the low
- * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
- * (2^alpha > q * nshares); nshares = 2 gives d + alpha = 24 (alpha = 13 for
- * d = 11, 14 for d = 10).
+ * Each share is compressed to du + alpha bits, recombined (seca2b), then the
+ * low alpha bits dropped. The alpha extra bits absorb the per-share rounding
+ * error (2^alpha > q * nshares); nshares = 2 gives du + alpha = 24 (alpha = 13
+ * for du = 11, 14 for du = 10).
  *
- *   z[0] <- Compressq(x[0], d + alpha) + 2^(alpha - 1)
- *   z[1] <- Compressq(x[1], d + alpha)
- *   c    <- seca2b(z[0], z[1])
+ *   z_0  <- Compressq(x_0, du + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, du + alpha)
+ *   c    <- seca2b(z)
  *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to the input arithmetic shares of x
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  x13: k, the security level
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2 to x19, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
  * clobbered flag groups: FG0
  */
-.globl polyvec_hocompress
-.type polyvec_hocompress, @function
-polyvec_hocompress:
-    /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-    addi sp, sp, -1024
-    add  t2, sp, x0
-    addi sp, sp, -1568
-    sw   s1, 1536(sp)
-    sw   s2, 1540(sp)
-    sw   s3, 1544(sp)
-    addi s1, a2, 0
 
-    /* Create 2**(alpha - 1). */
-    bn.subi   w30, w31, 1
-    bn.shv.8s w30, w30 >> 31
-    bn.shv.8s w30, w30 << 12  /* alpha - 1 */
+.globl poly_hocompress_du
+.type poly_hocompress_du, @function
+poly_hocompress_du:
+  /* Allocate the t, z scratch, save x8, x9 and spill the output pointer. */
+  addi x2, x2, -1024
+  add  x7, x2, x0 /* t */
+  addi x2, x2, -1568
+  sw   x12, 1536(x2)
+  sw   x8, 1540(x2)
+  sw   x9, 1544(x2)
 
-    /* Select alpha-dependent parameters: s2 = the extraction byte offset
-     * alpha * 32, s3 = du. The in-loop computation of 2**(alpha - 1)
-     * branches on a3 (k) directly. */
-    addi      x4, x0, 4
-    addi      s2, x0, 416  /* alpha * 32, alpha = 13 */
-    addi      s3, x0, 11
-    beq       a3, x4, _du_params_done
-    bn.shv.8s w30, w30 << 1
-    addi      s2, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
-    addi      s3, x0, 10
+  /* Create 2^(alpha - 1). */
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
+
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
+   * extraction byte offset alpha * 32, x9 = du. */
+  addi      x4, x0, 4
+  addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
+  addi      x9, x0, 11
+  beq       x13, x4, _du_params_done
+  bn.shv.8s w22, w22 << 1
+  addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
+  addi      x9, x0, 10
+
 _du_params_done:
+  /* Load all constants. */
+  addi       x4, x0, 20
+  la         x5, const_m_du
+  bn.lid     x4++, 0(x5)
+  la         x5, const_q
+  bn.lid     x4, 0(x5)
+  bn.shv.8s  w21, w21 >> 17 /* 0x680 in 8 32-bit lanes. */
+  bn.trn1.8s w21, w21, w31  /* 0x680 in 4 64-bit lanes. */
 
-    /* Load all constants. */
-    addi       x4, x0, 17
-    la         t0, const_m_du
-    bn.lid     x4++, 0(t0)
+  add x6, x2, x0 /* z */
 
-    la         t0, const_1664
-    bn.lid     x4, 0(t0)
+  /* Compute z_0 = Compressq(x_0, du + alpha) + 2^(alpha - 1),
+   *         z_1 = Compressq(x_1, du + alpha).
+   *
+   * For du in {10, 11}, in order to avoid division by q, let s = 64 and
+   * m = ((1 << s) + q // 2) // q = 0x13afb7680bb055 and do as follows:
+   *  - x << (du + alpha)
+   *  - x += 1664
+   *  - x *= m
+   *  - x >>= s
+   *  - x &= ((1 << (du + alpha)) - 1).
+   */
+  loopi 2, 63
+    addi x4, x0, 15
+    loopi 16, 44
+      bn.lid          x0, 0(x10++)
+      /* Handle even-positioned coeffs. */
+      bn.trn1.16h     w17, w0, w31
+      /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
+      bn.trn1.8s      w18, w17, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
+      /* Handle coeff[2] - coeff[6] - coeff[10] - coeff[14]. */
+      bn.trn2.8s      w17, w17, w31
+      bn.rshi         w17, w17, w31 >> 232
+      bn.add          w17, w17, w21
+      bn.mulqacc.so.z w19.l, w17.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w17.2, w20.0, 0
+      bn.mulqacc.so.z w17.l, w17.1, w20.0, 0
+      bn.mulqacc.so.z w17.u, w17.3, w20.0, 0
+      bn.trn2.4d      w17, w19, w17
+      /* Combine the result. */
+      bn.trn1.8s      w17, w18, w17
 
-    /* Adjust space for temporary variable y. */
-    addi t0, x0, 21
-    addi t1, sp, 0 /* ptr_z */
-    addi t3, t1, 512 /* Skip the first 16 bits. */
+      /* Handle odd-positioned coeffs. */
+      bn.trn2.16h     w0, w0, w31
+      /* Handle coeff[1] - coeff[5] - coeff[9] - coeff[13]. */
+      bn.trn1.8s      w18, w0, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
+      /* Handle coeff[3] - coeff[7] - coeff[11] - coeff[15]. */
+      bn.trn2.8s      w0, w0, w31
+      bn.rshi         w0, w0, w31 >> 232
+      bn.add          w0, w0, w21
+      bn.mulqacc.so.z w19.l, w0.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w0.2, w20.0, 0
+      bn.mulqacc.so.z w0.l, w0.1, w20.0, 0
+      bn.mulqacc.so.z w0.u, w0.3, w20.0, 0
+      bn.trn2.4d      w0, w19, w0
+      /* Combine the result. */
+      bn.trn1.8s      w18, w18, w0
 
-    loopi 2, 85
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        bn.xor w4, w4, w4
-        bn.xor w5, w5, w5
-        bn.xor w6, w6, w6
-        bn.xor w7, w7, w7
-        bn.xor w8, w8, w8
-        bn.xor w9, w9, w9
-        bn.xor w10, w10, w10
-        bn.xor w11, w11, w11
-        bn.xor w12, w12, w12
-        bn.xor w13, w13, w13
-        bn.xor w14, w14, w14
-        bn.xor w15, w15, w15
-        bn.xor w19, w19, w19
-        bn.xor w20, w20, w20
-        bn.xor w21, w21, w21
-        bn.xor w28, w28, w28
-        bn.xor w29, w29, w29
-
-        addi x4, x0, 15
-        loopi 16, 44  /* 16 WDRs hold the 256 coeffs */
-            bn.lid           x0, 0(a0++)
-            /* Handle even-positioned coeffs. */
-            bn.trn1.16h      w19, w0, w31
-            /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
-            bn.trn1.8s      w20, w19, w31
-            bn.rshi         w20, w20, w31 >> 232
-            bn.add          w20, w20, w18
-            bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-            bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-            bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-            bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-            bn.trn2.4d      w20, w21, w20
-            /* Handle coeff[2] - coeff[6] - coeff[10] - coeff[14]. */
-            bn.trn2.8s      w19, w19, w31
-            bn.rshi         w19, w19, w31 >> 232
-            bn.add          w19, w19, w18
-            bn.mulqacc.so.z w21.l, w19.0, w17.0, 0
-            bn.mulqacc.so.z w21.u, w19.2, w17.0, 0
-            bn.mulqacc.so.z w19.l, w19.1, w17.0, 0
-            bn.mulqacc.so.z w19.u, w19.3, w17.0, 0
-            bn.trn2.4d      w19, w21, w19
-            /* Combine the result. */
-            bn.trn1.8s      w19, w20, w19
-
-            /* Handle odd-positioned coeffs. */
-            bn.trn2.16h     w0, w0, w31
-            /* Handle coeff[1] - coeff[5] - coeff[9] - coeff[13]. */
-            bn.trn1.8s      w20, w0, w31
-            bn.rshi         w20, w20, w31 >> 232
-            bn.add          w20, w20, w18
-            bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-            bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-            bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-            bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-            bn.trn2.4d      w20, w21, w20
-            /* Handle coeff[3] - coeff[7] - coeff[11] - coeff[15]. */
-            bn.trn2.8s      w0, w0, w31
-            bn.rshi         w0, w0, w31 >> 232
-            bn.add          w0, w0, w18
-            bn.mulqacc.so.z w21.l, w0.0, w17.0, 0
-            bn.mulqacc.so.z w21.u, w0.2, w17.0, 0
-            bn.mulqacc.so.z w0.l, w0.1, w17.0, 0
-            bn.mulqacc.so.z w0.u, w0.3, w17.0, 0
-            bn.trn2.4d      w0, w21, w0
-            /* Combine the result. */
-            bn.trn1.8s      w20, w20, w0
-            /* Compute + 2**(alpha - 1) mod 2**(du + alpha); w30 holds
-            * 2**(alpha - 1) for the alpha selected per K. Then turn w31 into
-            * the per-lane bit mask for the bitslice helper below; it is zeroed
-            * again at the end of the loop body. */
-            bn.addv.8s      w19, w19, w30
-            bn.addv.8s      w20, w20, w30
-            /* Combine the results before bitslicing. */
-            bn.trn1.16h     w21, w19, w20
-            bn.movr         x4, t0
-            addi            x4, x4, -1
-            bn.trn2.16h     w21, w19, w20
-            bn.sid          t0, 0(t2++)
-        endloop
-
-        /* Clear w30. */
-        bn.xor w30, w30, w30
-
-        /* Bitslice the first 16 bits. */
-        jal x1, _bitslice_transpose
-
-        add x4, x0, x0
-        loopi 16, 2
-            bn.sid x4, 0(t1++)
-            addi   x4, x4, 1
-        endloop
-        addi t1, t1, 256 /* Skip the last 8 bits. */
-
-        /* Bitslice the last 8 bits. */
-        addi x4, x0, 15
-        addi t2, t2, -512
-        loopi 16, 2
-            bn.lid x4, 0(t2++)
-            addi   x4, x4, -1
-        endloop
-
-        jal x1, _bitslice_transpose
-
-        add x4, x0, x0
-        loopi 8, 2
-            bn.sid x4, 0(t3++)
-            addi   x4, x4, 1
-        endloop
-        addi t3, t3, 512 /* Skip the first 16 bits. */
+      /* Compute + 2^(alpha - 1) for the 1st share or 0 for the 2nd share. */
+      bn.addv.8s      w17, w17, w22
+      bn.addv.8s      w18, w18, w22
+      /* Combine the results before bitslicing. */
+      bn.trn2.16h     w0, w17, w18
+      bn.sid          x0, 0(x7++)
+      bn.trn1.16h     w0, w17, w18
+      bn.movr         x4, x0
+      addi            x4, x4, -1
     endloop
 
-    /* Compute c = seca2b(z), k = du + alpha, share bytes = 768. */
-    addi a0, sp, 0 /* ptr_z */
-    addi a1, x0, 24 /* du + alpha */
-    addi a2, x0, 768
-    addi a4, sp, 0 /* ptr_c */
-    jal  x1, seca2b
+    /* Bitslice the first 16 bits. */
+    jal x1, _bitslice_transpose
 
-    /* Compute r = c >> alpha: keep the bits c[alpha]...c[alpha + du]. */
-    addi t0, sp, 0 /* ptr_c */
-    add  t0, t0, s2
-    addi t1, s1, 0 /* ptr_r */
-    loopi 2, 5
-        loop s3, 3
-            /* Whitening. */
-            bn.xor w0, w0, w0
-            bn.lid x0, 0(t0++)
-            bn.sid x0, 0(t1++)
-        endloop
-        /* After copy DV bits of z to r, we need to adjust address of z again. */
-        add t0, t0, s2
+    add x4, x0, x0
+    loopi 16, 2
+      bn.sid x4, 0(x6++)
+      addi   x4, x4, 1
     endloop
 
-    /* Restore registers. */
-    lw   s1, 1536(sp)
-    lw   s2, 1540(sp)
-    lw   s3, 1544(sp)
-    addi sp, sp, 1568
-    addi sp, sp, 1024
-    ret
+    /* Bitslice the last 8 bits. */
+    addi x4, x0, 15
+    addi x7, x7, -512
+    loopi 16, 2
+      bn.lid x4, 0(x7++)
+      addi   x4, x4, -1
+    endloop
 
-/*
- * Name: onebitdecompress
+    jal x1, _bitslice_transpose
+
+    add x4, x0, x0
+    loopi 8, 2
+      bn.sid x4, 0(x6++)
+      addi   x4, x4, 1
+    endloop
+
+    jal x1, whitening_du
+
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 for the 2nd share. */
+    bn.xor w22, w31, w31
+  endloop
+
+  /* Compute c = seca2b(z), k = du + alpha = 24, share bytes = 768. */
+  add  x10, x2, x0
+  addi x11, x0, 24
+  addi x12, x0, 768
+  add  x14, x2, x0
+  jal  x1, seca2b
+
+  /* Compute r = c >> alpha: keep the bits c[alpha]...c[du + alpha]. */
+  add x5, x2, x8
+  lw  x12, 1536(x2)
+  loopi 2, 5
+    loop x9, 2
+      bn.lid x0, 0(x5++)
+      bn.sid x0, 0(x12++)
+    endloop
+    add x5, x5, x8
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+
+  /* Restore registers. */
+  lw   x8, 1540(x2)
+  lw   x9, 1544(x2)
+  addi x2, x2, 1568
+  addi x2, x2, 1024
+  ret
+
+/**
+ * Masked decompression of a 1-bit message.
  *
- * Given Boolean shares of a 32-byte message m, return arithmetic shares
- * mod q = 3329 of mp = Decompress_q(m, 1): coefficient i is (q + 1) / 2
- * if bit i of m is set, else 0. Vectorized for a polynomial.
+ * Return arithmetic shares mod q = 3329 of mp = Decompressq(m, 1), given
+ * Boolean shares of a 32-byte message m: coefficient i is (q + 1) / 2 if
+ * bit i of m is set, else 0.
+ * Vectorized for polynomial.
  *
- *   m  <- unpack(m)                ; one message bit per coefficient
- *   mp <- seconebitb2amodq(m)      ; Boolean to arithmetic shares mod q
+ *   m  <- unpack(m)                 (one message bit per coefficient)
+ *   mp <- seconebitb2amodq(m)       (Boolean to arithmetic shares mod q)
  *   mp <- mp * (q + 1) / 2   mod q
  *
  * Source: Section 3.3 [BGR+21]
  *
- * @param[in]  w16: R | Q
- * @param[in]  x10: dptr_m, dmem pointer to Boolean shares of m (bitsliced)
+ * @param[in]  x10: dmem pointer to Boolean shares of m (bitsliced)
+ * @param[out] x12: dmem pointer to arithmetic shares of mp
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
- * @param[out] x12: dptr_mp, dmem pointer to arithmetic shares of mp
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x8, x10, x12, x18, x28, w0 to w5, w30, acch, acc
+ * clobbered registers: x2, x4 to x8, x10, x12, w0 to w4, acch, acc
  * clobbered flag groups: FG0
  */
-.globl onebitdecompress
-.type onebitdecompress, @function
-onebitdecompress:
-    /* Save the output base pointer; reused as scratch across the call. */
-    addi sp, sp, -32
-    sw   s0, 0(sp)
-    addi s0, a2, 0
 
-    /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
-    addi x4, x0, 1
-    loopi 2, 7
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(a0++)
-        loopi 16, 3
-            bn.shv.16h w1, w0 >> 15
-            bn.shv.16h w0, w0 << 1
-            bn.sid     x4, 0(a2++)
-        endloop
-        nop
+.globl masked_poly_frommsg
+.type masked_poly_frommsg, @function
+masked_poly_frommsg:
+  /* Save the output base pointer; reused as scratch across the call. */
+  addi x2, x2, -32
+  sw   x8, 0(x2)
+  add  x8, x12, x0
+
+  /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
+  addi x4, x0, 1
+  loopi 2, 7
+    bn.lid x0, 0(x10++)
+    loopi 16, 3
+      bn.shv.16h w1, w0 >> 15
+      bn.shv.16h w0, w0 << 1
+      bn.sid     x4, 0(x12++)
     endloop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
+  endloop
 
-    /* mp = seconebitb2amodq(m), with w16 = R | Q. */
-    addi a0, s0, 0 /* ptr_m */
-    addi a2, s0, 0 /* ptr_r */
-    jal  x1, seconebitb2amodq
+  /* Compute mp = seconebitb2amodq(m). */
+  add  x10, x8, x0
+  add  x12, x8, x0
+  jal  x1, seconebitb2amodq
 
-    /* mp *= (q + 1) / 2 mod q, coefficient-wise (Montgomery). */
-    la      t0, modulus_over_2_m2_16 /* ((Q + 1) / 2) * (2^16) % Q. */
-    addi    x4, x0, 1
-    bn.lid  x4, 0(t0)
-    loopi 2, 9
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        loopi 16, 6
-            bn.lid               x0, 0(s0)
-            bn.mulv.16h.acc.z.lo w0, w0, w1
-            bn.mulv.l.16h.lo     w0, w0, sw0.2
-            bn.mulv.l.16h.acc.hi w0, w0, sw0.0
-            bn.addvm.16h         w0, w0, w31
-            bn.sid               x0, 0(s0++)
-        endloop
-        nop
+  /* mp *= (q + 1) / 2 mod q, coefficient-wise (Montgomery). */
+  la      x5, const_qp1_half_mul_2_16_modq /* ((q + 1) / 2) * (2^16) mod q. */
+  addi    x4, x0, 1
+  bn.lid  x4, 0(x5)
+  loopi 2, 8
+    loopi 16, 6
+      bn.lid               x0, 0(x8)
+      bn.mulv.16h.acc.z.lo w0, w0, w1
+      bn.mulv.l.16h.lo     w0, w0, sw0.2
+      bn.mulv.l.16h.acc.hi w0, w0, sw0.0
+      bn.addvm.16h         w0, w0, w31
+      bn.sid               x0, 0(x8++)
     endloop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
 
-    /* Restore the output base pointer and stack. */
-    lw   s0, 0(sp)
-    addi sp, sp, 32
-    ret
+  /* Restore the output base pointer and stack. */
+  lw   x8, 0(x2)
+  addi x2, x2, 32
+  ret
 
-/*
- * Name: masked_cbd
+/**
+ * First-order masked binomial sampler for q = 3329.
  *
  * Return arithmetic shares mod q = 3329 of the centered binomial sample
  * r = HW(x) - HW(y), given Boolean shares of the eta-bit values x and y.
  * Since HW(y) = eta - HW(~y), this sums the 2 * eta bit-planes of x and ~y.
- * k = 12 (q < 2**k). Bitsliced.
+ * k = 12 (q < 2^k).
+ * Bitsliced.
  *
- *   sum <- Hamming weight of (x, ~y) via a secfulladder tree
- *   r   <- secb2amodq(sum) - eta   mod q
+ *   a <- Hamming weight of (x, ~y) via a secfulladder tree
+ *   r <- secb2amodq(a) - eta   mod q
  *
  * Source: Alg.17 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to Boolean shares of x
- * @param[in]  x11: dptr_y, dmem pointer to Boolean shares of y
- * @param[in]  x12: eta
- * @param[out] x14: dptr_r, dmem pointer to arithmetic shares of r
+ * @param[in]  x10: dmem pointer to Boolean shares of x
+ * @param[in]  x11: dmem pointer to Boolean shares of y
+ * @param[in]  x12: eta in {2, 3}
+ * @param[out] x14: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w16, w28 to w30, acch, acc
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_cbd
 .type masked_cbd, @function
 masked_cbd:
-    /* Frame: tmp at 0 (768 B), sum at 768 (64 B), s at 832 (384 B, sized for
-     * the worst case eta = 3), saved registers at 1216. */
-    addi sp, sp, -1248
-    sw s0, 1216(sp)
-    sw s1, 1220(sp)
-    sw s2, 1224(sp)
-    sw s4, 1228(sp)
-    sw s5, 1232(sp)
-    sw s6, 1236(sp)
+  /* Frame:
+   *   x2 +    0 : b ( 768 B)
+   *   x2 +  768 : a (  64 B)
+   *   x2 +  832 : s ( 384 B)
+   *   x2 + 1216 : save registers. */
+  addi x2, x2, -1248
+  sw   x14, 1216(x2)
+  sw   x8, 1220(x2)
+  sw   x9, 1224(x2)
+  sw   x18, 1228(x2)
 
-    /* Save input/output addresses and set the scratch pointers. */
-    addi s0, a0, 0
-    addi s1, a1, 0
-    addi s2, a2, 0
-    addi s4, a4, 0
-    addi s5, sp, 832 /* ptr_s */
-    addi s6, sp, 768 /* ptr_sum */
+  /* Save input/output addresses and set the scratch pointers. */
+  addi x8, x2, 832 /* s */
+  addi x9, x2, 768 /* a */
+  add  x18, x12, x0
 
-    /* Copy x to s[1,..,eta] and ~y to s[eta + 1,..,2 * eta]. */
-    addi t0, s5, 0 /* ptr_s */
-    slli x4, a2, 5 /* eta * 32 */
-    add  t1, s5, x4 /* ptr_s[eta + 1] */
-    /* Share 0: copy x[0] and ~y[0]. */
-    loop a2, 7
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        /* Copy x[0]. */
-        bn.lid x0, 0(a0++)
-        bn.sid x0, 0(t0++)
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        /* Copy ~y[0]. */
-        bn.lid x0, 0(a1++)
-        bn.not w0, w0
-        bn.sid x0, 0(t1++)
-    endloop
-    add t0, t0, x4
-    add t1, t1, x4
-    /* Share 1: copy x[1] and y[1]. */
-    loop a2, 6
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        /* Copy x[1]. */
-        bn.lid x0, 0(a0++)
-        bn.sid x0, 0(t0++)
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        /* Copy y[1]. */
-        bn.lid x0, 0(a1++)
-        bn.sid x0, 0(t1++)
-    endloop
+  /* Copy x to s[0..eta - 1] and ~y to s[eta..2 * eta - 1]. */
+  add  x5, x8, x0
+  slli x4, x18, 5 /* eta * 32 */
+  add  x6, x8, x4
+  /* Share 0. */
+  loop x12, 5
+    /* Copy x_0. */
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
+    /* Copy ~y_0. */
+    bn.lid x0, 0(x11++)
+    bn.not w0, w0
+    bn.sid x0, 0(x6++)
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  /* Share 1. */
+  add x5, x5, x4
+  add x6, x6, x4
+  loop x12, 4
+    /* Copy x_1. */
+    bn.lid x0, 0(x10++)
+    bn.sid x0, 0(x5++)
+    /* Copy y_1. */
+    bn.lid x0, 0(x11++)
+    bn.sid x0, 0(x6++)
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* We need to loop over i = 1,...,k where k = ceil(log2(l + 1)) = 3 for both
-     * eta = 2 and eta = 3. Then the inner loop is over j = 1,...,l where
-     * l >>= i, so j is in {eta, eta/2, eta/4}, i.e., {2, 1, 0} for eta = 2 and
-     * {3, 1, 0} for eta = 3. Thus, in the third iteration i = k, the inner loop
-     * is not executed at all. */
-    /*----------------------- Iteration i = 1, l = 2 * eta -----------------------*/
-    /* Since l mod 2 = 0, we clear the carry sum. */
-    addi   t0, s6, 0 /* ptr_sum */
-    bn.xor w0, w0, w0
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
+  /* The block below does as follows:
+   *  - ell <- 2 * eta
+   *  - c = ceil(log2(ell + 1)) = 3
+   *  - for i = 0..c - 1:
+   *      a <- s[ell - 1] if ell mod 2 = 1 else a <- 0
+   *      ell <- ell >> 1
+   *      for j = 0..ell - 1:
+   *        (a, s[j]) <- secfulladder(s[2 * j], s[2 * j + 1], a)  ; sum, carry
+   *      b[i] <- a
+   */
+  /********** Iteration i = 0, ell = 2 * eta. **********/
+  /* Since ell mod 2 = 0, we clear a. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x9)
+  bn.sid x0, 32(x9)
 
-    /* l >>= 1: loop j = 1,..., l = 1,...,eta. */
-    /* Inputs to secfulladder. */
-    slli t0, a2, 6 /* (2 * eta) * 32 */
-    addi a0, s5, 0 /* s[0] */
-    addi a1, t0, 0
-    addi a2, s5, 32 /* s[1] */
-    addi a3, t0, 0
-    addi a5, s6, 0 /* ptr_sum = r */
-    addi a6, x0, 32
-    addi a7, s6, 0 /* ptr_sum = cin */
-    addi t4, x0, 32
-    addi t5, s5, 0 /* s[0] = cout */
-    addi t6, t0, 0
-    loop s2, 5
-        /* Compute c, s[j] = secfulladder(s[2j], s[2j + 1], c). */
-        /* a0 already points to s[2j] */
-        /* a1 is already share stride of s. */
-        /* a2 already points to s[2j + 1] */
-        /* a3 is already share stride of s. */
-        /* a5 already points to sum = r. */
-        /* a6 is already share stride of sum = r. */
-        /* a7 already points to sum = cin. */
-        /* t4 is already share stride of sum = cin. */
-        /* t5 already points to s[j] = cout. */
-        /* t6 is already share stride of s = cout. */
-        jal  x1, secfulladder
-        /* After secfulladder:
-        *  - a0 and a2 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
-        *  - a1 and a3 are still share stride of s.
-        *  - a5 points to sum + 32 (output) --> need to be adjusted to sum.
-        *  - a6 is still share stride of sum.
-        *  - a7 points to sum (cin).
-        *  - t4 is still share stride of sum.
-        *  - t5 points to s[j] (cout) --> need to be adjusted to s[j + 1].
-        *  - t6 is still share stride of s. */
-        /* Adjust addresses. */
-        addi a0, a0, 32 /* s[2 * (j + 1)] */
-        addi a2, a2, 32 /* s[2 * (j + 1) + 1] */
-        addi a5, a5, -32 /* sum */
-        addi t5, t5, 32 /* s[j + 1] */
-    endloop
+  /* Loop j = 0..eta - 1. */
+  /* Compute (a, s[j]) = secfulladder(s[2 * j], s[2 * j + 1], a). */
+  slli x5, x18, 6 /* (2 * eta) * 32 */
+  add  x10, x8, x0
+  add  x11, x5, x0
+  addi x12, x8, 32
+  add  x13, x5, x0
+  add  x15, x9, x0
+  addi x16, x0, 32
+  add  x17, x9, x0
+  addi x29, x0, 32
+  add  x30, x8, x0
+  add  x31, x5, x0
+  loop x18, 4
+    jal  x1, secfulladder
+    addi x10, x10, 64  /* s[2 * (j + 1)] */
+    addi x12, x12, 64  /* s[2 * (j + 1) + 1] */
+    addi x30, x30, 32  /* s[j + 1] */
+  endloop
 
-    /* Copy sum to ptr_tmp[1]. */
-    addi t0, sp, 0 /* ptr_tmp[1] */
-    loopi 2, 4
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(a5++) /* a5 still points to sum. */
-        bn.sid x0, 0(t0)
-        addi   t0, t0, 384
-    endloop
+  /* b[0] <- a. */
+  add x5, x2, x0
+  loopi 2, 4
+    bn.lid x0, 0(x17++)
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
 
-    /*----------------------- Iteration i = 2, l = eta -----------------------*/
-    addi t0, x0, 2
-    beq  s2, t0, _cbd_eta_2
-    /* Since l mod 2 = 1 if eta = 3, we compute sum = s[l] = s[3]. */
-    addi t0, s6, 0 /* ptr_sum */
-    addi t1, s5, 0 /* ptr_s */
-    addi t1, t1, 64 /* 2 * 32 */
-    slli x4, s2, 6 /* (2 * eta) * 32 */
-    loopi 2, 4
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(t1)
-        bn.sid x0, 0(t0++)
-        add    t1, t1, x4
-    endloop
-    beq x0, x0, _continue_1
+  /********** Iteration i = 1, ell = eta. **********/
+  addi x5, x0, 2
+  beq  x18, x5, _cbd_eta_2
+  /* Since ell mod 2 = 1 if eta = 3, we compute a = s[ell - 1]. */
+  add  x5, x9, x0
+  addi x6, x8, 64
+  slli x4, x18, 6 /* (2 * eta) * 32 */
+  loopi 2, 4
+    bn.lid x0, 0(x6)
+    add    x6, x6, x4
+    bn.sid x0, 0(x5++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+  beq x0, x0, _continue_1
 
 _cbd_eta_2:
-    /* Since l mod 2 = 0 if eta = 2, we clear the carry sum. */
-    addi   t0, s6, 0 /* ptr_sum */
-    bn.xor w0, w0, w0
-    loopi 2, 1
-        bn.sid x0, 0(t0++)
-    endloop
+  /* Since ell mod 2 = 0 if eta = 2, we clear a. */
+  bn.xor w0, w31, w31
+  bn.sid x0, 0(x9)
+  bn.sid x0, 32(x9)
 
 _continue_1:
-    /* l >> 1: loop j = 1,...,l // 2 --> 1 iteration. */
-    /* Inputs to secfulladder. */
-    slli t0, s2, 6
-    addi a0, s5, 0 /* s[0] */
-    addi a1, t0, 0
-    addi a2, s5, 32 /* s[1] */
-    addi a3, t0, 0
-    addi a5, s6, 0 /* ptr_sum = r */
-    addi a6, x0, 32
-    addi a7, s6, 0 /* ptr_sum = cin */
-    addi t4, x0, 32
-    addi t5, s5, 0 /* s[0] = cout */
-    addi t6, t0, 0
-    /* Compute c, s[j] = secfulladder(s[2j], s[2j + 1], c). */
-    /* a0 already points to s[2j] */
-    /* a1 is already share stride of s. */
-    /* a2 already points to s[2j + 1] */
-    /* a3 is already share stride of s. */
-    /* a5 already points to sum = r. */
-    /* a6 is already share stride of sum = r. */
-    /* a7 already points to sum = cin. */
-    /* t4 is already share stride of sum = cin. */
-    /* t5 already points to s[j] = cout. */
-    /* t6 is already share stride of s = cout. */
-    jal  x1, secfulladder
-    /* After secfulladder:
-    *  - a0 and a2 points to s[2j + 1] and s[2j + 2] --> need to be adjusted.
-    *  - a1 and a3 are still share stride of s.
-    *  - a5 points to sum + 32 (output) --> need to be adjusted to sum.
-    *  - a6 is still share stride of sum.
-    *  - a7 points to sum (cin).
-    *  - t4 is still share stride of sum.
-    *  - t5 points to s[j] (cout) --> need to be adjusted to s[j + 1].
-    *  - t6 is still share stride of s. */
+  /* Loop j = 0. */
+  /* Compute (a, s[0]) = secfulladder(s[0], s[1], a). */
+  slli x5, x18, 6
+  add  x10, x8, x0
+  add  x11, x5, x0
+  addi x12, x8, 32
+  add  x13, x5, x0
+  add  x15, x9, x0
+  addi x16, x0, 32
+  add  x17, x9, x0
+  addi x29, x0, 32
+  add  x30, x8, x0
+  add  x31, x5, x0
+  jal  x1, secfulladder
 
-    /* Copy sum to ptr_tmp[2]. */
-    addi t0, sp, 32 /* ptr_tmp[2] */
-    loopi 2, 4
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(a7++) /* a7 still points to sum. */
-        bn.sid x0, 0(t0)
-        addi   t0, t0, 384
+  /* b[1] <- a. */
+  addi x5, x2, 32
+  loopi 2, 4
+    bn.lid x0, 0(x17++)
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+
+  /********** Iteration i = 2, ell = eta // 2 = 1. **********/
+  /* Since ell mod 2 = 1, we compute b[2] = s[ell - 1] = s[0] directly. */
+  addi x5, x2, 64
+  add  x6, x8, x0
+  slli x7, x18, 6
+  loopi 2, 5
+    bn.lid x0, 0(x6)
+    add    x6, x6, x7
+    bn.sid x0, 0(x5)
+    addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+
+  /* Clear bits b[3..k - 1]. */
+  bn.xor w0, w31, w31
+  addi   x5, x2, 96
+  loopi 2, 3
+    loopi 9, 1
+      bn.sid x0, 0(x5++)
     endloop
+    addi x5, x5, 96
+  endloop
 
-    /*----------------------- Iteration i = 3, l = eta / 2 -----------------------*/
-    /* Since l mod 2 = 1, we compute tmp[3] = s[l] = s[1]. */
-    addi t0, sp, 0 /* ptr_tmp */
-    addi t0, t0, 64
-    addi t1, s5, 0 /* ptr_s */
-    slli t2, s2, 6
+  /* Compute r = secb2amodq(b). */
+  add x10, x2, x0
+  lw  x12, 1216(x2)
+  jal x1, secb2amodq
 
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(t1)
-        bn.sid x0, 0(t0)
-        add    t1, t1, t2
-        addi   t0, t0, 384
-    endloop
+  /* Generate eta in 16 16-bit lanes. */
+  bn.subi    w0, w31, 1
+  bn.shv.16h w0, w0 >> 15
+  bn.xor     w1, w31, w31
+  loop x18, 1
+    bn.add w1, w1, w0
+  endloop
+  /* Compute r_0 = (r_0 - eta) mod q. */
+  lw x5, 1216(x2)
+  loopi 16, 3
+    bn.lid       x0, 0(x5)
+    bn.subvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
+  endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-    /* Clear bit k --> 12 of tmp. */
-    addi   t0, sp, 0 /* ptr_tmp */
-    addi   t0, t0, 96
-    bn.xor w0, w0, w0
-    loopi 2, 3
-        loopi 9, 1
-            bn.sid x0, 0(t0++)
-        endloop
-        addi t0, t0, 96 /* point to next share. */
-    endloop
-
-    /* Compute r = secb2amodq(tmp). */
-    addi a0, sp, 0 /* ptr_tmp */
-    addi a2, s4, 0 /* ptr_r */
-    jal  x1, secb2amodq
-
-    /* Compute r[0] = r[0] - eta mod q. */
-    addi   t0, s4, 0 /* ptr_r */
-    addi   t1, s5, 0 /* ptr_s */
-    sw     s2, 0(t1)
-    bn.lid x0, 0(t1)
-    loopi 16, 1
-        bn.rshi w1, w0, w1 >> 16
-    endloop
-    loopi 16, 3
-        bn.lid       x0, 0(t0)
-        bn.subvm.16h w0, w0, w1
-        bn.sid       x0, 0(t0++)
-    endloop
-
-    /* Restore registers and stack. */
-    lw s0, 1216(sp)
-    lw s1, 1220(sp)
-    lw s2, 1224(sp)
-    lw s4, 1228(sp)
-    lw s5, 1232(sp)
-    lw s6, 1236(sp)
-    addi sp, sp, 1248
-    ret
+  /* Restore registers and stack. */
+  lw   x8, 1220(x2)
+  lw   x9, 1224(x2)
+  lw   x18, 1228(x2)
+  addi x2, x2, 1248
+  ret
 
 
 /* Config to start a SHAKE-256 operation. */
 #define SHAKE256_CFG 0xA
 
-/*
- * Name: masked_poly_getnoise_eta_init
+/**
+ * Initialization of the SHAKE-256 operation for masked_poly_getnoise_eta_{1,2}.
  *
- * Initialize a SHAKE-256 operation for CBD noise sampling, absorbing the seed
- * and nonce. Call before masked_poly_getnoise_eta_1 or eta_2.
+ * Configure a SHAKE-256 operation for a 33-byte message and absorb
+ * seed || nonce, so that a subsequent call to `masked_poly_getnoise_eta_1`
+ * or `masked_poly_getnoise_eta_2` can squeeze the bytes it samples from.
+ * The seed is Boolean-shared across two 32-byte shares; the nonce is
+ * public, so its second share is zero.
  *
- * @param[in]  x10: dptr_seed, dmem pointer to the seed
- * @param[in]  x11: dptr_nonce, dmem pointer to the nonce
+ * @param[in]  x10: dmem pointer to the seed
+ * @param[in]  x11: dmem pointer to the nonce
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x5 to x6, x10, w0
+ * clobbered registers: x4 to x5, x10, w0
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_init
 .type masked_poly_getnoise_eta_init, @function
 masked_poly_getnoise_eta_init:
-    /* Initialize a SHAKE256 operation. */
-    addi  t0, x0, 33
-    slli  t0, t0, 5
-    addi  t0, t0, SHAKE256_CFG
-    addi  t1, x0, 1
-    slli  t1, t1, 20
-    add   t0, t0, t1
-    csrrw x0, kmac_cfg, t0
+  /* Initialize a SHAKE256 operation. */
+  addi  x5, x0, 33
+  slli  x5, x5, 5
+  addi  x5, x5, SHAKE256_CFG
+  addi  x4, x0, 1
+  slli  x4, x4, 20
+  add   x5, x5, x4
+  csrrw x0, kmac_cfg, x5
 
-    /* Send the message to the Keccak core. */
-    bn.xor  w0, w0, w0 /* Whitening. */
-    bn.lid  x0, 0(a0++)
-    bn.wsrw kmac_msg, w0
-    bn.xor  w0, w0, w0 /* Whitening. */
-    bn.lid  x0, 0(a0++)
-    bn.wsrw kmac_msg1, w0
-    li      t0, 1
-    csrrw   x0, kmac_partial_write, t0
-    bn.lid  x0, 0(a1)
-    bn.wsrw kmac_msg, w0
-    bn.xor  w0, w0, w0
-    bn.wsrw kmac_msg1, w0
+  /* Send seed. */
+  bn.lid  x0, 0(x10++)
+  bn.wsrw kmac_msg, w0
+  bn.xor  w0, w31, w31 /* Whitening. */
+  bn.lid  x0, 0(x10++)
+  bn.wsrw kmac_msg1, w0
+  bn.xor  w0, w31, w31 /* Whitening. */
 
-    ret
+  /* Send nonce. */
+  li      x5, 1
+  csrrw   x0, kmac_partial_write, x5
+  bn.lid  x0, 0(x11)
+  bn.wsrw kmac_msg, w0
+  bn.xor  w0, w31, w31
+  bn.wsrw kmac_msg1, w0
 
-/*
- * Name: masked_poly_getnoise_eta_2
+  ret
+
+/**
+ * Sampling of a masked polynomial from the centered binomial distribution
+ * with parameter KYBER_ETA2.
  *
- * Sample a polynomial deterministically from a seed and a nonce, with output
- * polynomial close to centered binomial distribution with parameter KYBER_ETA2;
- * this function assumes `masked_poly_getnoise_eta_init` has been called first with the
- * appropriate seed and nonce.
+ * Deterministically sample a polynomial whose coefficients follow a centered
+ * binomial distribution with parameter eta = KYBER_ETA2, and assume that
+ * `masked_poly_getnoise_eta_init` has been called beforehand with the
+ * appropriate seed and nonce. Since KYBER_ETA2 = 2 for every parameter set,
+ * callers pass eta = 2, and this entry point falls through into
+ * masked_poly_getnoise_eta_1.
  *
- * @param[in]  x10: eta
+ * On return, x10 holds the eta it was called with and x11 has been advanced
+ * by one polynomial (512 bytes).
+ *
+ * @param[in]  x10: eta, always 2
+ * @param[out] x11: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
- * @param[out] x11: ptr_ra, dmem pointer to arithmetic shares of r
+ * @param[in]  mod: q = 3329
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w17 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_2
 .type masked_poly_getnoise_eta_2, @function
 masked_poly_getnoise_eta_2:
 
-/*
- * Name: masked_poly_getnoise_eta_1
+/**
+ * Sampling of a masked polynomial from the centered binomial distribution
+ * with parameter KYBER_ETA1.
  *
- * Sample a polynomial deterministically from a seed and a nonce, with output
- * polynomial close to centered binomial distribution with parameter KYBER_ETA1;
- * this function assumes `masked_poly_getnoise_eta_init` has been called first with the
+ * Deterministically sample a polynomial whose coefficients follow a centered
+ * binomial distribution with parameter eta = KYBER_ETA1, which is 3 for
+ * KYBER_K = 2 and 2 for KYBER_K = 3 and KYBER_K = 4. Assumes that
+ * `masked_poly_getnoise_eta_init` has been called beforehand with the
  * appropriate seed and nonce.
  *
- * @param[in]  x10: eta
- * @param[in]  w31: all-zero register
- * @param[out] x11: ptr_ra, dmem pointer to arithmetic shares of r
+ * On return, x10 holds the eta it was called with and x11 has been advanced
+ * by one polynomial (512 bytes).
  *
- * clobbered registers: x2, x4 to x22, x28 to x31, w0 to w30, acch, acc
+ * @param[in]  x10: eta in {2, 3}
+ * @param[out] x11: dmem pointer to arithmetic shares of r
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ * @param[in]  mod: q = 3329
+ *
+ * clobbered registers: x2, x4 to x18, x29 to x31,
+ *                      w0 to w15, w17 to w30, acch, acc
  * clobbered flag groups: FG0
  */
+
 .globl masked_poly_getnoise_eta_1
 .type masked_poly_getnoise_eta_1, @function
 masked_poly_getnoise_eta_1:
-    /* Frame: ptr_y at 0, ptr_x at 192 (each 2 * eta * 32, sized for the worst
-     * case eta = 3), saved registers at 384. */
-    addi sp, sp, -416
-    sw   s0, 384(sp)
-    sw   s1, 388(sp)
-    sw   s2, 392(sp)
-    sw   s3, 396(sp)
-    addi s0, a0, 0
-    addi s1, a1, 0
-    addi s2, sp, 192 /* ptr_x */
+  /* Frame: y at 0, x at 192 (each 2 * eta * 32, sized for the worst
+   * case eta = 3), saved registers at 384. */
+  addi x2, x2, -416
+  sw   x8, 384(x2)
+  sw   x9, 388(x2)
+  add  x8, x10, x0
+  add  x9, x11, x0
 
-    addi x4, x0, 3
-    bne  a0, x4, _getnoise_eta_2
+  addi x10, x2, 192 /* x */
+  add  x11, x2, x0  /* y */
 
-    addi t0, sp, 0 /* ptr_y */
+  addi x4, x0, 3
+  bne  x8, x4, _getnoise_eta_2
 
-    bn.wsrr w17, kmac_digest
-    bn.wsrr w23, kmac_digest1
-    bn.wsrr w18, kmac_digest
-    bn.wsrr w24, kmac_digest1
-    bn.wsrr w19, kmac_digest
-    bn.wsrr w25, kmac_digest1
+  bn.wsrr w17, kmac_digest
+  bn.wsrr w23, kmac_digest1
+  bn.wsrr w18, kmac_digest
+  bn.wsrr w26, kmac_digest1
+  bn.wsrr w19, kmac_digest
+  bn.wsrr w27, kmac_digest1
 
-    bn.wsrr w20, kmac_digest
-    bn.wsrr w26, kmac_digest1
-    bn.wsrr w21, kmac_digest
-    bn.wsrr w27, kmac_digest1
-    bn.wsrr w22, kmac_digest
-    bn.wsrr w30, kmac_digest1
+  bn.wsrr w20, kmac_digest
+  bn.wsrr w28, kmac_digest1
+  bn.wsrr w21, kmac_digest
+  bn.wsrr w29, kmac_digest1
+  bn.wsrr w22, kmac_digest
+  bn.wsrr w30, kmac_digest1
 
-    jal x1, _bitslice_eta_3
+  jal x1, _bitslice_eta_3
 
-    add x4, x0, x0
-    loopi 3, 2
-        bn.sid x4, 0(s2++)
-        addi   x4, x4, 1
-    endloop
-    loopi 3, 2
-        bn.sid x4, 0(t0++)
-        addi   x4, x4, 1
-    endloop
+  bn.mov w17, w23
+  bn.mov w18, w26
+  bn.mov w19, w27
+  bn.mov w20, w28
+  bn.mov w21, w29
+  bn.mov w22, w30
 
-    bn.xor w17, w17, w17
-    bn.mov w17, w23
-    bn.xor w18, w18, w18
-    bn.mov w18, w24
-    bn.xor w19, w19, w19
-    bn.mov w19, w25
-    bn.xor w20, w20, w20
-    bn.mov w20, w26
-    bn.xor w21, w21, w21
-    bn.mov w21, w27
-    bn.xor w22, w22, w22
-    bn.mov w22, w30
+  jal x1, _bitslice_eta_3
 
-    jal x1, _bitslice_eta_3
+  /* Whitening. */
+  bn.xor w23, w31, w31
+  bn.xor w26, w31, w31
+  bn.xor w27, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
+  bn.xor w30, w31, w31
 
-    add x4, x0, x0
-    loopi 3, 2
-        bn.sid x4, 0(s2++)
-        addi   x4, x4, 1
-    endloop
-    loopi 3, 2
-        bn.sid x4, 0(t0++)
-        addi   x4, x4, 1
-    endloop
-
-    beq  x0, x0, _getnoise_common
+  beq  x0, x0, _getnoise_common
 
 _getnoise_eta_2:
+  bn.wsrr w24, kmac_digest
+  bn.wsrr w20, kmac_digest1
+  bn.wsrr w23, kmac_digest
+  bn.wsrr w19, kmac_digest1
+  bn.wsrr w22, kmac_digest
+  bn.wsrr w18, kmac_digest1
+  bn.wsrr w21, kmac_digest
+  bn.wsrr w17, kmac_digest1
 
-    bn.wsrr w17, kmac_digest
-    bn.wsrr w21, kmac_digest1
-    bn.wsrr w18, kmac_digest
-    bn.wsrr w22, kmac_digest1
-    bn.wsrr w19, kmac_digest
-    bn.wsrr w23, kmac_digest1
-    bn.wsrr w20, kmac_digest
-    bn.wsrr w24, kmac_digest1
-
-    addi t0, x0, 25
-    addi t1, x0, 17
-    addi t2, x0, 26
-    addi t3, sp, 0 /* ptr_y */
-    loopi 2, 38
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        bn.xor w4, w4, w4
-        bn.xor w5, w5, w5
-        bn.xor w6, w6, w6
-        bn.xor w7, w7, w7
-        bn.xor w8, w8, w8
-        bn.xor w9, w9, w9
-        bn.xor w10, w10, w10
-        bn.xor w11, w11, w11
-        bn.xor w12, w12, w12
-        bn.xor w13, w13, w13
-        bn.xor w14, w14, w14
-        bn.xor w15, w15, w15
-        bn.xor w25, w25, w25
-        bn.xor w26, w26, w26
-        bn.xor w28, w28, w28
-        bn.xor w29, w29, w29
-
-        addi x4, x0, 15
-        loopi 4, 8
-            bn.movr t0, t1
-            loopi 4, 5
-                loopi 16, 2
-                    bn.rshi w26, w25, w26 >> 16
-                    bn.rshi w25, w31, w25 >> 4
-                endloop
-                bn.movr x4, t2
-                addi    x4, x4, -1
-            endloop
-            addi t1, t1, 1
+  addi x5, x0, 24
+  addi x6, x0, 24
+  loopi 2, 20
+    addi x4, x0, 15
+    loopi 4, 8
+      bn.movr x5, x6
+      loopi 4, 5
+        loopi 16, 2
+          bn.rshi w0, w24, w0 >> 16
+          bn.rshi w24, w31, w24 >> 4
         endloop
-
-        jal x1, _bitslice_transpose
-
-        bn.sid x0, 0(s2++)
-        addi   x4, x0, 1
-        bn.sid x4, 0(s2++)
-        addi   x4, x4, 1
-        bn.sid x4, 0(t3++)
-        addi   x4, x4, 1
-        bn.sid x4, 0(t3++)
-    endloop
-
-_getnoise_common:
-    /* Compute r = masked_cbd(x, y, eta). */
-    addi a0, sp, 192 /* ptr_x */
-    addi a1, sp, 0 /* ptr_y */
-    addi a2, s0, 0 /* eta */
-    addi a4, s1, 0 /* ptr_r */
-    jal  x1, masked_cbd
-
-    /* Restore inputs. */
-    addi a0, s0, 0
-    /* We want to point r to the next polynomial for next cbd. */
-    addi a1, s1, 512
-
-    /* Restore registers and stack. */
-    lw   s0, 384(sp)
-    lw   s1, 388(sp)
-    lw   s2, 392(sp)
-    lw   s3, 396(sp)
-    addi sp, sp, 416
-    ret
-
-/* Bitslice the SHAKE-256 digests in w17-w22 into the eta = 3 x and y
- * bit-planes for masked_cbd. Called by masked_poly_getnoise_eta_1 on the
- * KYBER_K == 2 path. */
-_bitslice_eta_3:
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
-
-    loopi 16, 2
-        bn.rshi w15, w17, w15 >> 16
-        bn.rshi w17, w31, w17 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w14, w17, w14 >> 16
-        bn.rshi w17, w31, w17 >> 6
-    endloop
-
-    loopi 10, 2
-        bn.rshi w13, w17, w13 >> 16
-        bn.rshi w17, w31, w17 >> 6
-    endloop
-    bn.rshi w13, w17, w13 >> 4
-    bn.rshi w13, w18, w13 >> 12
-    bn.rshi w18, w31, w18 >> 2
-    loopi 5, 2
-        bn.rshi w13, w18, w13 >> 16
-        bn.rshi w18, w31, w18 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w12, w18, w12 >> 16
-        bn.rshi w18, w31, w18 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w11, w18, w11 >> 16
-        bn.rshi w18, w31, w18 >> 6
-    endloop
-
-    loopi 5, 2
-        bn.rshi w10, w18, w10 >> 16
-        bn.rshi w18, w31, w18 >> 6
-    endloop
-    bn.rshi w10, w18, w10 >> 2
-    bn.rshi w10, w19, w10 >> 14
-    bn.rshi w19, w31, w19 >> 4
-    loopi 10, 2
-        bn.rshi w10, w19, w10 >> 16
-        bn.rshi w19, w31, w19 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w9, w19, w9 >> 16
-        bn.rshi w19, w31, w19 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w8, w19, w8 >> 16
-        bn.rshi w19, w31, w19 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w7, w20, w7 >> 16
-        bn.rshi w20, w31, w20 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w6, w20, w6 >> 16
-        bn.rshi w20, w31, w20 >> 6
-    endloop
-
-    loopi 10, 2
-        bn.rshi w5, w20, w5 >> 16
-        bn.rshi w20, w31, w20 >> 6
-    endloop
-    bn.rshi w5, w20, w5 >> 4
-    bn.rshi w5, w21, w5 >> 12
-    bn.rshi w21, w31, w21 >> 2
-    loopi 5, 2
-        bn.rshi w5, w21, w5 >> 16
-        bn.rshi w21, w31, w21 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w4, w21, w4 >> 16
-        bn.rshi w21, w31, w21 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w3, w21, w3 >> 16
-        bn.rshi w21, w31, w21 >> 6
-    endloop
-
-    loopi 5, 2
-        bn.rshi w2, w21, w2 >> 16
-        bn.rshi w21, w31, w21 >> 6
-    endloop
-    bn.rshi w2, w21, w2 >> 2
-    bn.rshi w2, w22, w2 >> 14
-    bn.rshi w22, w31, w22 >> 4
-    loopi 10, 2
-        bn.rshi w2, w22, w2 >> 16
-        bn.rshi w22, w31, w22 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w1, w22, w1 >> 16
-        bn.rshi w22, w31, w22 >> 6
-    endloop
-
-    loopi 16, 2
-        bn.rshi w0, w22, w0 >> 16
-        bn.rshi w22, w31, w22 >> 6
+        bn.movr x4, x0
+        addi    x4, x4, -1
+      endloop
+      addi x6, x6, -1
     endloop
 
     jal x1, _bitslice_transpose
-    ret
+
+    bn.sid x0, 0(x10++)
+    addi   x4, x0, 1
+    bn.sid x4, 0(x10++)
+    addi   x4, x4, 1
+    bn.sid x4, 0(x11++)
+    addi   x4, x4, 1
+    bn.sid x4, 0(x11++)
+
+    jal x1, whitening_getnoise_eta_e2
+    nop
+  endloop
+
+  /* Whitening. */
+  bn.xor w17, w31, w31
+  bn.xor w18, w31, w31
+  bn.xor w19, w31, w31
+  bn.xor w20, w31, w31
+  bn.xor w21, w31, w31
+  bn.xor w22, w31, w31
+  bn.xor w23, w31, w31
+
+_getnoise_common:
+  /* Compute r = masked_cbd(x, y, eta). */
+  addi x10, x2, 192
+  add  x11, x2, x0
+  add  x12, x8, x0
+  add  x14, x9, x0
+  jal  x1, masked_cbd
+
+  /* Restore inputs. */
+  add  x10, x8, x0
+  /* We want to point r to the next polynomial for next cbd. */
+  addi x11, x9, 512
+
+  /* Restore registers and stack. */
+  lw   x8, 384(x2)
+  lw   x9, 388(x2)
+  addi x2, x2, 416
+  ret
+
+/**
+ * Bitslicing of the SHAKE-256 digests for eta = 3.
+ *
+ * Split the six digest words in w17 to w22 into the 3 x and 3 y bit-planes
+ * that masked_cbd consumes, one share per call. Called by
+ * masked_poly_getnoise_eta_1 on the KYBER_K = 2 path.
+ *
+ * @param[in,out] x10: dmem pointer to the x bit-planes
+ * @param[in,out] x11: dmem pointer to the y bit-planes
+ * @param[in]     w17 to w22: the six digest words to bitslice
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w24 to w25
+ * clobbered flag groups: FG0
+ */
+
+_bitslice_eta_3:
+  loopi 16, 2
+    bn.rshi w15, w17, w15 >> 16
+    bn.rshi w17, w31, w17 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w14, w17, w14 >> 16
+    bn.rshi w17, w31, w17 >> 6
+  endloop
+
+  loopi 10, 2
+    bn.rshi w13, w17, w13 >> 16
+    bn.rshi w17, w31, w17 >> 6
+  endloop
+  bn.rshi w13, w17, w13 >> 4
+  bn.rshi w13, w18, w13 >> 12
+  bn.rshi w18, w31, w18 >> 2
+  loopi 5, 2
+    bn.rshi w13, w18, w13 >> 16
+    bn.rshi w18, w31, w18 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w12, w18, w12 >> 16
+    bn.rshi w18, w31, w18 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w11, w18, w11 >> 16
+    bn.rshi w18, w31, w18 >> 6
+  endloop
+
+  loopi 5, 2
+    bn.rshi w10, w18, w10 >> 16
+    bn.rshi w18, w31, w18 >> 6
+  endloop
+  bn.rshi w10, w18, w10 >> 2
+  bn.rshi w10, w19, w10 >> 14
+  bn.rshi w19, w31, w19 >> 4
+  loopi 10, 2
+    bn.rshi w10, w19, w10 >> 16
+    bn.rshi w19, w31, w19 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w9, w19, w9 >> 16
+    bn.rshi w19, w31, w19 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w8, w19, w8 >> 16
+    bn.rshi w19, w31, w19 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w7, w20, w7 >> 16
+    bn.rshi w20, w31, w20 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w6, w20, w6 >> 16
+    bn.rshi w20, w31, w20 >> 6
+  endloop
+
+  loopi 10, 2
+    bn.rshi w5, w20, w5 >> 16
+    bn.rshi w20, w31, w20 >> 6
+  endloop
+  bn.rshi w5, w20, w5 >> 4
+  bn.rshi w5, w21, w5 >> 12
+  bn.rshi w21, w31, w21 >> 2
+  loopi 5, 2
+    bn.rshi w5, w21, w5 >> 16
+    bn.rshi w21, w31, w21 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w4, w21, w4 >> 16
+    bn.rshi w21, w31, w21 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w3, w21, w3 >> 16
+    bn.rshi w21, w31, w21 >> 6
+  endloop
+
+  loopi 5, 2
+    bn.rshi w2, w21, w2 >> 16
+    bn.rshi w21, w31, w21 >> 6
+  endloop
+  bn.rshi w2, w21, w2 >> 2
+  bn.rshi w2, w22, w2 >> 14
+  bn.rshi w22, w31, w22 >> 4
+  loopi 10, 2
+    bn.rshi w2, w22, w2 >> 16
+    bn.rshi w22, w31, w22 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w1, w22, w1 >> 16
+    bn.rshi w22, w31, w22 >> 6
+  endloop
+
+  loopi 16, 2
+    bn.rshi w0, w22, w0 >> 16
+    bn.rshi w22, w31, w22 >> 6
+  endloop
+
+  jal x1, _bitslice_transpose
+
+  add x4, x0, x0
+  loopi 3, 2
+    bn.sid x4, 0(x10++)
+    addi   x4, x4, 1
+  endloop
+  loopi 3, 2
+    bn.sid x4, 0(x11++)
+    addi   x4, x4, 1
+  endloop
+
+  jal x1, whitening_getnoise_eta_e3
+  ret
 
 /* Undefine gadget-local macros. */
 #undef SHAKE256_CFG
 
-/*
- * Name: masked_poly_tomsg
+/**
+ * First-order masked compression of a polynomial to a message.
  *
- * Return Boolean shares of Compressq(x, 1) = round((2 / q) * x) mod 2, the
- * one-bit message compression, given arithmetic shares mod q of x. Bitsliced.
+ * Return Boolean shares of r = Compressq(x, 1) = round((2 / q) * x) mod 2, the
+ * one-bit message compression, given arithmetic shares mod q of x.
+ * Bitsliced.
  *
  * Each share is compressed to 1 + alpha bits, recombined (seca2b), then the low
  * alpha bits dropped. The alpha extra bits absorb the per-share rounding error
  * (2^alpha > q * nshares); nshares = 2 gives 1 + alpha = 16 (alpha = 15).
  *
- *   y[0] <- Compressq(x[0], 1 + alpha) + 2^(alpha - 1)
- *   y[1] <- Compressq(x[1], 1 + alpha)
- *   z    <- seca2b(y[0], y[1])
- *   r    <- z >> alpha
+ *   z_0  <- Compressq(x_0, 1 + alpha) + 2^(alpha - 1)
+ *   z_1  <- Compressq(x_1, 1 + alpha)
+ *   c    <- seca2b(z)
+ *   r    <- c >> alpha
  *
  * Source: Alg.2 [CGMZ21b]
  *
- * @param[in]  x10: dptr_xb, dmem pointer to arithmetic shares of x
+ * @param[in]  x10: dmem pointer to arithmetic shares of x
+ * @param[out] x12: dmem pointer to bitsliced compressed output r
  * @param[in]  w31: all-zero register
- * @param[out] x12: dptr_rb, dmem pointer to the bitsliced compressed output
  *
- * clobbered registers: x2 to x8, x10 to x17, x28 to x31, w0 to w15, w17 to w21, w28 to w29
+ * clobbered registers: x2 to x8, x10 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
 .globl masked_poly_tomsg
 .type masked_poly_tomsg, @function
 masked_poly_tomsg:
-    /* Allocate y[0], y[1] scratch and save callee-saved registers. */
-    addi sp, sp, -1056
-    sw   s0, 1024(sp)
-    addi s0, a2, 0
+  /* Allocate the z scratch, save x8 and spill the output pointer. */
+  addi x2, x2, -1056
+  sw   x8, 1024(x2)
+  sw   x12, 1028(x2)
 
-    /* Load all constants. */
-    addi      x4, x0, 17
-    la        t0, const_m_dv
-    bn.lid    x4++, 0(t0)
-    la        t0, modulus_over_2
-    bn.lid    x4++, 0(t0)
-    bn.shv.8s w18, w18 >> 16
+  /* Load all constants. */
+  addi      x4, x0, 20
+  la        x5, const_m_dv
+  bn.lid    x4++, 0(x5)
+  la        x5, const_qp1_half
+  bn.lid    x4++, 0(x5)
+  bn.shv.8s w21, w21 >> 16
 
-    /* Create 2**(alpha - 1), alpha = 15. */
-    bn.subi    w19, w31, 1
-    bn.shv.8s  w19, w19 >> 31
-    bn.shv.8s  w19, w19 << 14
+  /* Create 2^(alpha - 1), alpha = 15. */
+  bn.subi    w22, w31, 1
+  bn.shv.8s  w22, w22 >> 31
+  bn.shv.8s  w22, w22 << 14
 
+  /* Compute z_0 = Compressq(x_0, 1 + alpha) + 2^(alpha - 1),
+   *         z_1 = Compressq(x_1, 1 + alpha).
+   *
+   * For d = 1, in order to avoid division by q, let s = 40 and
+   * m = ((1 << s) + q // 2) // q = 0x13afb768 and do as follows:
+   *  - x << (1 + alpha)
+   *  - x += (q + 1) / 2 = 1665
+   *  - x *= m
+   *  - x >>= s
+   *  - x &= ((1 << (1 + alpha)) - 1).
+   */
+  add  x6, x2, x0 /* z */
 
-    /* In order to avoid division by Q, we need to compute:
-     *  - x << (1 + alpha) --> x is 28 bits.
-     *  - x += 1665
-     *  - x *=m where m = ((1 << 37) + Q // 2) // Q = 41285357 (m is 26 bits).
-     *  - x >>= k where k = 37. */
-    /* Compute y[i] = Compressq(x[i], 1 + alpha); share 0 also adds
-     * 2**(alpha - 1). */
-    addi t0, x0, 21
-    addi t1, sp, 0 /* ptr_y */
-
-    loopi 2, 44
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.xor w1, w1, w1
-        bn.xor w2, w2, w2
-        bn.xor w3, w3, w3
-        bn.xor w4, w4, w4
-        bn.xor w5, w5, w5
-        bn.xor w6, w6, w6
-        bn.xor w7, w7, w7
-        bn.xor w8, w8, w8
-        bn.xor w9, w9, w9
-        bn.xor w10, w10, w10
-        bn.xor w11, w11, w11
-        bn.xor w12, w12, w12
-        bn.xor w13, w13, w13
-        bn.xor w14, w14, w14
-        bn.xor w15, w15, w15
-        bn.xor w20, w20, w20
-        bn.xor w21, w21, w21
-        bn.xor w28, w28, w28
-        bn.xor w29, w29, w29
-
-        addi x4, x0, 15
-        loopi 16, 16
-            bn.lid             x0, 0(a0++)
-            /* Handle even-positioned coeffs. */
-            bn.trn1.16h        w20, w0, w31
-            bn.shv.8s          w20, w20 << 16
-            bn.addv.8s         w20, w20, w18
-            bn.mulv.8s.even.hi w20, w20, w17
-            bn.mulv.8s.odd.hi  w20, w20, w17
-            bn.add             w21, w19, w20 >> 8
-            /* Handle odd-positioned coeffs. */
-            bn.trn2.16h        w20, w0, w31
-            bn.shv.8s          w20, w20 << 16
-            bn.addv.8s         w20, w20, w18
-            bn.mulv.8s.even.hi w20, w20, w17
-            bn.mulv.8s.odd.hi  w20, w20, w17
-            bn.add             w20, w19, w20 >> 8
-            /* Combine results. */
-            bn.trn1.16h        w21, w21, w20
-            bn.movr            x4, t0
-            addi               x4, x4, -1
-        endloop
-
-        jal x1, _bitslice_transpose
-
-        add x4, x0, x0
-        loopi 16, 2
-            bn.sid x4, 0(t1++)
-            addi   x4, x4, 1
-        endloop
-
-        /* Clear the offset; only share 0 carries 2**(alpha - 1). */
-        bn.xor w19, w19, w19
+  loopi 2, 25
+    addi x4, x0, 15
+    loopi 16, 16
+      bn.lid             x0, 0(x10++)
+      /* Handle even-positioned coeffs. */
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
+      /* Handle odd-positioned coeffs. */
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
+      /* Combine results. */
+      bn.trn1.16h        w0, w18, w17
+      bn.movr            x4, x0
+      addi               x4, x4, -1
     endloop
 
-    /* Compute z = seca2b(y, k = 1 + alpha, share bytes = k * 32). */
-    addi a0, sp, 0 /* ptr_y */
-    addi a1, x0, 16 /* 1 + alpha */
-    addi a2, x0, 512
-    addi a4, sp, 0 /* ptr_z */
-    jal  x1, seca2b
+    jal x1, _bitslice_transpose
 
-    /* Compute z >>= alpha, i.e. keep only bit z[alpha], the message bit. */
-    addi t0, sp, 0 /* ptr_z */
-    addi t0, t0, 480 /* skip to bit-plane alpha = 15 */
-    addi t1, s0, 0 /* ptr_r */
-    loopi 2, 4
-        /* Whitening. */
-        bn.xor w0, w0, w0
-        bn.lid x0, 0(t0++)
-        bn.sid x0, 0(t1++)
-        /* Advance to bit-plane alpha of the next share. */
-        addi t0, t0, 480
+    add x4, x0, x0
+    loopi 16, 2
+      bn.sid x4, 0(x6++)
+      addi   x4, x4, 1
     endloop
 
-    /* Restore registers. */
-    lw   s0, 1024(sp)
-    addi sp, sp, 1056
-    ret
+    jal x1, whitening_dv
 
-#define N_COEFFS 16
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
+  endloop
 
-/*
- * Name: poly_masked_compare_dv
+  /* Compute c = seca2b(z), k = 1 + alpha = 16, share bytes = 512. */
+  add  x10, x2, x0
+  addi x11, x0, 16
+  addi x12, x0, 512
+  add  x14, x2, x0
+  jal  x1, seca2b
+
+  /* Compute c >>= alpha, i.e. keep only bit c[alpha], the message bit. */
+  addi x5, x2, 480
+  lw   x6, 1028(x2)
+  loopi 2, 4
+    bn.lid x0, 0(x5)
+    addi   x5, x5, 512
+    bn.sid x0, 0(x6++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
+  endloop
+
+  /* Restore registers. */
+  lw   x8, 1024(x2)
+  addi x2, x2, 1056
+  ret
+
+/**
+ * First-order masked comparison of a polynomial compressed with dv in {4, 5}.
  *
- * For every coefficient of the polynomial, return 1 if Compressq(cprime, dv)
- * == c, else 0. Bitsliced.
+ * For every coefficient of the polynomial, AND into r a 1 if
+ * Compressq(c', dv) == c, else a 0. Here dv = 5 for k = 4, and 4 otherwise.
+ * Bitsliced.
  *
  * Source: Section 6.2 [BC22]
  *
- * @param[in]  x10: dptr_x, dmem pointer to arithmetic shares of cprime
- * @param[in]  x11: dptr_y, dmem pointer to the reference compressed polynomial c
- * @param[in]  x12: share stride, distance between shares
- * @param[in]  w31: all-zero register
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
- * @param[in]  x15: k, the security level
- *
- * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w29
- * clobbered flag groups: FG0
- */
-.globl poly_masked_compare_dv
-.type poly_masked_compare_dv, @function
-poly_masked_compare_dv:
-    /* Allocate t scratch (2 shares * 160 B, dv = 5 worst case) + saves. */
-    addi sp, sp, -352
-    sw   s0, 324(sp)
-    sw   s1, 328(sp)
-    sw   s2, 332(sp)
-    sw   s4, 340(sp)
-    sw   a5, 344(sp)
-
-    /* Save input/output addresses. */
-    addi s0, a0, 0
-    addi s1, a1, 0
-    addi s2, a2, 0
-    addi s4, a4, 0
-
-    /* Compute t = poly_hocompress(cprime). */
-    addi a0, s0, 0 /* ptr_cprime */
-    addi a2, sp, 0 /* ptr_t */
-    addi a3, a5, 0 /* k */
-    jal  x1, poly_hocompress
-
-    /* Decode + bitslice c. */
-    addi a1, s1, 0 /* ptr_c */
-
-    addi x4, x0, 4
-    lw   a5, 344(sp)
-    bne  a5, x4, _handle_kn4_dv
-
-_handle_k4_dv:
-    addi   x4, x0, 17
-    bn.lid x4, 0(a1++)
-    /* group 0 -> w15 */
-    loopi 16, 2
-        bn.rshi w15, w17, w15 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 1 -> w14 */
-    loopi 16, 2
-        bn.rshi w14, w17, w14 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 2 -> w13 */
-    loopi 16, 2
-        bn.rshi w13, w17, w13 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 3 -> w12 */
-    loopi 3, 2
-        bn.rshi w12, w17, w12 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    bn.rshi w12, w17, w12 >> 1
-    bn.lid  x4, 0(a1++)
-    bn.rshi w12, w17, w12 >> 15
-    bn.rshi w17, w31, w17 >> 4
-    loopi 12, 2
-        bn.rshi w12, w17, w12 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 4 -> w11 */
-    loopi 16, 2
-        bn.rshi w11, w17, w11 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 5 -> w10 */
-    loopi 16, 2
-        bn.rshi w10, w17, w10 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 6 -> w9 */
-    loopi 6, 2
-        bn.rshi w9, w17, w9 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    bn.rshi w9, w17, w9 >> 2
-    bn.lid  x4, 0(a1++)
-    bn.rshi w9, w17, w9 >> 14
-    bn.rshi w17, w31, w17 >> 3
-    loopi 9, 2
-        bn.rshi w9, w17, w9 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 7 -> w8 */
-    loopi 16, 2
-        bn.rshi w8, w17, w8 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 8 -> w7 */
-    loopi 16, 2
-        bn.rshi w7, w17, w7 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 9 -> w6 */
-    loopi 9, 2
-        bn.rshi w6, w17, w6 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    bn.rshi w6, w17, w6 >> 3
-    bn.lid  x4, 0(a1++)
-    bn.rshi w6, w17, w6 >> 13
-    bn.rshi w17, w31, w17 >> 2
-    loopi 6, 2
-        bn.rshi w6, w17, w6 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 10 -> w5 */
-    loopi 16, 2
-        bn.rshi w5, w17, w5 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 11 -> w4 */
-    loopi 16, 2
-        bn.rshi w4, w17, w4 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 12 -> w3 */
-    loopi 12, 2
-        bn.rshi w3, w17, w3 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    bn.rshi w3, w17, w3 >> 4
-    bn.lid  x4, 0(a1++)
-    bn.rshi w3, w17, w3 >> 12
-    bn.rshi w17, w31, w17 >> 1
-    loopi 3, 2
-        bn.rshi w3, w17, w3 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 13 -> w2 */
-    loopi 16, 2
-        bn.rshi w2, w17, w2 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 14 -> w1 */
-    loopi 16, 2
-        bn.rshi w1, w17, w1 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    /* group 15 -> w0 */
-    loopi 16, 2
-        bn.rshi w0, w17, w0 >> 16
-        bn.rshi w17, w31, w17 >> 5
-    endloop
-    jal x1, _bitslice_transpose
-
-    addi    s1, x0, 5
-    beq     x0, x0, _handle_common_dv
-
-_handle_kn4_dv:
-    addi x4, x0, 17
-    bn.lid x4, 0(a1++)
-    /* group 0 -> w15 */
-    loopi 16, 2
-        bn.rshi w15, w17, w15 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 1 -> w14 */
-    loopi 16, 2
-        bn.rshi w14, w17, w14 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 2 -> w13 */
-    loopi 16, 2
-        bn.rshi w13, w17, w13 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 3 -> w12 */
-    loopi 16, 2
-        bn.rshi w12, w17, w12 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    bn.lid x4, 0(a1++)
-    /* group 4 -> w11 */
-    loopi 16, 2
-        bn.rshi w11, w17, w11 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 5 -> w10 */
-    loopi 16, 2
-        bn.rshi w10, w17, w10 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 6 -> w9 */
-    loopi 16, 2
-        bn.rshi w9, w17, w9 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 7 -> w8 */
-    loopi 16, 2
-        bn.rshi w8, w17, w8 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    bn.lid x4, 0(a1++)
-    /* group 8 -> w7 */
-    loopi 16, 2
-        bn.rshi w7, w17, w7 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 9 -> w6 */
-    loopi 16, 2
-        bn.rshi w6, w17, w6 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 10 -> w5 */
-    loopi 16, 2
-        bn.rshi w5, w17, w5 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 11 -> w4 */
-    loopi 16, 2
-        bn.rshi w4, w17, w4 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    bn.lid x4, 0(a1++)
-    /* group 12 -> w3 */
-    loopi 16, 2
-        bn.rshi w3, w17, w3 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 13 -> w2 */
-    loopi 16, 2
-        bn.rshi w2, w17, w2 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 14 -> w1 */
-    loopi 16, 2
-        bn.rshi w1, w17, w1 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    /* group 15 -> w0 */
-    loopi 16, 2
-        bn.rshi w0, w17, w0 >> 16
-        bn.rshi w17, w31, w17 >> 4
-    endloop
-    jal x1, _bitslice_transpose
-
-    addi    s1, x0, 4
-
-_handle_common_dv:
-    /* t[0] ^= c ^ ((1 << N) - 1):  c-planes are now w0..w3 if s1 != 4 else w0..w4. */
-    bn.subi w15, w31, 1
-    addi    t0, sp, 0 /* ptr_t */
-
-    bn.lid  x4, 0(t0)
-    bn.xor  w0, w0, w15
-    bn.xor  w17, w17, w0
-    bn.sid  x4, 0(t0++)
-
-    bn.lid  x4, 0(t0)
-    bn.xor  w1, w1, w15
-    bn.xor  w17, w17, w1
-    bn.sid  x4, 0(t0++)
-
-    bn.lid  x4, 0(t0)
-    bn.xor  w2, w2, w15
-    bn.xor  w17, w17, w2
-    bn.sid  x4, 0(t0++)
-
-    bn.lid  x4, 0(t0)
-    bn.xor  w3, w3, w15
-    bn.xor  w17, w17, w3
-    bn.sid  x4, 0(t0++)
-
-    addi    t1, x0, 4
-    beq     s1, t1, _skip_bit_4
-
-    bn.lid  x4, 0(t0)
-    bn.xor  w4, w4, w15
-    bn.xor  w17, w17, w4
-    bn.sid  x4, 0(t0++)
-
-_skip_bit_4:
-    /* Compute r = secand(r, t). */
-    addi a1, x0, 32
-    addi a2, sp, 0 /* ptr_t */
-    addi a3, s2, 0 /* share_str */
-    addi a6, x0, 32 /* output share_str */
-    /* After the secand, the input and output pointers will point to
-     * next bit so we don't have to pass all the arguments above to secand again. */
-    loop s1, 4
-        addi a0, s4, 0 /* ptr_r */
-        addi a5, s4, 0 /* ptr_r */
-        jal  x1, secand
-        nop
-    endloop
-
-    /* Restore registers. */
-    lw   s0, 324(sp)
-    lw   s1, 328(sp)
-    lw   s2, 332(sp)
-    lw   s4, 340(sp)
-    lw   a5, 344(sp)
-    addi sp, sp, 352
-    ret
-
-
-/*
- * Name: poly_masked_compare_du
- *
- * For every coefficient of the polynomial, return 1 if Compressq(cprime, du)
- * == c, else 0. Bitsliced.
- *
- * Source: Section 6.2 [BC22]
- *
- * @param[in]  x10: dptr_x, dmem pointer to arithmetic shares of cprime
- * @param[in]  x11: dptr_y, dmem pointer to the reference compressed polynomial c
- * @param[in]  x12: share stride, distance between shares
- * @param[in]  w31: all-zero register
- * @param[out] x14: dptr_r, dmem pointer to the output Boolean shares of r
- * @param[in]  x15: k, the security level
- *
- * clobbered registers: x2 to x20, x28 to x31, w0 to w15, w17 to w21, w28 to w30, acc
- * clobbered flag groups: FG0
- */
-.globl poly_masked_compare_du
-.type poly_masked_compare_du, @function
-poly_masked_compare_du:
-    /* Allocate t scratch (2 shares * 352 B, du = 11 worst case) + saves. */
-    addi sp, sp, -736
-    sw   s0, 708(sp)
-    sw   s1, 712(sp)
-    sw   s2, 716(sp)
-    sw   s4, 724(sp)
-    sw   a5, 728(sp)
-
-    /* Save input/output addresses. */
-    addi s0, a0, 0
-    addi s1, a1, 0
-    addi s2, a2, 0
-    addi s4, a4, 0
-
-    /* Compute t = poly_hocompress(cprime). */
-    addi a0, s0, 0 /* ptr_cprime */
-    addi a2, sp, 0 /* ptr_t */
-    addi a3, a5, 0 /* k */
-    jal  x1, polyvec_hocompress
-
-    /* Decode + bitslice c. */
-    addi a1, s1, 0 /* ptr_c */
-
-    addi x4, x0, 4
-    lw   a5, 728(sp)
-    bne  a5, x4, _handle_kn4_du
-
-_handle_k4_du:
-    /* group 0 -> w15 */
-    addi   x4, x0, 17
-	bn.lid x4, 0(a1++)
-	loopi 16, 2
-		bn.rshi w15, w17, w15 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 1 -> w14 */
-	loopi 7, 2
-		bn.rshi w14, w17, w14 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w14, w17, w14 >> 3
-	bn.lid  x4, 0(a1++)
-	bn.rshi w14, w17, w14 >> 13
-	bn.rshi w17, w31, w17 >> 8
-	loopi 8, 2
-		bn.rshi w14, w17, w14 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 2 -> w13 */
-	loopi 14, 2
-		bn.rshi w13, w17, w13 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w13, w17, w13 >> 6
-	bn.lid  x4, 0(a1++)
-	bn.rshi w13, w17, w13 >> 10
-	bn.rshi w17, w31, w17 >> 5
-	bn.rshi w13, w17, w13 >> 16
-	bn.rshi w17, w31, w17 >> 11
-
-    /* group 3 -> w12 */
-	loopi 16, 2
-		bn.rshi w12, w17, w12 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 4 -> w11 */
-	loopi 5, 2
-		bn.rshi w11, w17, w11 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w11, w17, w11 >> 9
-	bn.lid  x4, 0(a1++)
-	bn.rshi w11, w17, w11 >> 7
-	bn.rshi w17, w31, w17 >> 2
-	loopi 10, 2
-		bn.rshi w11, w17, w11 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 5 -> w10 */
-	loopi 13, 2
-		bn.rshi w10, w17, w10 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w10, w17, w10 >> 1
-	bn.lid  x4, 0(a1++)
-	bn.rshi w10, w17, w10 >> 15
-	bn.rshi w17, w31, w17 >> 10
-	loopi 2, 2
-		bn.rshi w10, w17, w10 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 6 -> w9 */
-	loopi 16, 2
-		bn.rshi w9, w17, w9 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 7 -> w8 */
-	loopi 4, 2
-		bn.rshi w8, w17, w8 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w8, w17, w8 >> 4
-	bn.lid  x4, 0(a1++)
-	bn.rshi w8, w17, w8 >> 12
-	bn.rshi w17, w31, w17 >> 7
-	loopi 11, 2
-		bn.rshi w8, w17, w8 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 8 -> w7 */
-	loopi 11, 2
-		bn.rshi w7, w17, w7 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w7, w17, w7 >> 7
-	bn.lid  x4, 0(a1++)
-	bn.rshi w7, w17, w7 >> 9
-	bn.rshi w17, w31, w17 >> 4
-	loopi 4, 2
-		bn.rshi w7, w17, w7 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 9 -> w6 */
-	loopi 16, 2
-		bn.rshi w6, w17, w6 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 10 -> w5 */
-	loopi 2, 2
-		bn.rshi w5, w17, w5 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w5, w17, w5 >> 10
-	bn.lid  x4, 0(a1++)
-	bn.rshi w5, w17, w5 >> 6
-	bn.rshi w17, w31, w17 >> 1
-	loopi 13, 2
-		bn.rshi w5, w17, w5 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 11 -> w4 */
-	loopi 10, 2
-		bn.rshi w4, w17, w4 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w4, w17, w4 >> 2
-	bn.lid  x4, 0(a1++)
-	bn.rshi w4, w17, w4 >> 14
-	bn.rshi w17, w31, w17 >> 9
-	loopi 5, 2
-		bn.rshi w4, w17, w4 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 12 -> w3 */
-	loopi 16, 2
-		bn.rshi w3, w17, w3 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 13 -> w2 */
-	bn.rshi w2, w17, w2 >> 16
-	bn.rshi w17, w31, w17 >> 11
-	bn.rshi w2, w17, w2 >> 5
-	bn.lid  x4, 0(a1++)
-	bn.rshi w2, w17, w2 >> 11
-	bn.rshi w17, w31, w17 >> 6
-	loopi 14, 2
-		bn.rshi w2, w17, w2 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 14 -> w1 */
-	loopi 8, 2
-		bn.rshi w1, w17, w1 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-	bn.rshi w1, w17, w1 >> 8
-	bn.lid  x4, 0(a1++)
-	bn.rshi w1, w17, w1 >> 8
-	bn.rshi w17, w31, w17 >> 3
-	loopi 7, 2
-		bn.rshi w1, w17, w1 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-
-    /* group 15 -> w0 */
-	loopi 16, 2
-		bn.rshi w0, w17, w0 >> 16
-		bn.rshi w17, w31, w17 >> 11
-	endloop
-    jal x1, _bitslice_transpose
-
-    addi s1, x0, 11 /* du */
-    beq  x0, x0, _handle_common_du
-
-_handle_kn4_du:
-    addi x4, x0, 17
-    addi t0, x0, 15
-    addi t1, x0, 18
-    loopi 2, 69
-        /* group i + 0 */
-		bn.lid x4, 0(a1++)
-		loopi 16, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 1 */
-		loopi 9, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-		bn.rshi w18, w17, w18 >> 6
-		bn.lid  x4, 0(a1++)
-		bn.rshi w18, w17, w18 >> 10
-		bn.rshi w17, w31, w17 >> 4
-		loopi 6, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 2 */
-		loopi 16, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 3 */
-		loopi 3, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-		bn.rshi w18, w17, w18 >> 2
-		bn.lid  x4, 0(a1++)
-		bn.rshi w18, w17, w18 >> 14
-		bn.rshi w17, w31, w17 >> 8
-		loopi 12, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 4 */
-		loopi 12, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-		bn.rshi w18, w17, w18 >> 8
-		bn.lid  x4, 0(a1++)
-		bn.rshi w18, w17, w18 >> 8
-		bn.rshi w17, w31, w17 >> 2
-		loopi 3, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 5 */
-		loopi 16, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 6 */
-		loopi 6, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-		bn.rshi w18, w17, w18 >> 4
-		bn.lid  x4, 0(a1++)
-		bn.rshi w18, w17, w18 >> 12
-		bn.rshi w17, w31, w17 >> 6
-		loopi 9, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-
-        /* group i + 7 */
-		loopi 16, 2
-			bn.rshi w18, w17, w18 >> 16
-			bn.rshi w17, w31, w17 >> 10
-		endloop
-        bn.movr t0, t1
-        addi    t0, t0, -1
-    endloop
-    jal x1, _bitslice_transpose
-
-    addi s1, x0, 10 /* du */
-
-_handle_common_du:
-    /* t[0] ^= c ^ ((1 << N) - 1):  c-planes are now w0..w9. */
-    bn.subi w15, w31, 1
-    addi    t0, sp, 0 /* ptr_t */
-
-    bn.lid x4, 0(t0)
-    bn.xor w0, w0, w15
-    bn.xor w17, w17, w0
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w1, w1, w15
-    bn.xor w17, w17, w1
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w2, w2, w15
-    bn.xor w17, w17, w2
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w3, w3, w15
-    bn.xor w17, w17, w3
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w4, w4, w15
-    bn.xor w17, w17, w4
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w5, w5, w15
-    bn.xor w17, w17, w5
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w6, w6, w15
-    bn.xor w17, w17, w6
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w7, w7, w15
-    bn.xor w17, w17, w7
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w8, w8, w15
-    bn.xor w17, w17, w8
-    bn.sid x4, 0(t0++)
-
-    bn.lid x4, 0(t0)
-    bn.xor w9, w9, w15
-    bn.xor w17, w17, w9
-    bn.sid x4, 0(t0++)
-
-    addi   t1, x0, 10
-    beq    s1, t1, _skip_bit_10
-
-    bn.lid x4, 0(t0)
-    bn.xor w10, w10, w15
-    bn.xor w17, w17, w10
-    bn.sid x4, 0(t0++)
-
-_skip_bit_10:
-    /* Compute r = secand(r, t). */
-    addi a1, x0, 32
-    addi a2, sp, 0 /* ptr_t */
-    addi a3, s2, 0 /* share_str */
-    addi a6, x0, 32 /* output share_str */
-    /* After the secand, the input and output pointers will point to
-     * next bit so we don't have to pass all the arguments above to secand again. */
-    loop s1, 4
-        addi a0, s4, 0 /* ptr_r */
-        addi a5, s4, 0 /* ptr_r */
-        jal  x1, secand
-        nop
-    endloop
-
-    /* Restore registers. */
-    lw   s0, 708(sp)
-    lw   s1, 712(sp)
-    lw   s2, 716(sp)
-    lw   s4, 724(sp)
-    lw   a5, 728(sp)
-    addi sp, sp, 736
-    ret
-
-/*
- * Name: finalize_cmp
- *
- * Reduce the masked_compare output in place to Boolean shares of the single
- * comparison bit. Bitsliced.
- *
- * Source: Section 6.2 [BC22]
- *
- * @param[in/out] x10: dptr_x, dmem pointer to Boolean shares of output of masked_compare
+ * @param[in]     x10: dmem pointer to arithmetic shares of c'
+ * @param[in]     x11: dmem pointer to reference compressed polynomial c
+ * @param[in]     x12: share stride of compressed c', i.e. dv * 32
+ * @param[in,out] x14: dmem pointer to Boolean shares of r, which must
+ *                     hold all-ones on entry
+ * @param[in]     x15: k, the security level
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x2, x4 to x8, x10 to x13, x15 to x16, w0 to w3, w5 to w8
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
+
+.globl masked_poly_compare_dv
+.type masked_poly_compare_dv, @function
+masked_poly_compare_dv:
+  /* Allocate t scratch (2 shares * 160 B, dv = 5 worst case) + saves. */
+  addi x2, x2, -352
+  sw   x11, 320(x2)
+  sw   x12, 324(x2)
+  sw   x14, 328(x2)
+  sw   x15, 332(x2)
+  sw   x8, 336(x2)
+
+  /* Compute t = poly_hocompress_dv(c'). */
+  /* x10 already points to c'. */
+  add x12, x2, x0
+  add x13, x15, x0
+  jal x1, poly_hocompress_dv
+
+  /* Decode + bitslice c. */
+  lw     x11, 320(x2)
+  addi   x4, x0, 17
+  addi   x5, x0, 4
+  lw     x15, 332(x2)
+  bne    x15, x5, _handle_kn4_dv
+  bn.lid x4, 0(x11++)
+  /* group 0 -> w15 */
+  loopi 16, 2
+    bn.rshi w15, w17, w15 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 1 -> w14 */
+  loopi 16, 2
+    bn.rshi w14, w17, w14 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 2 -> w13 */
+  loopi 16, 2
+    bn.rshi w13, w17, w13 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 3 -> w12 */
+  loopi 3, 2
+    bn.rshi w12, w17, w12 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  bn.rshi w12, w17, w12 >> 1
+  bn.lid  x4, 0(x11++)
+  bn.rshi w12, w17, w12 >> 15
+  bn.rshi w17, w31, w17 >> 4
+  loopi 12, 2
+    bn.rshi w12, w17, w12 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 4 -> w11 */
+  loopi 16, 2
+    bn.rshi w11, w17, w11 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 5 -> w10 */
+  loopi 16, 2
+    bn.rshi w10, w17, w10 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 6 -> w9 */
+  loopi 6, 2
+    bn.rshi w9, w17, w9 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  bn.rshi w9, w17, w9 >> 2
+  bn.lid  x4, 0(x11++)
+  bn.rshi w9, w17, w9 >> 14
+  bn.rshi w17, w31, w17 >> 3
+  loopi 9, 2
+    bn.rshi w9, w17, w9 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 7 -> w8 */
+  loopi 16, 2
+    bn.rshi w8, w17, w8 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 8 -> w7 */
+  loopi 16, 2
+    bn.rshi w7, w17, w7 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 9 -> w6 */
+  loopi 9, 2
+    bn.rshi w6, w17, w6 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  bn.rshi w6, w17, w6 >> 3
+  bn.lid  x4, 0(x11++)
+  bn.rshi w6, w17, w6 >> 13
+  bn.rshi w17, w31, w17 >> 2
+  loopi 6, 2
+    bn.rshi w6, w17, w6 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 10 -> w5 */
+  loopi 16, 2
+    bn.rshi w5, w17, w5 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 11 -> w4 */
+  loopi 16, 2
+    bn.rshi w4, w17, w4 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 12 -> w3 */
+  loopi 12, 2
+    bn.rshi w3, w17, w3 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  bn.rshi w3, w17, w3 >> 4
+  bn.lid  x4, 0(x11++)
+  bn.rshi w3, w17, w3 >> 12
+  bn.rshi w17, w31, w17 >> 1
+  loopi 3, 2
+    bn.rshi w3, w17, w3 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 13 -> w2 */
+  loopi 16, 2
+    bn.rshi w2, w17, w2 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 14 -> w1 */
+  loopi 16, 2
+    bn.rshi w1, w17, w1 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  /* group 15 -> w0 */
+  loopi 16, 2
+    bn.rshi w0, w17, w0 >> 16
+    bn.rshi w17, w31, w17 >> 5
+  endloop
+  jal x1, _bitslice_transpose
+
+  addi x8, x0, 5
+  beq  x0, x0, _handle_common_dv
+
+_handle_kn4_dv:
+  bn.lid x4, 0(x11++)
+  /* group 0 -> w15 */
+  loopi 16, 2
+    bn.rshi w15, w17, w15 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 1 -> w14 */
+  loopi 16, 2
+    bn.rshi w14, w17, w14 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 2 -> w13 */
+  loopi 16, 2
+    bn.rshi w13, w17, w13 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 3 -> w12 */
+  loopi 16, 2
+    bn.rshi w12, w17, w12 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  bn.lid x4, 0(x11++)
+  /* group 4 -> w11 */
+  loopi 16, 2
+    bn.rshi w11, w17, w11 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 5 -> w10 */
+  loopi 16, 2
+    bn.rshi w10, w17, w10 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 6 -> w9 */
+  loopi 16, 2
+    bn.rshi w9, w17, w9 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 7 -> w8 */
+  loopi 16, 2
+    bn.rshi w8, w17, w8 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  bn.lid x4, 0(x11++)
+  /* group 8 -> w7 */
+  loopi 16, 2
+    bn.rshi w7, w17, w7 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 9 -> w6 */
+  loopi 16, 2
+    bn.rshi w6, w17, w6 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 10 -> w5 */
+  loopi 16, 2
+    bn.rshi w5, w17, w5 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 11 -> w4 */
+  loopi 16, 2
+    bn.rshi w4, w17, w4 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  bn.lid x4, 0(x11++)
+  /* group 12 -> w3 */
+  loopi 16, 2
+    bn.rshi w3, w17, w3 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 13 -> w2 */
+  loopi 16, 2
+    bn.rshi w2, w17, w2 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 14 -> w1 */
+  loopi 16, 2
+    bn.rshi w1, w17, w1 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  /* group 15 -> w0 */
+  loopi 16, 2
+    bn.rshi w0, w17, w0 >> 16
+    bn.rshi w17, w31, w17 >> 4
+  endloop
+  jal x1, _bitslice_transpose
+
+  addi x8, x0, 4
+
+_handle_common_dv:
+  /* t_0 ^= ~c, so that t is 1 exactly where the bits match. The c
+   * bit-planes are w0..w3 for dv = 4 and w0..w4 for dv = 5. */
+  bn.subi w15, w31, 1
+  add     x5, x2, x0
+
+  bn.lid  x4, 0(x5)
+  bn.xor  w0, w0, w15
+  bn.xor  w17, w17, w0
+  bn.sid  x4, 0(x5++)
+
+  bn.lid  x4, 0(x5)
+  bn.xor  w1, w1, w15
+  bn.xor  w17, w17, w1
+  bn.sid  x4, 0(x5++)
+
+  bn.lid  x4, 0(x5)
+  bn.xor  w2, w2, w15
+  bn.xor  w17, w17, w2
+  bn.sid  x4, 0(x5++)
+
+  bn.lid  x4, 0(x5)
+  bn.xor  w3, w3, w15
+  bn.xor  w17, w17, w3
+  bn.sid  x4, 0(x5++)
+
+  addi    x6, x0, 4
+  beq     x8, x6, _skip_bit_4
+
+  bn.lid  x4, 0(x5)
+  bn.xor  w4, w4, w15
+  bn.xor  w17, w17, w4
+  bn.sid  x4, 0(x5++)
+
+_skip_bit_4:
+  /* Whitening. */
+  bn.xor w17, w31, w31
+
+  /* Compute r = secand(r, t). */
+  lw   x10, 328(x2)
+  addi x11, x0, 32
+  add  x12, x2, x0
+  lw   x13, 324(x2)
+  add  x15, x10, x0
+  addi x16, x0, 32
+  /* r is accumulated in place, so only t advances to the next bit. */
+  loop x8, 2
+    jal  x1, secand
+    addi x12, x12, 32
+  endloop
+
+  /* Restore registers. */
+  lw   x8, 336(x2)
+  addi x2, x2, 352
+  ret
+
+/**
+ * First-order masked comparison of a polynomial compressed with du in {10, 11}.
+ *
+ * For every coefficient of the polynomial, AND into r a 1 if
+ * Compressq(c', du) == c, else a 0. Here du = 11 for k = 4, and 10 otherwise.
+ * Bitsliced.
+ *
+ * Source: Section 6.2 [BC22]
+ *
+ * @param[in]     x10: dmem pointer to arithmetic shares of c'
+ * @param[in]     x11: dmem pointer to reference compressed polynomial c
+ * @param[in]     x12: share stride of compressed c', i.e. du * 32
+ * @param[in,out] x14: dmem pointer to Boolean shares of r, which must
+ *                     hold all-ones on entry
+ * @param[in]     x15: k, the security level
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: x2 to x17, x29 to x31,
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
+ * clobbered flag groups: FG0
+ */
+
+.globl masked_poly_compare_du
+.type masked_poly_compare_du, @function
+masked_poly_compare_du:
+  /* Allocate t scratch (2 shares * 352 B, du = 11 worst case) + saves. */
+  addi x2, x2, -736
+  sw   x11, 708(x2)
+  sw   x12, 712(x2)
+  sw   x14, 716(x2)
+  sw   x15, 720(x2)
+  sw   x8, 724(x2)
+
+  /* Compute t = poly_hocompress_du(c'). */
+  /* x10 already points to c'. */
+  add x12, x2, x0
+  add x13, x15, x0
+  jal x1, poly_hocompress_du
+
+  /* Decode + bitslice c. */
+  lw   x11, 708(x2)
+  addi x5, x0, 4
+  lw   x15, 720(x2)
+  addi x4, x0, 17
+  bne  x15, x5, _handle_kn4_du
+  /* group 0 -> w15 */
+  bn.lid x4, 0(x11++)
+  loopi 16, 2
+    bn.rshi w15, w17, w15 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+    /* group 1 -> w14 */
+  loopi 7, 2
+    bn.rshi w14, w17, w14 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w14, w17, w14 >> 3
+  bn.lid  x4, 0(x11++)
+  bn.rshi w14, w17, w14 >> 13
+  bn.rshi w17, w31, w17 >> 8
+  loopi 8, 2
+    bn.rshi w14, w17, w14 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 2 -> w13 */
+  loopi 14, 2
+    bn.rshi w13, w17, w13 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w13, w17, w13 >> 6
+  bn.lid  x4, 0(x11++)
+  bn.rshi w13, w17, w13 >> 10
+  bn.rshi w17, w31, w17 >> 5
+  bn.rshi w13, w17, w13 >> 16
+  bn.rshi w17, w31, w17 >> 11
+
+  /* group 3 -> w12 */
+  loopi 16, 2
+    bn.rshi w12, w17, w12 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 4 -> w11 */
+  loopi 5, 2
+    bn.rshi w11, w17, w11 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w11, w17, w11 >> 9
+  bn.lid  x4, 0(x11++)
+  bn.rshi w11, w17, w11 >> 7
+  bn.rshi w17, w31, w17 >> 2
+  loopi 10, 2
+    bn.rshi w11, w17, w11 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 5 -> w10 */
+  loopi 13, 2
+    bn.rshi w10, w17, w10 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w10, w17, w10 >> 1
+  bn.lid  x4, 0(x11++)
+  bn.rshi w10, w17, w10 >> 15
+  bn.rshi w17, w31, w17 >> 10
+  loopi 2, 2
+    bn.rshi w10, w17, w10 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 6 -> w9 */
+  loopi 16, 2
+    bn.rshi w9, w17, w9 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 7 -> w8 */
+  loopi 4, 2
+    bn.rshi w8, w17, w8 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w8, w17, w8 >> 4
+  bn.lid  x4, 0(x11++)
+  bn.rshi w8, w17, w8 >> 12
+  bn.rshi w17, w31, w17 >> 7
+  loopi 11, 2
+    bn.rshi w8, w17, w8 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 8 -> w7 */
+  loopi 11, 2
+    bn.rshi w7, w17, w7 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w7, w17, w7 >> 7
+  bn.lid  x4, 0(x11++)
+  bn.rshi w7, w17, w7 >> 9
+  bn.rshi w17, w31, w17 >> 4
+  loopi 4, 2
+    bn.rshi w7, w17, w7 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 9 -> w6 */
+  loopi 16, 2
+    bn.rshi w6, w17, w6 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 10 -> w5 */
+  loopi 2, 2
+    bn.rshi w5, w17, w5 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w5, w17, w5 >> 10
+  bn.lid  x4, 0(x11++)
+  bn.rshi w5, w17, w5 >> 6
+  bn.rshi w17, w31, w17 >> 1
+  loopi 13, 2
+    bn.rshi w5, w17, w5 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 11 -> w4 */
+  loopi 10, 2
+    bn.rshi w4, w17, w4 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w4, w17, w4 >> 2
+  bn.lid  x4, 0(x11++)
+  bn.rshi w4, w17, w4 >> 14
+  bn.rshi w17, w31, w17 >> 9
+  loopi 5, 2
+    bn.rshi w4, w17, w4 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 12 -> w3 */
+  loopi 16, 2
+    bn.rshi w3, w17, w3 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 13 -> w2 */
+  bn.rshi w2, w17, w2 >> 16
+  bn.rshi w17, w31, w17 >> 11
+  bn.rshi w2, w17, w2 >> 5
+  bn.lid  x4, 0(x11++)
+  bn.rshi w2, w17, w2 >> 11
+  bn.rshi w17, w31, w17 >> 6
+  loopi 14, 2
+    bn.rshi w2, w17, w2 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 14 -> w1 */
+  loopi 8, 2
+    bn.rshi w1, w17, w1 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  bn.rshi w1, w17, w1 >> 8
+  bn.lid  x4, 0(x11++)
+  bn.rshi w1, w17, w1 >> 8
+  bn.rshi w17, w31, w17 >> 3
+  loopi 7, 2
+    bn.rshi w1, w17, w1 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+
+  /* group 15 -> w0 */
+  loopi 16, 2
+    bn.rshi w0, w17, w0 >> 16
+    bn.rshi w17, w31, w17 >> 11
+  endloop
+  jal x1, _bitslice_transpose
+
+  addi x8, x0, 11
+  beq  x0, x0, _handle_common_du
+
+_handle_kn4_du:
+  addi x5, x0, 15
+  loopi 2, 69
+    /* group i + 0 */
+    bn.lid x4, 0(x11++)
+    loopi 16, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 1 */
+    loopi 9, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.rshi w0, w17, w0 >> 6
+    bn.lid  x4, 0(x11++)
+    bn.rshi w0, w17, w0 >> 10
+    bn.rshi w17, w31, w17 >> 4
+    loopi 6, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 2 */
+    loopi 16, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 3 */
+    loopi 3, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.rshi w0, w17, w0 >> 2
+    bn.lid  x4, 0(x11++)
+    bn.rshi w0, w17, w0 >> 14
+    bn.rshi w17, w31, w17 >> 8
+    loopi 12, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 4 */
+    loopi 12, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.rshi w0, w17, w0 >> 8
+    bn.lid  x4, 0(x11++)
+    bn.rshi w0, w17, w0 >> 8
+    bn.rshi w17, w31, w17 >> 2
+    loopi 3, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 5 */
+    loopi 16, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 6 */
+    loopi 6, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.rshi w0, w17, w0 >> 4
+    bn.lid  x4, 0(x11++)
+    bn.rshi w0, w17, w0 >> 12
+    bn.rshi w17, w31, w17 >> 6
+    loopi 9, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+
+    /* group i + 7 */
+    loopi 16, 2
+      bn.rshi w0, w17, w0 >> 16
+      bn.rshi w17, w31, w17 >> 10
+    endloop
+    bn.movr x5, x0
+    addi    x5, x5, -1
+  endloop
+  jal x1, _bitslice_transpose
+
+  addi x8, x0, 10
+
+_handle_common_du:
+  /* t_0 ^= ~c, so that t is 1 exactly where the bits match. The c
+   * bit-planes are w0..w9 for du = 10 and w0..w10 for du = 11. */
+  bn.subi w15, w31, 1
+  add     x5, x2, x0
+
+  bn.lid x4, 0(x5)
+  bn.xor w0, w0, w15
+  bn.xor w17, w17, w0
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w1, w1, w15
+  bn.xor w17, w17, w1
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w2, w2, w15
+  bn.xor w17, w17, w2
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w3, w3, w15
+  bn.xor w17, w17, w3
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w4, w4, w15
+  bn.xor w17, w17, w4
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w5, w5, w15
+  bn.xor w17, w17, w5
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w6, w6, w15
+  bn.xor w17, w17, w6
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w7, w7, w15
+  bn.xor w17, w17, w7
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w8, w8, w15
+  bn.xor w17, w17, w8
+  bn.sid x4, 0(x5++)
+
+  bn.lid x4, 0(x5)
+  bn.xor w9, w9, w15
+  bn.xor w17, w17, w9
+  bn.sid x4, 0(x5++)
+
+  addi   x6, x0, 10
+  beq    x8, x6, _skip_bit_10
+
+  bn.lid x4, 0(x5)
+  bn.xor w10, w10, w15
+  bn.xor w17, w17, w10
+  bn.sid x4, 0(x5++)
+
+_skip_bit_10:
+  /* Whitening. */
+  bn.xor w17, w31, w31
+
+  /* Compute r = secand(r, t). */
+  lw   x10, 716(x2)
+  addi x11, x0, 32
+  add  x12, x2, x0
+  lw   x13, 712(x2)
+  add  x15, x10, x0
+  addi x16, x0, 32
+  /* r is accumulated in place, so only t advances to the next bit. */
+  loop x8, 2
+    jal  x1, secand
+    addi x12, x12, 32
+  endloop
+
+  /* Restore registers. */
+  lw   x8, 724(x2)
+  addi x2, x2, 736
+  ret
+
+/**
+ * First-order reduction of the masked comparison result to a single bit.
+ *
+ * Reduce the masked_poly_compare_{du, dv} output in place to Boolean shares of
+ * the single comparison bit.
+ * Bitsliced.
+ *
+ * Source: Section 6.2 [BC22]
+ *
+ * @param[in,out] x10: dmem pointer to Boolean shares of r, the output
+ *                     of masked_poly_compare_{du, dv}
+ * @param[in]     w31: all-zero register
+ *
+ * clobbered registers: x2, x4 to x6, x11 to x13, x15 to x16, w0 to w7
+ * clobbered flag groups: FG0
+ */
+
 .globl finalize_cmp
 .type finalize_cmp, @function
 finalize_cmp:
-    /* Allocate t scratch (2 shares * 32 B) and save s0. */
-    addi sp, sp, -96
-    sw s0, 68(sp)
+  /* Allocate t scratch (2 shares * 32 B). */
+  addi x2, x2, -64
 
-    /* Save the in/out address. */
-    addi s0, a0, 0
+  /* Compute r &= (r >> 128). */
+  /* Compute t = r >> 128. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 128
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  /* x10 already points to r. */
+  addi x11, x0, 32
+  add  x12, x2, x0
+  addi x13, x0, 32
+  add  x15, x10, x0
+  addi x16, x0, 32
+  jal  x1, secand
 
-    /* Compute x &= (x >> 128). */
-    /* Compute t = x >> 128. */
-    addi x4, x0, 1
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 128
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    addi a1, x0, 32
-    addi a2, sp, 0
-    addi a3, x0, 32
-    addi a5, s0, 0
-    addi a6, x0, 32
-    jal  x1, secand
+  /* Compute r &= (r >> 64). */
+  /* Compute t = r >> 64. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 64
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 64). */
-    /* Compute t = x >> 64. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 64
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 32). */
+  /* Compute t = r >> 32. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 32
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 32). */
-    /* Compute t = x >> 32. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 32
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 16). */
+  /* Compute t = r >> 16. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 16
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 16). */
-    /* Compute t = x >> 16. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 16
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 8). */
+  /* Compute t = r >> 8. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 8
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 8). */
-    /* Compute t = x >> 8. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 8
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 4). */
+  /* Compute t = r >> 4. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 4
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 4). */
-    /* Compute t = x >> 4. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 4
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 2). */
+  /* Compute t = r >> 2. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 2
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 2). */
-    /* Compute t = x >> 2. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 2
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
+  /* Compute r &= (r >> 1). */
+  /* Compute t = r >> 1. */
+  add  x5, x2, x0
+  add  x6, x10, x0
+  loopi 2, 4
+    bn.lid  x0, 0(x6++)
+    bn.rshi w0, w31, w0 >> 1
+    bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+  endloop
+  /* Compute r &= t. */
+  jal  x1, secand
 
-    /* Compute x &= (x >> 1). */
-    /* Compute t = x >> 1. */
-    addi x4, x0, 1
-    addi a0, s0, 0
-    addi t0, sp, 0 /* ptr_t */
-    loopi 2, 5
-        /* Whitening. */
-        bn.xor  w0, w0, w0
-        bn.xor  w1, w1, w1
-        bn.lid  x0, 0(a0++)
-        bn.rshi w1, w31, w0 >> 1
-        bn.sid  x4, 0(t0++)
-    endloop
-    /* Compute x &= t. */
-    addi a0, s0, 0
-    /* a1 is still 32. */
-    addi a2, sp, 0
-    /* a3 is still 32. */
-    addi a5, s0, 0
-    /* a6 is still 32. */
-    jal  x1, secand
-
-    /* Restore s0. */
-    lw s0, 68(sp)
-
-    addi sp, sp, 96
-    ret
+  addi x2, x2, 64
+  ret
