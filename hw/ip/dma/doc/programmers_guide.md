@@ -41,8 +41,9 @@ Since interrupts are implemented as status bits, they are cleared by writing a '
 ### Aborting a Transfer
 
 Software can terminate an ongoing DMA transfer at any point by writing to the `abort` bit in the [`CONTROL`](registers.md#control) register.
-Aborting an operation happens immediately after writing the `abort` bit and does not require any further scheduling or waiting.
-The [`STATUS`](registers.md#status) indicates via the `aborted` bit that the DMA operation was aborted and the DMA stopped its operation.
+The DMA immediately stops issuing new transfer requests. If an interface has already accepted a request, the DMA keeps [`STATUS.busy`](registers.md#status--busy) set until the corresponding response has drained.
+The DMA then clears `busy` and sets [`STATUS.aborted`](registers.md#status--aborted) to indicate that abort cleanup is complete and a new operation may be configured.
+The SoC interface does not guarantee that an accepted request will complete. If that interface does not return its response, software must reset the DMA before reusing it.
 
 ## Chunked Data Transfers
 
