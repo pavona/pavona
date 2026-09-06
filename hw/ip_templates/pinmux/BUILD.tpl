@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_${topname}/ip_autogen/${module_instance_name}/rtl:all_files"],
 )
 
 filegroup(
@@ -21,5 +21,5 @@ filegroup(
     srcs = glob([
         "**/*.md",
         "**/*.svg",
-    ]) + ["//hw/top_${topname}/ip_autogen/pinmux/data:doc_files"],
+    ]) + ["//hw/top_${topname}/ip_autogen/${module_instance_name}/data:doc_files"],
 )

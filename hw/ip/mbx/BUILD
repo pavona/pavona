@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/ip/mbx/rtl:all_files"],
 )
 
 filegroup(

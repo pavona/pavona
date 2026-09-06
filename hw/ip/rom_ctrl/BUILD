@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/rom_ctrl/data:all_files",
+        "//hw/ip/rom_ctrl/rtl:all_files",
     ],
 )
 

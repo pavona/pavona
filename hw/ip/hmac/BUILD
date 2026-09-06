@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/hmac/data:all_files",
+        "//hw/ip/hmac/rtl:all_files",
     ],
 )
 

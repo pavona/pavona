@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/top_egret/ip/ast/data:all_files",
+        "//hw/top_egret/ip/ast/rtl:all_files",
     ],
 )
 

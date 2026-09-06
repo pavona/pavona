@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/pattgen/data:all_files",
+        "//hw/ip/pattgen/rtl:all_files",
     ],
 )
 

@@ -4,7 +4,7 @@
 """Generate SystemVerilog designs from IpBlock object"""
 
 import logging as log
-import os
+from pathlib import Path
 from typing import Dict, Optional, Tuple
 
 from mako import exceptions  # type: ignore
@@ -105,15 +105,14 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
     #
     # This defines the various types used to interface between the *_reg_top
     # module(s) and the block itself.
-    reg_pkg_path = os.path.join(
-        outdir,
-        block.name.lower() + alias_impl + "_reg_pkg.sv")
-    with open(reg_pkg_path, 'w', encoding='UTF-8') as fout:
-        try:
-            fout.write(reg_pkg_tpl.render(block=block, alias_impl=alias_impl))
-        except:  # noqa F722 for template Exception handling
-            log.error(exceptions.text_error_template().render())
-            return 1
+    reg_pkg_path = Path(outdir) / (block.name.lower() + alias_impl + '_reg_pkg.sv')
+    reg_pkg_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        reg_pkg_path.write_text(reg_pkg_tpl.render(block=block, alias_impl=alias_impl),
+                                encoding='UTF-8')
+    except:  # noqa F722 for template Exception handling
+        log.error(exceptions.text_error_template().render())
+        return 1
 
     # Generate the register block implementation(s). For a device interface
     # with no name we generate the register module "<block>_reg_top"
@@ -127,18 +126,19 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
             mod_base = lblock + '_' + if_name.lower()
 
         mod_name = mod_base + alias_impl + '_reg_top'
-        reg_top_path = os.path.join(outdir, mod_name + '.sv')
-        with open(reg_top_path, 'w', encoding='UTF-8') as fout:
-            try:
-                fout.write(
-                    reg_top_tpl.render(block=block,
-                                       mod_base=mod_base,
-                                       mod_name=mod_name,
-                                       if_name=if_name,
-                                       rb=rb))
-            except:  # noqa F722 for template Exception handling
-                log.error(exceptions.text_error_template().render())
-                return 1
+        reg_top_path = Path(outdir) / (mod_name + '.sv')
+        reg_top_path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            reg_top_path.write_text(
+                reg_top_tpl.render(block=block,
+                                   mod_base=mod_base,
+                                   mod_name=mod_name,
+                                   if_name=if_name,
+                                   rb=rb),
+                encoding='UTF-8')
+        except:  # noqa F722 for template Exception handling
+            log.error(exceptions.text_error_template().render())
+            return 1
 
     return 0
 
