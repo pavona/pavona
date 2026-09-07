@@ -67,25 +67,21 @@
 .globl secand
 .type secand, @function
 secand:
-  /* Save addresses. */
-  add x5, x10, x0
-  add x6, x12, x0
-  add x7, x15, x0
+  add x4, x0, x0
 
   /* Load x. */
   bn.xor w0, w0, w0   /* Whitening. */
-  bn.lid x0, 0(x5)    /* w0 = x_0 */
+  bn.lid x4++, 0(x10) /* w0 = x_0 */
   bn.xor w1, w1, w1   /* Whitening. */
-  add    x5, x5, x11
-  addi   x4, x0, 1
+  add    x5, x10, x11
   bn.lid x4++, 0(x5)  /* w1 = x_1 */
 
   /* Load y. */
   bn.xor w2, w2, w2   /* Whitening. */
-  bn.lid x4++, 0(x6)  /* w2 = y_0 */
+  bn.lid x4++, 0(x12) /* w2 = y_0 */
   bn.xor w3, w3, w3   /* Whitening. */
-  add    x6, x6, x13
-  bn.lid x4, 0(x6)    /* w3 = y_1 */
+  add    x5, x12, x13
+  bn.lid x4, 0(x5)    /* w3 = y_1 */
 
   /* Refresh with one fresh random. */
   bn.wsrr w5, urnd    /* w5 = s */
@@ -102,8 +98,7 @@ secand:
   bn.xor  w7, w7, w8  /* w7 ^= w8 */
   bn.xor  w6, w6, w7  /* r_0 = (w6 ^ w7) */
   addi    x4, x0, 6
-  bn.sid  x4, 0(x7)
-  add     x7, x7, x16
+  bn.sid  x4, 0(x15)
 
   /* Pair (i, j) = (1, 0). */
   bn.xor  w6, w6, w6  /* Whitening. */
@@ -116,7 +111,8 @@ secand:
   bn.and  w8, w8, w5  /* w8 &= s */
   bn.xor  w7, w7, w8  /* w7 ^= w8 */
   bn.xor  w6, w6, w7  /* r_1 = (w6 ^ w7) */
-  bn.sid  x4, 0(x7)
+  add     x5, x15, x16
+  bn.sid  x4, 0(x5)
 
   /* Advance x10, x12, x15 to the next bit. */
   addi x10, x10, 32
