@@ -125,7 +125,7 @@ poly_getnoise_eta_2:
 .globl cbd2
 .type cbd2, @function
 cbd2:
-  la     x5, cbd2_const
+  la     x5, const_cbd2
   addi   x4, x0, 3
   bn.lid x4++, 0(x5)
   bn.lid x4, 32(x5)
@@ -185,7 +185,7 @@ cbd2:
 .globl cbd3
 .type cbd3, @function
 cbd3:
-  la     x5, cbd3_const
+  la     x5, const_cbd3
   addi   x4, x0, 20
   bn.lid x4++, 0(x5)
   bn.lid x4, 32(x5)

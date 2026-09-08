@@ -47,7 +47,8 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2, x4 to x31, w0 to w30, mod, acch, acc
+ * clobbered registers: x2, x4 to x31,
+ *                      w0 to w15, w17 to w30, mod, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -122,9 +123,10 @@ _continue:
 #ifdef HARDENED
   bn.lid x0, 64(x5)
   bn.sid x0, 0(x6)
-  bn.xor w0, w0, w0 /* Whitening. */
+  bn.xor w0, w31, w31 /* Whitening. */
   bn.lid x0, 96(x5)
   bn.sid x0, 32(x6)
+  bn.xor w0, w31, w31 /* Whitening. */
 #else
   bn.lid x0, 32(x5)
   bn.sid x0, 0(x6)

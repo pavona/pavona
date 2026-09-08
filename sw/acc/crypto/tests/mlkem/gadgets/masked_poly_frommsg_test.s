@@ -2,6 +2,8 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
+#define STACK_SIZE 20000
+
 .section .text.start
 
 main:
@@ -18,9 +20,31 @@ main:
   bn.or   w16, w16, w17 << 32
   bn.wsrw mod, w16
 
-  /* r <- poly_rej_samp(rand_in). */
-  la  x10, r
-  la  x11, rand_in
-  jal x1, poly_rej_samp
+  /* ra <- masked_poly_frommsg(xb). */
+  la  x2, stack_end
+  la  x10, xb
+  la  x12, ra
+  jal x1, masked_poly_frommsg
+
+  /* r <- unmask(ra). */
+  la   x2, ra
+  addi x3, x2, 512
+  la   x5, r
+  li   x4, 1
+  loopi 16, 4
+    bn.lid       x0, 0(x2++)
+    bn.lid       x4, 0(x3++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
+  endloop
 
   ecall
+
+.data
+.balign 32
+stack:
+  .zero STACK_SIZE
+stack_end:
+
+r:
+  .zero 512

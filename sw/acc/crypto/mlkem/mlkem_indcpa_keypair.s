@@ -57,7 +57,8 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2, x4 to x31, w0 to w30, mod, acch, acc
+ * clobbered registers: x2, x4 to x31,
+ *                      w0 to w15, w17 to w30, mod, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -119,7 +120,7 @@ _continue:
   add    x11, x21, x0
   jal    x1, poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
   loop x19, 21
@@ -201,7 +202,7 @@ _continue:
 
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -301,7 +302,7 @@ _continue:
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, mpoly_e
-    la         x11, twiddles_ntt
+    la         x11, const_tw_ntt
     add        x12, x10, x0
     jal        x1, ntt
     bn.wsrw    mod, w16
@@ -401,7 +402,7 @@ _continue:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpoly_e
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
   bn.wsrw    mod, w16
@@ -448,22 +449,22 @@ _continue:
   add     x5, x5, x6
   csrrw   x0, kmac_cfg, x5
   /* Send seed. */
-  bn.xor  w0, w0, w0 /* Whitening. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.lid  x0, 0(x10)
   bn.wsrw kmac_msg1, w0
+  bn.xor  w0, w31, w31 /* Whitening. */
   /* Send k. */
   addi    x5, x0, 1
   csrrw   x0, kmac_partial_write, x5
   la      x5, buf
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.sid  x0, 0(x5)
   sw      x13, 0(x5)
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrw kmac_msg1, w0
   /* Retrieve publicseed. */
   bn.wsrr w0, kmac_digest
@@ -471,12 +472,12 @@ _continue:
   bn.xor  w0, w0, w1
   bn.sid  x0, 0(x5++)
   /* Retrieve noiseseed. */
-  bn.xor  w0, w0, w0 /* Whitening. */
   bn.wsrr w0, kmac_digest
   bn.sid  x0, 0(x5++)
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.wsrr w0, kmac_digest1
   bn.sid  x0, 0(x5++)
+  bn.xor  w0, w31, w31 /* Whitening. */
 
   /*** Step 2: Generate dk_pke. ***/
   /* The following block will:
@@ -486,17 +487,17 @@ _continue:
   /**************************************************************************/
   la     x8, buf
   la     x21, nonce
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x21)
   /* Prepare for generating sk[0]. */
   addi   x10, x8, 32
   add    x11, x21, x0
   jal    x1, masked_poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
-  loop x19, 28
+  loop x19, 27
     /* Generate sk[i]. */
     add x10, x20, x0
     add x11, x22, x0
@@ -517,8 +518,8 @@ _continue:
     add        x11, x23, x0
     add        x12, x10, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, ntt
+      jal x1, whitening
       nop
     endloop
     bn.wsrw mod, w16
@@ -526,12 +527,11 @@ _continue:
     /* Pack dk_pke[i] <- sk[i]. */
     add x10, x22, x0
     add x11, x18, x0
-    loopi NSHARES, 4
-      /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+    loopi NSHARES, 3
       jal x1, poly_tobytes
-      nop
+      /* Whitening. */
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x22, x10, x0
     add x18, x11, x0
@@ -550,8 +550,8 @@ _continue:
   add x11, x23, x0
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -559,19 +559,18 @@ _continue:
   /* Prepare for generating a[0][0]. */
   add    x10, x8, x0
   la     x11, seed_ij
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Pack dk_pke[k - 1] <- sk[k - 1]. */
   add x10, x22, x0
   add x11, x18, x0
-  loopi NSHARES, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi NSHARES, 3
     jal    x1, poly_tobytes
-    nop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Save current addresses of sk. */
@@ -595,7 +594,7 @@ _continue:
   /**************************************************************************/
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -604,7 +603,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 109
+  loop x19, 103
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -626,8 +625,8 @@ _continue:
     add x12, x23, x0
     add x13, x26, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul
+      jal x1, whitening
       add x10, x25, x0
     endloop
     add x22, x11, x0
@@ -654,8 +653,8 @@ _continue:
       add x12, x23, x0
       add x13, x26, x0
       loopi NSHARES, 3
-        jal x1, whitening
         jal x1, basemul_acc
+        jal x1, whitening
         add x10, x25, x0
       endloop
       add x22, x11, x0
@@ -680,8 +679,8 @@ _continue:
     add x12, x23, x0
     add x13, x26, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul_acc
+      jal x1, whitening
       add x10, x25, x0
     endloop
     bn.wsrw mod, w16
@@ -701,12 +700,11 @@ _continue:
 
     /* Compute pk = tomont(pk). */
     add x10, x26, x0
-    loopi NSHARES, 4
-      /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+    loopi NSHARES, 3
       jal    x1, poly_tomont
-      nop
+      /* Whitening. */
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
 
     /* Compute e[i] = ntt(e[i]). */
@@ -714,11 +712,11 @@ _continue:
     bn.wsrw    mod, w0
 
     la  x10, mpoly_e
-    la  x11, twiddles_ntt
+    la  x11, const_tw_ntt
     add x12, x10, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, ntt
+      jal x1, whitening
       nop
     endloop
 
@@ -726,28 +724,22 @@ _continue:
     add x10, x26, x0
     la  x11, mpoly_e
     add x12, x26, x0
-    loopi NSHARES, 4
-      /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+    loopi NSHARES, 3
       jal    x1, poly_add
-      nop
+      /* Whitening. */
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
 
     /* Unmask pk. */
     addi x4, x0, 1
     add  x5, x26, x0
-    addi x6, x0, NSHARES
-    addi x6, x6, -1
-    loopi 16, 7
-      addi   x7, x5, 512
-      bn.lid x0, 0(x5)
-      loop x6, 3
-        bn.lid       x4, 0(x7)
-        bn.addvm.16h w0, w0, w1
-        addi         x7, x7, 512
-      endloop
-      bn.sid x0, 0(x5++)
+    addi x6, x5, 512
+    loopi 16, 4
+      bn.lid       x0, 0(x5)
+      bn.lid       x4, 0(x6++)
+      bn.addvm.16h w0, w0, w1
+      bn.sid       x0, 0(x5++)
     endloop
 
     bn.wsrw mod, w16
@@ -780,8 +772,8 @@ _continue:
   add x12, x23, x0
   add x13, x26, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul
+    jal x1, whitening
     add x10, x25, x0
   endloop
   add x22, x11, x0
@@ -808,8 +800,8 @@ _continue:
     add x12, x23, x0
     add x13, x26, x0
     loopi NSHARES, 3
-      jal x1, whitening
       jal x1, basemul_acc
+      jal x1, whitening
       add x10, x25, x0
     endloop
     add x22, x11, x0
@@ -834,8 +826,8 @@ _continue:
   add x12, x23, x0
   add x13, x26, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, basemul_acc
+    jal x1, whitening
     add x10, x25, x0
   endloop
   bn.wsrw mod, w16
@@ -847,12 +839,11 @@ _continue:
 
   /* Compute pk = tomont(pk). */
   add x10, x26, x0
-  loopi NSHARES, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi NSHARES, 3
     jal    x1, poly_tomont
-    nop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compute e[k - 1] = ntt(e[k - 1]). */
@@ -860,11 +851,11 @@ _continue:
   bn.wsrw    mod, w0
 
   la  x10, mpoly_e
-  la  x11, twiddles_ntt
+  la  x11, const_tw_ntt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, ntt
+    jal x1, whitening
     nop
   endloop
 
@@ -872,28 +863,22 @@ _continue:
   add x10, x26, x0
   la  x11, mpoly_e
   add x12, x26, x0
-  loopi NSHARES, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi NSHARES, 3
     jal    x1, poly_add
-    nop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Unmask pk. */
   addi x4, x0, 1
   add  x5, x26, x0
-  addi x6, x0, NSHARES
-  addi x6, x6, -1
-  loopi 16, 7
-    addi   x7, x5, 512
-    bn.lid x0, 0(x5)
-    loop x6, 3
-      bn.lid       x4, 0(x7)
-      bn.addvm.16h w0, w0, w1
-      addi         x7, x7, 512
-    endloop
-    bn.sid x0, 0(x5++)
+  addi x6, x5, 512
+  loopi 16, 4
+    bn.lid       x0, 0(x5)
+    bn.lid       x4, 0(x6++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
   endloop
 
   bn.wsrw mod, w16

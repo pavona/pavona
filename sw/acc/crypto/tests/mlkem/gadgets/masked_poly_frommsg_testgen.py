@@ -5,33 +5,50 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO, Optional, List
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+Q = 3329
 
 
-def gen_seconebitb2amodq_test(
+def frommsg(a: int, q: int) -> List[int]:
+    """Convert 32-byte message to polynomial."""
+    r = [0] * N
+    for i in range(N):
+        r[i] = (-((a >> i) & 1) & ((1 << 16) - 1)) & ((q + 1) // 2)
+    return r
+
+
+def gen_masked_poly_frommsg_test(
         seed: Optional[int],
         data_file: TextIO, exp_file: TextIO, dexp_file: TextIO):
-    # Generate random operands.
     if seed is not None:
         random.seed(seed)
 
-    # Generate inputs.
-    x = [0] * N
-    r = [0] * N
+    # Random Boolean shares of the message; r is their unmasked XOR.
+    rt = 0
     x_bytes = bytes()
     for _ in range(NSHARES):
-        for coeff in range(N):
-            x[coeff] = random.randint(0, 1)
-            r[coeff] ^= x[coeff]
-        x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
-        x_bytes += int.to_bytes(x_int, byteorder="little", length=512)
+        x = random.getrandbits(N)
+        rt ^= x
+        x_bytes += int.to_bytes(x, byteorder="little", length=32)
 
-    # Generate expected result.
+    # Reference: undo the bitslice layout, then Decompress_q(m, 1).
+    r_int = 0
+    t = 1 << 15
+    v2_15 = sum(t << (lane * 16) for lane in range(16))
+    v2_15 &= (1 << N) - 1
+    for lane in range(16):
+        t = rt & v2_15
+        rt <<= 1
+        t >>= 15
+        for i in range(lane * 16, (lane + 1) * 16):
+            r_int |= ((t & 1) << i)
+            t >>= 16
+    r = frommsg(r_int, Q)
     r_int = sum(r[coeff] << (coeff * 16) for coeff in range(N))
     r_bytes = int.to_bytes(r_int, byteorder='little', length=512)
 
@@ -70,4 +87,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with args.data, args.exp, args.dexp:
-        gen_seconebitb2amodq_test(args.seed, args.data, args.exp, args.dexp)
+        gen_masked_poly_frommsg_test(args.seed, args.data, args.exp, args.dexp)
