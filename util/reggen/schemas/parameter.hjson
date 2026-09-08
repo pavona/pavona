@@ -1,0 +1,34 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:parameter",
+  title: "Parameter",
+  description: "Parameter configuration",
+  type: "object",
+  required: ["name"]
+  properties: {
+    // basic information
+    name: { type: "string", description: "name of the item" },
+    desc: { type: "string", description: "description of the item" },
+
+    // param value information
+    type: { type: "string", description: "item type. int by default" },
+    unpacked_dimensions: {
+      type: "string",
+      description: '''unpacked dimensions of parameter e.g. [16] for a single
+                   unpacked dimension of size 16. none by default
+                   '''
+    },
+    default: { description: "item default value" },
+
+    // relation to hierarchy/top
+    local: { type: "boolean", description: "to be localparam" },
+    expose: { type: "boolean", description: "to be exposed to top" },
+
+    // random param
+    randcount: { type: "number", description: "number of bits to randomize in the parameter. 0 by default." },
+    randtype: { type: "string", description: "type of randomization to perform. none by default" },
+  }
+}

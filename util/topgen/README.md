@@ -190,12 +190,13 @@ options:
 - <a id="properties/unmanaged_clocks"></a>**`unmanaged_clocks`** *(array, required)*: list of unmanaged external clocks.
 - <a id="properties/clocks"></a>**`clocks`** *(object, required)*: group of clock properties.
 - <a id="properties/resets"></a>**`resets`** *(object, required)*: list of resets.
-- <a id="properties/reset_requests"></a>**`reset_requests`** *(object)*: define reset requests grouped by type.
+- <a id="properties/reset_requests"></a>**`reset_requests`**: define reset requests grouped by type. Refer to *[urn:topgen:reset_requests](#n%3Atopgen%3Areset_requests)*.
 - <a id="properties/num_cores"></a>**`num_cores`** *(integer)*: number of computing units.
 - <a id="properties/default_plic"></a>**`default_plic`** *(string)*: Modules not defining plic have interrupts sent here.
 - <a id="properties/default_alert_handler"></a>**`default_alert_handler`** *(string)*: Modules not defining alert_handler have alerts sent here.
 - <a id="properties/addr_spaces"></a>**`addr_spaces`** *(array, required)*: list of address spaces.
 - <a id="properties/module"></a>**`module`** *(array, required)*: list of modules to instantiate.
+  - <a id="properties/module/items"></a>**Items**: Refer to *[urn:topgen:module](#n%3Atopgen%3Amodule)*.
 - <a id="properties/port"></a>**`port`** *(array)*: assign special attributes to specific ports.
 - <a id="properties/inter_module"></a>**`inter_module`** *(object)*: define the signal connections between the modules.
 - <a id="properties/xbar"></a>**`xbar`** *(array, required)*: list of the xbars used in the top.
@@ -208,11 +209,14 @@ options:
 - <a id="properties/exported_clks"></a>**`exported_clks`** *(object)*: clock signal routing rules; added property.
 - <a id="properties/racl"></a>**`racl`** *(object)*: the expansion of the racl_config file; added property.
 - <a id="properties/wakeups"></a>**`wakeups`** *(array)*: list of wakeup requests each holding name, width, and module; added property.
+  - <a id="properties/wakeups/items"></a>**Items**: Refer to *[urn:topgen:wakeup](#n%3Atopgen%3Awakeup)*.
 - <a id="properties/unmanaged_resets"></a>**`unmanaged_resets`** *(array)*: List of unmanaged external resets; added property.
 - <a id="properties/exported_rsts"></a>**`exported_rsts`** *(object)*: external resets grouped by each module's `clock_reset_export` field; added property.
 - <a id="properties/alert"></a>**`alert`** *(array)*: alerts; added property.
+  - <a id="properties/alert/items"></a>**Items**: Refer to *[urn:topgen:alert](#n%3Atopgen%3Aalert)*.
 - <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(object)*: the outgoing alert groups; added property.
 - <a id="properties/interrupt"></a>**`interrupt`** *(array)*: interrupts; added property.
+  - <a id="properties/interrupt/items"></a>**Items**: Refer to *[urn:topgen:interrupt](#n%3Atopgen%3Ainterrupt)*.
 - <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(object)*: the outgoing interrupt groups; added property.
 - <a id="properties/alert_module"></a>**`alert_module`** *(array)*: list of the modules that connects to alert_handler; added property.
 - <a id="properties/alert_connections"></a>**`alert_connections`** *(object)*
@@ -223,38 +227,54 @@ options:
 - <a id="properties/outgoing_alert_lpgs"></a>**`outgoing_alert_lpgs`** *(object)*: added property.
 - <a id="properties/inter_signal"></a>**`inter_signal`** *(object)*: added property.
 
-Module Hjsons (referred to by the "complete config" Hjson topgen creates) has the following keys (some being optional):
+The top configuration partially specifies its list of modules.
 
-Key | Kind | Type | Description of Value
---- | ---- | ---- | --------------------
-name | required | string | name of the instance
-type | required | string | comportable IP type
-clock_srcs | required | group | dict with clock sources
-clock_group | required | string | clock group
-reset_connections | required | group | dict with reset sources
-domain | optional | list | optional list of power domains, defaults to Domain0
-clock_reset_export | optional | list | optional list with prefixes for exported clocks and resets at the chip level
-attr | optional | string | optional attribute indicating whether the IP is "ipgen", "reggen_top", or "reggen_only"
-base_addr | optional | group | dict of address space mapped to the corresponding hex start address of the peripheral (if the IP has only a single TL-UL interface)
-base_addrs | optional | group | hex start addresses of the peripheral  (if the IP has multiple TL-UL interfaces)
-memory | optional | group | optional dict with memory region attributes
-param_decl | optional | group | optional dict that allows to override instantiation parameters
-generate_dif | optional | python Bool | optional bool to indicate if a DIF should be generated for that module
-outgoing_alert | optional | string | optional string to indicate alerts are routed externally to the named group
-outgoing_interrupt | optional | string | optional string to indicate interrupts are routed externally to the named group
-incoming_alert | optional | list | optional list of paths to incoming alert configurations for the alert_handler
-ipgen_params | optional | group | Optional ipgen parameters for that instance
-template_type | optional | string | Base template type of ipgen IPs
-racl_group | optional | string | Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to
-racl_mappings | optional | group | dict that maps an interface to its associated RACL mapping
-racl_mapping | optional | string | A special case of racl_mappings. If specified, this is taken to represent a dict that associates all interfaces with the given mapping. It is an error to specify both this and racl_mappings.
-plic | optional | string | Interrupt controller managing this module's interrupts
-targets | optional | list | Optional list of targets for this PLIC
-alert_handler | optional | string | Alert handler managing this module's alerts
-otp_map | optional | group | OTP Map information for OTP Ctrl
+### Module
 
+*Hardware module within a top level*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the instance.
+- <a id="properties/type"></a>**`type`** *(string, required)*: comportable IP type.
+- <a id="properties/template_type"></a>**`template_type`** *(string)*: Base template type of ipgen IPs.
+- <a id="properties/clock_srcs"></a>**`clock_srcs`** *(object, required)*: dict with clock sources.
+- <a id="properties/clock_group"></a>**`clock_group`** *(string, required)*: clock group.
+- <a id="properties/reset_connections"></a>**`reset_connections`** *(object, required)*: dict with reset sources.
+- <a id="properties/clock_connections"></a>**`clock_connections`** *(object)*: generated clock connections; added property.
+- <a id="properties/domain"></a>**`domain`** *(array)*: optional list of power domains, defaults to the top config's default power domain.
+  - <a id="properties/domain/items"></a>**Items** *(['string', 'number'])*
+- <a id="properties/clock_reset_export"></a>**`clock_reset_export`** *(array)*: optional list with prefixes for exported clocks and resets at the chip level.
+- <a id="properties/base_addr"></a>**`base_addr`** *(object)*: dict of address space mapped to the corresponding hex start
+address of the peripheral (if the IP has only a single TL-UL interface).
+- <a id="properties/base_addrs"></a>**`base_addrs`** *(object)*: hex start addresses of the peripheral (if the IP has multiple TL-UL interfaces).
+- <a id="properties/memory"></a>**`memory`** *(object)*: optional dict with memory region attributes.
+  - <a id="properties/memory/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:memory](#n%3Atopgen%3Amemory)*.
+- <a id="properties/otp_map"></a>**`otp_map`** *(object)*: OTP Map information for OTP Ctrl.
+- <a id="properties/otp_mmap"></a>**`otp_mmap`** *(object)*: Full OTP memory map configuration with secret parameters; added property.
+- <a id="properties/ipgen_params"></a>**`ipgen_params`** *(object)*: Optional ipgen parameters for that instance.
+- <a id="properties/param_decl"></a>**`param_decl`** *(object)*: optional dict that allows to override instantiation parameters.
+- <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters; added property.
+  - <a id="properties/param_list/items"></a>**Items**: Refer to *[urn:topgen:parameter](#n%3Atopgen%3Aparameter)*.
+- <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: generated signal information; added property.
+  - <a id="properties/inter_signal_list/items"></a>**Items**: Refer to *[urn:topgen:inter_signal](#n%3Atopgen%3Ainter_signal)*.
+- <a id="properties/generate_dif"></a>**`generate_dif`** *(boolean)*: optional bool to indicate if a DIF should be generated for that module.
+- <a id="properties/racl_group"></a>**`racl_group`** *(string)*: Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to.
+- <a id="properties/racl_mappings"></a>**`racl_mappings`** *(object)*: dict that maps an interface to its associated RACL mapping.
+- <a id="properties/racl_mapping"></a>**`racl_mapping`** *(string)*: A special case of racl_mappings. If specified, this is taken to represent
+a dict that associates all interfaces with the given mapping. It is an error
+to specify both this and racl_mappings.
+- <a id="properties/attr"></a>**`attr`** *(string)*: optional attribute indicating whether the IP is 'ipgen', 'reggen_top', or 'reggen_only'. Must be one of: `["ipgen", "reggen_top", "reggen_only"]`.
+- <a id="properties/targets"></a>**`targets`** *(array)*: Optional list of targets for this PLIC.
+- <a id="properties/plic"></a>**`plic`** *(string)*: Interrupt controller managing this module's interrupts.
+- <a id="properties/alert_handler"></a>**`alert_handler`** *(string)*: Alert handler managing this module's alerts.
+- <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(string)*: optional string to indicate alerts are routed externally to the named group.
+- <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(string)*: optional string to indicate interrupts are routed externally to the named group.
+- <a id="properties/incoming_alert"></a>**`incoming_alert`** *(array)*: optional list of paths to incoming alert configurations for the alert_handler.
+- <a id="properties/incoming_interrupt"></a>**`incoming_interrupt`** *(object)*: Parsed incoming interrupts.
 
 Tops must also come with a seed configuration Hjson.
+
 ### Seed Configuration
 
 *Configuration options for random seeds*
@@ -265,6 +285,93 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/topgen_seed"></a>**`topgen_seed`** *(integer, required)*: seed for topgen generated random netlist constants.
 - <a id="properties/otp_img_seed"></a>**`otp_img_seed`** *(integer)*: Seed for OTP image generation.
 - <a id="properties/lc_ctrl_seed"></a>**`lc_ctrl_seed`** *(integer)*: Seed for lc_ctrl generated random netlist constants.
+
+
+## Other schemas
+
+### Alert
+
+*Alert description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the alert signal.
+- <a id="properties/width"></a>**`width`** *(integer, required)*: the number of alerts in this signal, typically 1.
+- <a id="properties/type"></a>**`type`** *(string)*: should contain 'alert'.
+- <a id="properties/async"></a>**`async`** *(boolean, required)*: alert is asynchronous.
+- <a id="properties/handler"></a>**`handler`** *(string, required)*: alert handler managing this alert.
+- <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the description of the alert.
+- <a id="properties/lpg_name"></a>**`lpg_name`** *(string)*: the low power group of the alert.
+- <a id="properties/lpg_idx"></a>**`lpg_idx`** *(integer)*: the index in the lpg group.
+
+### Eflash
+
+*Flash memory configuration*
+
+#### Properties
+
+- <a id="properties/type"></a>**`type`** *(string, required)*: string indicating type of memory.
+- <a id="properties/banks"></a>**`banks`** *(integer, required)*: number of flash banks.
+- <a id="properties/pages_per_bank"></a>**`pages_per_bank`** *(integer, required)*: number of data pages per flash bank.
+- <a id="properties/program_resolution"></a>**`program_resolution`** *(integer, required)*: maximum number of flash words allowed to program at a time.
+- <a id="properties/words_per_page"></a>**`words_per_page`** *(integer, required)*: number of words per page.
+- <a id="properties/data_width"></a>**`data_width`** *(integer, required)*: number of bits per data word.
+- <a id="properties/integrity_width"></a>**`integrity_width`** *(integer, required)*: number of integrity bits per data word.
+- <a id="properties/info_types"></a>**`info_types`** *(integer, required)*: number of different info page types.
+- <a id="properties/infos_per_bank"></a>**`infos_per_bank`** *(array, required)*: number of pages per info type, the size of the list must match 'info_types'.
+
+### Inter-Module Signal
+
+*Configuration of direct signal between IP blocks*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the name of the signal.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the inter signal description.
+- <a id="properties/struct"></a>**`struct`** *(string, required)*: the data type of the signal.
+- <a id="properties/package"></a>**`package`** *(string)*: the package declaring the struct.
+- <a id="properties/type"></a>**`type`** *(string, required)*: whether the signal is unidirectional or part of a request-response pair.
+- <a id="properties/act"></a>**`act`** *(string, required)*: whether it is a request (req) or a response (rsp).
+- <a id="properties/inst_name"></a>**`inst_name`** *(string)*: the instance this signal connects to.
+- <a id="properties/width"></a>**`width`** *(['integer', 'string'], required)*: the number of items of the signal for arrays.
+- <a id="properties/default"></a>**`default`** *(string)*: TODO.
+- <a id="properties/end_idx"></a>**`end_idx`** *(integer)*: TODO.
+- <a id="properties/top_signame"></a>**`top_signame`** *(string)*: TODO.
+- <a id="properties/index"></a>**`index`** *(integer)*: the index when this is connected to an array.
+
+### Interrupt
+
+*Interrupt signal description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the name of the interrupt.
+- <a id="properties/width"></a>**`width`** *(integer, required)*: the number of interrupts in this signal, typically 1.
+- <a id="properties/type"></a>**`type`** *(string)*: should contain 'interrupt'.
+- <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
+- <a id="properties/desc"></a>**`desc`** *(string)*: the description of the interrupt.
+- <a id="properties/intr_type"></a>**`intr_type`** *(['string', 'integer'], required)*: The IntrType, either Event or Status.
+- <a id="properties/default_val"></a>**`default_val`** *(boolean, required)*: TODO.
+- <a id="properties/incoming"></a>**`incoming`** *(boolean, required)*: TODO.
+- <a id="properties/plic"></a>**`plic`** *(string)*: controller for this interrupt.
+- <a id="properties/outgoing"></a>**`outgoing`** *(boolean, required)*: whether interrupt leaves toplevel.
+
+### Memory
+
+*Module memory mapping*
+
+#### Properties
+
+- <a id="properties/label"></a>**`label`** *(string, required)*: region label for the linker script.
+- <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: access attributes for the memory region (ro, rw). Must be one of: `["ro", "rw"]`.
+- <a id="properties/data_intg_passthru"></a>**`data_intg_passthru`** *(boolean)*: Integrity bits are passed through directly from the memory.
+- <a id="properties/exec"></a>**`exec`** *(boolean, required)*: executable region indication for the linker script.
+- <a id="properties/byte_write"></a>**`byte_write`** *(boolean, required)*: indicate whether the memory supports byte write accesses.
+- <a id="properties/size"></a>**`size`** *(integer)*: memory region size in bytes for the linker script, xbar and RTL parameterisations.
+- <a id="properties/config"></a>**`config`**: Extra configuration for a particular memory.
+  - **Any of**
+    - <a id="properties/config/anyOf/0"></a>: Refer to *[urn:topgen:eflash](#n%3Atopgen%3Aeflash)*.
 
 ### Pad
 
@@ -279,6 +386,24 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/desc"></a>**`desc`** *(string)*: Pad description.
 - <a id="properties/port_type"></a>**`port_type`** *(string)*: Special port type other than `inout wire`.
 - <a id="properties/idx"></a>**`idx`** *(integer)*: the index of the pad; added property.
+
+### Parameter
+
+*Parameter configuration passed down from top level to module*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the parameter name.
+- <a id="properties/desc"></a>**`desc`** *(string, required)*: the parameter description.
+- <a id="properties/type"></a>**`type`** *(string, required)*: the data type of the parameter.
+- <a id="properties/unpacked_dimensions"></a>**`unpacked_dimensions`** *(string)*: the unpacked dimensions for arrays.
+- <a id="properties/randtype"></a>**`randtype`** *(string)*: whether it is for 'data' or 'perm'issions.
+- <a id="properties/randcount"></a>**`randcount`** *(integer)*: TODO.
+- <a id="properties/default"></a>**`default`**: the default value of the parameter.
+- <a id="properties/local"></a>**`local`** *(boolean)*: whether it is a localparam.
+- <a id="properties/expose"></a>**`expose`** *(boolean)*: seems redundant TODO.
+- <a id="properties/name_top"></a>**`name_top`** *(string)*: the name in the top-level.
+- <a id="properties/randwidth"></a>**`randwidth`** *(integer)*: the number of bits.
 
 ### Pinmux
 
@@ -347,6 +472,43 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
   - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
 
+### Reset Connection
+
+*Module reset connection*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: name of the connecting reset.
+- <a id="properties/domain"></a>**`domain`** *(string, required)*: connected domain.
+
+### Reset Request
+
+*Reset request item*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the reset request name.
+- <a id="properties/width"></a>**`width`** *(integer)*: TODO.
+- <a id="properties/desc"></a>**`desc`** *(string, required)*: the reset request description.
+- <a id="properties/module"></a>**`module`** *(string, required)*: the reset request source.
+- <a id="properties/enabled_after_reset"></a>**`enabled_after_reset`** *(boolean)*: whether the reset is enabled after a reset (put
+differently, whether the reset value of the reset enable
+is high).
+
+### Reset Requests
+
+*Top level listing of reset requests*
+
+#### Pattern Properties
+
+- <a id="patternProperties"></a>**`.*`**
+  - <a id="patternProperties/items"></a>**Items**: Refer to *[urn:topgen:reset_request](#n%3Atopgen%3Areset_request)*.
+#### Properties
+
+- <a id="properties/int"></a>**`int`** *(array)*: internal request list, for example, escalation reset and power glitches.
+- <a id="properties/debug"></a>**`debug`** *(array)*: debug request list, since a different set of resets becomes active.
+- <a id="properties/peripheral"></a>**`peripheral`** *(array)*: peripheral request list, where the reset requests are explicit in the top config.
+
 ### Special Signal
 
 *Special signal for pinmux*
@@ -397,6 +559,16 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/remove_ports"></a>**`remove_ports`** *(array, required)*: List of port names to remove from the port list.
 - <a id="properties/remove_pads"></a>**`remove_pads`** *(array, required)*: List of pad names to remove and stub out.
 - <a id="properties/add_pads"></a>**`add_pads`** *(array, required)*: List of manual pads to add.
+
+### Wakeup
+
+*Wakeup request description*
+
+#### Properties
+
+- <a id="properties/name"></a>**`name`** *(string, required)*: the wakeup name.
+- <a id="properties/width"></a>**`width`** *(integer, required)*: the width of the signal.
+- <a id="properties/module"></a>**`module`** *(string, required)*: the module sourcing the wakeup.
 
 
 <!-- End of output generated by topgen.selfdoc -->

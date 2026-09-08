@@ -10,267 +10,10 @@ from typing import Dict, List, Union
 
 from basegen.typing import ConfigT
 from reggen.ip_block import IpBlock
-from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
 from basegen.validate import create_validator
-
-# For the reference
-# val_types = {
-#     'd': ["int", "integer (binary 0b, octal 0o, decimal, hex 0x)"],
-#     'x': ["xint", "x for undefined otherwise int"],
-#     'b': [
-#         "bitrange", "bit number as decimal integer, \
-#                     or bit-range as decimal integers msb:lsb"
-#     ],
-#     'l': ["list", "comma separated list enclosed in `[]`"],
-#     'ln': ["name list", 'comma separated list enclosed in `[]` of '\
-#            'one or more groups that have just name and dscr keys.'\
-#            ' e.g. `{ name: "name", desc: "description"}`'],
-#     'lnw': ["name list+", 'name list that optionally contains a width'],
-#     'lp': ["parameter list", 'parameter list having default value optionally'],
-#     'g': ["group", "comma separated group of key:value enclosed in `{}`"],
-#     's': ["string", "string, typically short"],
-#     't': ["text", "string, may be multi-line enclosed in `'''` "\
-#           "may use `**bold**`, `*italic*` or `!!Reg` markup"],
-#     'T': ["tuple", "tuple enclosed in ()"],
-#     'pi': ["python int", "Native Python type int (generated)"],
-#     'pb': ["python Bool", "Native Python type Bool (generated)"],
-#     'pl': ["python list", "Native Python type list (generated)"],
-#     'pe': ["python enum", "Native Python type enum (generated)"]
-# }
-
-eflash_required = {
-    'type': ['s', 'string indicating type of memory'],
-    'banks': ['d', 'number of flash banks'],
-    'data_width': ['d', 'number of bits per data word'],
-    'info_types': ['d', 'number of different info page types'],
-    'infos_per_bank': ['l',
-                       "number of pages per info type, the size of the "
-                       "list must match 'info_types'"],
-    'integrity_width': ['d', 'number of integrity bits per data word'],
-    'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution':
-    ['d', 'maximum number of flash words allowed to program at a time'],
-    'words_per_page': ['d', 'number of words per page'],
-}
-
-eflash_optional = {}
-
-eflash_added = {}
-
-module_required = {
-    'name': ['s', 'name of the instance'],
-    'type': ['s', 'comportable IP type'],
-    'clock_srcs': ['g', 'dict with clock sources'],
-    'clock_group': ['s', 'clock group'],
-    'reset_connections': ['g', 'dict with reset sources'],
-}
-
-module_optional = {
-    'domain': ['l', 'optional list of power domains, defaults to Domain0'],
-    'clock_reset_export': [
-        'l', 'optional list with prefixes for exported '
-        'clocks and resets at the chip level'
-    ],
-    'attr': [
-        's', 'optional attribute indicating whether the IP is '
-        '"ipgen", "reggen_top", or "reggen_only"'
-    ],
-    'base_addr': [
-        'g', 'dict of address space mapped to the corresponding hex start '
-        'address of the peripheral (if the IP has only a single TL-UL '
-        'interface)'
-    ],
-    'base_addrs': [
-        'g', 'hex start addresses of the peripheral '
-        ' (if the IP has multiple TL-UL interfaces)'
-    ],
-    'memory': ['g', 'optional dict with memory region attributes'],
-    'param_decl':
-    ['g', 'optional dict that allows to override instantiation parameters'],
-    'generate_dif': [
-        'pb',
-        'optional bool to indicate if a DIF should be generated for that '
-        'module'
-    ],
-    'outgoing_alert': [
-        's', 'optional string to indicate alerts are routed externally to '
-        'the named group'
-    ],
-    'outgoing_interrupt': [
-        's', 'optional string to indicate interrupts are routed externally to '
-        'the named group'
-    ],
-    'incoming_alert': [
-        'l', 'optional list of paths to incoming alert configurations for the '
-        'alert_handler'
-    ],
-    'ipgen_params': ['g', 'Optional ipgen parameters for that instance'],
-    'template_type': ['s', 'Base template type of ipgen IPs'],
-    'racl_group': [
-        's', 'Only valid for racl_ctrl IPs. Defines the RACL group this '
-        'control IP is associated to'
-    ],
-    'racl_mappings':
-    ['g', 'dict that maps an interface to its associated RACL mapping'],
-    'racl_mapping': [
-        's', 'A special case of racl_mappings. If specified, this is taken to '
-        'represent a dict that associates all interfaces with the given '
-        'mapping. It is an error to specify both this and racl_mappings.'
-    ],
-    'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
-    'targets': ['l', 'Optional list of targets for this PLIC'],
-    'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
-    "otp_map": ["g", "OTP Map information for OTP Ctrl"]
-}
-
-module_added = {
-    'clock_connections': ['g', 'generated clock connections'],
-    'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
-    'inter_signal_list': ['l', 'generated signal information'],
-    'param_list': ['l', 'list of parameters'],
-    "otp_mmap": ["g", "Full OTP memory map configuration with secret parameters"],
-}
-
-memory_required = {
-    'label': ['s', 'region label for the linker script'],
-    'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
-    'exec': ['pb', 'executable region indication for the linker script'],
-    'byte_write':
-    ['pb', 'indicate whether the memory supports byte write accesses'],
-}
-
-memory_optional = {
-    'size': [
-        'd', 'memory region size in bytes for the linker script, '
-        'xbar and RTL parameterisations'
-    ],
-    'config': ['d', 'Extra configuration for a particular memory'],
-    'data_intg_passthru':
-    ['pb', 'Integrity bits are passed through directly from the memory']
-}
-
-memory_added = {}
-
-reset_connection_required = {
-    'name': ['s', 'name of the connecting reset'],
-    'domain': ['s', 'connected domain'],
-}
-
-reset_connection_optional = {}
-reset_connection_added = {}
-
-reset_requests_required = {}
-reset_requests_optional = {
-    'int': [
-        's', 'internal request list, for example, escalation reset and '
-        'power glitches'
-    ],
-    'debug': [
-        's',
-        'debug request list, since a different set of resets becomes active'
-    ],
-    'peripheral': [
-        's',
-        'peripheral request list, where the reset requests are explicit in '
-        'the top config'
-    ],
-}
-reset_requests_added = {}
-
-reset_request_required = {
-    'name': ['s', 'the reset request name'],
-    'desc': ['s', 'the reset request description'],
-    'module': ['s', 'the reset request source'],
-}
-reset_request_optional = {
-    'width': ['d', 'TODO'],
-    "enabled_after_reset": [
-        "pb",
-        "whether the reset is enabled after a reset "
-        "(put differently, whether the reset value of the reset enable is high)"],
-}
-reset_request_added = {}
-
-wakeup_required = {
-    'name': ['s', 'the wakeup name'],
-    'width': ['d', 'the width of the signal'],
-    'module': ['s', 'the module sourcing the wakeup'],
-}
-wakeup_optional = {}
-wakeup_added = {}
-
-alert_required = {
-    'name': ['s', 'name of the alert signal'],
-    'width': ['d', 'the number of alerts in this signal, typically 1'],
-    'async': ['s', 'string interpreted as boolean'],
-    'module_name': ['s', 'The module name of the source'],
-    'handler': ['s', 'alert handler managing this alert'],
-}
-alert_optional = {
-    'desc': ['s', 'the description of the alert'],
-    'lpg_name': ['s', 'the low power group of the alert'],
-    'lpg_idx': ['d', 'the index in the lpg group'],
-    'type': ['s', 'should contain "alert"'],
-}
-alert_added = {}
-
-interrupt_required = {
-    'name': ['s', 'the name of the interrupt'],
-    'width': ['d', 'the number of interrupts in this signal, typically 1'],
-    'module_name': ['s', 'The module name of the source'],
-    'intr_type': ['s', 'The IntrType, either Event or Status'],
-    'default_val': ['s', 'a string interpreted as boolean'],
-    'incoming': ['s', 'a string interpreted as boolean'],
-    'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
-}
-interrupt_optional = {
-    'desc': ['s', 'the description of the interrupt'],
-    'type': ['s', 'should contain "interrupt"'],
-    'plic': ['s', 'controller for this interrupt'],
-}
-interrupt_added = {}
-
-param_required = {
-    'name': ['s', 'the parameter name'],
-    'desc': ['s', 'the parameter description'],
-    'type': ['s', 'the data type of the parameter'],
-    'default': ['s', 'the default value of the parameter'],
-}
-param_optional = {
-    'expose': ['s', 'seems redundant TODO'],
-    'local': ['s', 'whether it is a localparam, interpreted as boolean'],
-    'name_top': ['s', 'the name in the top-level'],
-    'randcount': ['d', 'TODO'],
-    'randtype': ['s', 'whether it is for "data" or "perm"issions'],
-    'randwidth': ['d', 'the number of bits'],
-    'unpacked_dimensions': ['s', 'the unpacked dimensions for arrays'],
-}
-param_added = {}
-
-inter_sig_required = {
-    'name': ['s', 'the name of the signal'],
-    'struct': ['s', 'the data type of the signal'],
-    'type': [
-        's',
-        'whether the signal is unidirectional or part of a request-response '
-        'pair'
-    ],
-    'act': ['s', 'whether it is a request (req) or a response (rsp)'],
-    'width': ['d', 'the number of items of the signal for arrays'],
-}
-inter_sig_optional = {
-    'desc': ['s', 'the inter signal description'],
-    'inst_name': ['s', 'the instance this signal connects to'],
-    'index': ['d', 'the index when this is connected to an array'],
-    'package': ['s', 'the package declaring the struct'],
-    'default': ['s', 'TODO'],
-    'end_idx': ['d', 'TODO'],
-    'top_signame': ['s', 'TODO'],
-}
-inter_sig_added = {}
 
 
 TOPCFG_VALIDATOR = create_validator("urn:topgen:topcfg")
@@ -434,11 +177,6 @@ def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
         return 0
     errors = 0
 
-    # Check alert keys
-    for alert in top["alert"]:
-        errors += check_keys(alert, alert_required, alert_optional,
-                             alert_added, prefix + " Alert")
-
     # Check alert_connections for all IPs
     alert_handlers = find_modules(top["module"], "alert_handler",
                                   use_base_template_type=True)
@@ -481,16 +219,6 @@ def check_outgoing_interrupts(top: ConfigT, prefix: str) -> int:
         return 0
     error = 0
     # TODO
-    return error
-
-
-def check_interrupts(top: ConfigT, prefix: str) -> int:
-    if 'interrupt' not in top:
-        return 0
-    error = 0
-    for interrupt in top['interrupt']:
-        error += check_keys(interrupt, interrupt_required, interrupt_optional,
-                            interrupt_added, prefix + ' Interrupt')
     return error
 
 
@@ -746,38 +474,11 @@ def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
     return error
 
 
-def check_reset_requests(top: ConfigT, component: str) -> int:
-    error = 0
-    for key, resets in top.get('reset_requests', {}).items():
-        all_keys = [
-            k for d in [
-                reset_requests_required, reset_requests_optional,
-                reset_requests_added
-            ] for k in d.keys()
-        ]
-        if key not in all_keys:
-            log.error(f'unknown key {key} in {component} Reset requests')
-            error += 1
-        for reset_req in resets:
-            error += check_keys(reset_req, reset_request_required,
-                                reset_request_optional, reset_request_added,
-                                f'{component} Reset request')
-    return error
-
-
 def check_exported_resets(top: ConfigT, component: str) -> int:
     error = 0
     for key, resets in top.get('exported_rsts', {}).items():
         # TODO
         pass
-    return error
-
-
-def check_wakeups(top: ConfigT, component: str) -> int:
-    error = 0
-    for wakeup in top.get('wakeups', []):
-        error += check_keys(wakeup, wakeup_required, wakeup_optional,
-                            wakeup_added, f'{component} Wakeups')
     return error
 
 
@@ -823,16 +524,10 @@ def validate_reset(top: ConfigT,
             else:
                 top["reset_connections"][port]['domain'] = top["domain"][0]
 
-        if isinstance(reset, dict):
-            error += check_keys(reset, reset_connection_required,
-                                reset_connection_optional,
-                                reset_connection_added,
-                                'dict structure for reset connections')
-
-            if reset['domain'] not in top["domain"]:
-                error += 1
-                log.error(f"domain {reset['domain']} defined for reset "
-                          f"{reset['name']} is not a domain of {top['name']}")
+        if isinstance(reset, dict) and reset['domain'] not in top["domain"]:
+            error += 1
+            log.error(f"domain {reset['domain']} defined for reset "
+                      f"{reset['name']} is not a domain of {top['name']}")
 
     # Check if the reset connections are fully populated
     if len(top['reset_connections']) != len(reset_signals):
@@ -970,8 +665,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
     error = 0
     for m in top['module']:
         modname = m.get("name", "unnamed module")
-        error += check_keys(m, module_required, module_optional, module_added,
-                            prefix + " " + modname)
 
         # these fields are mutually exclusive
         if 'base_addr' in m and 'base_addrs' in m:
@@ -982,9 +675,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
 
         if 'base_addrs' in m and 'memory' in m:
             for intf, value in m['memory'].items():
-                error += check_keys(value, memory_required, memory_optional,
-                                    memory_added,
-                                    prefix + " " + modname + " " + intf)
 
                 # if size is not declared, there must be extra config to
                 # determine it
@@ -1004,8 +694,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                     mem_type = value['config'].get('type', "")
 
                     if mem_type == "flash":
-                        check_keys(value['config'], eflash_required,
-                                   eflash_optional, eflash_added, "Eflash")
                         flash = Flash(value['config'], m['base_addrs'][intf])
                         value['size'] = flash.size
                         value['config'] = flash
@@ -1021,18 +709,6 @@ def check_modules(top: ConfigT, prefix: str) -> int:
                         '{} {} swaccess attribute {} of memory region {} '
                         'is not valid'.format(prefix, modname, attr, intf))
                     error += 1
-        if 'inter_signal_list' in m:
-            for sig in m['inter_signal_list']:
-                sig_name = sig.get('name', 'no name')
-                error += check_keys(sig, inter_sig_required,
-                                    inter_sig_optional, inter_sig_added,
-                                    f"{modname} Inter signal {sig_name}")
-        if 'param_list' in m:
-            for param in m['param_list']:
-                param_name = param.get('name', 'no name')
-                error += check_keys(param, param_required, param_optional,
-                                    param_added,
-                                    f"{modname} Parameter {param_name}")
     return error
 
 
@@ -1085,9 +761,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     # Power domain check
     check_power_domains(top)
 
-    error += check_reset_requests(top, component)
     error += check_exported_resets(top, component)
-    error += check_wakeups(top, component)
 
     # Clock / Reset check
     error += check_clocks_resets(top, ip_name_to_block, xbar_name_to_block)
@@ -1105,7 +779,6 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_incoming_alerts(top, component)
     error += check_outgoing_alerts(top, component)
     error += check_outgoing_interrupts(top, component)
-    error += check_interrupts(top, component)
     error += check_incoming_interrupts(top, component)
 
     return top, error

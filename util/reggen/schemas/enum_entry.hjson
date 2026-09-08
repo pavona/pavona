@@ -1,0 +1,16 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:enum_entry",
+  title: "Enum Entry",
+  description: "Description of an enumerated value",
+  type: "object",
+  required: ["name", "desc", "value"]
+  properties: {
+    name: { type: "string", description: "name of the member of the enum" },
+    desc: { type: "string", description: "description when field has this value" },
+    value: { type: "number", description: "value of this member of the enum" }
+  }
+}
