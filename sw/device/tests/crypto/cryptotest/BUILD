@@ -103,7 +103,7 @@ cryptotest(
 # firmware, so the PQC CW340 job runs both variants without a second build.
 cryptotest(
     name = "mlkem_kat_hardened",
-    extra_exec_envs = {
+    exec_env = {
         "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
     },
     firmware_deps = [
@@ -147,7 +147,7 @@ cryptotest(
 # firmware, so the PQC CW340 job runs both variants without a second build.
 cryptotest(
     name = "mldsa_kat_hardened",
-    extra_exec_envs = {
+    exec_env = {
         "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
     },
     firmware_deps = [
