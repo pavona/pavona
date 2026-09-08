@@ -52,7 +52,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, extra_exec_envs = {}, firmware_deps = FIRMWARE_DEPS):
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, exec_env = {}, extra_exec_envs = {}, firmware_deps = FIRMWARE_DEPS):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -61,11 +61,13 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, e
         test_args: additional arguments to pass to the test.
         test_harness: the test harness to use.
         slow_test: indicate if the test should be run in the nightly CI.
+        exec_env: exec_env entries to override the defaults (empty dict if defaults should be kept).
         extra_exec_envs: additional exec_env entries merged into the defaults.
         firmware_deps: firmware dependencies (defaults to FIRMWARE_DEPS).
     """
     tags = ["slow_test"] if slow_test else []
-    exec_env = dict(CRYPTOTEST_EXEC_ENVS)
+    if not exec_env:
+        exec_env = dict(CRYPTOTEST_EXEC_ENVS)
     exec_env.update(extra_exec_envs)
     pavona_test(
         name = name,
