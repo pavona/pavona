@@ -603,7 +603,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 103
+  loop x19, 105
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -700,11 +700,13 @@ _continue:
 
     /* Compute pk = tomont(pk). */
     add x10, x26, x0
-    loopi NSHARES, 3
-      jal    x1, poly_tomont
+    loopi NSHARES, 5
+      jal     x1, poly_tomont
       /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+      bn.xor  w0, w0, w0
+      bn.xor  w1, w1, w1
+      bn.wsrw acc, w31
+      bn.wsrw acch, w31
     endloop
 
     /* Compute e[i] = ntt(e[i]). */
@@ -839,11 +841,13 @@ _continue:
 
   /* Compute pk = tomont(pk). */
   add x10, x26, x0
-  loopi NSHARES, 3
-    jal    x1, poly_tomont
+  loopi NSHARES, 5
+    jal     x1, poly_tomont
     /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+    bn.xor  w0, w0, w0
+    bn.xor  w1, w1, w1
+    bn.wsrw acc, w31
+    bn.wsrw acch, w31
   endloop
 
   /* Compute e[k - 1] = ntt(e[k - 1]). */

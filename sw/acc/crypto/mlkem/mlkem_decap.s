@@ -350,23 +350,26 @@ _kem_dec_sk_ok:
   la      x6, dptr_ss
   lw      x6, 0(x6)
   la      x7, ss_false
-  addi    x4, x0, 1
   bn.xor  w1, w1, w1
   bn.addi w1, w1, 1
   bn.cmp  w0, w1
   csrrw   x28, fg0, x0
   srli    x28, x28, 3 /* Extract z flag. */
   beq     x28, x0, _fail
-  bn.lid  x0, 0(x5)
-  bn.lid  x4, 32(x5)
+  add     x5, x5, x0 /* Select the true key. */
   beq     x0, x0, _end
 _fail:
-  bn.lid  x0, 0(x7)
-  bn.lid  x4, 32(x7)
+  add     x5, x7, x0 /* Select the false key. */
   beq     x0, x0, _end
 _end:
+  /* Copy the selected key one share at a time, whitening after each share so
+   * that the two shares never meet in w0 or on the store data path. */
+  bn.lid  x0, 0(x5)
   bn.sid  x0, 0(x6)
-  bn.sid  x4, 32(x6)
+  bn.xor  w0, w31, w31 /* Whitening. */
+  bn.lid  x0, 32(x5)
+  bn.sid  x0, 32(x6)
+  bn.xor  w0, w31, w31 /* Whitening. */
   ret
 #endif
 

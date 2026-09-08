@@ -282,6 +282,9 @@ indcpa_dec:
   la  x11, mpoly_m
   add x12, x11, x0
   jal x1, poly_sub
+  /* Whitening. */
+  bn.xor w0, w0, w0
+  bn.xor w1, w1, w1
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
