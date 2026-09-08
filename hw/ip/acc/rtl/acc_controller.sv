@@ -1467,7 +1467,8 @@ module acc_controller
   // to be on the pins)
   logic non_prefetch_insn_running;
   assign non_prefetch_insn_running = (insn_valid_i & ~stall &
-                                      (csr_addr != CsrRndPrefetch) & ~key_invalid);
+                                      (csr_addr != CsrRndPrefetch) & ~key_invalid &
+                                      ~ispr_err);
 
   assign ispr_rdata_intg_err = non_prefetch_insn_running & |(ispr_rdata_used_intg_err);
 
