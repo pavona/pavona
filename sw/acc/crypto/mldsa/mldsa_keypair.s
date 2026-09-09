@@ -26,7 +26,7 @@
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
-#define SHAKE256_CFG 0xA
+#define SHAKE256_CFG 0xa
 /* Config to start a SHA3_256 operation. */
 #define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
@@ -65,7 +65,7 @@ crypto_sign_keypair:
 
   /* Refresh and absorb the Boolean shares of the seed. */
   la      x6, zeta_shares
-  bn.wsrr w2, urnd
+  bn.wsrr w2, URND
   bn.xor  w0, w0, w0 /* Whitening */
   bn.lid  x0, 0(x6)
   bn.xor  w0, w0, w2
@@ -97,7 +97,7 @@ crypto_sign_keypair:
   la      x5, sk
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
-  bn.wsrr w2, urnd
+  bn.wsrr w2, URND
   bn.xor  w0, w0, w2
   bn.xor  w1, w1, w2
   bn.xor  w0, w0, w1
@@ -122,10 +122,10 @@ crypto_sign_keypair:
 
   /* Finish the SHAKE-256 operation. */
 
-  bn.wsrr w16, mod /* w16 = R | Q */
+  bn.wsrr w16, MOD /* w16 = R | Q */
 
   bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
-  bn.wsrw   mod, w22      /* MOD = 2*R | 2*Q */
+  bn.wsrw   MOD, w22      /* MOD = 2*R | 2*Q */
 
   /* Load destination pointer for matrix-vector multiplication. */
   la x18, t_polyvec
@@ -191,7 +191,7 @@ crypto_sign_keypair:
      gets the full hardware loop stack. */
   lw x25, MLDSA_PARAM_L_OFFSET(x27)
 _matmul_col_loop:
-    bn.wsrw mod, w16 /* MOD = R | Q for the gadget */
+    bn.wsrw MOD, w16 /* MOD = R | Q for the gadget */
     /* The gadget clobbers w0-w27; stash the matrix nonce. */
     li      x5, 23
     la      x6, matmul_nonce
@@ -226,7 +226,7 @@ _kg1_done:
     li        x5, 23
     la        x6, matmul_nonce
     bn.lid    x5, 0(x6)
-    bn.wsrr   w16, mod      /* gadget left MOD = R | Q */
+    bn.wsrr   w16, MOD      /* gadget left MOD = R | Q */
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
     csrrw     x0, kmac_cfg, x20
     addi      x10, x24, 0
@@ -236,7 +236,7 @@ _kg1_done:
     csrrw     x0, kmac_partial_write, x5
     bn.wsrw   kmac_msg, w23
     bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
-    bn.wsrw   mod, w22      /* MOD = 2*R | 2*Q */
+    bn.wsrw   MOD, w22      /* MOD = 2*R | 2*Q */
     /* Stage forward twiddles once (eta gadget clobbered scratch); both
      * shares of s1[j] reuse them. */
     jal       x1, gen_twiddles_fwd
@@ -578,9 +578,9 @@ _t_unmask_loop:
 
   /* Finish the SHAKE-256 operation. */
 
-  bn.wsrr   w16, mod      /* w16 = R | Q */
+  bn.wsrr   w16, MOD      /* w16 = R | Q */
   bn.shv.8s w22, w16 << 1 /* w22 = 2*R | 2*Q */
-  bn.wsrw   mod, w22      /* MOD = 2*R | 2*Q */
+  bn.wsrw   MOD, w22      /* MOD = 2*R | 2*Q */
 
   /* Load source pointers for matrix-vector multiplication. */
   la x8, s1_poly
@@ -635,7 +635,7 @@ _t_unmask_loop:
   */
   lw x5, MLDSA_PARAM_L_OFFSET(x27)
   loop x5, 43
-    bn.wsrw mod, w16 /* MOD = R | Q */
+    bn.wsrw MOD, w16 /* MOD = R | Q */
     /* Sample the next polynomial from s1. */
     addi    x10, x21, 0
     addi    x11, x8, 0
@@ -657,7 +657,7 @@ _t_unmask_loop:
     addi    x14, x26, 0
     jal     x1, polyeta_pack
     addi    x23, x10, 0
-    bn.wsrw mod, w22 /* MOD = 2*R | 2*Q */
+    bn.wsrw MOD, w22 /* MOD = 2*R | 2*Q */
     /* Compute ntt(s1[j]). */
     addi    x10, x8, 0
     addi    x12, x8, 0

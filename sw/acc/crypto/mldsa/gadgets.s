@@ -39,7 +39,7 @@
 .equ x31, t6
 
 /* KMAC mode config for the SHAKE-256 XOF used by the masked samplers. */
-#define SHAKE256_CFG 0xA
+#define SHAKE256_CFG 0xa
 
 
 /*
@@ -71,7 +71,7 @@
  * Return new Boolean shares of a value r = x & y.
  * Bitsliced.
  *
- *   s   <- urnd
+ *   s   <- URND
  *   r_0 <- (x_0 & y_0) ^ (x_0 & (y_1 ^ s)) ^ ((x_0 ^ 1) & s)
  *   r_1 <- (x_1 & y_1) ^ (x_1 & (y_0 ^ s)) ^ ((x_1 ^ 1) & s)
  *
@@ -118,7 +118,7 @@ secand:
     bn.and w6, w2, w4 /* w6 = tb[1] */
 
     /* Refresh with one fresh random. */
-    bn.wsrr w0, urnd /* w0 = r */
+    bn.wsrr w0, URND /* w0 = r */
 
     /* Handle wzij. */
     bn.xor w7, w4, w0 /* wtmp1 = yb[j] ^ r */
@@ -222,7 +222,7 @@ secfulladder:
     bn.xor w8, w8, w8
     bn.and w8, w4, w6 /* tb[1] = a[1] & t[1] */
 
-    bn.wsrr w0, urnd /* w0 = r (fresh randomness) */
+    bn.wsrr w0, URND /* w0 = r (fresh randomness) */
 
     /* Pair (i, j) = (0, 1). */
     bn.xor w9,  w6, w0  /* wtmp1 = t[1] ^ r */
@@ -347,7 +347,7 @@ secadd:
 /*
  * Name: secadd_immd_d1
  *
- * Bitsliced SecAdd for d = 1 of x and the hard-coded constant nq = 0x801FFF
+ * Bitsliced SecAdd for d = 1 of x and the hard-coded constant nq = 0x801fff
  * (= 2^24 - q), producing a (kbits + 1)-bit result.
  *
  * Source: Alg.6 [BC22]
@@ -368,15 +368,15 @@ secadd_immd_d1:
 
     bn.not w6, w31 /* w6 = all-ones */
 
-    /* Build nq = 0x801FFF in w7 lane 0 (= 2^23 + 2^13 - 1). */
+    /* Build nq = 0x801fff in w7 lane 0 (= 2^23 + 2^13 - 1). */
     bn.xor w7, w7, w7
     bn.addi w7, w7, 1
     bn.shv.8s w7, w7 << 23 /* lane 0 = 0x800000 */
     bn.xor w8, w8, w8
     bn.addi w8, w8, 1
     bn.shv.8s w8, w8 << 13 /* w8 lane 0 = 0x2000 */
-    bn.subi w8, w8, 1      /* w8 lane 0 = 0x1FFF */
-    bn.add  w7, w7, w8     /* w7 lane 0 = 0x801FFF */
+    bn.subi w8, w8, 1      /* w8 lane 0 = 0x1fff */
+    bn.add  w7, w7, w8     /* w7 lane 0 = 0x801fff */
 
     bn.xor w8, w8, w8
     bn.addi w8, w8, 1 /* w8 = 1 (lane 0 bit 0) */
@@ -483,7 +483,7 @@ secadd_immd_d2:
         bn.sid t3, 0(t5)
 
         /* SecAnd(a_0,a_1; t_0,t_1) -> (u_0, u_1). */
-        bn.wsrr w14, urnd
+        bn.wsrr w14, URND
         bn.xor w16, w7, w14
         bn.and w16, w16, w4
         bn.not w15, w4
@@ -520,7 +520,7 @@ secadd_immd_d2:
  *
  * Fused steps 5+6 of Alg.7 specialised for ML-DSA q, in place over dptr_z:
  *   z <- sp + BitCopyMask(sp[k], q)
- * Bitsliced.  q = 0x7FE001 is hard-coded, giving the per-bit run structure
+ * Bitsliced.  q = 0x7fe001 is hard-coded, giving the per-bit run structure
  * (bit 0 + bits 1..12 + bits 13..22).  Bit k of z is zeroed on exit.
  *
  * Source: Alg.7 [BC22]
@@ -572,7 +572,7 @@ secadd_constant_bmsk:
     /* c' = sp ^ SecAnd(xpy, xpc). */
     bn.and  w12, w6, w10
     bn.and  w13, w7, w11
-    bn.wsrr w14, urnd
+    bn.wsrr w14, URND
     bn.and  w15, w6, w11
     bn.xor  w15, w15, w14
     bn.and  w16, w7, w10
@@ -593,7 +593,7 @@ secadd_constant_bmsk:
         /* c' = SecAnd(c, sp). */
         bn.and  w12, w22, w4
         bn.and  w13, w23, w5
-        bn.wsrr w14, urnd
+        bn.wsrr w14, URND
         bn.and  w15, w22, w5
         bn.xor  w15, w15, w14
         bn.and  w16, w23, w4
@@ -617,7 +617,7 @@ secadd_constant_bmsk:
         /* c' = sp ^ SecAnd(xpy, xpc). */
         bn.and  w12, w6, w10
         bn.and  w13, w7, w11
-        bn.wsrr w14, urnd
+        bn.wsrr w14, URND
         bn.and  w15, w6, w11
         bn.xor  w15, w15, w14
         bn.and  w16, w7, w10
@@ -641,7 +641,7 @@ secadd_constant_bmsk:
  * x, y with 0 <= x, y < q.
  * Bitsliced.
  *
- *   nq <- 2^{k+1} - q                 (immediate 0x801FFF)
+ *   nq <- 2^{k+1} - q                 (immediate 0x801fff)
  *   s  <- SecAdd(x, y)
  *   sp <- SecAdd(s, nq)
  *   b  <- sp[k]
@@ -649,7 +649,7 @@ secadd_constant_bmsk:
  *   z  <- SecAdd(a, sp)
  *
  * The b/a/z steps are fused inside secadd_constant_bmsk.  ML-DSA only
- * (q = 0x7FE001 hard-coded; matches the external nq).
+ * (q = 0x7fe001 hard-coded; matches the external nq).
  *
  * Source: Alg.7 [BC22]
  *
@@ -682,7 +682,7 @@ secaddmodq:
     bn.addi w18, w18, 1
     bn.shv.8s w18, w18 << 13
     bn.subi w18, w18, 1
-    bn.add w17, w17, w18 /* w17 lane 0 = nq = 0x801FFF */
+    bn.add w17, w17, w18 /* w17 lane 0 = nq = 0x801fff */
     addi a0, a7, 0
     li   a2, 24 /* k+1 */
     li   a3, 768 /* (k+1) * 32 */
@@ -698,7 +698,7 @@ secaddmodq:
 /*
  * Name: seca2bmodq
  *
- * Return Boolean shares mod 2^k (k = 23) of a value x mod q (q = 0x7FE001),
+ * Return Boolean shares mod 2^k (k = 23) of a value x mod q (q = 0x7fe001),
  * given its arithmetic shares (q < 2^k).
  * Bitsliced.
  *
@@ -809,7 +809,7 @@ secleq:
     bn.lid  t3, 0(t1)
     li      t4, 1
     bn.lid  t4, 0(t6)
-    bn.wsrr w2, urnd
+    bn.wsrr w2, URND
     bn.xor  w0, w0, w2
     bn.xor  w1, w1, w2
     bn.xor  w0, w0, w1
@@ -837,14 +837,14 @@ secleq:
 .globl secunmask_modq
 .type secunmask_modq, @function
 secunmask_modq:
-    /* w11 = 0x007FFFFF * 8 (23-bit per-lane mask). */
+    /* w11 = 0x007fffff * 8 (23-bit per-lane mask). */
     bn.not  w11, w31
     bn.rshi w11, w31, w11 >> 233
     bn.or   w11, w11, w11 << 32
     bn.or   w11, w11, w11 << 64
     bn.or   w11, w11, w11 << 128
 
-    /* w13 = 0xFF000000 * 8 (top byte of each lane). */
+    /* w13 = 0xff000000 * 8 (top byte of each lane). */
     bn.shv.8s w13, w11 << 24
 
     /* w12 = q packed 8 lanes. */
@@ -874,14 +874,14 @@ secunmask_modq:
 
 /* Lane-parallel rejection sampler: returns w14 = 8 fresh uniform r in Z_q.
  * Requires w11 = 23-bit mask, w12 = q vector, w13 = top-byte mask.
- *   r  := urnd & (2^23 - 1)                 (8 lanes of 23-bit uniform)
- *   ok := (r - q signed) top byte == 0xFF   (per lane, encodes r < q)
+ *   r  := URND & (2^23 - 1)                 (8 lanes of 23-bit uniform)
+ *   ok := (r - q signed) top byte == 0xff   (per lane, encodes r < q)
  *   retry while not all 8 lanes accept.
  *
  *   p_wdr = (8380417 / 2**23) ** 8  # ~0.9922
  */
 _sample_rq:
-    bn.wsrr     w14, urnd
+    bn.wsrr     w14, URND
     bn.and      w14, w14, w11
     bn.subv.8s  w15, w14, w12
     bn.and      w15, w15, w13
@@ -904,22 +904,22 @@ _transpose_8x8:
     bn.trn2.8s w13, w4, w5
     bn.trn1.8s w14, w6, w7
     bn.trn2.8s w15, w6, w7
-    bn.trn1.4D w0,  w8,  w10
-    bn.trn2.4D w2,  w8,  w10
-    bn.trn1.4D w1,  w9,  w11
-    bn.trn2.4D w3,  w9,  w11
-    bn.trn1.4D w4,  w12, w14
-    bn.trn2.4D w6,  w12, w14
-    bn.trn1.4D w5,  w13, w15
-    bn.trn2.4D w7,  w13, w15
-    bn.trn1.2Q w16, w0, w4
-    bn.trn2.2Q w20, w0, w4
-    bn.trn1.2Q w17, w1, w5
-    bn.trn2.2Q w21, w1, w5
-    bn.trn1.2Q w18, w2, w6
-    bn.trn2.2Q w22, w2, w6
-    bn.trn1.2Q w19, w3, w7
-    bn.trn2.2Q w23, w3, w7
+    bn.trn1.4d w0,  w8,  w10
+    bn.trn2.4d w2,  w8,  w10
+    bn.trn1.4d w1,  w9,  w11
+    bn.trn2.4d w3,  w9,  w11
+    bn.trn1.4d w4,  w12, w14
+    bn.trn2.4d w6,  w12, w14
+    bn.trn1.4d w5,  w13, w15
+    bn.trn2.4d w7,  w13, w15
+    bn.trn1.2q w16, w0, w4
+    bn.trn2.2q w20, w0, w4
+    bn.trn1.2q w17, w1, w5
+    bn.trn2.2q w21, w1, w5
+    bn.trn1.2q w18, w2, w6
+    bn.trn2.2q w22, w2, w6
+    bn.trn1.2q w19, w3, w7
+    bn.trn2.2q w23, w3, w7
     ret
 
 /*
@@ -1321,7 +1321,7 @@ unbitslice:
  * Name: poly_rej_samp_bitsliced
  *
  * Sample 256 coefficients uniform in [0, q) (q = 8380417) by rejection
- * sampling on uniform random words from urnd: redraw the whole batch until
+ * sampling on uniform random words from URND: redraw the whole batch until
  * every lane is < q (~ 1.28 draws expected).
  * Bitsliced.
  *
@@ -1337,7 +1337,7 @@ unbitslice:
 poly_rej_samp_bitsliced:
 _prs_bs_draw:
 #if defined(MLDSA_REJ_SAMPLE_TEST)
-    /* Read 23 WDRs from a1 in place of urnd. */
+    /* Read 23 WDRs from a1 in place of URND. */
     li   t0, 0
     li   t1, 23
     loop t1, 2
@@ -1345,33 +1345,33 @@ _prs_bs_draw:
         addi   t0, t0, 1
     endloop
 #else
-    bn.wsrr w0,  urnd
-    bn.wsrr w1,  urnd
-    bn.wsrr w2,  urnd
-    bn.wsrr w3,  urnd
-    bn.wsrr w4,  urnd
-    bn.wsrr w5,  urnd
-    bn.wsrr w6,  urnd
-    bn.wsrr w7,  urnd
-    bn.wsrr w8,  urnd
-    bn.wsrr w9,  urnd
-    bn.wsrr w10, urnd
-    bn.wsrr w11, urnd
-    bn.wsrr w12, urnd
-    bn.wsrr w13, urnd
-    bn.wsrr w14, urnd
-    bn.wsrr w15, urnd
-    bn.wsrr w16, urnd
-    bn.wsrr w17, urnd
-    bn.wsrr w18, urnd
-    bn.wsrr w19, urnd
-    bn.wsrr w20, urnd
-    bn.wsrr w21, urnd
-    bn.wsrr w22, urnd
+    bn.wsrr w0,  URND
+    bn.wsrr w1,  URND
+    bn.wsrr w2,  URND
+    bn.wsrr w3,  URND
+    bn.wsrr w4,  URND
+    bn.wsrr w5,  URND
+    bn.wsrr w6,  URND
+    bn.wsrr w7,  URND
+    bn.wsrr w8,  URND
+    bn.wsrr w9,  URND
+    bn.wsrr w10, URND
+    bn.wsrr w11, URND
+    bn.wsrr w12, URND
+    bn.wsrr w13, URND
+    bn.wsrr w14, URND
+    bn.wsrr w15, URND
+    bn.wsrr w16, URND
+    bn.wsrr w17, URND
+    bn.wsrr w18, URND
+    bn.wsrr w19, URND
+    bn.wsrr w20, URND
+    bn.wsrr w21, URND
+    bn.wsrr w22, URND
 #endif
 
     /* Per-lane v < q check: bit k of v + (2^k - q) is 0 iff v < q.
-     * With (2^k - q) = 0x1FFF (bits 0..12 = 1, bits 13..22 = 0), the
+     * With (2^k - q) = 0x1fff (bits 0..12 = 1, bits 13..22 = 0), the
      * carry chain collapses to:
      *   bits 0..12  (const = 1):  c_{b+1} = v_b OR  c_b
      *   bits 13..22 (const = 0):  c_{b+1} = v_b AND c_b
@@ -1401,9 +1401,9 @@ _prs_bs_draw:
     bn.and w23, w23, w21
     bn.and w23, w23, w22
 
-    /* Redraw if any lane >= q (FG0.z clear -> w23 != 0). */
-    csrrs t1, fg0, x0
-    srli  t1, t1, 3              /* FG0.z */
+    /* Redraw if any lane >= q (FG0.Z clear -> w23 != 0). */
+    csrrs t1, FG0, x0
+    srli  t1, t1, 3              /* FG0.Z */
     beq   t1, x0, _prs_bs_draw
 
     /* Store w0..w22 to output. */
@@ -1421,7 +1421,7 @@ _prs_bs_draw:
  * Name: secb2amodq
  *
  * Convert a Boolean sharing x^{B,k} of x in [0, q) into an arithmetic sharing
- * z^{A_q} of the same value (q = 0x7FE001).
+ * z^{A_q} of the same value (q = 0x7fe001).
  * Bitsliced.
  *
  *   z_0  <- Z_q                              (poly_rej_samp_bitsliced)
@@ -1513,7 +1513,7 @@ secb2amodq:
     loop t4, 7
         bn.lid  t1, 0(a3++)
         bn.lid  t2, 0(a4++)
-        bn.wsrr w3, urnd
+        bn.wsrr w3, URND
         bn.xor  w1, w1, w3
         bn.xor  w2, w2, w3
         bn.xor  w1, w1, w2
@@ -1778,7 +1778,7 @@ secboundcheck:
  *
  * The rounded division by q is a truncating Barrett multiply (ACC has no
  * divide): z_i = (x_i * K) >> 25, K = round(delta * 2^(ell+25) / q) =
- * 0xB02C09A2.
+ * 0xb02c09a2.
  *
  * Source: Alg.2 [CGMZ23]
  *
@@ -1805,10 +1805,10 @@ seccompress:
     sw   a2, 32(sp)
     sw   a3, 36(sp)
 
-    /* K = 0xB02C09A2 -> w16 (broadcast to all 8 lanes). */
-    bn.addi  w16, w31, 0xB0
+    /* K = 0xb02c09a2 -> w16 (broadcast to all 8 lanes). */
+    bn.addi  w16, w31, 0xb0
     bn.rshi  w16, w16, w31 >> 248
-    bn.addi  w16, w16, 0x2C
+    bn.addi  w16, w16, 0x2c
     bn.rshi  w16, w16, w31 >> 248
     bn.addi  w16, w16, 0x09
     bn.rshi  w16, w16, w31 >> 248
@@ -2254,7 +2254,7 @@ _secdecompose_unmask:
     loop t2, 7
         bn.lid  t0, 0(t3++)
         bn.lid  t1, 0(t4++)
-        bn.wsrr w2, urnd
+        bn.wsrr w2, URND
         bn.xor  w0, w0, w2
         bn.xor  w1, w1, w2
         bn.xor  w0, w0, w1
@@ -2426,7 +2426,7 @@ _mpue_squeeze:
     /* SecAnd: z = n & (n>>1) on the masked nibble n = (w0,w1). */
     bn.rshi w2, w31, w0 >> 1
     bn.rshi w3, w31, w1 >> 1
-    bn.wsrr w6, urnd
+    bn.wsrr w6, URND
     bn.and  w4, w0, w2
     bn.xor  w4, w4, w6
     bn.and  w7, w0, w3
@@ -2439,7 +2439,7 @@ _mpue_squeeze:
     /* SecAnd: u = z & (z>>2)  -> bit 4i = AND of nibble's 4 bits. */
     bn.rshi w2, w31, w4 >> 2
     bn.rshi w3, w31, w5 >> 2
-    bn.wsrr w6, urnd
+    bn.wsrr w6, URND
     bn.and  w7, w4, w2
     bn.xor  w7, w7, w6
     bn.and  w8, w4, w3
@@ -2456,7 +2456,7 @@ _mpue_reject_e4:
     bn.not  w2, w0
     bn.rshi w3, w31, w2 >> 1
     bn.rshi w4, w31, w1 >> 1
-    bn.wsrr w6, urnd
+    bn.wsrr w6, URND
     bn.and  w7, w2, w3
     bn.xor  w7, w7, w6
     bn.and  w8, w2, w4
@@ -2469,7 +2469,7 @@ _mpue_reject_e4:
     /* SecAnd: zb = za & (m>>2)  -> bit 4i = ~b0 & ~b1 & ~b2. */
     bn.rshi w3, w31, w2 >> 2
     bn.rshi w4, w31, w1 >> 2
-    bn.wsrr w6, urnd
+    bn.wsrr w6, URND
     bn.and  w8, w7, w3
     bn.xor  w8, w8, w6
     bn.and  w9, w7, w4
@@ -2483,7 +2483,7 @@ _mpue_reject_e4:
     /* SecAnd: reject = (n>>3) & ~zb  -> bit 4i = b3 & (b0|b1|b2). */
     bn.rshi w3, w31, w0 >> 3
     bn.rshi w4, w31, w1 >> 3
-    bn.wsrr w6, urnd
+    bn.wsrr w6, URND
     bn.and  w7, w3, w8
     bn.xor  w7, w7, w6
     bn.and  w9, w3, w11
