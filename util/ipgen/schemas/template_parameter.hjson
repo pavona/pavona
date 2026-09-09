@@ -1,0 +1,18 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:ipgen:template_parameter",
+  title: "Template Parameter",
+  description: "Parameter information for instantiating a templated IP block",
+  type: "object",
+  required: ["name", "type"]
+  properties: {
+    name: { type: "string" }
+    desc: { type: "string" }
+    type: { type: "string" }
+    default: { type: ["boolean", "integer", "string", "object", "array"] }
+    dtgen: { type: "object" }
+  }
+}

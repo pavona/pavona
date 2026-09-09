@@ -1,4 +1,5 @@
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -9,44 +10,12 @@ from typing import Dict, Optional, Tuple, List, TextIO
 
 import hjson
 from reggen.ip_block import IpBlock
-from reggen.validate import check_keys
 from reggen.md_helpers import mono, list_item, table, title
 from reggen.multi_register import MultiRegister
 from reggen.register import Register
 from reggen.window import Window
 
-
-# Required fields for the RACL hjson
-racl_required = {
-    'error_response': [
-        'pb',
-        'When true, return TLUL error on denied RACL access, otherwise not'
-    ],
-    'role_bit_lsb': ['d', 'RACL role bit LSB within the TLUL user bit vector'],
-    'role_bit_msb': ['d', 'RACL role bit MSB within the TLUL user bit vector'],
-    'ctn_uid_bit_lsb': ['d', 'CTN UID bit LSB within the TLUL user bit vector'],
-    'ctn_uid_bit_msb': ['d', 'CTN UID bit MSB within the TLUL user bit vector'],
-    'roles': ['l', 'List, specifying all RACL roles'],
-    'policies': ['g', 'Dict, specifying the policies of all RACL groups']
-}
-
-# Required fields for the RACL mapping hjson
-mapping_required = {
-}
-mapping_optional = {
-    'registers': ['g', 'Dict, specifying the policy for each register'],
-    'windows': ['g', 'Dict, specifying the policy for each window'],
-    'ranges': ['l', 'List, specifying the policy for each range.'
-               'Each element in this list must be a dict'
-               'which contain the keys defined in range_required.']
-}
-
-# Required fields for each range within the RACL mapping hjson
-range_required = {
-    'base': ['d', 'Base address of range'],
-    'size': ['d', 'Size of range'],
-    'policy': ['s', 'Policy name']
-}
+from basegen.validate import create_validator, all_validation_errors
 
 # Default configuration to render the RACL package for systems that don't use RACL but need the
 # type definitions
@@ -64,6 +33,9 @@ DEFAULT_RACL_CONFIG = {
     'rot_private_policy_wr': 0
 }
 
+RACL_VALIDATOR = create_validator("urn:raclgen:racl")
+MAPPING_VALIDATOR = create_validator("urn:raclgen:mapping")
+
 
 def _read_hjson(filename: str) -> Dict[str, object]:
     try:
@@ -80,7 +52,8 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config = _read_hjson(config_path)
 
     # TODO(#25690) Further sanity checks on the parsed RACL config
-    error = check_keys(racl_config, racl_required, [], [], 'RACL Config')
+    validation_errors = all_validation_errors(racl_config, RACL_VALIDATOR, "racl")
+    error = len(validation_errors)
     if error:
         raise SystemExit(f"Error occurred while validating {config_path}")
 
@@ -171,14 +144,10 @@ def parse_racl_mapping(
     if racl_policies is None:
         raise SystemExit(f'RACL group {racl_group} not defined in RACL config')
 
-    error = check_keys(mapping, mapping_required, mapping_optional, [], 'RACL Mapping')
+    validation_errors = all_validation_errors(mapping, MAPPING_VALIDATOR)
+    error = len(validation_errors)
     if error:
         raise SystemExit(f"Error occurred while validating {mapping_path}")
-
-    for range in mapping.get('ranges', []):
-        error = check_keys(range, range_required, [], [], 'RACL Range')
-        if error:
-            raise SystemExit(f"Error occurred while validating {mapping_path}")
 
     policy_names = [policy['name'] for policy in racl_policies]
 

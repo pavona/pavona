@@ -12,6 +12,7 @@ py_library(
         "__init__.py",
         "lib.py",
     ],
+    data = ["//util/raclgen/schemas"],
     imports = [".."],
     deps = [
         "//util/reggen:ip_block",

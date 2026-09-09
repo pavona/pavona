@@ -1,0 +1,28 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:raclgen:racl",
+  title: "RACL Configuration",
+  description: "Configuration data for register access control lists (RACL)",
+  type: "object",
+  required: ["error_response", "role_bit_lsb", "role_bit_msb",
+             "ctn_uid_bit_lsb", "ctn_uid_bit_msb", "roles", "policies"]
+  properties: {
+    error_response: {
+        type: "boolean",
+        description: "When true, return TLUL error on denied RACL access, otherwise not"
+    },
+
+    // CTN
+    ctn_uid_bit_lsb: { type: "integer", description: "CTN UID bit LSB within the TLUL user bit vector" },
+    ctn_uid_bit_msb: { type: "integer", description: "CTN UID bit MSB within the TLUL user bit vector" },
+
+    // roles
+    role_bit_lsb: { type: "integer", description: "RACL role bit LSB within the TLUL user bit vector" },
+    role_bit_msb: { type: "integer", description: "RACL role bit MSB within the TLUL user bit vector" },
+    roles: { type: "object", description: "List, specifying all RACL roles" },
+    policies: { type: "object", description: "Dict, specifying the policies of all RACL groups" }
+  }
+}
