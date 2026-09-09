@@ -94,6 +94,7 @@ static void otp_ctrl_dai_disable_test(uint32_t last_dai_value) {
     if (partition_info.zeroizable) {
       partition_len += sizeof(uint64_t);
     }
+    partition_len /= sizeof(uint32_t);
     LOG_INFO("Checking partition %d.", partition);
     uint32_t readout[partition_len];
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
