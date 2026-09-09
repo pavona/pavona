@@ -7870,6 +7870,7 @@ pavona_test(
     srcs = ["sleep_pin_retention_test.c"],
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
