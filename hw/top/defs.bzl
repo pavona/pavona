@@ -28,7 +28,7 @@ ALL_SEED_NAMES = _all_seed_names()
 def pavona_if_ip(ip, obj, default):
     """
     Return a select expression that evaluate to `obj` if the ip is
-    supported by the active top, and `default` otherwose.
+    supported by the active top, and `default` otherwise.
 
     Example:
     ```python
