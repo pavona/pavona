@@ -1,0 +1,24 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:reggen:interrupt",
+  "title": "Interrupt",
+  "description": "Interrupt signal description",
+  "type": "object",
+  "properties": {
+
+    // required
+    "name": {"type": "string"},
+    "desc": {"type": "string"},
+
+    // optional
+    "width": {"type": "number"},
+    "type": {"type": "string"},
+    "auto_split": {"type": "boolean"}
+    "default": {}
+  }
+
+  "required": ["name", "desc"]
+}

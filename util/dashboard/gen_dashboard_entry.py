@@ -251,7 +251,7 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]],
     if dashboard_validate.validate(obj, is_comportable_spec) == 0:
         log.info("Generated dashboard object for " + str(hjson_path))
     else:
-        log.fail("hjson file import failed\n")
+        log.error(f"hjson file import failed for {hjson_path}")
 
     obj['_ip_desc_hjson_dir'] = ip_desc_hjson_dir
 

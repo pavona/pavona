@@ -20,6 +20,7 @@ py_library(
         "validate.py",
         "xbar.py",
     ],
+    data = ["//util/tlgen/schemas"],
     deps = [
         "//util/reggen:validate",
         requirement("mako"),

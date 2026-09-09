@@ -1,0 +1,15 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:topgen:reset_connection",
+  title: "Reset Connection",
+  description: "Module reset connection",
+  type: "object",
+  required: ["name", "domain"]
+  properties: {
+    name: { type: "string", description: "name of the connecting reset" }
+    domain: { type: "string", description: "connected domain" }
+  }
+}
