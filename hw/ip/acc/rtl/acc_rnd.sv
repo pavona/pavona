@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -107,8 +108,8 @@ module acc_rnd import acc_pkg::*;
   // to ignore the RND data that comes back from that request. Any RND data returned clears the
   // ignore status.
   assign edn_rnd_data_ignore_d =
-      opn_start_i && edn_rnd_req_q ? 1'b1 :
-      edn_rnd_req_complete         ? 1'b0 : edn_rnd_data_ignore_q;
+      opn_start_i && edn_rnd_req_q && !edn_rnd_req_complete ? 1'b1 :
+      edn_rnd_req_complete                                  ? 1'b0 : edn_rnd_data_ignore_q;
 
   // rnd_req_queued_q shows that there's an outstanding RND prefetch whose result we are going to
   // ignore and also another request pending. Once the prefetch is done, we want to send out that
