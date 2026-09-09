@@ -87,6 +87,10 @@ static void otp_ctrl_dai_disable_test(uint32_t last_dai_value) {
     otp_partition_t partition = (otp_partition_t)i;
     dt_otp_partition_info_t partition_info =
         dt_otp_ctrl_partition(kDtOtpCtrl, partition);
+    // TODO: cover the secret partitions, which need 64-bit reads.
+    if (partition_info.align_mask != 0x3) {
+      continue;
+    }
     size_t partition_len = partition_info.size;
     if (partition_info.sw_digest || partition_info.hw_digest) {
       partition_len += sizeof(uint64_t);
