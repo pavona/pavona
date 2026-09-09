@@ -1624,7 +1624,7 @@ secb2amodq_eta:
  *
  * w16/w22/w23 are stashed in w28/w29/w30 across the chain.
  *
- * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w27
+ * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w30
  * clobbered flag groups: FG0
  */
 
@@ -1755,7 +1755,7 @@ secboundcheck:
  * @param[in]   x13: dptr_b, 2048 B scratch for the a2b's B, caller-provided
  * @param[in]   w31: all-zero register
  *
- * clobbered registers: x2, x4 to x7, x10 to x17, x28 to x31, w0 to w27
+ * clobbered registers: x2, x4 to x16, x18 to x19, x28 to x31, w0 to w27
  * clobbered flag groups: FG0
  */
 .globl seccompress
@@ -2029,7 +2029,7 @@ _seccompress_csub:
  *
  * w16/w22/w23 are stashed in w28/w29/w30 across the chain.
  *
- * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w15, w17 to w21, w24 to w30
+ * clobbered registers: x2, x4 to x19, x21 to x25, x28 to x31, w0 to w30, mod
  * clobbered flag groups: FG0
  */
 .globl secdecompose
@@ -2312,7 +2312,7 @@ _secdecompose_epilogue:
  * The _export entry additionally takes x16 = dptr_export (2 * POLYETA B) and
  * copies the bitsliced reduce(n) shares there for the expanded secret key.
  *
- * clobbered registers: x2, x4 to x7, x10 to x17, x28 to x31, w0 to w27, w30
+ * clobbered registers: x2, x4 to x18, x27 to x31, w0 to w27, w30
  * clobbered flag groups: FG0
  */
 
@@ -2863,7 +2863,7 @@ _mpue_build_subtrahend:
  * @param[in]   x15: gamma1 variant selector (2 => POLYZ_BITS 18, else 20)
  * @param[in]   w31: all-zero register
  *
- * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w15, w17 to w21, w24 to w30
+ * clobbered registers: x2, x4 to x8, x10 to x17, x28 to x31, w0 to w30
  * clobbered flag groups: FG0
  */
 .globl masked_poly_uniform_gamma_1
