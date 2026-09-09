@@ -44,7 +44,7 @@
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
-#define SHAKE256_CFG 0xA
+#define SHAKE256_CFG 0xa
 /* Config to start a SHA3_256 operation. */
 #define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
@@ -421,10 +421,10 @@ _ctilde_unpack_done:
     addi x9, x9, 1024 /* increment *w1 */
   endloop
 
-  bn.wsrr w8, 0xA /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xa /* KECCAK_DIGEST */
 
   /* Restore MOD = R | Q to avoid clobbering, unused from here on. */
-  bn.wsrw mod, w16
+  bn.wsrw MOD, w16
 
   /* Check the failure register from the loop. */
   bne x26, x0, _fail_crypto_sign_verify_internal
@@ -454,7 +454,7 @@ _ctilde_unpack_done:
   li  x28, 4
   beq x6, x28, _success_crypto_sign_verify_internal
 
-  bn.wsrr w8, 0xA /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xa /* KECCAK_DIGEST */
   /* Remove upper 16B from digest in the case of CTILDEBYTES == 48 (K=6). */
   li      x28, 6
   bne     x6, x28, _skip_mask_ctilde

@@ -16,7 +16,7 @@
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
-#define SHAKE256_CFG 0xA
+#define SHAKE256_CFG 0xa
 /* Config to start a SHA3_256 operation. */
 #define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
@@ -373,7 +373,7 @@ poly_chknorm:
        t = a->coeffs[i] - (t & 2*a->coeffs[i]);
     */
     /* Get the mask */
-    /* w2 <= 0, if w1 >=? 0, else 0xFFFFFFFF */
+    /* w2 <= 0, if w1 >=? 0, else 0xffffffff */
     bn.shv.8s  w2, w1 >> 31
     bn.subv.8s w2, w31, w2 /* Build mask from MSBs */
     /* w2 <= w2 & (2 * w1) */
@@ -436,7 +436,7 @@ poly_challenge:
   addi x10, x14, 0
 
   /* Read first SHAKE output */
-  bn.wsrr w0, 0xA /* KECCAK_DIGEST */
+  bn.wsrr w0, 0xa /* KECCAK_DIGEST */
 
   /* Initialize output poly to 0 */
   add x6, x0, x10
@@ -490,7 +490,7 @@ _loop_inner_poly_challenge:
        Since all reads from w0 are equally large (8 bits) and 8 | 256,
        we can just check for "zero" */
     bne     x0, x12, _loop_inner_skip_load_poly_challenge
-    bn.wsrr w0, 0xA  /* KECCAK_DIGEST */
+    bn.wsrr w0, 0xa  /* KECCAK_DIGEST */
     li      x12, 256 /* reset the remaining bits counter */
 _loop_inner_skip_load_poly_challenge:
     /* Store w0 to memory in order to read one word into a GPR */
@@ -500,7 +500,7 @@ _loop_inner_skip_load_poly_challenge:
     /* NOTE: optimize this to use all bytes from this load */
     lw      x6, 0(x29)       /* get one word of SHAKE output into GPR */
     /* x6 = b from the reference implementation */
-    andi    x6, x6, 0xFF     /* mask out one byte, because we only need one */
+    andi    x6, x6, 0xff     /* mask out one byte, because we only need one */
     sub     x7, x13, x6      /* i <? b */
     srli    x7, x7, 31
     /* while(b > i); */
@@ -1240,7 +1240,7 @@ poly_uniform_eta_eta_2:
   li x28, 15
 
   /* Initialize constants */
-  bn.addi w14, w31, 0x0F
+  bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 15
   li      x15, 8
   li      x16, 2
@@ -1263,7 +1263,7 @@ poly_uniform_eta_eta_2:
   #define shake_reg w8
 
 _rej_eta_sample_loop_eta_2:
-  bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+  bn.wsrr shake_reg, 0xa /* KECCAK_DIGEST */
   loopi 64, 13
     beq    x11, x5, _rej_eta_sample_loop_continue_eta_2
     /* Process 4 bits */
@@ -1271,7 +1271,7 @@ _rej_eta_sample_loop_eta_2:
 
     /* Check "t0" < 15 */
     bn.cmp w9, w21
-    csrrs  x14, 0x7C0, x0
+    csrrs  x14, 0x7c0, x0
     /* If the MSB of t0 - 15 is not set, we know that t0 >= 15
        and thus, we have to reject. */
     and    x14, x14, x16
@@ -1337,7 +1337,7 @@ poly_uniform_eta_eta_4:
   li x28, 15
 
   /* Initialize constants */
-  bn.addi w14, w31, 0x0F
+  bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 9
   li      x15, 8
   li      x16, 2
@@ -1357,7 +1357,7 @@ poly_uniform_eta_eta_4:
   li x31, 8 /* coeffs to be collected in register */
 
 _rej_eta_sample_loop_eta_4:
-  bn.wsrr shake_reg, 0xA /* KECCAK_DIGEST */
+  bn.wsrr shake_reg, 0xa /* KECCAK_DIGEST */
   loopi 64, 13
     beq    x11, x5, _rej_eta_sample_loop_continue_eta_4
     /* Process 4 bits */
@@ -1365,7 +1365,7 @@ _rej_eta_sample_loop_eta_4:
 
     /* Check "t0" < 9 */
     bn.cmp w9, w21
-    csrrs  x14, 0x7C0, x0
+    csrrs  x14, 0x7c0, x0
     /* If the MSB of t0 - 9 is not set, we know that t0 >= 9
        and thus, we have to reject. */
     and    x14, x14, x16
@@ -2268,7 +2268,7 @@ poly_decode_h:
   lw   x31, 0(x31)   /* aligned load */
   slli x14, x14, 3
   srl  x31, x31, x14 /* extract the respective byte */
-  andi x7, x31, 0xFF
+  andi x7, x31, 0xff
 
   /* Note: sig, k, OMEGA are all unsigned. Can also compare by subtracting and
      checking the MSB */
@@ -2296,7 +2296,7 @@ poly_decode_h:
   lw   x31, 0(x31)    /* aligned load */
   slli x14, x14, 3
   srl  x31, x31, x14  /* extract the respective byte */
-  andi x16, x31, 0xFF /* x16 = sig[j] */
+  andi x16, x31, 0xff /* x16 = sig[j] */
 
   /* Store a 1 to h */
   slli x14, x16, 2   /* sig[j] * 4 */
@@ -2316,7 +2316,7 @@ _loop_inner_decode_h:
     lw   x6, 0(x31)    /* aligned load */
     slli x14, x14, 3
     srl  x6, x6, x14   /* extract the respective byte */
-    andi x6, x6, 0xFF
+    andi x6, x6, 0xff
 
     /* sig[j - 1] is in x16 at this point */
 
@@ -2358,7 +2358,7 @@ _loop_extra_decode_h:
   lw   x31, 0(x31)    /* aligned load */
   slli x14, x14, 3
   srl  x31, x31, x14  /* extract the respective byte */
-  andi x16, x31, 0xFF /* x16 = sig[j] */
+  andi x16, x31, 0xff /* x16 = sig[j] */
 
   /* if(sig[j]) return 1; */
   bne x16, x0, _ret1_decode_h
@@ -2567,57 +2567,57 @@ poly_uniform_gamma_1_17:
   /* Setup WDR */
   li x7, 2
   loopi 2, 42
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.mov  w1, w6
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 144
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w3 >> 32
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 176
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w6 >> 64
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 208
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w3 >> 96
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 240
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 128
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w3 >> 16
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 160
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w6 >> 48
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 192
     jal     x1, _inner_poly_uniform_gamma_1_17
 
     bn.rshi w1, w31, w3 >> 80
     jal     x1, _inner_poly_uniform_gamma_1_17
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 224
     jal     x1, _inner_poly_uniform_gamma_1_17
 
@@ -2691,29 +2691,29 @@ poly_uniform_gamma_1_19:
   li x7, 2
 
   loopi 4, 22
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.mov  w1, w6
     jal     x1, _inner_poly_uniform_gamma_1_19
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 160
     jal     x1, _inner_poly_uniform_gamma_1_19
 
     bn.rshi w1, w31, w3 >> 64
     jal     x1, _inner_poly_uniform_gamma_1_19
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 224
     jal     x1, _inner_poly_uniform_gamma_1_19
 
-    bn.wsrr w3, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w3, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w3, w6 >> 128
     jal     x1, _inner_poly_uniform_gamma_1_19
 
     bn.rshi w1, w31, w3 >> 32
     jal     x1, _inner_poly_uniform_gamma_1_19
 
-    bn.wsrr w6, 0xA /* KECCAK_DIGEST */
+    bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.rshi w1, w6, w3 >> 192
     jal     x1, _inner_poly_uniform_gamma_1_19
 
@@ -3186,7 +3186,7 @@ _inner_polyz_pack_19:
 .type poly_encode_h, @function
 poly_encode_h:
   /* Masking constant for alignment */
-  li x5, 0xFFFFFFFC
+  li x5, 0xfffffffc
 
   /* j = 0 (index within h[i]) */
   li x7, 0

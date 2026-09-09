@@ -41,7 +41,7 @@
 /* Config to start a SHAKE-128 operation. */
 #define SHAKE128_CFG 0x2
 /* Config to start a SHAKE-256 operation. */
-#define SHAKE256_CFG 0xA
+#define SHAKE256_CFG 0xa
 /* Config to start a SHA3_256 operation. */
 #define SHA3_256_CFG 0x8
 /* Config to start a SHA3_512 operation. */
@@ -100,7 +100,7 @@ crypto_sign_signature_internal:
 
   /* Refresh and absorb the Boolean shares of K. */
   la      x5, K_shares
-  bn.wsrr w2, urnd
+  bn.wsrr w2, URND
   bn.xor  w0, w0, w0 /* Whitening */
   bn.lid  x0, 0(x5)
   bn.xor  w0, w0, w2
@@ -716,7 +716,7 @@ _masked_eta_from_shares:
   add  x6, x11, x29
   li   x7, 0
   loop x28, 9
-    bn.wsrr w2, urnd
+    bn.wsrr w2, URND
     bn.xor  w0, w0, w0 /* Whitening */
     bn.lid  x7, 0(x5)
     bn.xor  w0, w0, w2
@@ -1475,9 +1475,9 @@ _sign_h_reject:
   li x6, 8
 
   la      x10, rhoprime
-  bn.wsrr w8, 0xA      /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xa      /* KECCAK_DIGEST */
   bn.sid  x6, 0(x10++) /* Store into rhoprime buffer */
-  bn.wsrr w8, 0xA      /* KECCAK_DIGEST */
+  bn.wsrr w8, 0xa      /* KECCAK_DIGEST */
   bn.sid  x6, 0(x10++) /* Store into rhoprime buffer */
 
   /* Finish the SHAKE-256 operation. */
@@ -1682,7 +1682,7 @@ _rej_crypto_sign_signature_internal:
   li x6, 8
 
   /* Read first 32 bytes of digest. */
-  bn.wsrr w8, 0xA
+  bn.wsrr w8, 0xa
 
   /* Get always-aligned temporary buffer. */
   la x5, tmp_poly
@@ -1697,7 +1697,7 @@ _rej_crypto_sign_signature_internal:
   /* ML-DSA-87 (K=8, CTILDEBYTES=64). */
   bn.sid  x6, 0(x5)
   bn.sid  x6, 0(x19)
-  bn.wsrr w8, 0xA
+  bn.wsrr w8, 0xa
   bn.sid  x6, 32(x5)
   bn.sid  x6, 32(x19)
   jal     x0, _sign_pack_ctilde_done
@@ -1716,7 +1716,7 @@ _sign_pack_ctilde_65:
     addi x5, x5, 4
     addi x19, x19, 4
   endloop
-  bn.wsrr w8, 0xA
+  bn.wsrr w8, 0xa
   bn.sid  x6, 0(x5)
   loopi 4, 4
     lw   x7, 0(x5)
@@ -1897,7 +1897,7 @@ _rejsmpl_loop:
       bn.addvm.8s w0, w31, w0
       bn.sid      x0, 0(x10++)
     endloop
-    NOP
+    nop
   endloop
 
   /* This loop computes the hint one element at a time, and performs
