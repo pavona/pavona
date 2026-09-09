@@ -20,7 +20,7 @@ def generate_selfdocs(tool: str, fout: TextIO):
     if tool == "reggen":
         reggen_selfdoc.document(fout)
     elif tool == "tlgen":
-        fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
+        fout.write(tlgen.selfdoc(heading=2, cmd='tlgen.py --doc'))
     elif tool == "topgen":
         topgen_selfdoc.document(fout)
     else:  # document tool stdout

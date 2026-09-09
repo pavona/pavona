@@ -1,0 +1,15 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:feature",
+  title: "Feature",
+  description: "A feature of a given IP block",
+  type: "object",
+  required: ["name", "desc"]
+  properties: {
+    name: { type: "string" }
+    desc: { type: "string" }
+  }
+}

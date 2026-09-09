@@ -57,7 +57,7 @@ def main():
 
     if args.doc:
         # Generate Doc and return
-        sys.stdout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
+        sys.stdout.write(tlgen.selfdoc(heading=2, cmd='tlgen.py --doc'))
         return
 
     # Check if outdir exists. If not, show error and exit
