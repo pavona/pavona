@@ -68,8 +68,8 @@ secand:
   bn.xor w1, w1, w1
   bn.xor w3, w3, w3
   bn.xor w5, w5, w5
-  bn.lid x4, 0(x10)  /* w1 = xb[0] */
-  bn.lid x6, 0(x12)  /* w3 = yb[0] */
+  bn.lid x4, 0(x10) /* w1 = xb[0] */
+  bn.lid x6, 0(x12) /* w3 = yb[0] */
   bn.and w5, w1, w3 /* w5 = tb[0] */
 
   /* Compute tb[1] = xb[1] & yb[1]. */
@@ -78,9 +78,9 @@ secand:
   bn.xor w4, w4, w4
   bn.xor w6, w6, w6
   add    x30, x10, x11
-  bn.lid x5, 0(x30)  /* w2 = xb[1] */
+  bn.lid x5, 0(x30) /* w2 = xb[1] */
   add    x30, x12, x13
-  bn.lid x7, 0(x30)  /* w4 = yb[1] */
+  bn.lid x7, 0(x30) /* w4 = yb[1] */
   bn.and w6, w2, w4 /* w6 = tb[1] */
 
   /* Refresh with one fresh random. */
@@ -140,10 +140,10 @@ secand:
 .type secfulladder, @function
 secfulladder:
   /* WDR index constants. */
-  addi x4, x0, 1 /* w1 = x[0] */
-  addi x5, x0, 2 /* w2 = x[1] */
-  addi x6, x0, 3 /* w3 = a[0] (= x[0] ^ y[0]) */
-  addi x7, x0, 4 /* w4 = a[1] */
+  addi x4, x0, 1  /* w1 = x[0] */
+  addi x5, x0, 2  /* w2 = x[1] */
+  addi x6, x0, 3  /* w3 = a[0] (= x[0] ^ y[0]) */
+  addi x7, x0, 4  /* w4 = a[1] */
   addi x28, x0, 5 /* w5 = c[0] then t[0] */
   addi x29, x0, 6 /* w6 = c[1] then t[1] */
   addi x31, x0, 0 /* w0 = scratch (rand + write temp) */
@@ -154,18 +154,18 @@ secfulladder:
   bn.xor w5, w5, w5
   bn.lid x4, 0(x10)  /* w1 = x[0] */
   bn.lid x6, 0(x11)  /* w3 = y[0] */
-  bn.xor w3, w1, w3 /* w3 = a[0] = x[0] ^ y[0] */
-  bn.lid x28, 0(x12)  /* w5 = c[0] */
+  bn.xor w3, w1, w3  /* w3 = a[0] = x[0] ^ y[0] */
+  bn.lid x28, 0(x12) /* w5 = c[0] */
 
   /* Load share 1: x[1] -> w2, a[1] -> w4, c[1] -> w6. */
   bn.xor w2, w2, w2
   bn.xor w4, w4, w4
   bn.xor w6, w6, w6
   add    x30, x10, x13
-  bn.lid x5, 0(x30)  /* w2 = x[1] */
+  bn.lid x5, 0(x30)   /* w2 = x[1] */
   add    x30, x11, x13
-  bn.lid x7, 0(x30)  /* w4 = y[1] */
-  bn.xor w4, w2, w4 /* w4 = a[1] = x[1] ^ y[1] */
+  bn.lid x7, 0(x30)   /* w4 = y[1] */
+  bn.xor w4, w2, w4   /* w4 = a[1] = x[1] ^ y[1] */
   addi   x30, x12, 32 /* c shares are at stride 32 (caller's stack-scratch layout) */
   bn.lid x29, 0(x30)  /* w6 = c[1] */
 
@@ -209,11 +209,11 @@ secfulladder:
   /* tb[0..1] now holds the secand output (= new t[0..1]). */
 
   /* Compute r[1] = x ^ t. */
-  bn.xor w0, w0, w0 /* Whitening. */
-  bn.xor w0, w1, w7 /* w0 = r[1][0] = x[0] ^ t[0] */
+  bn.xor w0, w0, w0   /* Whitening. */
+  bn.xor w0, w1, w7   /* w0 = r[1][0] = x[0] ^ t[0] */
   bn.sid x31, 0(x16)
-  bn.xor w0, w0, w0 /* Whitening. */
-  bn.xor w0, w2, w8 /* w0 = r[1][1] */
+  bn.xor w0, w0, w0   /* Whitening. */
+  bn.xor w0, w2, w8   /* w0 = r[1][1] */
   addi   x30, x16, 32 /* r[1] (= output carry) is at stride 32 */
   bn.sid x31, 0(x30)
 
@@ -329,52 +329,52 @@ secadd:
 .globl secadd_immd_d1
 .type secadd_immd_d1, @function
 secadd_immd_d1:
-  li   x6, 1
-  li   x29, 4
+  li x6, 1
+  li x29, 4
 
   bn.not w6, w31 /* w6 = all-ones */
 
   /* Build nq = 0x801fff in w7 lane 0 (= 2^23 + 2^13 - 1). */
-  bn.xor w7, w7, w7
-  bn.addi w7, w7, 1
+  bn.xor    w7, w7, w7
+  bn.addi   w7, w7, 1
   bn.shv.8s w7, w7 << 23 /* lane 0 = 0x800000 */
-  bn.xor w8, w8, w8
-  bn.addi w8, w8, 1
+  bn.xor    w8, w8, w8
+  bn.addi   w8, w8, 1
   bn.shv.8s w8, w8 << 13 /* w8 lane 0 = 0x2000 */
-  bn.subi w8, w8, 1      /* w8 lane 0 = 0x1fff */
-  bn.add  w7, w7, w8     /* w7 lane 0 = 0x801fff */
+  bn.subi   w8, w8, 1    /* w8 lane 0 = 0x1fff */
+  bn.add    w7, w7, w8   /* w7 lane 0 = 0x801fff */
 
-  bn.xor w8, w8, w8
+  bn.xor  w8, w8, w8
   bn.addi w8, w8, 1 /* w8 = 1 (lane 0 bit 0) */
 
   /* Bit 0. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
-  bn.lid x6, 0(x10++)
-  bn.and w3, w7, w8
-  bn.cmp w3, w31
-  bn.sel w2, w31, w6, FG0.Z
+  bn.xor  w0, w0, w0
+  bn.xor  w1, w1, w1
+  bn.xor  w2, w2, w2
+  bn.xor  w3, w3, w3
+  bn.lid  x6, 0(x10++)
+  bn.and  w3, w7, w8
+  bn.cmp  w3, w31
+  bn.sel  w2, w31, w6, FG0.Z
   bn.rshi w7, w31, w7 >> 1
-  bn.xor w4, w1, w2
-  bn.sid x29, 0(x16++)
-  bn.and w0, w1, w2
+  bn.xor  w4, w1, w2
+  bn.sid  x29, 0(x16++)
+  bn.and  w0, w1, w2
 
   /* Bits 1..kbits-1. */
   addi x31, x12, -1
   loop x31, 11
-    bn.lid x6, 0(x10++)
-    bn.and w3, w7, w8
-    bn.cmp w3, w31
-    bn.sel w2, w31, w6, FG0.Z
+    bn.lid  x6, 0(x10++)
+    bn.and  w3, w7, w8
+    bn.cmp  w3, w31
+    bn.sel  w2, w31, w6, FG0.Z
     bn.rshi w7, w31, w7 >> 1
-    bn.xor w3, w1, w2
-    bn.xor w4, w3, w0
-    bn.sid x29, 0(x16++)
-    bn.and w5, w1, w2
-    bn.and w0, w0, w3
-    bn.xor w0, w0, w5
+    bn.xor  w3, w1, w2
+    bn.xor  w4, w3, w0
+    bn.sid  x29, 0(x16++)
+    bn.and  w5, w1, w2
+    bn.and  w0, w0, w3
+    bn.xor  w0, w0, w5
   endloop
 
   /* Final carry bit: z[kbits] = carry ^ y[kbits]. */
@@ -407,27 +407,27 @@ secadd_immd_d1:
 .globl secadd_immd_d2
 .type secadd_immd_d2, @function
 secadd_immd_d2:
-  add  x29, x10, x13 /* x29 = x share 1 ptr */
-  add  x30, x15, x13 /* x30 = z share 1 ptr */
+  add x29, x10, x13 /* x29 = x share 1 ptr */
+  add x30, x15, x13 /* x30 = z share 1 ptr */
 
-  bn.not w19, w31     /* w19 = all-ones */
-  bn.xor w18, w18, w18
+  bn.not  w19, w31    /* w19 = all-ones */
+  bn.xor  w18, w18, w18
   bn.addi w18, w18, 1 /* w18 = lane-0 bit 0 */
 
   bn.xor w12, w12, w12 /* c_0 = 0 */
   bn.xor w13, w13, w13 /* c_1 = 0 */
 
-  li   x5, 1  /* x_0 -> w1 */
-  li   x6, 2  /* x_1 -> w2 */
-  li   x7, 10 /* r_0 idx (= w10) */
-  li   x28, 11 /* r_1 idx (= w11) */
+  li x5, 1   /* x_0 -> w1 */
+  li x6, 2   /* x_1 -> w2 */
+  li x7, 10  /* r_0 idx (= w10) */
+  li x28, 11 /* r_1 idx (= w11) */
 
   addi x31, x12, 0
   loop x31, 39
     /* Derive y_bit. */
-    bn.and w0, w17, w18
-    bn.cmp w0, w31
-    bn.sel w3, w31, w19, FG0.Z
+    bn.and  w0, w17, w18
+    bn.cmp  w0, w31
+    bn.sel  w3, w31, w19, FG0.Z
     bn.rshi w17, w31, w17 >> 1
 
     /* Share 0: a_0 = x_0 ^ y_bit, t_0 = x_0 ^ c_0, r_0 = c_0 ^ a_0. */
@@ -450,13 +450,13 @@ secadd_immd_d2:
 
     /* SecAnd(a_0,a_1; t_0,t_1) -> (u_0, u_1). */
     bn.wsrr w14, URND
-    bn.xor w16, w7, w14
-    bn.and w16, w16, w4
-    bn.not w15, w4
-    bn.and w15, w15, w14
-    bn.xor w15, w15, w16
-    bn.and w8, w4, w6
-    bn.xor w8, w8, w15
+    bn.xor  w16, w7, w14
+    bn.and  w16, w16, w4
+    bn.not  w15, w4
+    bn.and  w15, w15, w14
+    bn.xor  w15, w15, w16
+    bn.and  w8, w4, w6
+    bn.xor  w8, w8, w15
 
     bn.xor w0, w0, w0 /* Whitening. */
 
@@ -504,21 +504,21 @@ secadd_immd_d2:
 .type secadd_constant_bmsk, @function
 secadd_constant_bmsk:
   /* WDR id registers. */
-  li   x5, 4
-  li   x6, 5
-  li   x7, 8
-  li   x28, 9
-  li   x29, 20
-  li   x30, 21
-  li   x31, 31
+  li x5, 4
+  li x6, 5
+  li x7, 8
+  li x28, 9
+  li x29, 20
+  li x30, 21
+  li x31, 31
 
   addi x11, x10, 768 /* (k+1) * 32 */
 
   /* Load b = sp[k]; zero carry. */
-  li   x12, 23 /* k */
-  slli x12, x12, 5
-  add  x13, x10, x12
-  add  x14, x11, x12
+  li     x12, 23 /* k */
+  slli   x12, x12, 5
+  add    x13, x10, x12
+  add    x14, x11, x12
   bn.lid x29, 0(x13)
   bn.lid x30, 0(x14)
   bn.xor w22, w22, w22
@@ -527,9 +527,9 @@ secadd_constant_bmsk:
   /* bit 0 (q=1) */
   bn.lid  x5, 0(x10)
   bn.lid  x6, 0(x11)
-  bn.xor  w6, w4, w20 /* xpy = sp ^ b */
+  bn.xor  w6, w4, w20  /* xpy = sp ^ b */
   bn.xor  w7, w5, w21
-  bn.xor  w8, w22, w6 /* z = c ^ xpy */
+  bn.xor  w8, w22, w6  /* z = c ^ xpy */
   bn.xor  w9, w23, w7
   bn.sid  x7, 0(x10++)
   bn.sid  x28, 0(x11++)
@@ -572,9 +572,9 @@ secadd_constant_bmsk:
   loopi 10, 21
     bn.lid  x5, 0(x10)
     bn.lid  x6, 0(x11)
-    bn.xor  w6, w4, w20 /* xpy = sp ^ b */
+    bn.xor  w6, w4, w20  /* xpy = sp ^ b */
     bn.xor  w7, w5, w21
-    bn.xor  w8, w22, w6 /* z = c ^ xpy */
+    bn.xor  w8, w22, w6  /* z = c ^ xpy */
     bn.xor  w9, w23, w7
     bn.sid  x7, 0(x10++)
     bn.sid  x28, 0(x11++)
@@ -635,25 +635,25 @@ secaddmodq:
   /* Step 2: s = SecAdd(x, y) -> z_out. */
   addi x10, x11, 0
   addi x11, x12, 0
-  li   x12, 24 /* k+1 */
+  li   x12, 24  /* k+1 */
   li   x13, 768 /* (k+1) * 32 */
   addi x15, x17, 0
   jal  x1, secadd
 
   /* Step 3: sp = SecAdd(s, nq) -> z_out, in place. */
-  bn.xor w17, w17, w17
-  bn.addi w17, w17, 1
+  bn.xor    w17, w17, w17
+  bn.addi   w17, w17, 1
   bn.shv.8s w17, w17 << 23
-  bn.xor w18, w18, w18
-  bn.addi w18, w18, 1
+  bn.xor    w18, w18, w18
+  bn.addi   w18, w18, 1
   bn.shv.8s w18, w18 << 13
-  bn.subi w18, w18, 1
-  bn.add w17, w17, w18 /* w17 lane 0 = nq = 0x801fff */
-  addi x10, x17, 0
-  li   x12, 24 /* k+1 */
-  li   x13, 768 /* (k+1) * 32 */
-  addi x15, x17, 0
-  jal  x1, secadd_immd_d2
+  bn.subi   w18, w18, 1
+  bn.add    w17, w17, w18 /* w17 lane 0 = nq = 0x801fff */
+  addi      x10, x17, 0
+  li        x12, 24       /* k+1 */
+  li        x13, 768      /* (k+1) * 32 */
+  addi      x15, x17, 0
+  jal       x1, secadd_immd_d2
 
   /* Step 4+5+6: z = sp + BitCopyMask(sp[k], q) -> z_out, in-place. */
   addi x10, x17, 0
@@ -689,7 +689,7 @@ secaddmodq:
 .type seca2bmodq, @function
 seca2bmodq:
   addi x2, x2, -32
-  sw   x13, 0(x2) /* preserve scratch across secadd calls */
+  sw   x13, 0(x2)  /* preserve scratch across secadd calls */
   addi x17, x10, 0 /* park z_out */
 
   /* s' <- (0, x[1]). */
@@ -700,7 +700,7 @@ seca2bmodq:
     bn.sid x7, 0(x6++)
   endloop
   bn.xor w0, w0, w0 /* Whitening. */
-  li   x7, 0
+  li     x7, 0
   loopi 24, 2
     bn.lid x7, 0(x28++)
     bn.sid x7, 0(x6++)
@@ -723,7 +723,7 @@ seca2bmodq:
   /* u <- secadd(s, s'). */
   lw   x10, 0(x2)
   addi x11, x17, 0
-  li   x12, 24 /* k+1 */
+  li   x12, 24  /* k+1 */
   li   x13, 768 /* (k+1) * 32 */
   addi x15, x17, 0
   jal  x1, secadd
@@ -764,13 +764,13 @@ secleq:
   /* x' <- SecAdd(x, C), in place. */
   addi x10, x11, 0
   addi x15, x11, 0
-  li   x12, 24 /* k+1 */
+  li   x12, 24  /* k+1 */
   li   x13, 768 /* (k+1) * 32 */
   jal  x1, secadd_immd_d2
 
   /* b <- SecUnMask(x'[k]). */
-  addi x6, x17, 736 /* x'[k], share 0 */
-  addi x31, x6, 768 /* x'[k], share 1 */
+  addi    x6, x17, 736 /* x'[k], share 0 */
+  addi    x31, x6, 768 /* x'[k], share 1 */
   li      x28, 0
   bn.lid  x28, 0(x6)
   li      x29, 1
@@ -818,13 +818,13 @@ secunmask_modq:
   la     x6, modulus
   bn.lid x5, 0(x6)
 
-  addi x28, x11, 0 /* share 0 cursor */
+  addi x28, x11, 0    /* share 0 cursor */
   addi x29, x11, 1024 /* share 1 cursor */
-  addi x30, x10, 0 /* output cursor */
+  addi x30, x10, 0    /* output cursor */
 
-  li   x5, 0
-  li   x6, 1
-  li   x7, 2
+  li x5, 0
+  li x6, 1
+  li x7, 2
   loopi 32, 9 /* 256 / 8 WDRs */
     jal         x1, _sample_rq
     bn.lid      x5, 0(x28)
@@ -833,7 +833,7 @@ secunmask_modq:
     bn.lid      x6, 0(x29)
     bn.subvm.8s w1, w1, w14 /* share 1 -= r */
     bn.sid      x6, 0(x29++)
-    bn.addvm.8s w2, w0, w1 /* out = share 0 + share 1 */
+    bn.addvm.8s w2, w0, w1  /* out = share 0 + share 1 */
     bn.sid      x7, 0(x30++)
   endloop
   ret
@@ -847,14 +847,14 @@ secunmask_modq:
  *   p_wdr = (8380417 / 2**23) ** 8  # ~0.9922
  */
 _sample_rq:
-  bn.wsrr     w14, URND
-  bn.and      w14, w14, w11
-  bn.subv.8s  w15, w14, w12
-  bn.and      w15, w15, w13
-  bn.cmp      w15, w13
-  csrrs       x31, FG0, x0
-  andi        x31, x31, 8
-  beq         x31, x0, _sample_rq
+  bn.wsrr    w14, URND
+  bn.and     w14, w14, w11
+  bn.subv.8s w15, w14, w12
+  bn.and     w15, w15, w13
+  bn.cmp     w15, w13
+  csrrs      x31, FG0, x0
+  andi       x31, x31, 8
+  beq        x31, x0, _sample_rq
   ret
 
 /*
@@ -918,10 +918,10 @@ _bitslice_butterfly:
   bn.or     w4,  w4,  w5
   bn.rshi   w5,  w4,  w31 >> 128
   bn.or     w27, w4,  w5
-  li   x30, 8
+  li        x30, 8
 
   loop x30, 161
-    li   x5, 0
+    li x5, 0
     loopi 4, 2
       bn.lid x5, 0(x28++)
       addi   x5, x5, 1
@@ -1100,7 +1100,7 @@ _bitslice_butterfly:
     bn.rshi   w6, w6, w31 >> 224
     bn.or     w3, w5, w6
 
-    li   x5, 0
+    li x5, 0
     loopi 4, 2
       bn.sid x5, 0(x29++)
       addi   x5, x5, 1
@@ -1133,28 +1133,28 @@ bitslice:
 .globl bitslice_k32
 .type bitslice_k32, @function
 bitslice_k32:
-  li  x5, 32
+  li x5, 32
   /* fall through */
 _bitslice_core:
   /* Spill nfull / remainder: kbits (x5) does not survive Phase 1. */
   addi x2, x2, -32
   addi x28, x5, -1
-  srli x28, x28, 3               /* nfull = (kbits - 1) / 8 */
+  srli x28, x28, 3  /* nfull = (kbits - 1) / 8 */
   slli x29, x28, 3
-  sub  x29, x5, x29              /* remainder = kbits - 8 * nfull */
+  sub  x29, x5, x29 /* remainder = kbits - 8 * nfull */
   sw   x28, 0(x2)
   sw   x29, 4(x2)
 
-  la   x13, scratch
+  la x13, scratch
 
-  addi x28, x11, 0               /* load from input  */
-  addi x29, x13, 0               /* store to scratch */
+  addi x28, x11, 0 /* load from input  */
+  addi x29, x13, 0 /* store to scratch */
   jal  x1, _bitslice_butterfly
 
   /* === Phase 2: per q-block gather (stride 128) + 8x8 transpose; store 8
    * stripes per full block, then the partial final block. === */
-  addi x30, x13, 0                /* gather base, q = 0 */
-  lw   x29, 0(x2)                /* nfull */
+  addi x30, x13, 0 /* gather base, q = 0 */
+  lw   x29, 0(x2)  /* nfull */
 
   loop x29, 13
     addi x28, x30, 0
@@ -1165,7 +1165,7 @@ _bitslice_core:
       addi   x5, x5, 1
     endloop
     jal x1, _transpose_8x8
-    li   x5, 16
+    li  x5, 16
     loopi 8, 3
       bn.sid x5, 0(x10)
       add    x10, x10, x12
@@ -1183,8 +1183,8 @@ _bitslice_core:
     addi   x5, x5, 1
   endloop
   jal x1, _transpose_8x8
-  lw   x28, 4(x2)               /* remainder */
-  li   x5, 16
+  lw  x28, 4(x2) /* remainder */
+  li  x5, 16
   loop x28, 3
     bn.sid x5, 0(x10)
     add    x10, x10, x12
@@ -1211,13 +1211,13 @@ _bitslice_core:
 .globl unbitslice
 .type unbitslice, @function
 unbitslice:
-  la   x12, scratch
+  la x12, scratch
 
   /* === Phase 2: scatter 23 bitsliced inputs through three 8x8 lane
    * transposes into 32 scratch WDRs.  q=3 (bits 23..31) is zero-filled. === */
 
   /* --- q=0 --- */
-  li   x5, 0
+  li x5, 0
   loopi 8, 2
     bn.lid x5, 0(x11++)
     addi   x5, x5, 1
@@ -1235,7 +1235,7 @@ unbitslice:
   endloop
 
   /* --- q=1 --- */
-  li   x5, 0
+  li x5, 0
   loopi 8, 2
     bn.lid x5, 0(x11++)
     addi   x5, x5, 1
@@ -1252,7 +1252,7 @@ unbitslice:
   endloop
 
   /* --- q=2: 7 inputs + zero pad for missing bit 23. --- */
-  li   x5, 0
+  li x5, 0
   loopi 7, 2
     bn.lid x5, 0(x11++)
     addi   x5, x5, 1
@@ -1305,8 +1305,8 @@ poly_rej_samp_bitsliced:
 _prs_bs_draw:
 #if defined(MLDSA_REJ_SAMPLE_TEST)
   /* Read 23 WDRs from x11 in place of URND. */
-  li   x5, 0
-  li   x6, 23
+  li x5, 0
+  li x6, 23
   loop x6, 2
     bn.lid x5, 0(x11++)
     addi   x5, x5, 1
@@ -1344,18 +1344,18 @@ _prs_bs_draw:
    *   bits 13..22 (const = 0):  c_{b+1} = v_b AND c_b
    * Starting c_0 = 0, accept iff the folded c_23 (in w23) is all-zero.
    */
-  bn.or  w23, w0,  w1
-  bn.or  w23, w23, w2
-  bn.or  w23, w23, w3
-  bn.or  w23, w23, w4
-  bn.or  w23, w23, w5
-  bn.or  w23, w23, w6
-  bn.or  w23, w23, w7
-  bn.or  w23, w23, w8
-  bn.or  w23, w23, w9
-  bn.or  w23, w23, w10
-  bn.or  w23, w23, w11
-  bn.or  w23, w23, w12
+  bn.or w23, w0,  w1
+  bn.or w23, w23, w2
+  bn.or w23, w23, w3
+  bn.or w23, w23, w4
+  bn.or w23, w23, w5
+  bn.or w23, w23, w6
+  bn.or w23, w23, w7
+  bn.or w23, w23, w8
+  bn.or w23, w23, w9
+  bn.or w23, w23, w10
+  bn.or w23, w23, w11
+  bn.or w23, w23, w12
 
   bn.and w23, w23, w13
   bn.and w23, w23, w14
@@ -1370,7 +1370,7 @@ _prs_bs_draw:
 
   /* Redraw if any lane >= q (FG0.Z clear -> w23 != 0). */
   csrrs x6, FG0, x0
-  srli  x6, x6, 3              /* FG0.Z */
+  srli  x6, x6, 3 /* FG0.Z */
   beq   x6, x0, _prs_bs_draw
 
   /* Store w0..w22 to output. */
@@ -1413,22 +1413,22 @@ secb2amodq:
   /* z_0 staged in the shared scratchpad; standard 32 B prologue. */
   la   x14, scratch
   addi x2, x2, -32
-  sw   x10, 0(x2)                 /* save z_out */
-  sw   x11, 4(x2)                 /* save x_in */
-  sw   x13, 8(x2)                 /* save scratch_ptr for seca2b */
-  sw   x14, 12(x2)                /* save z_0 scratch ptr */
+  sw   x10, 0(x2)  /* save z_out */
+  sw   x11, 4(x2)  /* save x_in */
+  sw   x13, 8(x2)  /* save scratch_ptr for seca2b */
+  sw   x14, 12(x2) /* save z_0 scratch ptr */
 
   /* z_0 <- Z_q. */
   addi x10, x14, 0
   jal  x1, poly_rej_samp_bitsliced
 
   /* z'_0 <- q - z_0 (bitsliced borrow chain). */
-  lw   x31, 0(x2)
-  lw   x30, 12(x2)
-  li   x5, 0
-  li   x6, 1
-  li   x7, 2
-  li   x28, 31
+  lw x31, 0(x2)
+  lw x30, 12(x2)
+  li x5, 0
+  li x6, 1
+  li x7, 2
+  li x28, 31
 
   bn.lid x5, 0(x30++)
   bn.not w2, w0
@@ -1458,24 +1458,24 @@ secb2amodq:
   endloop
 
   /* a <- seca2bmodq((z'_0, 0)). */
-  lw   x10, 0(x2)
-  lw   x11, 0(x2)
-  lw   x13, 8(x2)
-  jal  x1, seca2bmodq
+  lw  x10, 0(x2)
+  lw  x11, 0(x2)
+  lw  x13, 8(x2)
+  jal x1, seca2bmodq
 
   /* b <- secaddmodq(a, x). */
-  lw   x10, 0(x2)
-  lw   x11, 4(x2)
-  lw   x12, 0(x2)
-  jal  x1, secaddmodq
+  lw  x10, 0(x2)
+  lw  x11, 4(x2)
+  lw  x12, 0(x2)
+  jal x1, secaddmodq
 
   /* z_1 <- unmask(b) (RefreshIOS fused with the XOR-collapse). */
   lw   x31, 0(x2)
-  addi x13, x31, 0                 /* b[share 0] read */
-  addi x14, x31, 768               /* b[share 1] read */
+  addi x13, x31, 0   /* b[share 0] read */
+  addi x14, x31, 768 /* b[share 1] read */
   li   x6, 1
   li   x7, 2
-  addi x30, x31, 768               /* z[share 1] write */
+  addi x30, x31, 768 /* z[share 1] write */
   li   x29, 23
   loop x29, 7
     bn.lid  x6, 0(x13++)
@@ -1486,19 +1486,19 @@ secb2amodq:
     bn.xor  w1, w1, w2
     bn.sid  x6, 0(x30++)
   endloop
-  li   x28, 31
-  bn.sid x28, 0(x30)               /* z[share 1] bit k = 0 */
+  li     x28, 31
+  bn.sid x28, 0(x30) /* z[share 1] bit k = 0 */
 
   /* z_0 -> z[share 0]. */
-  addi x30, x31, 0                 /* z[share 0] write */
-  lw   x11, 12(x2)                /* z_0 source */
+  addi x30, x31, 0 /* z[share 0] write */
+  lw   x11, 12(x2) /* z_0 source */
   li   x5, 0
   li   x29, 23
   loop x29, 2
     bn.lid x5, 0(x11++)
     bn.sid x5, 0(x30++)
   endloop
-  bn.sid x28, 0(x30)               /* z[share 0] bit k = 0 */
+  bn.sid x28, 0(x30) /* z[share 0] bit k = 0 */
 
   addi x2, x2, 32
   ret
@@ -1551,8 +1551,8 @@ secb2amodq_eta:
   /* Whitening. */
   bn.xor w0, w0, w0
   /* share 1 low k stripes -> buffer + 768. */
-  addi x5, x15, 768
-  addi x29, x12, 0
+  addi   x5, x15, 768
+  addi   x29, x12, 0
   loop x13, 2
     bn.lid x7, 0(x29++)
     bn.sid x7, 0(x5++)
@@ -1592,9 +1592,9 @@ secb2amodq_eta:
   bn.xor w17, w17, w17
   bn.xor w18, w18, w18
   bn.xor w19, w19, w19
-  lw   x10,  4(x2)
-  addi x11, x10, 0
-  jal  x1, unbitslice
+  lw     x10,  4(x2)
+  addi   x11, x10, 0
+  jal    x1, unbitslice
 
   lw   x1,  0(x2)
   addi x2, x2, 32
@@ -1642,7 +1642,7 @@ secboundcheck:
   sw   x14, 4(x2)
 
   /* Stash C across the seca2bmodq call. */
-  li   x5, 17
+  li     x5, 17
   bn.sid x5, 32(x2)
 
   /* Preserve arguments. */
@@ -1650,9 +1650,9 @@ secboundcheck:
 
   /* x_0 <- x_0 + lambda_0 mod q (written to x14; caller's x stays intact). */
   bn.lid x0, 0(x12)
-  addi x5, x17, 0
-  addi x6, x14, 0
-  li   x7, 1
+  addi   x5, x17, 0
+  addi   x6, x14, 0
+  li     x7, 1
   loopi 32, 3
     bn.lid      x7, 0(x5++)
     bn.addvm.8s w1, w1, w0
@@ -1694,19 +1694,19 @@ secboundcheck:
   bn.xor w25, w25, w25
   bn.xor w26, w26, w26
   bn.xor w27, w27, w27
-  lw   x14, 4(x2)
-  addi x10, x14, 768
-  addi x11, x17, 1024
-  li   x12, 32
-  jal  x1, bitslice
+  lw     x14, 4(x2)
+  addi   x10, x14, 768
+  addi   x11, x17, 1024
+  li     x12, 32
+  jal    x1, bitslice
 
   /* Zero bit-k pad of each share. */
-  lw      x14, 4(x2)
-  li      x5, 31
-  addi    x6, x14, 736
-  bn.sid  x5, 0(x6)
-  addi    x6, x14, 1504
-  bn.sid  x5, 0(x6)
+  lw     x14, 4(x2)
+  li     x5, 31
+  addi   x6, x14, 736
+  bn.sid x5, 0(x6)
+  addi   x6, x14, 1504
+  bn.sid x5, 0(x6)
 
   /* x' <- seca2bmodq(x). */
   addi x10, x14, 0
@@ -1715,11 +1715,11 @@ secboundcheck:
   jal  x1, seca2bmodq
 
   /* b <- secleq(x'). */
-  lw   x14, 4(x2)
-  li   x5, 17
+  lw     x14, 4(x2)
+  li     x5, 17
   bn.lid x5, 32(x2)
-  addi x11, x14, 0
-  jal  x1, secleq
+  addi   x11, x14, 0
+  jal    x1, secleq
 
   addi x2, x2, 64
 
@@ -1761,31 +1761,31 @@ secboundcheck:
 .globl seccompress
 .type seccompress, @function
 seccompress:
-  li   x5, 64
-  sub  x2, x2, x5
-  sw   x10, 4(x2)
-  sw   x11, 8(x2)
-  sw   x8, 16(x2)
-  sw   x9, 20(x2)
-  sw   x18, 24(x2)
-  sw   x19, 28(x2)
-  sw   x12, 32(x2)
-  sw   x13, 36(x2)
+  li  x5, 64
+  sub x2, x2, x5
+  sw  x10, 4(x2)
+  sw  x11, 8(x2)
+  sw  x8, 16(x2)
+  sw  x9, 20(x2)
+  sw  x18, 24(x2)
+  sw  x19, 28(x2)
+  sw  x12, 32(x2)
+  sw  x13, 36(x2)
 
   /* K = 0xb02c09a2 -> w16 (broadcast to all 8 lanes). */
-  bn.addi  w16, w31, 0xb0
-  bn.rshi  w16, w16, w31 >> 248
-  bn.addi  w16, w16, 0x2c
-  bn.rshi  w16, w16, w31 >> 248
-  bn.addi  w16, w16, 0x09
-  bn.rshi  w16, w16, w31 >> 248
-  bn.addi  w16, w16, 0xa2
-  bn.rshi  w18, w16, w31 >> 224
-  bn.or    w16, w16, w18
-  bn.rshi  w18, w16, w31 >> 192
-  bn.or    w16, w16, w18
-  bn.rshi  w18, w16, w31 >> 128
-  bn.or    w16, w16, w18
+  bn.addi w16, w31, 0xb0
+  bn.rshi w16, w16, w31 >> 248
+  bn.addi w16, w16, 0x2c
+  bn.rshi w16, w16, w31 >> 248
+  bn.addi w16, w16, 0x09
+  bn.rshi w16, w16, w31 >> 248
+  bn.addi w16, w16, 0xa2
+  bn.rshi w18, w16, w31 >> 224
+  bn.or   w16, w16, w18
+  bn.rshi w18, w16, w31 >> 192
+  bn.or   w16, w16, w18
+  bn.rshi w18, w16, w31 >> 128
+  bn.or   w16, w16, w18
 
   /* BIAS = 2^23 + 1 -> w17 (broadcast to all 8 lanes). */
   bn.addi   w17, w31, 1
@@ -1799,17 +1799,17 @@ seccompress:
   bn.or     w17, w17, w18
 
   /* Steps 1-2: z_i = round(x_i*delta*2^ell / q) mod 2^(ell+c) for i in {0,1}. */
-  addi     x8, x11, 0
-  lw       x9, 32(x2)
+  addi x8, x11, 0
+  lw   x9, 32(x2)
   loopi    2, 10
-    li       x5, 0
-    li       x7, 3
+    li x5, 0
+    li x7, 3
     loopi    32, 5
-      bn.lid               x5, 0(x8++)
-      bn.shv.8s            w0, w0 << 7
-      bn.mulv.8s.even.hi   w3, w0, w16
-      bn.mulv.8s.odd.hi    w3, w3, w16
-      bn.sid               x7, 0(x9++)
+      bn.lid             x5, 0(x8++)
+      bn.shv.8s          w0, w0 << 7
+      bn.mulv.8s.even.hi w3, w0, w16
+      bn.mulv.8s.odd.hi  w3, w3, w16
+      bn.sid             x7, 0(x9++)
     endloop
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -1817,26 +1817,26 @@ seccompress:
   endloop
 
   /* Add the rounding bias 2^(ell-1) + 1 to share 0. */
-  lw       x8, 32(x2)
-  li       x5, 0
+  lw x8, 32(x2)
+  li x5, 0
   loopi    32, 3
-    bn.lid       x5, 0(x8)
-    bn.addv.8s   w0, w0, w17
-    bn.sid       x5, 0(x8++)
+    bn.lid     x5, 0(x8)
+    bn.addv.8s w0, w0, w17
+    bn.sid     x5, 0(x8++)
   endloop
 
   /* Step 3: Z = A2B(z_0, z_1) */
 
   /* Bitslice each share */
-  lw       x8, 32(x2)
-  lw       x9, 32(x2)
-  li       x5, 2048
-  add      x9, x9, x5
+  lw  x8, 32(x2)
+  lw  x9, 32(x2)
+  li  x5, 2048
+  add x9, x9, x5
   loopi    2, 34
-    addi x10, x9, 0
-    addi x11, x8, 0
-    li   x12, 32
-    jal  x1, bitslice_k32
+    addi   x10, x9, 0
+    addi   x11, x8, 0
+    li     x12, 32
+    jal    x1, bitslice_k32
     /* Whitening. */
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
@@ -1866,8 +1866,8 @@ seccompress:
     bn.xor w25, w25, w25
     bn.xor w26, w26, w26
     bn.xor w27, w27, w27
-    addi x8, x8, 1024
-    addi x9, x9, 1024
+    addi   x8, x8, 1024
+    addi   x9, x9, 1024
   endloop
 
 
@@ -1875,8 +1875,8 @@ seccompress:
   /* A = (z_0, 0), B = (0, z_1). */
   lw   x11, 32(x2)
   li   x5, 2048
-  add  x11, x11, x5                     /* z_0 bitsliced */
-  addi x12, x11, 1024                   /* z_1 bitsliced */
+  add  x11, x11, x5   /* z_0 bitsliced */
+  addi x12, x11, 1024 /* z_1 bitsliced */
   lw   x14, 32(x2)
   lw   x15, 36(x2)
   addi x28, x14, 0
@@ -1885,12 +1885,12 @@ seccompress:
   li   x6, 1
   li   x7, 31
   loopi 32, 6
-    bn.lid x5, 0(x11++)            /* z_0[i] */
-    bn.lid x6, 0(x12++)            /* z_1[i] */
-    bn.sid x5, 0(x28)              /* A.share0 = z_0[i] */
-    bn.sid x7, 1024(x28++)         /* A.share1 = 0 */
-    bn.sid x7, 0(x29)              /* B.share0 = 0 */
-    bn.sid x6, 1024(x29++)         /* B.share1 = z_1[i] */
+    bn.lid x5, 0(x11++)    /* z_0[i] */
+    bn.lid x6, 0(x12++)    /* z_1[i] */
+    bn.sid x5, 0(x28)      /* A.share0 = z_0[i] */
+    bn.sid x7, 1024(x28++) /* A.share1 = 0 */
+    bn.sid x7, 0(x29)      /* B.share0 = 0 */
+    bn.sid x6, 1024(x29++) /* B.share1 = z_1[i] */
   endloop
 
   /* Z = A + B mod 2^32 (secadd, k=32, share_str=1024, d=2). */
@@ -1908,7 +1908,7 @@ seccompress:
    *  pass 1 maps it to [0, 44],
    *  pass 2 folds the residual 44 -> 0.*/
   lw   x10, 4(x2)
-  addi x10, x10, 768                /* V' = top 8 stripes of Z (share 0) */
+  addi x10, x10, 768 /* V' = top 8 stripes of Z (share 0) */
   lw   x11, 32(x2)
   li   x5, 32
   sub  x2, x2, x5
@@ -1919,12 +1919,12 @@ seccompress:
   li   x5, 32
   add  x2, x2, x5
 
-  lw   x8, 16(x2)
-  lw   x9, 20(x2)
-  lw   x18, 24(x2)
-  lw   x19, 28(x2)
-  li   x5, 64
-  add  x2, x2, x5
+  lw  x8, 16(x2)
+  lw  x9, 20(x2)
+  lw  x18, 24(x2)
+  lw  x19, 28(x2)
+  li  x5, 64
+  add x2, x2, x5
   ret
 
 
@@ -1939,12 +1939,12 @@ seccompress:
 _seccompress_csub:
   /* diff = V' + (256 - delta) mod 256 via inline-constant SecAdd. */
   bn.addi w17, w31, 212
-  lw   x10, 4(x2)
-  li   x12, 8
-  li   x13, 1024
-  lw   x15, 16(x2)
-  addi x15, x15, 192
-  jal  x1, secadd_immd_d2
+  lw      x10, 4(x2)
+  li      x12, 8
+  li      x13, 1024
+  lw      x15, 16(x2)
+  addi    x15, x15, 192
+  jal     x1, secadd_immd_d2
 
   /* Masked select over the 8 V'/diff stripes:
    *   V'[i] = (mask & (V'[i] ^ diff[i])) ^ diff[i],  mask = MSB(diff).
@@ -1954,12 +1954,12 @@ _seccompress_csub:
   addi x9, x31, 192
   loopi 8, 36
     /* tmp = V'[i] ^ diff[i] sharewise */
-    li   x6, 0
-    li   x7, 1
+    li     x6, 0
+    li     x7, 1
     bn.lid x6, 0(x8)
     bn.lid x7, 0(x9)
     bn.xor w0, w0, w1
-    addi x30, x31, 32
+    addi   x30, x31, 32
     bn.sid x6, 0(x30)
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -1969,18 +1969,18 @@ _seccompress_csub:
     bn.xor w0, w0, w1
     bn.sid x6, 32(x30)
     /* and = secand(mask = diff[bit 7], tmp) */
-    addi x10, x31, 192
-    addi x10, x10, 224
-    li   x11, 1024
-    addi x12, x31, 32
-    li   x13, 32
-    li   x15, 32
-    addi x16, x31, 96
-    jal  x1, secand
+    addi   x10, x31, 192
+    addi   x10, x10, 224
+    li     x11, 1024
+    addi   x12, x31, 32
+    li     x13, 32
+    li     x15, 32
+    addi   x16, x31, 96
+    jal    x1, secand
     /* V'[i] = and ^ diff[i] sharewise */
-    li   x6, 0
-    li   x7, 1
-    addi x30, x31, 96
+    li     x6, 0
+    li     x7, 1
+    addi   x30, x31, 96
     bn.lid x6, 0(x30)
     bn.lid x7, 0(x9)
     bn.xor w0, w0, w1
@@ -1992,8 +1992,8 @@ _seccompress_csub:
     bn.lid x7, 1024(x9)
     bn.xor w0, w0, w1
     bn.sid x6, 1024(x8)
-    addi x8, x8, 32
-    addi x9, x9, 32
+    addi   x8, x8, 32
+    addi   x9, x9, 32
   endloop
 
   ret
@@ -2039,32 +2039,32 @@ secdecompose:
   bn.mov w29, w22
   bn.mov w30, w23
 
-  li   x5, 64
-  sub  x2, x2, x5
-  sw   x10, 4(x2)               /* w1_out */
-  sw   x11, 8(x2)               /* w_io */
-  sw   x21, 16(x2)
-  sw   x22, 20(x2)
-  sw   x23, 24(x2)
-  sw   x24, 28(x2)
-  sw   x25, 32(x2)
+  li  x5, 64
+  sub x2, x2, x5
+  sw  x10, 4(x2) /* w1_out */
+  sw  x11, 8(x2) /* w_io */
+  sw  x21, 16(x2)
+  sw  x22, 20(x2)
+  sw  x23, 24(x2)
+  sw  x24, 28(x2)
+  sw  x25, 32(x2)
 
   /* Select the variant from the level in x12 (2 = ML-DSA-44); spill it and
    * the per-variant constants (M_BITS / SHARE_STR / ZERO_STRIPES) so they
    * survive the core subcalls. */
-  sw   x12, 60(x2)
-  li   x5, 2
-  bne  x12, x5, _secdecompose_l35
+  sw  x12, 60(x2)
+  li  x5, 2
+  bne x12, x5, _secdecompose_l35
 
   /* ===== ML-DSA-44 (L2): w1 <- SecCompress(w), delta = 44. ===== */
-  li   x5, 6
-  sw   x5, 48(x2)              /* M_BITS */
-  li   x5, 1024
-  sw   x5, 52(x2)             /* SHARE_STR */
-  li   x5, 17
-  sw   x5, 56(x2)             /* ZERO_STRIPES */
+  li x5, 6
+  sw x5, 48(x2) /* M_BITS */
+  li x5, 1024
+  sw x5, 52(x2) /* SHARE_STR */
+  li x5, 17
+  sw x5, 56(x2) /* ZERO_STRIPES */
 
-  sw   x16, 12(x2)             /* T_packed base */
+  sw   x16, 12(x2) /* T_packed base */
   /* Copy the 2 strided shares of w into contiguous T_packed (x16). */
   addi x28, x11, 0
   addi x29, x16, 0
@@ -2077,7 +2077,7 @@ secdecompose:
     endloop
     /* Whitening. */
     bn.xor w0, w0, w0
-    add  x28, x28, x14
+    add    x28, x28, x14
   endloop
   /* seccompress in place. */
   addi x10, x16, 0
@@ -2091,26 +2091,26 @@ secdecompose:
 
 _secdecompose_l35:
   /* ===== ML-DSA-65/87 (L35): b' = -16*(w + gamma2) - 1 = -16*w + (q-1)/2. ===== */
-  li   x5, 4
-  sw   x5, 48(x2)             /* M_BITS */
-  li   x5, 768
-  sw   x5, 52(x2)            /* SHARE_STR */
-  li   x5, 19
-  sw   x5, 56(x2)            /* ZERO_STRIPES */
+  li x5, 4
+  sw x5, 48(x2) /* M_BITS */
+  li x5, 768
+  sw x5, 52(x2) /* SHARE_STR */
+  li x5, 19
+  sw x5, 56(x2) /* ZERO_STRIPES */
 
-  sw   x15, 36(x2)            /* w0_packed_share0 */
-  sw   x16, 40(x2)            /* w0_packed_share1 */
-  sw   x17, 44(x2)            /* seca2bmodq scratch */
+  sw x15, 36(x2) /* w0_packed_share0 */
+  sw x16, 40(x2) /* w0_packed_share1 */
+  sw x17, 44(x2) /* seca2bmodq scratch */
 
-  addi x21, x13, 0
-  addi x24, x21, 1024
+  addi   x21, x13, 0
+  addi   x24, x21, 1024
   /* Share 0: -16*w_s0 + (q-1)/2. */
-  la   x5, qm1half_const
-  li   x6, 1
+  la     x5, qm1half_const
+  li     x6, 1
   bn.lid x6, 0(x5)
-  lw   x28, 8(x2)
-  addi x29, x21, 0
-  li   x31, 0
+  lw     x28, 8(x2)
+  addi   x29, x21, 0
+  li     x31, 0
   loopi 32, 8
     bn.lid      x31, 0(x28++)
     bn.subvm.8s w0, w31, w0
@@ -2122,21 +2122,21 @@ _secdecompose_l35:
     bn.sid      x31, 0(x29++)
   endloop
   /* Bitslice share 0; zero bit k. */
-  addi x10, x24, 0
-  addi x11, x21, 0
-  li   x12, 32
-  jal  x1, bitslice
-  li   x5, 31
-  addi x6, x24, 736
+  addi   x10, x24, 0
+  addi   x11, x21, 0
+  li     x12, 32
+  jal    x1, bitslice
+  li     x5, 31
+  addi   x6, x24, 736
   bn.sid x5, 0(x6)
 
   /* Whitening. */
   bn.xor w0, w0, w0
   /* Share 1: -16*w_s1. */
-  lw   x28, 8(x2)
-  add  x28, x28, x14
-  addi x29, x21, 0
-  li   x31, 0
+  lw     x28, 8(x2)
+  add    x28, x28, x14
+  addi   x29, x21, 0
+  li     x31, 0
   loopi 32, 7
     bn.lid      x31, 0(x28++)
     bn.subvm.8s w0, w31, w0
@@ -2177,12 +2177,12 @@ _secdecompose_l35:
   bn.xor w26, w26, w26
   bn.xor w27, w27, w27
   /* Bitslice share 1; zero bit k. */
-  addi x10, x24, 768
-  addi x11, x21, 0
-  li   x12, 32
-  jal  x1, bitslice
-  li   x5, 31
-  addi x6, x24, 1504            /* 768 + 736 */
+  addi   x10, x24, 768
+  addi   x11, x21, 0
+  li     x12, 32
+  jal    x1, bitslice
+  li     x5, 31
+  addi   x6, x24, 1504 /* 768 + 736 */
   bn.sid x5, 0(x6)
 
   /* b' <- seca2bmodq(b'). */
@@ -2195,14 +2195,14 @@ _secdecompose_l35:
   /* Stripes 4..22 (19) hold Boolean shares of (gamma2 - w0); dump per share
    * to x15/x16 (608 B each). */
   lw   x5, 36(x2)
-  addi x28, x24, 128             /* share 0, stripe 4 */
+  addi x28, x24, 128 /* share 0, stripe 4 */
   li   x6, 0
   loopi 19, 2
     bn.lid x6, 0(x28++)
     bn.sid x6, 0(x5++)
   endloop
   lw   x5, 40(x2)
-  addi x28, x24, 896             /* share 1, stripe 4 (768 + 128) */
+  addi x28, x24, 896 /* share 1, stripe 4 (768 + 128) */
   loopi 19, 2
     bn.lid x6, 0(x28++)
     bn.sid x6, 0(x5++)
@@ -2211,11 +2211,11 @@ _secdecompose_l35:
 
 _secdecompose_unmask:
   /* w1 <- SecUnMask(w1): refresh + XOR-collapse over M_BITS stripes. */
-  addi x28, x24, 0               /* share 0 stripe 0 */
-  lw   x5, 52(x2)             /* SHARE_STR */
-  add  x29, x24, x5              /* share 1 stripe 0 */
+  addi x28, x24, 0  /* share 0 stripe 0 */
+  lw   x5, 52(x2)   /* SHARE_STR */
+  add  x29, x24, x5 /* share 1 stripe 0 */
   addi x30, x25, 0
-  lw   x7, 48(x2)             /* M_BITS */
+  lw   x7, 48(x2)   /* M_BITS */
   li   x5, 0
   li   x6, 1
   loop x7, 7
@@ -2229,8 +2229,8 @@ _secdecompose_unmask:
   endloop
 
   /* Zero stripes M_BITS..KBITS-1. */
-  lw   x5, 56(x2)            /* ZERO_STRIPES */
-  li   x6, 31
+  lw x5, 56(x2) /* ZERO_STRIPES */
+  li x6, 31
   loop x5, 1
     bn.sid x6, 0(x30++)
   endloop
@@ -2241,36 +2241,36 @@ _secdecompose_unmask:
   jal  x1, unbitslice
 
   /* Line 9 (L2 only): w0 <- w - alpha*w1 mod q. */
-  lw   x5, 60(x2)
-  li   x6, 2
-  bne  x5, x6, _secdecompose_epilogue
+  lw  x5, 60(x2)
+  li  x6, 2
+  bne x5, x6, _secdecompose_epilogue
 
-  bn.wsrw 0x0, w28            /* MOD = R|Q (stashed) for subvm */
-  la   x5, gamma2_vec_const
-  li   x6, 24
-  bn.lid x6, 0(x5)
-  lw   x10, 4(x2)
-  lw   x11, 8(x2)
-  li   x5, 0
-  li   x6, 1
+  bn.wsrw 0x0, w28 /* MOD = R|Q (stashed) for subvm */
+  la      x5, gamma2_vec_const
+  li      x6, 24
+  bn.lid  x6, 0(x5)
+  lw      x10, 4(x2)
+  lw      x11, 8(x2)
+  li      x5, 0
+  li      x6, 1
   loopi 32, 7
-    bn.lid x5, 0(x10++)
+    bn.lid             x5, 0(x10++)
     bn.mulv.8s.even.lo w0, w0, w24
     bn.mulv.8s.odd.lo  w0, w0, w24
-    bn.addv.8s w0, w0, w0
-    bn.lid x6, 0(x11)
-    bn.subvm.8s w0, w1, w0
-    bn.sid x5, 0(x11++)
+    bn.addv.8s         w0, w0, w0
+    bn.lid             x6, 0(x11)
+    bn.subvm.8s        w0, w1, w0
+    bn.sid             x5, 0(x11++)
   endloop
 
 _secdecompose_epilogue:
-  lw   x21, 16(x2)
-  lw   x22, 20(x2)
-  lw   x23, 24(x2)
-  lw   x24, 28(x2)
-  lw   x25, 32(x2)
-  li   x5, 64
-  add  x2, x2, x5
+  lw  x21, 16(x2)
+  lw  x22, 20(x2)
+  lw  x23, 24(x2)
+  lw  x24, 28(x2)
+  lw  x25, 32(x2)
+  li  x5, 64
+  add x2, x2, x5
 
   bn.mov w16, w28
   bn.mov w22, w29
@@ -2319,20 +2319,20 @@ _secdecompose_epilogue:
 .globl masked_poly_uniform_eta
 .type masked_poly_uniform_eta, @function
 masked_poly_uniform_eta:
-  addi x16, x0, 0                 /* no export */
+  addi x16, x0, 0 /* no export */
 .globl masked_poly_uniform_eta_export
 .type masked_poly_uniform_eta_export, @function
 masked_poly_uniform_eta_export:
   addi x2, x2, -64
-  sw   x10, 0(x2)                 /* out ptr (also bitsliced m, then output) */
-  sw   x13, 4(x2)                 /* scratch base (= b2a seca2b scratch) */
-  sw   x14, 8(x2)                 /* b2a Boolean buffer */
-  sw   x15, 12(x2)                /* eta (variant: 2 or 4) */
-  sw   x8, 16(x2)                /* callee-save: caller parks pointers here */
+  sw   x10, 0(x2)  /* out ptr (also bitsliced m, then output) */
+  sw   x13, 4(x2)  /* scratch base (= b2a seca2b scratch) */
+  sw   x14, 8(x2)  /* b2a Boolean buffer */
+  sw   x15, 12(x2) /* eta (variant: 2 or 4) */
+  sw   x8, 16(x2)  /* callee-save: caller parks pointers here */
   sw   x9, 20(x2)
   sw   x18, 24(x2)
   sw   x27, 28(x2)
-  sw   x16, 32(x2)                /* export dest */
+  sw   x16, 32(x2) /* export dest */
 
   /* ---- Init masked SHAKE-256, absorb rho' shares + nonce. ---- */
   addi  x14, x0, 64
@@ -2340,19 +2340,19 @@ masked_poly_uniform_eta_export:
   slli  x5, x14, 5
   addi  x5, x5, SHAKE256_CFG
   addi  x14, x0, 1
-  slli  x14, x14, 20              /* masking-enable bit */
+  slli  x14, x14, 20 /* masking-enable bit */
   add   x5, x5, x14
   csrrw x0, kmac_cfg, x5
 
-  bn.lid  x0, 0(x11)             /* share0[0..32] */
+  bn.lid  x0, 0(x11)  /* share0[0..32] */
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0
-  bn.lid  x0, 64(x11)            /* share1[0..32] */
+  bn.lid  x0, 64(x11) /* share1[0..32] */
   bn.wsrw kmac_msg1, w0
-  bn.lid  x0, 32(x11)            /* share0[32..64] */
+  bn.lid  x0, 32(x11) /* share0[32..64] */
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0
-  bn.lid  x0, 96(x11)            /* share1[32..64] */
+  bn.lid  x0, 96(x11) /* share1[32..64] */
   bn.wsrw kmac_msg1, w0
 
   /* Nonce, using out[0..32] as scratch (overwritten later). */
@@ -2377,18 +2377,18 @@ masked_poly_uniform_eta_export:
   bn.or   w30, w30, w30 << 128
 
   lw   x13, 4(x2)
-  addi x8, x13, 0                /* G0 write cursor */
-  addi x9, x13, 1024             /* G1 write cursor */
-  addi x18, x13, 1024             /* G0 end (256 nibbles done) */
+  addi x8, x13, 0     /* G0 write cursor */
+  addi x9, x13, 1024  /* G1 write cursor */
+  addi x18, x13, 1024 /* G0 end (256 nibbles done) */
 
 _mpue_squeeze:
   /* s0_w/s1_w = next 64 masked nibbles (share 0 / share 1). */
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
 
-  lw   x5, 12(x2)               /* eta (2 or 4) */
-  li   x6, 2
-  bne  x5, x6, _mpue_reject_e4
+  lw      x5, 12(x2) /* eta (2 or 4) */
+  li      x6, 2
+  bne     x5, x6, _mpue_reject_e4
   /* reject (n == 15) = AND of the nibble's 4 bits, at bit 4i. */
   /* SecAnd: z = n & (n>>1) on the masked nibble n = (w0,w1). */
   bn.rshi w2, w31, w0 >> 1
@@ -2401,7 +2401,7 @@ _mpue_squeeze:
   bn.and  w8, w1, w2
   bn.xor  w7, w7, w8
   bn.and  w5, w1, w3
-  bn.xor  w5, w5, w7           /* (w4,w5) = shares of z */
+  bn.xor  w5, w5, w7 /* (w4,w5) = shares of z */
 
   /* SecAnd: u = z & (z>>2)  -> bit 4i = AND of nibble's 4 bits. */
   bn.rshi w2, w31, w4 >> 2
@@ -2414,8 +2414,8 @@ _mpue_squeeze:
   bn.and  w2, w5, w2
   bn.xor  w8, w8, w2
   bn.and  w3, w5, w3
-  bn.xor  w3, w3, w8           /* (w7,w3) = shares of u */
-  beq  x0, x0, _mpue_reject_done
+  bn.xor  w3, w3, w8 /* (w7,w3) = shares of u */
+  beq     x0, x0, _mpue_reject_done
 _mpue_reject_e4:
   /* reject (n >= 9) = b3 & (b0|b1|b2), at bit 4i.  Via De Morgan on m = ~n:
    * three SecAnds give b3 & ~(~b0 & ~b1 & ~b2). */
@@ -2431,7 +2431,7 @@ _mpue_reject_e4:
   bn.and  w9, w1, w3
   bn.xor  w8, w8, w9
   bn.and  w5, w1, w4
-  bn.xor  w5, w5, w8           /* za = (w7,w5) */
+  bn.xor  w5, w5, w8 /* za = (w7,w5) */
 
   /* SecAnd: zb = za & (m>>2)  -> bit 4i = ~b0 & ~b1 & ~b2. */
   bn.rshi w3, w31, w2 >> 2
@@ -2444,8 +2444,8 @@ _mpue_reject_e4:
   bn.and  w10, w5, w3
   bn.xor  w9, w9, w10
   bn.and  w11, w5, w4
-  bn.xor  w11, w11, w9        /* zb = (w8,w11) */
-  bn.not  w8, w8             /* ~zb -> bit 4i = b0|b1|b2 */
+  bn.xor  w11, w11, w9 /* zb = (w8,w11) */
+  bn.not  w8, w8       /* ~zb -> bit 4i = b0|b1|b2 */
 
   /* SecAnd: reject = (n>>3) & ~zb  -> bit 4i = b3 & (b0|b1|b2). */
   bn.rshi w3, w31, w0 >> 3
@@ -2458,47 +2458,47 @@ _mpue_reject_e4:
   bn.and  w10, w4, w8
   bn.xor  w9, w9, w10
   bn.and  w3, w4, w11
-  bn.xor  w3, w3, w9          /* (w7,w3) = shares of reject */
+  bn.xor  w3, w3, w9 /* (w7,w3) = shares of reject */
 _mpue_reject_done:
 
   /* Reveal only the per-nibble reject bits (mask off the garbage). */
-  bn.and  w7, w7, w30
-  bn.and  w3, w3, w30
-  bn.xor  w7, w7, w3           /* public reject mask, bit 4i set => reject */
+  bn.and w7, w7, w30
+  bn.and w3, w3, w30
+  bn.xor w7, w7, w3 /* public reject mask, bit 4i set => reject */
 
   /* Stash share words + reject mask for the scalar gather. */
-  li   x27, 2048               /* SQ0 */
-  add  x7, x13, x27
-  bn.sid x0, 0(x7)             /* x0 indexes w0 */
-  li   x27, 2080               /* SQ1 */
-  add  x7, x13, x27
-  li   x28, 1
-  bn.sid x28, 0(x7)             /* w1 */
-  li   x27, 2112               /* REJ */
-  add  x7, x13, x27
-  li   x28, 7
-  bn.sid x28, 0(x7)             /* w7 */
+  li     x27, 2048  /* SQ0 */
+  add    x7, x13, x27
+  bn.sid x0, 0(x7)  /* x0 indexes w0 */
+  li     x27, 2080  /* SQ1 */
+  add    x7, x13, x27
+  li     x28, 1
+  bn.sid x28, 0(x7) /* w1 */
+  li     x27, 2112  /* REJ */
+  add    x7, x13, x27
+  li     x28, 7
+  bn.sid x28, 0(x7) /* w7 */
 
   /* Gather: 8 words x 8 nibbles, compacting accepted nibbles. */
-  li   x27, 2048               /* SQ0 */
-  add  x5, x13, x27
-  li   x27, 2080               /* SQ1 */
-  add  x7, x13, x27
-  li   x27, 2112               /* REJ */
-  add  x28, x13, x27
-  li   x29, 8                   /* word counter */
+  li  x27, 2048 /* SQ0 */
+  add x5, x13, x27
+  li  x27, 2080 /* SQ1 */
+  add x7, x13, x27
+  li  x27, 2112 /* REJ */
+  add x28, x13, x27
+  li  x29, 8    /* word counter */
 _mpue_word:
-  lw   x14, 0(x5)               /* share0 word */
-  lw   x15, 0(x7)               /* share1 word */
-  lw   x16, 0(x28)               /* reject word */
+  lw   x14, 0(x5)  /* share0 word */
+  lw   x15, 0(x7)  /* share1 word */
+  lw   x16, 0(x28) /* reject word */
   addi x5, x5, 4
   addi x7, x7, 4
   addi x28, x28, 4
-  li   x30, 8                   /* nibble counter */
+  li   x30, 8      /* nibble counter */
 _mpue_nib:
-  andi x17, x16, 1               /* reject bit */
-  andi x31, x14, 15              /* nibble share0 */
-  andi x11, x15, 15              /* nibble share1 */
+  andi x17, x16, 1  /* reject bit */
+  andi x31, x14, 15 /* nibble share0 */
+  andi x11, x15, 15 /* nibble share1 */
   srli x16, x16, 4
   srli x14, x14, 4
   srli x15, x15, 4
@@ -2516,26 +2516,26 @@ _mpue_skip:
   beq  x0, x0, _mpue_squeeze
 
 _mpue_gathered:
-  lw   x5, 12(x2)               /* eta (2 or 4) */
-  li   x6, 2
-  bne  x5, x6, _mpue_core_e4
+  lw  x5, 12(x2) /* eta (2 or 4) */
+  li  x6, 2
+  bne x5, x6, _mpue_core_e4
   /* ---- mod-5 in the Boolean domain. ---- */
-  lw   x13, 4(x2)
+  lw  x13, 4(x2)
 
   /* Bitslice share 0 -> BS, copy low 5 stripes to N5 share 0; then reuse
    * BS for share 1.  (Single bitslice buffer overlaid by lifetime.) */
-  li   x27, 2048               /* BS */
+  li   x27, 2048   /* BS */
   add  x10, x13, x27
-  addi x11, x13, 0                /* G0 */
+  addi x11, x13, 0 /* G0 */
   li   x12, 32
   jal  x1, bitslice
 
-  lw   x13, 4(x2)
-  li   x27, 2048               /* BS */
-  add  x5, x13, x27
-  li   x27, 2784               /* N5 */
-  add  x6, x13, x27
-  li   x7, 0
+  lw  x13, 4(x2)
+  li  x27, 2048 /* BS */
+  add x5, x13, x27
+  li  x27, 2784 /* N5 */
+  add x6, x13, x27
+  li  x7, 0
   loopi 5, 2
     bn.lid x7, 0(x5++)
     bn.sid x7, 0(x6++)
@@ -2570,16 +2570,16 @@ _mpue_gathered:
   bn.xor w25, w25, w25
   bn.xor w26, w26, w26
   bn.xor w27, w27, w27
-  li   x27, 2048               /* BS */
-  add  x10, x13, x27
-  addi x11, x13, 1024             /* G1 */
-  li   x12, 32
-  jal  x1, bitslice
+  li     x27, 2048      /* BS */
+  add    x10, x13, x27
+  addi   x11, x13, 1024 /* G1 */
+  li     x12, 32
+  jal    x1, bitslice
 
   lw   x13, 4(x2)
-  li   x27, 2048               /* BS */
+  li   x27, 2048 /* BS */
   add  x5, x13, x27
-  li   x27, 2784               /* N5 */
+  li   x27, 2784 /* N5 */
   add  x6, x13, x27
   addi x6, x6, 160
   loopi 5, 2
@@ -2588,105 +2588,105 @@ _mpue_gathered:
   endloop
 
   /* c1 = [n>=5] = !SecLeq_4(n): SecAdd_5(n, 2^5-4-1=27), bit 4 = [n<=4]. */
-  li   x27, 2784               /* N5 */
-  add  x10, x13, x27
-  li   x12, 5
-  li   x13, 160
-  lw   x15, 4(x2)
-  li   x27, 0                  /* Z */
-  add  x15, x15, x27
-  bn.xor w17, w17, w17
+  li      x27, 2784 /* N5 */
+  add     x10, x13, x27
+  li      x12, 5
+  li      x13, 160
+  lw      x15, 4(x2)
+  li      x27, 0    /* Z */
+  add     x15, x15, x27
+  bn.xor  w17, w17, w17
   bn.addi w17, w17, 27
-  jal  x1, secadd_immd_d2
+  jal     x1, secadd_immd_d2
 
   /* Build T = c1 gated into the 27 bit-pattern {0,1,3,4}, c1 = !Z[4]. */
-  lw   x13, 4(x2)
-  jal  x1, _mpue_build_subtrahend
+  lw  x13, 4(x2)
+  jal x1, _mpue_build_subtrahend
 
   /* m1 = SecAdd_5(n, T) = n - 5*c1. */
-  lw   x13, 4(x2)
-  li   x27, 2784               /* N5 */
-  add  x10, x13, x27
-  li   x27, 320                /* T */
-  add  x11, x13, x27
-  li   x12, 5
-  li   x13, 160
-  lw   x15, 4(x2)
-  li   x27, 640                /* M1 */
-  add  x15, x15, x27
-  jal  x1, secadd
+  lw  x13, 4(x2)
+  li  x27, 2784 /* N5 */
+  add x10, x13, x27
+  li  x27, 320  /* T */
+  add x11, x13, x27
+  li  x12, 5
+  li  x13, 160
+  lw  x15, 4(x2)
+  li  x27, 640  /* M1 */
+  add x15, x15, x27
+  jal x1, secadd
 
   /* c2 = [n>=10] = !SecLeq_9(n): SecAdd_5(n, 2^5-9-1=22), bit 4 = [n<=9]. */
-  lw   x13, 4(x2)
-  li   x27, 2784               /* N5 */
-  add  x10, x13, x27
-  li   x12, 5
-  li   x13, 160
-  lw   x15, 4(x2)
-  li   x27, 0                  /* Z */
-  add  x15, x15, x27
-  bn.xor w17, w17, w17
+  lw      x13, 4(x2)
+  li      x27, 2784 /* N5 */
+  add     x10, x13, x27
+  li      x12, 5
+  li      x13, 160
+  lw      x15, 4(x2)
+  li      x27, 0    /* Z */
+  add     x15, x15, x27
+  bn.xor  w17, w17, w17
   bn.addi w17, w17, 22
-  jal  x1, secadd_immd_d2
+  jal     x1, secadd_immd_d2
 
-  lw   x13, 4(x2)
-  jal  x1, _mpue_build_subtrahend
+  lw  x13, 4(x2)
+  jal x1, _mpue_build_subtrahend
 
   /* m = SecAdd_5(m1, T) = n - 5*c1 - 5*c2 = n mod 5, written to the OUTPUT
    * buffer (share0 at out+0, share1 at out+160). */
-  lw   x13, 4(x2)
-  li   x27, 640                /* M1 */
-  add  x10, x13, x27
-  li   x27, 320                /* T */
-  add  x11, x13, x27
-  li   x12, 5
-  li   x13, 160
-  lw   x15, 0(x2)               /* out */
-  jal  x1, secadd
+  lw  x13, 4(x2)
+  li  x27, 640   /* M1 */
+  add x10, x13, x27
+  li  x27, 320   /* T */
+  add x11, x13, x27
+  li  x12, 5
+  li  x13, 160
+  lw  x15, 0(x2) /* out */
+  jal x1, secadd
 
   /* Export bitsliced m shares (k=3) to x16 (skipped by the base entry). */
-  lw   x16, 32(x2)
-  beq  x16, x0, _mpue_skip_export_m
-  lw   x5, 0(x2)               /* m share0 @ out+0 */
-  li   x6, 0
+  lw  x16, 32(x2)
+  beq x16, x0, _mpue_skip_export_m
+  lw  x5, 0(x2) /* m share0 @ out+0 */
+  li  x6, 0
   loopi 3, 2
     bn.lid x6, 0(x5++)
     bn.sid x6, 0(x16++)
   endloop
   lw   x5, 0(x2)
-  addi x5, x5, 160             /* m share1 @ out+160 */
+  addi x5, x5, 160 /* m share1 @ out+160 */
   loopi 3, 2
     bn.lid x6, 0(x5++)
     bn.sid x6, 0(x16++)
   endloop
-  bn.xor w0, w0, w0            /* whitening */
+  bn.xor w0, w0, w0 /* whitening */
 _mpue_skip_export_m:
 
   /* ---- B2A(m, k=3): out holds m; x13 (dead) is the seca2b scratch. ---- */
   lw   x10, 0(x2)
-  addi x11, x10, 0               /* m share0 in out */
-  addi x12, x10, 160             /* m share1 in out */
+  addi x11, x10, 0   /* m share0 in out */
+  addi x12, x10, 160 /* m share1 in out */
   li   x13, 3
-  lw   x14, 4(x2)               /* seca2b scratch (= x13) */
-  lw   x15, 8(x2)               /* Boolean buffer */
+  lw   x14, 4(x2)    /* seca2b scratch (= x13) */
+  lw   x15, 8(x2)    /* Boolean buffer */
   jal  x1, secb2amodq_eta
   beq  x0, x0, _mpue_core_done
 _mpue_core_e4:
   /* ---- eta=4: no mod 5; coeff = 4 - n.  Bitslice n, B2A(k=4). ---- */
-  lw   x13, 4(x2)
+  lw x13, 4(x2)
 
   /* Bitslice share 0 -> BS; copy low 4 stripes to out+0 (b2a share 0). */
-  li   x27, 2048               /* BS */
+  li   x27, 2048   /* BS */
   add  x10, x13, x27
-  addi x11, x13, 0                /* G0 */
+  addi x11, x13, 0 /* G0 */
   li   x12, 32
   jal  x1, bitslice
 
-  lw   x13, 4(x2)
-  li   x27, 2048               /* BS */
-  add  x5, x13, x27
-  lw   x6, 0(x2)
-  li   x7, 0
+  lw  x13, 4(x2)
+  li  x27, 2048 /* BS */
+  add x5, x13, x27
+  lw  x6, 0(x2)
+  li  x7, 0
   loopi 4, 2
     bn.lid x7, 0(x5++)
     bn.sid x7, 0(x6++)
@@ -2722,14 +2722,14 @@ _mpue_core_e4:
   bn.xor w26, w26, w26
   bn.xor w27, w27, w27
   /* Bitslice share 1 -> BS; copy low 4 stripes to out+128 (b2a share 1). */
-  li   x27, 2048               /* BS */
-  add  x10, x13, x27
-  addi x11, x13, 1024             /* G1 */
-  li   x12, 32
-  jal  x1, bitslice
+  li     x27, 2048      /* BS */
+  add    x10, x13, x27
+  addi   x11, x13, 1024 /* G1 */
+  li     x12, 32
+  jal    x1, bitslice
 
   lw   x13, 4(x2)
-  li   x27, 2048               /* BS */
+  li   x27, 2048 /* BS */
   add  x5, x13, x27
   lw   x6, 0(x2)
   addi x6, x6, 128
@@ -2741,15 +2741,15 @@ _mpue_core_e4:
 
   /* Export bitsliced n shares (k=4, both shares contiguous) to x16
    * (skipped by the base entry). */
-  lw   x16, 32(x2)
-  beq  x16, x0, _mpue_skip_export_n
-  lw   x5, 0(x2)               /* n share0 @ out+0, share1 @ out+128 */
-  li   x6, 0
+  lw  x16, 32(x2)
+  beq x16, x0, _mpue_skip_export_n
+  lw  x5, 0(x2) /* n share0 @ out+0, share1 @ out+128 */
+  li  x6, 0
   loopi 8, 2
     bn.lid x6, 0(x5++)
     bn.sid x6, 0(x16++)
   endloop
-  bn.xor w0, w0, w0            /* whitening */
+  bn.xor w0, w0, w0 /* whitening */
 _mpue_skip_export_n:
 
   /* B2A(n, k=4): out+0 / out+128 hold n; out receives arith shares. */
@@ -2757,40 +2757,40 @@ _mpue_skip_export_n:
   addi x11, x10, 0
   addi x12, x10, 128
   li   x13, 4
-  lw   x14, 4(x2)               /* seca2b scratch */
-  lw   x15, 8(x2)               /* Boolean buffer */
+  lw   x14, 4(x2) /* seca2b scratch */
+  lw   x15, 8(x2) /* Boolean buffer */
   jal  x1, secb2amodq_eta
 _mpue_core_done:
 
   /* coeff = eta - reduce(n): share 0 = eta - m0, share 1 = -m1  (mod q).
    * Broadcast the eta argument to all 8 lanes of w4. */
-  lw      x5, 12(x2)            /* eta (2 or 4) */
+  lw      x5, 12(x2) /* eta (2 or 4) */
   li      x6, 2
   bn.addi w4, w31, 4
   bne     x5, x6, _mpue_coeff_bcast
   bn.addi w4, w31, 2
 _mpue_coeff_bcast:
-  bn.or   w4, w4, w4 << 32
-  bn.or   w4, w4, w4 << 64
-  bn.or   w4, w4, w4 << 128
+  bn.or w4, w4, w4 << 32
+  bn.or w4, w4, w4 << 64
+  bn.or w4, w4, w4 << 128
 
   lw   x10, 0(x2)
   li   x5, 0
   addi x6, x10, 0
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w4, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
 
   /* Whitening. */
   bn.xor w0, w0, w0
-  lw   x10, 0(x2)
-  addi x6, x10, 1024
+  lw     x10, 0(x2)
+  addi   x6, x10, 1024
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w31, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
 
   lw   x8, 16(x2)
@@ -2807,35 +2807,35 @@ _mpue_coeff_bcast:
  */
 _mpue_build_subtrahend:
   /* Load c shares: w0 = !Z[4]_s0, w1 = Z[4]_s1. */
-  li   x27, 0                  /* Z */
-  add  x5, x13, x27
-  addi x5, x5, 128             /* stripe 4 (4 * 32), share 0 */
-  li   x7, 0
+  li     x27, 0      /* Z */
+  add    x5, x13, x27
+  addi   x5, x5, 128 /* stripe 4 (4 * 32), share 0 */
+  li     x7, 0
   bn.lid x7, 0(x5)
-  bn.not w0, w0                /* c_s0 = NOT Z[4]_s0 */
-  li   x27, 0                  /* Z */
-  add  x5, x13, x27
-  addi x5, x5, 160
-  addi x5, x5, 128             /* stripe 4, share 1 */
-  li   x7, 1
+  bn.not w0, w0      /* c_s0 = NOT Z[4]_s0 */
+  li     x27, 0      /* Z */
+  add    x5, x13, x27
+  addi   x5, x5, 160
+  addi   x5, x5, 128 /* stripe 4, share 1 */
+  li     x7, 1
   bn.lid x7, 0(x5)
 
   /* Write share 0 stripes {0,1,3,4}=c, {2}=0. */
-  li   x27, 320                /* T */
-  add  x6, x13, x27
-  li   x7, 0
-  li   x28, 31                  /* w31 = 0 */
-  bn.sid x7, 0(x6)             /* stripe 0 = c */
-  bn.sid x7, 32(x6)            /* stripe 1 = c */
-  bn.sid x28, 64(x6)            /* stripe 2 = 0 */
-  bn.sid x7, 96(x6)            /* stripe 3 = c */
-  bn.sid x7, 128(x6)           /* stripe 4 = c */
+  li     x27, 320    /* T */
+  add    x6, x13, x27
+  li     x7, 0
+  li     x28, 31     /* w31 = 0 */
+  bn.sid x7, 0(x6)   /* stripe 0 = c */
+  bn.sid x7, 32(x6)  /* stripe 1 = c */
+  bn.sid x28, 64(x6) /* stripe 2 = 0 */
+  bn.sid x7, 96(x6)  /* stripe 3 = c */
+  bn.sid x7, 128(x6) /* stripe 4 = c */
 
   /* Write share 1 stripes {0,1,3,4}=c, {2}=0. */
-  li   x27, 320                /* T */
-  add  x6, x13, x27
-  addi x6, x6, 160
-  li   x7, 1                   /* w1 = c_s1 */
+  li     x27, 320 /* T */
+  add    x6, x13, x27
+  addi   x6, x6, 160
+  li     x7, 1    /* w1 = c_s1 */
   bn.sid x7, 0(x6)
   bn.sid x7, 32(x6)
   bn.sid x28, 64(x6)
@@ -2870,17 +2870,17 @@ _mpue_build_subtrahend:
 .type masked_poly_uniform_gamma_1, @function
 masked_poly_uniform_gamma_1:
   addi x2, x2, -32
-  sw   x10, 0(x2)                 /* out pointer */
-  sw   x13, 8(x2)                 /* seca2b scratch */
-  sw   x14, 12(x2)                /* bitslice buffer */
+  sw   x10, 0(x2)  /* out pointer */
+  sw   x13, 8(x2)  /* seca2b scratch */
+  sw   x14, 12(x2) /* bitslice buffer */
 
   /* Map x15 to POLYZ_BITS (2 -> 18, else -> 20); spill it. */
-  li   x5, 2
-  li   x6, 18
-  beq  x15, x5, _mpug_pb_set
-  li   x6, 20
+  li  x5, 2
+  li  x6, 18
+  beq x15, x5, _mpug_pb_set
+  li  x6, 20
 _mpug_pb_set:
-  sw   x6, 4(x2)                 /* POLYZ_BITS (18 or 20) */
+  sw x6, 4(x2) /* POLYZ_BITS (18 or 20) */
 
   bn.mov w28, w16
   bn.mov w29, w22
@@ -2920,10 +2920,10 @@ _mpug_pb_set:
   /* Squeeze POLYZ_BITS raw words into the tail of each share's output slot
    * (RAW0 = 1024 - 32*POLYZ_BITS, RAW1 = RAW0 + 1024) so the forward in-place
    * unpack keeps writes below reads. */
-  lw   x15, 4(x2)                 /* POLYZ_BITS */
+  lw   x15, 4(x2)    /* POLYZ_BITS */
   slli x30, x15, 5
   li   x31, 1024
-  sub  x31, x31, x30                /* RAW0 */
+  sub  x31, x31, x30 /* RAW0 */
   add  x6, x10, x31
   addi x7, x6, 1024
   li   x28, 0
@@ -2937,60 +2937,60 @@ _mpug_pb_set:
 
   /* Unpack each share in place (out[RAW..1023] -> out[0..1023]).  w5 = the
    * per-coef mask 2^POLYZ_BITS - 1, built inline (avoids a per-mode const). */
-  lw   x5, 4(x2)                 /* POLYZ_BITS */
-  li   x6, 18
+  lw      x5, 4(x2)          /* POLYZ_BITS */
+  li      x6, 18
   bn.addi w5, w31, 1
-  bne  x5, x6, _mpug_mask_20
-  bn.rshi w5, w5, w31 >> 238     /* 2^18 */
-  beq  x0, x0, _mpug_mask_sub
+  bne     x5, x6, _mpug_mask_20
+  bn.rshi w5, w5, w31 >> 238 /* 2^18 */
+  beq     x0, x0, _mpug_mask_sub
 _mpug_mask_20:
-  bn.rshi w5, w5, w31 >> 236     /* 2^20 */
+  bn.rshi w5, w5, w31 >> 236 /* 2^20 */
 _mpug_mask_sub:
-  bn.subi w5, w5, 1              /* 2^POLYZ_BITS - 1 */
-  bn.or  w5, w5, w5 << 32
-  bn.or  w5, w5, w5 << 64
-  bn.or  w5, w5, w5 << 128
+  bn.subi w5, w5, 1 /* 2^POLYZ_BITS - 1 */
+  bn.or   w5, w5, w5 << 32
+  bn.or   w5, w5, w5 << 64
+  bn.or   w5, w5, w5 << 128
 
-  lw   x15, 4(x2)                 /* POLYZ_BITS */
-  slli x30, x15, 5
-  li   x31, 1024
-  sub  x31, x31, x30                /* RAW0 */
-  add  x11, x10, x31
+  lw     x15, 4(x2)    /* POLYZ_BITS */
+  slli   x30, x15, 5
+  li     x31, 1024
+  sub    x31, x31, x30 /* RAW0 */
+  add    x11, x10, x31
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
-  jal  x1, _unpack_share
+  jal    x1, _unpack_share
 
-  lw   x10, 0(x2)
-  lw   x15, 4(x2)                 /* POLYZ_BITS */
-  slli x30, x15, 5
-  li   x31, 1024
-  sub  x31, x31, x30
-  addi x31, x31, 1024              /* RAW1 = RAW0 + 1024 */
-  add  x11, x10, x31
-  addi x10, x10, 1024
+  lw     x10, 0(x2)
+  lw     x15, 4(x2)     /* POLYZ_BITS */
+  slli   x30, x15, 5
+  li     x31, 1024
+  sub    x31, x31, x30
+  addi   x31, x31, 1024 /* RAW1 = RAW0 + 1024 */
+  add    x11, x10, x31
+  addi   x10, x10, 1024
   /* Whitening. */
   bn.xor w1, w1, w1
   bn.xor w2, w2, w2
   bn.xor w3, w3, w3
   bn.xor w6, w6, w6
-  jal  x1, _unpack_share
+  jal    x1, _unpack_share
 
   /* Bitslice each share to caller's buffer (top bit zeroed for k+1). */
-  lw   x11, 0(x2)
-  lw   x10, 12(x2)
-  li   x12, 32
-  jal  x1, bitslice
-  lw   x6, 12(x2)
-  addi x6, x6, 736
-  li   x5, 31
+  lw     x11, 0(x2)
+  lw     x10, 12(x2)
+  li     x12, 32
+  jal    x1, bitslice
+  lw     x6, 12(x2)
+  addi   x6, x6, 736
+  li     x5, 31
   bn.sid x5, 0(x6)
 
-  lw   x11, 0(x2)
-  addi x11, x11, 1024
-  lw   x10, 12(x2)
-  addi x10, x10, 768
-  li   x12, 32
+  lw     x11, 0(x2)
+  addi   x11, x11, 1024
+  lw     x10, 12(x2)
+  addi   x10, x10, 768
+  li     x12, 32
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
@@ -3020,17 +3020,17 @@ _mpug_mask_sub:
   bn.xor w25, w25, w25
   bn.xor w26, w26, w26
   bn.xor w27, w27, w27
-  jal  x1, bitslice
-  lw   x6, 12(x2)
-  addi x6, x6, 1504
-  li   x5, 31
+  jal    x1, bitslice
+  lw     x6, 12(x2)
+  addi   x6, x6, 1504
+  li     x5, 31
   bn.sid x5, 0(x6)
 
   /* B2A: u^{B,k} (buffer) -> u^{A_p} at caller out. */
-  lw   x11, 12(x2)
-  lw   x10, 0(x2)
-  lw   x13, 8(x2)
-  jal  x1, secb2amodq
+  lw  x11, 12(x2)
+  lw  x10, 0(x2)
+  lw  x13, 8(x2)
+  jal x1, secb2amodq
 
   /* Unbitslice each share in place; share 1 first so its overlapping
    * write [1024..1503] doesn't clobber share 0's source. */
@@ -3039,8 +3039,8 @@ _mpug_mask_sub:
   addi x10, x10, 1024
   jal  x1, unbitslice
 
-  lw   x10, 0(x2)
-  addi x11, x10, 0
+  lw     x10, 0(x2)
+  addi   x11, x10, 0
   /* Whitening. */
   bn.xor w0, w0, w0
   bn.xor w1, w1, w1
@@ -3062,40 +3062,40 @@ _mpug_mask_sub:
   bn.xor w17, w17, w17
   bn.xor w18, w18, w18
   bn.xor w19, w19, w19
-  jal  x1, unbitslice
+  jal    x1, unbitslice
 
   /* y = gamma1 - u on share 0, -u on share 1.  gamma1 = 2^(POLYZ_BITS-1),
    * built into all 8 lanes of w4 (avoids a per-mode constant load). */
-  lw      x5, 4(x2)              /* POLYZ_BITS */
+  lw      x5, 4(x2)          /* POLYZ_BITS */
   li      x6, 18
   bn.addi w4, w31, 1
   bne     x5, x6, _mpug_g1_20
-  bn.rshi w4, w4, w31 >> 239     /* 2^17 */
+  bn.rshi w4, w4, w31 >> 239 /* 2^17 */
   beq     x0, x0, _mpug_g1_bcast
 _mpug_g1_20:
-  bn.rshi w4, w4, w31 >> 237     /* 2^19 */
+  bn.rshi w4, w4, w31 >> 237 /* 2^19 */
 _mpug_g1_bcast:
-  bn.or   w4, w4, w4 << 32
-  bn.or   w4, w4, w4 << 64
-  bn.or   w4, w4, w4 << 128
+  bn.or w4, w4, w4 << 32
+  bn.or w4, w4, w4 << 64
+  bn.or w4, w4, w4 << 128
 
   lw   x10, 0(x2)
   li   x5, 0
   addi x6, x10, 0
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w4, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
 
   /* Whitening. */
   bn.xor w0, w0, w0
-  lw   x10, 0(x2)
-  addi x6, x10, 1024
+  lw     x10, 0(x2)
+  addi   x6, x10, 1024
   loopi 32, 3
-    bn.lid x5, 0(x6)
+    bn.lid      x5, 0(x6)
     bn.subvm.8s w0, w31, w0
-    bn.sid x5, 0(x6++)
+    bn.sid      x5, 0(x6++)
   endloop
 
   bn.mov w16, w28
@@ -3113,15 +3113,15 @@ _unpack_share:
   li   x7, 2
   li   x5, 6
   li   x28, 3
-  lw   x29, 4(x2)                 /* POLYZ_BITS */
+  lw   x29, 4(x2) /* POLYZ_BITS */
   li   x30, 18
   bne  x29, x30, _unpack_share_20
 
   /* L2: 2 outer x 16 inner unpacks (144 raw bits each). */
   loopi 2, 42
-    bn.lid  x5, 0(x31++)
-    bn.mov  w1, w6
-    jal     x1, _unpack_inner_18
+    bn.lid x5, 0(x31++)
+    bn.mov w1, w6
+    jal    x1, _unpack_inner_18
 
     bn.lid  x28, 0(x31++)
     bn.rshi w1, w3, w6 >> 144
@@ -3183,9 +3183,9 @@ _unpack_share:
 _unpack_share_20:
   /* L3/L5: 4 outer x 8 inner unpacks (160 raw bits each). */
   loopi 4, 22
-    bn.lid  x5, 0(x31++)
-    bn.mov  w1, w6
-    jal     x1, _unpack_inner_20
+    bn.lid x5, 0(x31++)
+    bn.mov w1, w6
+    jal    x1, _unpack_inner_20
 
     bn.lid  x28, 0(x31++)
     bn.rshi w1, w3, w6 >> 160
