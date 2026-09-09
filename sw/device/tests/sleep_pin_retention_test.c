@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/api.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -15,12 +16,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 // PLIC structures
 static const uint32_t kPlicTarget = 0;
+
 static dif_gpio_t gpio;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
@@ -73,7 +73,7 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
  * 1. Randomly choose GPIO[num_gpio_pads-1:0] value using rand_testutils.
  * 2. Drive GPIO with the chosen value.
  * 3. Send the chosen values to SV/host via LOG_INFO.
- * 4. Configure PINMUX Retention value opposit to the chosen value for
+ * 4. Configure PINMUX Retention value opposite to the chosen value for
  *    GPIO[num_gpio_pads-1:0].
  * 5. Initiate sleep mode (assuming pinmux pin wake up has been configured.)
  * 6. WFI()
@@ -106,9 +106,15 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   LOG_INFO("Chosen GPIO value: %2x", gpio_val);
 
   // 4. Configure PINMUX Retention value opposite to the chosen value.
+#if defined(OPENTITAN_IS_EGRET)
   pad_kind = kDifPinmuxPadKindMio;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  pad_kind = kDifPinmuxPadKindDio;
+#else
+#error Unsupported pad
+#endif
   for (int i = 0; i < num_gpio_pads; i++) {
-    // GPIO are assigned starting from MIO0
+    // GPIO pads are assigned starting from first_gpio_pin
     pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
                                        : kDifPinmuxSleepModeHigh;
     CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
@@ -145,7 +151,9 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 /**
  * Configure GPIO
  *
- * gpio_init() configures first 8 MIO PADs to GPIO[7:0].
+ * GPIOs are MIOs for egret and DIOs for dragonfly.
+ * gpio_init() configures first 8 GPIO external pins.
+ * Notice dragonfly requires no pinmux selections since it uses DIOs.
  */
 void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Drive GPIO first
@@ -153,32 +161,50 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
       dif_gpio_output_set_enabled_all(gpio, (dif_gpio_state_t)gpio_mask));
   CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)gpio_mask,
                                      (dif_gpio_state_t)0x00000000));
-
+#if defined(OPENTITAN_IS_EGRET)
   // Configure PINMUX to GPIO
   for (int i = 0; i < num_gpio_pads; i++) {
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        pinmux, (dif_pinmux_index_t)(kTopEgretPinmuxPeripheralInGpioGpio0 + i),
-        (dif_pinmux_index_t)(first_gpio_pin + i)));
+    dt_periph_io_t dt_pin_desc = dt_gpio_periph_io(
+        kGpioDt, (dt_gpio_periph_io_t)(kDtGpioPeriphIoGpio0 + i));
+    dif_pinmux_index_t in_periph = dt_periph_io_mio_periph_input(dt_pin_desc);
+    dif_pinmux_index_t pad = (dif_pinmux_index_t)(first_gpio_pin + i);
+    CHECK_DIF_OK(dif_pinmux_input_select(pinmux, in_periph, pad));
     CHECK_DIF_OK(dif_pinmux_output_select(
-        pinmux, (dif_pinmux_index_t)(first_gpio_pin + i),
-        (dif_pinmux_index_t)(kTopEgretPinmuxOutselGpioGpio0 + i)));
+        pinmux, pad,
+        (dif_pinmux_index_t)(dt_periph_io_mio_outsel(dt_pin_desc))));
   }
 
-  // Configure PINMUX an additional GPIO pin for the SiVal host to sync with
-  // the device and indicate the round can end.
+  // Configure PINMUX wit an additional GPIO pin for the SiVal host to sync
+  // with the device and indicate the round can end.
+  dt_periph_io_t dt_pin_desc = dt_gpio_periph_io(
+      kGpioDt, (dt_gpio_periph_io_t)(kDtGpioPeriphIoGpio0 + num_gpio_pads));
   CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, (dif_pinmux_index_t)kTopEgretPinmuxPeripheralInGpioGpio8,
+      pinmux, (dif_pinmux_index_t)(dt_periph_io_mio_periph_input(dt_pin_desc)),
       (dif_pinmux_index_t)kTopEgretPinmuxInselIor11));
+#endif
 }
 
 bool test_main(void) {
   bool result = true;
 
+#if defined(OPENTITAN_IS_EGRET)
   num_gpio_pads =
       kDeviceType == kDeviceSimDV ? kNumGpioPadsDv : kNumGpioPadsSiVal;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  num_gpio_pads = 8;
+#else
+#error Unsupported top
+#endif
   gpio_mask = (1 << num_gpio_pads) - 1;
+#if defined(OPENTITAN_IS_EGRET)
   first_gpio_pin = kDeviceType == kDeviceSimDV ? kTopEgretPinmuxMioOutIoa0
                                                : kTopEgretPinmuxMioOutIob0;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  // The gpios are DIOs.
+  first_gpio_pin = kTopDragonflyDirectPadsGpioGpio0;
+#else
+#error Unsupported top
+#endif
 
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
@@ -202,21 +228,41 @@ bool test_main(void) {
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
+  // Prepare the pads.
+#if defined(OPENTITAN_IS_EGRET)
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {0};
+  // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
+  // disabled for this test. Remove this later.
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEgretMuxedPadsIoc3,
+                                          kDifPinmuxPadKindMio, in_attr,
+                                          &out_attr));
+#endif
   // Wakeup configs
   wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
   wakeup_cfg.signal_filter = false;
+#if defined(OPENTITAN_IS_EGRET)
   wakeup_cfg.pad_type = kDifPinmuxPadKindMio;
   wakeup_cfg.pad_select = kDeviceType == kDeviceSimDV
                               ? kTopEgretPinmuxInselIoa8
                               : kTopEgretPinmuxInselIor10;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  wakeup_cfg.pad_type = kDifPinmuxPadKindDio;
+  wakeup_cfg.pad_select = (dif_pinmux_index_t)(first_gpio_pin + num_gpio_pads);
+#else
+#error Unsupported top
+#endif
 
+  LOG_INFO("Configuring wakeup detector");
   // Configure Wakeup Detector 0
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
 
   if (deepPowerdown == false) {
     // Configure Normal Sleep
-    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
-                        kDifPwrmgrDomainOptionUsbClockInActivePower;
+    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower;
+#if defined(OPENTITAN_IS_EGRET)
+    pwrmgr_domain_cfg |= kDifPwrmgrDomainOptionUsbClockInActivePower;
+#endif
   }
 
   LOG_INFO("Num Rounds: %3d", kRounds);
