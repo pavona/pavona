@@ -31,8 +31,8 @@
  *           https://ieeexplore.ieee.org/document/8979162/
  */
 
-/*
- * Name: secand
+/**
+ * secand
  *
  * Return new Boolean shares of a value r = x & y.
  * Bitsliced.
@@ -113,8 +113,8 @@ secand:
 
   ret
 
-/*
- * Name: secfulladder
+/**
+ * secfulladder
  *
  * Return Boolean shares of the sum bit (r0) and carry-out bit (r1) of
  * x + y + c, given Boolean shares of x, y, and the incoming carry c.
@@ -225,8 +225,8 @@ secfulladder:
 
   ret
 
-/*
- * Name: secadd
+/**
+ * secadd
  *
  * Return Boolean shares of a value r = (x + y) mod 2^k, given Boolean shares of
  * x and y mod 2^k.
@@ -310,8 +310,8 @@ secadd:
   addi x2, x2, 96
   ret
 
-/*
- * Name: secadd_immd_d1
+/**
+ * secadd_immd_d1
  *
  * Bitsliced SecAdd for d = 1 of x and the hard-coded constant nq = 0x801fff
  * (= 2^24 - q), producing a (kbits + 1)-bit result.
@@ -386,8 +386,8 @@ secadd_immd_d1:
 
   ret
 
-/*
- * Name: secadd_immd_d2
+/**
+ * secadd_immd_d2
  *
  * SecAdd of x with a public k-bit constant c in w17 lane 0:
  * z = (x + c) mod 2^k.
@@ -481,8 +481,8 @@ secadd_immd_d2:
 
   ret
 
-/*
- * Name: secadd_constant_bmsk
+/**
+ * secadd_constant_bmsk
  *
  * Fused steps 5+6 of Alg.7 specialised for ML-DSA q, in place over dptr_z:
  *   z <- sp + BitCopyMask(sp[k], q)
@@ -600,8 +600,8 @@ secadd_constant_bmsk:
 
   ret
 
-/*
- * Name: secaddmodq
+/**
+ * secaddmodq
  *
  * Return Boolean shares of z = (x + y) mod q, given k-bit Boolean shares of
  * x, y with 0 <= x, y < q.
@@ -661,8 +661,8 @@ secaddmodq:
 
   ret
 
-/*
- * Name: seca2bmodq
+/**
+ * seca2bmodq
  *
  * Return Boolean shares mod 2^k (k = 23) of a value x mod q (q = 0x7fe001),
  * given its arithmetic shares (q < 2^k).
@@ -735,8 +735,8 @@ seca2bmodq:
   addi x2, x2, 32
   ret
 
-/*
- * Name: secleq
+/**
+ * secleq
  *
  * Return b = 1 iff x <= psi (else 0), given k-bit Boolean shares of x with
  * k = 23 and 0 <= psi < 2^k - 1.
@@ -781,8 +781,8 @@ secleq:
   bn.xor  w0, w0, w1
   ret
 
-/*
- * Name: secunmask_modq
+/**
+ * secunmask_modq
  *
  * Refresh and unmask an arithmetic sharing of one polynomial mod q.  Runs
  * per-WDR (8 coefficients at a time); the caller must pre-load MOD with q in
@@ -1109,12 +1109,13 @@ _bitslice_butterfly:
   endloop
   ret
 
-/*
- * Name: bitslice (kbits = 23) / bitslice_k32 (kbits = 32)
+/**
+ * bitslice / bitslice_k32
  *
  * Transpose 256 canonical 32-bit coefficients into kbits bitsliced WDRs
  * (output WDR j's lane i = bit j of coefficient i); the upper 32 - kbits bits
- * of each input coefficient are dropped.  Both entry points share one core.
+ * of each input coefficient are dropped.  Both entry points share one core;
+ * bitslice uses kbits = 23 and bitslice_k32 uses kbits = 32.
  *
  * @param[in]  x10: ptr_out, dmem pointer to output (kbits WDRs at stride x12)
  * @param[in]  x11: ptr_in,  dmem pointer to input (32 * 32 = 1024 B)
@@ -1193,8 +1194,8 @@ _bitslice_core:
   addi x2, x2, 32
   ret
 
-/*
- * Name: unbitslice
+/**
+ * unbitslice
  *
  * Inverse of bitslice: take 23 bitsliced WDRs (lane i of WDR j = bit j of
  * coefficient i) and produce 32 canonical WDRs of 8 x 32-bit packed
@@ -1283,8 +1284,8 @@ unbitslice:
 
   ret
 
-/*
- * Name: poly_rej_samp_bitsliced
+/**
+ * poly_rej_samp_bitsliced
  *
  * Sample 256 coefficients uniform in [0, q) (q = 8380417) by rejection
  * sampling on uniform random words from URND: redraw the whole batch until
@@ -1383,8 +1384,8 @@ _prs_bs_draw:
 
   ret
 
-/*
- * Name: secb2amodq
+/**
+ * secb2amodq
  *
  * Convert a Boolean sharing x^{B,k} of x in [0, q) into an arithmetic sharing
  * z^{A_q} of the same value (q = 0x7fe001).
@@ -1502,8 +1503,8 @@ secb2amodq:
   addi x2, x2, 32
   ret
 
-/*
- * Name: secb2amodq_eta
+/**
+ * secb2amodq_eta
  *
  * B2A for polyeta-shaped Boolean inputs (k = 3 for eta = 2, k = 4 for
  * eta = 4): zero-pad the k-stripe shares to the full 24-stripe Z_q layout,
@@ -1599,8 +1600,8 @@ secb2amodq_eta:
   addi x2, x2, 32
   ret
 
-/*
- * Name: secboundcheck
+/**
+ * secboundcheck
  *
  * Bound-check masked arithmetic input x^{A_q}: return the per-lane mask b in
  * w0 (b_i = 1 iff -lambda_0 <= x_i <= lambda_1 mod q).
@@ -1727,8 +1728,8 @@ secboundcheck:
   bn.mov w23, w30
   ret
 
-/*
- * Name: seccompress
+/**
+ * seccompress
  *
  * Masked SecCompress for the ML-DSA-44 SecDecompose: from arithmetic shares of
  * x mod q (q = 8380417) produce a Boolean sharing of
@@ -1997,8 +1998,8 @@ _seccompress_csub:
 
   ret
 
-/*
- * Name: secdecompose
+/**
+ * secdecompose
  *
  * Masked SecDecompose for ML-DSA: from arithmetic shares of w mod q
  * (q = 8380417) produce the unmasked w1 = HighBits(w, alpha) and a sharing of
@@ -2276,8 +2277,8 @@ _secdecompose_epilogue:
   bn.mov w23, w30
   ret
 
-/*
- * Name: masked_poly_uniform_eta
+/**
+ * masked_poly_uniform_eta / masked_poly_uniform_eta_export
  *
  * Produce an arithmetic sharing (mod q) of one s1/s2 polynomial,
  * ExpandS(rho', nonce): draw 4-bit nibbles from SHAKE-256(rho' || nonce) and
@@ -2843,8 +2844,8 @@ _mpue_build_subtrahend:
   ret
 
 
-/*
- * Name: masked_poly_uniform_gamma_1
+/**
+ * masked_poly_uniform_gamma_1
  *
  * Sample a 2-share arithmetic sharing (mod q) of y = gamma1 - u, u uniform in
  * [0, 2^POLYZ_BITS), from masked SHAKE-256(rho' || nonce).  The squeezed u
