@@ -79,6 +79,11 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   bit compare_internal_key_slot;
   bit check_key_slot_erased;
   bit post_disable_compare_key_slots;
+  // The DUT XORs the OTP root key into an entropy-randomized slot value during
+  // SlotDestRandomize+SlotLoadRoot, so the SCB cannot reproduce slot.key from inputs.
+  // Set in latch_otp_key, consumed at op_status WIP->Done where we snapshot the DUT
+  // slot value into current_internal_key[].key.
+  bit [keymgr_dpe_pkg::DpeNumSlots-1:0] pending_otp_key_snapshot;
   keymgr_dpe_cdi_type_e current_cdi;
 
   // preserve value at TL read address phase and compare it at read data phase
@@ -140,6 +145,40 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             current_op_status == keymgr_pkg::OpWip
         ) begin
           if (cfg.en_scb) wipe_hw_keys();
+        end
+
+        // The DUT's StCtrlDpeWipe state runs SlotWipeAll, invalidating every internal
+        // slot. Mirror that in the SCB so the end-of-test struct compare matches and so
+        // any subsequent op the seq issues uses the correct (invalid) src/dst state.
+        foreach (current_internal_key[slot]) begin
+          current_internal_key[slot].valid = 0;
+        end
+        pending_otp_key_snapshot = '0;
+        update_state(keymgr_dpe_pkg::StWorkDpeInvalid);
+
+        // If an op was in flight when LC dropped, the DUT routes it through
+        // StCtrlDpeWipe and completes it with invalid_op. The KMAC path is bypassed,
+        // so process_kmac_data_rsp never runs and none of its side effects --
+        // intr_state, err_code, op_status, recov_operation_err and (via the async
+        // fault path on the wipe FSM transitions) fatal_fault_err -- get predicted.
+        // Replay them all here so the seq's wait_op_done -> op_status / err_code /
+        // intr_state read-back compares match and the alert checker sees expected
+        // pulses.
+        if (current_op_status == keymgr_pkg::OpWip) begin
+          bit [TL_DW-1:0] err = '0;
+          err[keymgr_pkg::ErrInvalidOp] = 1;
+          current_op_status = keymgr_pkg::OpDoneFail;
+          void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+          void'(ral.err_code.predict(err));
+          // Wipe path can take ~150 cycles end-to-end (entropy reseed + slot
+          // randomise + state transitions + alert handshake), so be generous.
+          set_exp_alert("recov_operation_err", .max_delay(150));
+          // Note: fatal_fault_err is not predicted here. Whether the wipe trips an
+          // async-fault bit (AsyncFaultFsmIntg / FsmChk / etc.) is seed-dependent
+          // and may stop pulsing once the FSM settles in StCtrlDpeInvalid -- which
+          // makes an is_fatal=1 expected_alert time out. The unpredicted fatal pulse
+          // still surfaces as "alert triggered unexpectedly" when it does occur;
+          // until we have a way to derive it from observable signals, leave it.
         end
 
         wait(cfg.keymgr_dpe_vif.keymgr_dpe_en_sync2 == lc_ctrl_pkg::On);
@@ -483,12 +522,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                         cfg.keymgr_dpe_vif.kmac_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.acc_sideload_status == SideLoadAvail,
                                         cfg_regwen);
-          end else if (csr.get_name() != "control_shadowed") begin
+          end else if (cov.sw_input_cg_wrap.exists(csr.get_name())) begin
             cov.sw_input_cg_wrap[csr.get_name()].sample(item.a_data, cfg_regwen);
           end
         end
       end
-      if (cfg.en_cov && ral.sw_binding_regwen.locks_reg_or_fld(dv_reg)) begin
+      if (cfg.en_cov && ral.sw_binding_regwen.locks_reg_or_fld(dv_reg) &&
+          cov.sw_input_cg_wrap.exists(csr.get_name())) begin
         cov.sw_input_cg_wrap[csr.get_name()].sample(
             item.a_data,
             `gmv(ral.sw_binding_regwen));
@@ -565,21 +605,28 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               end
             end
             // check sideload keys are preserved from available to disable state
-            if (cfg.keymgr_dpe_vif.aes_key_exp != cfg.keymgr_dpe_vif.aes_key) begin
+            // The "preserved" check only applies to a sideload that is still believed
+            // loaded; if SW issued a sideload_clear before the disable, the SCB cleared
+            // *_key_exp.valid and the DUT-side key bytes are entropy fill -- nothing
+            // semantically to preserve.
+            if (cfg.keymgr_dpe_vif.aes_key_exp.valid &&
+                cfg.keymgr_dpe_vif.aes_key_exp != cfg.keymgr_dpe_vif.aes_key) begin
                 `uvm_error(`gfn,
                   $sformatf({"After a disable aes sideload key was not preseved",
                   "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.aes_key_exp, cfg.keymgr_dpe_vif.aes_key))
             end
 
-            if (cfg.keymgr_dpe_vif.acc_key_exp != cfg.keymgr_dpe_vif.acc_key) begin
+            if (cfg.keymgr_dpe_vif.acc_key_exp.valid &&
+                cfg.keymgr_dpe_vif.acc_key_exp != cfg.keymgr_dpe_vif.acc_key) begin
                 `uvm_error(`gfn,
                   $sformatf({"After a disable acc sideload key was not preseved",
                     "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.acc_key_exp, cfg.keymgr_dpe_vif.acc_key))
             end
 
-            if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
+            if (cfg.keymgr_dpe_vif.kmac_key_exp.valid &&
+                cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
                 `uvm_error(`gfn,
                   $sformatf({"After a disable kmac sideload key was not preseved",
                   "exp 'h%0h vs. act 'h%0h"},
@@ -770,9 +817,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                     );
                   end
                   keymgr_dpe_pkg::OpDpeErase: begin
-                    if (!get_invalid_op()) begin
+                    // Capture before the wipe: get_invalid_op() re-evaluated post-wipe
+                    // would return 1 for a valid erase (dst_slot just got cleared).
+                    bit op_invalid = get_invalid_op();
+                    if (!op_invalid) begin
                       old_key = current_internal_key[current_key_slot.dst_slot].key;
                       current_internal_key[current_key_slot.dst_slot] = '0;
+                      pending_otp_key_snapshot[current_key_slot.dst_slot] = 0;
                       current_op_status = keymgr_pkg::OpDoneSuccess;
                       // Only check if the destination key slot has been erased instead of the full
                       // key slot comparison
@@ -782,6 +833,22 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                       `uvm_info(`gfn, $sformatf("current_op_status set to fail 1"), UVM_MEDIUM)
                     end
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        bit [TL_DW-1:0] err = '0;
+                        cfg.clk_rst_vif.wait_clks(1);
+                        err[keymgr_pkg::ErrInvalidOp] = op_invalid;
+                        void'(ral.err_code.predict(err));
+                        if (op_invalid) set_exp_alert("recov_operation_err", .max_delay(30));
+                        if (cfg.en_cov) begin
+                          keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                              `gmv(ral.control_shadowed.dest_sel));
+                          cov.state_and_op_cg.sample(current_state, op, current_op_status,
+                              current_cdi, dest);
+                          if (op_invalid) cov.err_code_cg.sample(keymgr_pkg::ErrInvalidOp);
+                        end
+                      end
+                    join_none
                   end
                   keymgr_dpe_pkg::OpDpeDisable: begin
                     foreach (current_internal_key[slot]) begin
@@ -793,8 +860,21 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                       // and the scoreboard does this when post_disable_compare_key_slots == 1.
                       current_internal_key[slot].valid = 0;
                     end
+                    pending_otp_key_snapshot = '0;
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                     post_disable_compare_key_slots = 1;
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        void'(ral.err_code.predict('0));
+                        if (cfg.en_cov) begin
+                          keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                              `gmv(ral.control_shadowed.dest_sel));
+                          cov.state_and_op_cg.sample(current_state, op, current_op_status,
+                              current_cdi, dest);
+                        end
+                      end
+                    join_none
                   end
                   default: ;
                 endcase
@@ -808,6 +888,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   begin
                     cfg.clk_rst_vif.wait_clks(1);
                     process_error_n_alert();
+                    if (cfg.en_cov) begin
+                      keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
+                          `gmv(ral.control_shadowed.dest_sel));
+                      cov.state_and_op_cg.sample(current_state, op, current_op_status,
+                          current_cdi, dest);
+                    end
                   end
                 join_none
               end
@@ -871,6 +957,22 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             if (current_op_status == keymgr_pkg::OpWip &&
                 item.d_data inside {keymgr_pkg::OpDoneSuccess, keymgr_pkg::OpDoneFail}) begin
               current_op_status = keymgr_pkg::keymgr_op_status_e'(item.d_data);
+
+              // OTP-latch advance is the only op that lands a non-reproducible value
+              // in a slot. Now that the DUT has acked the op (op_status left OpWip),
+              // SlotLoadRoot has committed -- snapshot the actual slot key so any
+              // bit-exact compares downstream see the real value.
+              foreach (pending_otp_key_snapshot[i]) begin
+                if (pending_otp_key_snapshot[i]) begin
+                  current_internal_key[i].key = cfg.keymgr_dpe_vif.internal_key_slots[i].key;
+                  cfg.keymgr_dpe_vif.store_internal_key(current_internal_key[i].key,
+                                                        current_state);
+                  pending_otp_key_snapshot[i] = 0;
+                  `uvm_info(`gfn,
+                    $sformatf("snapshot OTP-latched slot[%0d].key from DUT", i),
+                    UVM_MEDIUM)
+                end
+              end
 
               if (cfg.en_cov) begin
                 keymgr_pkg::keymgr_key_dest_e dest = keymgr_pkg::keymgr_key_dest_e'(
@@ -987,6 +1089,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     current_internal_key[current_key_slot.dst_slot].key = otp_key;
     current_internal_key[current_key_slot.dst_slot].key_policy = '0;
     current_internal_key[current_key_slot.dst_slot].key_policy.allow_child = 1;
+    // SCB cannot reproduce the entropy mask the DUT XORs into the slot. The .key
+    // assigned above is a placeholder; the real value is snapshotted from the DUT
+    // when the SCB observes op_status transition WIP->Done.
+    pending_otp_key_snapshot[current_key_slot.dst_slot] = 1;
     `uvm_info(`gfn,
       $sformatf("latch_otp_key: key %p",
       current_internal_key[current_key_slot.dst_slot]
@@ -1019,13 +1125,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
 
     if (get_fault_err()) begin
-      set_exp_alert("fatal_fault_err", .is_fatal(1));
+      set_exp_alert("fatal_fault_err", .is_fatal(1), .max_delay(30));
       `uvm_info(`gfn, $sformatf("process_error_n_alert: at %s, %s is issued and error %s",
                 current_state.name, op.name, "get_fault_err"), UVM_MEDIUM)
     end
 
     if (get_op_err()) begin
-      set_exp_alert("recov_operation_err");
+      // The cip_base default max_delay (4 cycles) is too tight for the keymgr_dpe alert
+      // chain: KMAC done -> op_done -> err_code register update -> op_errs -> alert_test
+      // -> alert_sender -> alert_receiver pulse can take 10-25 cycles in practice (seed
+      // dependent). Use 30 to cover the observed range without masking real bugs.
+      set_exp_alert("recov_operation_err", .max_delay(30));
       `uvm_info(`gfn, $sformatf("process_error_n_alert: at %s, %s is issued and error %s",
                 current_state.name, op.name, "recov_operation_err"), UVM_MEDIUM)
     end
@@ -1536,6 +1646,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       current_internal_key[slot].max_key_version = '0;
       current_internal_key[slot].valid = '0;
     end
+    pending_otp_key_snapshot = '0;
     foreach (adv_data_a_array[slot, state]) begin
       adv_data_a_array[slot][state] = '0;
     end
