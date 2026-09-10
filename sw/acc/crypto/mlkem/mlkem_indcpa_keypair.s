@@ -57,7 +57,8 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2, x4 to x31, w0 to w30, mod, acch, acc
+ * clobbered registers: x2, x4 to x31,
+ *                      w0 to w15, w17 to w30, mod, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -119,7 +120,7 @@ _continue:
   add    x11, x21, x0
   jal    x1, poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
   loop x19, 21
@@ -201,7 +202,7 @@ _continue:
 
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -301,7 +302,7 @@ _continue:
     bn.shv.16h w0, w16 << 1
     bn.wsrw    mod, w0
     la         x10, mpoly_e
-    la         x11, twiddles_ntt
+    la         x11, const_tw_ntt
     add        x12, x10, x0
     jal        x1, ntt
     bn.wsrw    mod, w16
@@ -401,7 +402,7 @@ _continue:
   bn.shv.16h w0, w16 << 1
   bn.wsrw    mod, w0
   la         x10, mpoly_e
-  la         x11, twiddles_ntt
+  la         x11, const_tw_ntt
   add        x12, x10, x0
   jal        x1, ntt
   bn.wsrw    mod, w16
@@ -493,7 +494,7 @@ _continue:
   add    x11, x21, x0
   jal    x1, masked_poly_getnoise_eta_init
   la     x22, mpolyvec_sk
-  la     x23, twiddles_ntt
+  la     x23, const_tw_ntt
 
   addi x19, x19, -1 /* k - 1 */
   loop x19, 28
@@ -595,7 +596,7 @@ _continue:
   /**************************************************************************/
   la   x21, nonce
   la   x22, mpolyvec_sk
-  la   x23, twiddles_basemul
+  la   x23, const_tw_basemul
   la   x24, seed_ij
   la   x25, poly_at /* also mpoly_e */
   la   x26, mpoly_pk
@@ -604,7 +605,7 @@ _continue:
   addi x5, x0, 0x0100
   sub  x27, x5, x19 /* 0x0100 - (k - 1) */
 
-  loop x19, 109
+  loop x19, 105
     /* Generate a[i][0]. */
     add x11, x25, x0
     jal x1, poly_gen_matrix
@@ -714,7 +715,7 @@ _continue:
     bn.wsrw    mod, w0
 
     la  x10, mpoly_e
-    la  x11, twiddles_ntt
+    la  x11, const_tw_ntt
     add x12, x10, x0
     loopi NSHARES, 3
       jal x1, whitening
@@ -737,17 +738,12 @@ _continue:
     /* Unmask pk. */
     addi x4, x0, 1
     add  x5, x26, x0
-    addi x6, x0, NSHARES
-    addi x6, x6, -1
-    loopi 16, 7
-      addi   x7, x5, 512
-      bn.lid x0, 0(x5)
-      loop x6, 3
-        bn.lid       x4, 0(x7)
-        bn.addvm.16h w0, w0, w1
-        addi         x7, x7, 512
-      endloop
-      bn.sid x0, 0(x5++)
+    addi x6, x5, 512
+    loopi 16, 4
+      bn.lid       x0, 0(x5)
+      bn.lid       x4, 0(x6++)
+      bn.addvm.16h w0, w0, w1
+      bn.sid       x0, 0(x5++)
     endloop
 
     bn.wsrw mod, w16
@@ -860,7 +856,7 @@ _continue:
   bn.wsrw    mod, w0
 
   la  x10, mpoly_e
-  la  x11, twiddles_ntt
+  la  x11, const_tw_ntt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -883,17 +879,12 @@ _continue:
   /* Unmask pk. */
   addi x4, x0, 1
   add  x5, x26, x0
-  addi x6, x0, NSHARES
-  addi x6, x6, -1
-  loopi 16, 7
-    addi   x7, x5, 512
-    bn.lid x0, 0(x5)
-    loop x6, 3
-      bn.lid       x4, 0(x7)
-      bn.addvm.16h w0, w0, w1
-      addi         x7, x7, 512
-    endloop
-    bn.sid x0, 0(x5++)
+  addi x6, x5, 512
+  loopi 16, 4
+    bn.lid       x0, 0(x5)
+    bn.lid       x4, 0(x6++)
+    bn.addvm.16h w0, w0, w1
+    bn.sid       x0, 0(x5++)
   endloop
 
   bn.wsrw mod, w16

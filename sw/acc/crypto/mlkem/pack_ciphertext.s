@@ -35,7 +35,7 @@
 .type poly_compress, @function
 poly_compress:
   /* Load constants. */
-  la        x5, modulus_over_2
+  la        x5, const_qp1_half
   addi      x4, x0, 2
   bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv
@@ -249,7 +249,7 @@ _poly_compress_16:
 .type poly_polyvec_compress, @function
 poly_polyvec_compress:
   /* Load constants. */
-  la        x5, modulus_over_2
+  la        x5, const_qp1_half
   addi      x4, x0, 2
   bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv

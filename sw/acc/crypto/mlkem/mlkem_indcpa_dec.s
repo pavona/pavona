@@ -59,7 +59,7 @@
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2 to x19, x21 to x25, x28 to x31,
+ * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
  *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
  * clobbered flag groups: FG0
  */
@@ -81,8 +81,8 @@ indcpa_dec:
   la x21, mpoly_sk
   la x22, poly_b
   la x23, mpoly_m
-  la x24, twiddles_ntt
-  la x25, twiddles_basemul
+  la x24, const_tw_ntt
+  la x25, const_tw_basemul
 
 #ifndef HARDENED
   /*** Step 1: unpack dk_pke[0] and compute the first product. ***/
@@ -147,7 +147,7 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add    x10, x23, x0
-  la     x11, twiddles_intt
+  la     x11, const_tw_intt
   add    x12, x10, x0
   jal    x1, intt
   bn.wsrw mod, w16
@@ -264,7 +264,7 @@ indcpa_dec:
 
   /*** Step 3: m = intt(m). ***/
   add x10, x23, x0
-  la  x11, twiddles_intt
+  la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
     jal x1, whitening
@@ -287,17 +287,12 @@ indcpa_dec:
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
-  addi   x5, x0, NSHARES
-  addi   x5, x5, -1
+  /* Whitening. */
   bn.xor w0, w0, w0
-  loop x5, 5
-    loopi 16, 3
-      bn.lid       x0, 0(x11)
-      bn.subvm.16h w0, w31, w0
-      bn.sid       x0, 0(x11++)
-    endloop
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loopi 16, 3
+    bn.lid       x0, 0(x11)
+    bn.subvm.16h w0, w31, w0
+    bn.sid       x0, 0(x11++)
   endloop
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/
