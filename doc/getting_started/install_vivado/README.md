@@ -16,6 +16,21 @@ Then click on 'Vivado Archive' in the Version list and locate version {{#tool-ve
 
 See [Download and Installation](https://docs.xilinx.com/r/{{#tool-version vivado }}-English/ug973-vivado-release-notes-install-license/Download-and-Installation) for installation instructions.
 
+Vivado also needs system libraries that are not part of the Pavona dependencies, most notably `libtinfo5`.
+AMD ships an `installLibs.sh` script at the root of the installer image to install them; see [Checking Required Libraries](https://docs.amd.com/r/{{#tool-version vivado }}-English/ug973-vivado-release-notes-install-license/Checking-Required-Libraries).
+That script installs `libtinfo5` with `apt-get`, which fails from Ubuntu 24.04 onwards, where only `libtinfo6` is packaged.
+As a workaround, install the Ubuntu 22.04 ("jammy") package manually:
+
+```sh
+echo 'deb http://archive.ubuntu.com/ubuntu jammy universe' \
+  | sudo tee /etc/apt/sources.list.d/jammy.list >/dev/null
+sudo apt-get update
+sudo apt-get download libtinfo5
+sudo dpkg -i libtinfo5_*.deb
+sudo rm -f libtinfo5_*.deb /etc/apt/sources.list.d/jammy.list
+sudo apt-get update
+```
+
 When asked what edition to install, choose "Vivado HL Design Edition".
 _Note: If you are only developing software, you may select the "Lab Edition" instead._
 On the feature selection screen, select at least the following features:
