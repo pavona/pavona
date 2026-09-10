@@ -277,6 +277,8 @@ register_toolchains("//third_party/foreign_cc:preinstalled_make_toolchain_macos"
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
     name = "llvm_toolchain",
+    # TODO: Drop once clang's GCC detection prefers complete installations.
+    extra_compile_flags = {"": ["-Wno-gcc-install-dir-libstdcxx"]},
     # macOS links the system libc++ dylib, so use its headers too.
     extra_cxx_flags = {"darwin-aarch64": [
         "-nostdinc++",
