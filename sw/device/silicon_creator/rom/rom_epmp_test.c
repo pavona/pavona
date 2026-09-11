@@ -189,6 +189,7 @@ static bool execute(const void *pc, ibex_exc_t expect) {
   return exception_received == expect;
 }
 
+#ifdef OPENTITAN_IS_EGRET
 /**
  * An instruction that has all bits set. This value is specifically chosen to
  * match an erased flash.
@@ -200,6 +201,19 @@ static bool execute(const void *pc, ibex_exc_t expect) {
  * will be decoded (as `c.unimp`).
  */
 static const uint32_t kUnimpInstruction = UINT32_MAX;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+/**
+ * An instruction that has all bits clear. This value is specifically chosen to
+ * match an empty CTN SRAM.
+ *
+ * Attempts to execute this instruction, `unimp`, will result in an illegal
+ * instruction exception.
+ *
+ * Note that if compressed instructions are enabled only the first two bytes
+ * will be decoded (as `c.unimp`).
+ */
+static const uint32_t kUnimpInstruction = 0;
+#endif
 
 /**
  * Illegal instruction residing in .rodata.
@@ -347,10 +361,8 @@ static void test_noexec_ctn(void) {
   // Ideally we'd check all of eFlash but that takes a very long time in
   // simulation. Instead, check the first and last words are not executable and
   // check a sample of other addresses.
-  uint32_t *ctn =
-      (uint32_t *)dt_soc_proxy_memory_base(kDtSocProxy, kDtSocProxyMemoryCtn);
-  size_t ctn_len = dt_soc_proxy_memory_size(kDtSocProxy, kDtSocProxyMemoryCtn) /
-                   sizeof(ctn[0]);
+  uint32_t *ctn = (uint32_t *)TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_BASE_ADDR;
+  size_t ctn_len = TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_SIZE_BYTES;
   CHECK(execute(&ctn[0], kIbexExcInstrAccessFault));
   CHECK(execute(&ctn[ctn_len - 1], kIbexExcInstrAccessFault));
 
@@ -401,22 +413,19 @@ static void test_unlock_exec_region(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
   // aligned and beyond the ROM region, since this same image is placed in the
   // flash).
-#ifdef HAS_FLASH_CTRL
-  uint32_t *eflash = (uint32_t *)dt_flash_ctrl_memory_base(
+#ifdef OPENTITAN_IS_EGRET
+  uint32_t *exec_region = (uint32_t *)dt_flash_ctrl_memory_base(
       kDtFlashCtrl, kDtFlashCtrlMemoryMem);
-  size_t eflash_len =
+  size_t exec_region_size_words =
       dt_flash_ctrl_memory_size(kDtFlashCtrl, kDtFlashCtrlMemoryMem) /
-      sizeof(eflash[0]);
-  uint32_t *image = &eflash[eflash_len / 5];
-  size_t image_len = eflash_len / 7;
-#else
-  uint32_t *ctn =
-      (uint32_t *)dt_soc_proxy_memory_base(kDtSocProxy, kDtSocProxyMemoryCtn);
-  size_t ctn_len = dt_soc_proxy_memory_size(kDtSocProxy, kDtSocProxyMemoryCtn) /
-                   sizeof(ctn[0]);
-  uint32_t *image = &ctn[ctn_len / 5];
-  size_t image_len = ctn_len / 7;
+      sizeof(exec_region[0]);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  uint32_t *exec_region = (uint32_t *)TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_BASE_ADDR;
+  size_t exec_region_size_words =
+      TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_SIZE_BYTES / sizeof(exec_region[0]);
 #endif
+  uint32_t *image = &exec_region[exec_region_size_words / 5];
+  size_t image_len = exec_region_size_words / 7;
   epmp_region_t region = {.start = (uintptr_t)&image[0],
                           .end = (uintptr_t)&image[image_len]};
 
@@ -481,9 +490,9 @@ void rom_main(void) {
   // Test that execution outside the ROM text is blocked by default.
   test_noexec_rodata();
   test_noexec_rwdata();
-#ifdef HAS_FLASH_CTRL
+#ifdef OPENTITAN_IS_EGRET
   test_noexec_eflash();
-#else
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   test_noexec_ctn();
 #endif
   test_noexec_mmio();
