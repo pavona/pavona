@@ -50,6 +50,7 @@ static union {
   hash_test_scratch_t hash;
   mlkem_test_scratch_t mlkem;
   mldsa_test_scratch_t mldsa;
+  sphincsplus_test_scratch_t sphincsplus;
 } cryptotest_scratch;
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
@@ -98,7 +99,7 @@ status_t process_cmd(ujson_t *uj) {
         RESP_ERR(uj, handle_rsa(uj));
         break;
       case kCryptotestCommandSphincsPlus:
-        RESP_ERR(uj, handle_sphincsplus(uj));
+        RESP_ERR(uj, handle_sphincsplus(uj, &cryptotest_scratch.sphincsplus));
         break;
       case kCryptotestCommandEd25519:
         RESP_ERR(uj, handle_ed25519(uj));
