@@ -37,12 +37,12 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
   task body();
     reset_index_e reset_index;
     resets_t enabled_resets;
-    string path = "tb.dut.u_fsm.fsm_invalid_i";
+    string path = "tb.dut.u_fast_fsm.fsm_invalid_i";
     int    num_of_target_states = 4;
 
     // Spurious interrupt check can be executed by
     // residue of lowpower task. Since we cannot kill csr op
-    // by disable fork, we have to disable spurious interrup check.
+    // by disable fork, we have to disable spurious interrupt check.
     cfg.invalid_st_test = 1;
 
     wait_for_rom_and_active();

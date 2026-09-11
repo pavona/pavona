@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
+module pwrmgr_fast_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,
   input rst_ni,
   input clk_slow_i,
@@ -24,10 +24,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input [TotalResetWidth-1:0] reset_reqs_i,
   input fsm_invalid_i,
   output logic clr_slow_req_o,
-% if 'usb' in src_clks:
-  input usb_ip_clk_en_i,
-  output logic usb_ip_clk_status_o,
-% endif
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -35,11 +31,9 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   output logic abort_o,
   output logic clr_hint_o,
   output logic clr_cfg_lock_o,
-% if wait_for_external_reset:
   input  logic int_reset_req_i, // internally generated reset request.
                                 // Send to platform to assert reset
   input  logic ext_rst_ack_i,   // External reset acknowledged
-% endif
 
   // rstmgr
   output pwr_rst_req_t pwr_rst_o,
@@ -140,7 +134,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // Any reset request was asserted.
   assign reset_req = |reset_reqs_i;
 
-  // Any peripheral triggererd hardware reset request.
+  // Any peripheral triggered hardware reset request.
   assign hw_rst_req = |reset_reqs_i[NumRstReqs-1:0];
 
   // Direct reset request that bypass checks.
@@ -158,11 +152,10 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
                        reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
-  % if wait_for_external_reset:
 
   // Provide the ability to control the reset to OpenTitan RoT from an external source.  The logic
   // below makes sure that when an internal reset request is generated, it is held high until the
-  // external SoC reset logic asserts and then deasserts deasserts the external reset signal.  The
+  // external SoC reset logic asserts and then deasserts the external reset signal.  The
   // pwrmgr fast FSM is held in FastPwrStateResetWait state until the external reset deasserts.
   // This ensure that the OT reset exit is synchronized with the rest of the SoC & platform.
   logic ext_rst_req_d, ext_rst_req_q;
@@ -188,7 +181,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       ext_rst_pending_q <= ext_rst_pending_d;
     end
   end
-  % endif
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -507,12 +499,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         // cleared before proceeding.  This also implies if the system is under a persistent
         // glitch, or if someone just turned off the power before pwrmgr turns it off itself,
         // we will stay stuck here and perpetually hold the system in reset.
-% if wait_for_external_reset:
         // Need to hold in reset until external reset deasserts (i.e. ext_rst_pending_q goes low)
         if (reset_valid && !reset_reqs_i[ResetMainPwrIdx] && !ext_rst_pending_q) begin
-% else:
-        if (reset_valid && !reset_reqs_i[ResetMainPwrIdx]) begin
-% endif
           state_d = FastPwrStateLowPower;
         end
       end
@@ -546,22 +534,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   // main and io clocks are only turned on/off as part of normal
   // power sequence
-% for clk in src_clks:
-  % if clk == 'usb':
-  prim_flop #(
-    .Width(1),
-    .ResetValue(1'b0)
-  ) u_usb_ip_clk_en (
-    .clk_i,
-    .rst_ni,
-    .d_i(ip_clk_en_d & usb_ip_clk_en_i),
-    .q_o(ips_clk_en_o.usb_ip_clk_en)
-  );
-  assign usb_ip_clk_status_o = clk_en_status_i.usb_status;
-  % else:
-  assign ips_clk_en_o.${clk}_ip_clk_en = ip_clk_en_q;
-  % endif
-% endfor
+  assign ips_clk_en_o.main_ip_clk_en = ip_clk_en_q;
+  assign ips_clk_en_o.io_ip_clk_en = ip_clk_en_q;
 
   prim_flop #(
     .Width(1),

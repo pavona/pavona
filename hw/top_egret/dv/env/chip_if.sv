@@ -672,7 +672,7 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
-  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
+  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fast_fsm.u_state_regs.state_o
       == pwrmgr_pkg::FastPwrStateActive;
 
 `ifdef GATE_LEVEL
@@ -756,7 +756,7 @@ interface chip_if;
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
-  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fsm.u_state_regs.state_o
+  assign pwrmgr_low_power_if.in_sleep       = `PWRMGR_HIER.u_fast_fsm.u_state_regs.state_o
                                             == pwrmgr_pkg::FastPwrStateLowPower;
 `ifdef GATE_LEVEL
   assign pwrmgr_low_power_if.deep_powerdown = 0;

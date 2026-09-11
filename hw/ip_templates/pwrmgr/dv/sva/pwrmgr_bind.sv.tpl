@@ -17,7 +17,7 @@ module pwrmgr_bind;
   bind pwrmgr pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_if (
     .clk_i(clk_slow_i),
     .rst_ni(rst_slow_ni),
-    .fast_state(u_fsm.state_q),
+    .fast_state(u_fast_fsm.state_q),
     .slow_state(u_slow_fsm.state_q),
     // The synchronized control CSR bits.
     .main_pd_ni(slow_main_pd_n),
@@ -82,16 +82,16 @@ module pwrmgr_bind;
     .slow_esc_rst_req(slow_peri_reqs.rstreqs[3]),
     .slow_mp_rst_req(slow_peri_reqs.rstreqs[2]),
     .slow_fsm_invalid,
-    .fast_fsm_invalid(u_fsm.u_state_regs.unused_err_o),
-    .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
-    .rom_intg_chk_done(u_fsm.rom_intg_chk_done),
-    .rom_intg_chk_good(u_fsm.rom_intg_chk_good),
-    .fast_state(u_fsm.state_q),
-    .lc_dft_en_i(u_fsm.lc_dft_en_i),
-    .lc_hw_debug_en_i(u_fsm.lc_hw_debug_en_i),
+    .fast_fsm_invalid(u_fast_fsm.u_state_regs.unused_err_o),
+    .rom_intg_chk_dis(u_fast_fsm.rom_intg_chk_dis),
+    .rom_intg_chk_done(u_fast_fsm.rom_intg_chk_done),
+    .rom_intg_chk_good(u_fast_fsm.rom_intg_chk_good),
+    .fast_state(u_fast_fsm.state_q),
+    .lc_dft_en_i(u_fast_fsm.lc_dft_en_i),
+    .lc_hw_debug_en_i(u_fast_fsm.lc_hw_debug_en_i),
     .main_pd_ni(u_slow_fsm.main_pd_ni),
-    .rom_ctrl_done_i(u_fsm.rom_ctrl_done_i),
-    .rom_ctrl_good_i(u_fsm.rom_ctrl_good_i)
+    .rom_ctrl_done_i(u_fast_fsm.rom_ctrl_done_i),
+    .rom_ctrl_good_i(u_fast_fsm.rom_ctrl_good_i)
   );
 `endif
 endmodule

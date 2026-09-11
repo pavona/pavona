@@ -104,7 +104,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cycles_before_main_pok.rand_mode(0);
   endtask
 
-  // Disable exclusions for CONTROL.USB_CLK_EN_ACTIVE and RESET_EN: they are meant for full-chip only.
+  // Disable exclusions for CONTROL.USB_CLK_EN_ACTIVE and RESET_EN: they are meant for
+  // full-chip only.
   function void disable_unnecessary_exclusions();
     csr_excl_item csr_excl = ral.get_excl_item();
     `uvm_info(`gfn, "Dealing with exclusions", UVM_MEDIUM)
@@ -385,7 +386,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     rsp_name, rsp_name, req, cycles), verb_) \
           cfg.clk_rst_vif.wait_clks(cycles); \
           rsp <= req; \
-          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), verb_) \
+          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", \
+                                    rsp_name, rsp_name, req), verb_) \
 
 
   task fast_responder();
