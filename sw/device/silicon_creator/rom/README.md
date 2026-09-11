@@ -1,8 +1,15 @@
-# ROM
+# Pavona ROM
 
-The ROM is the first boot stage in the Reference Secure Boot implementation, and starts executing at device reset.
-The ROM is programmed into the chip's ROM during wafer manufacturing, and cannot be changed.
-The ROM needs to prepare the system for executing a ROM_EXT, including ensuring the loaded ROM_EXT is allowed to be executed on this chip.
+The ROM is the first software that executes after a device reset, and also serves as the first boot stage in the Pavona Secure Boot implementation.
+ROM software is programmed into the chip's metal ROM during wafer manufacturing and cannot be changed.
+
+Top-level designs may be configured using either a single- or a dual-stage ROM.
+The Egret discrete reference design uses a single-stage ROM, and the Dragonfly integrated reference design uses a dual-stage ROM.
+In a dual-stage ROM, the second stage ROM (ROM1) supports an optional patch loaded to OTP that is signed by the Silicon Creator and verified by the first-stage (ROM0).
+
+The purpose of the ROM is to initialize a set of critical hardware blocks and verify that the loaded silicon creator firmware is allowed to be executed on the chip.
+
+<img src="doc/ROM_boot_flow.svg" alt="Fig1" style="width: 500px;"/>
 
 # References
 
