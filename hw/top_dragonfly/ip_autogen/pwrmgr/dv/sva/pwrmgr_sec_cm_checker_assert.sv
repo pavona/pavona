@@ -61,7 +61,7 @@ module pwrmgr_sec_cm_checker_assert
   end
 
 
-  // clk_esc_tgl is synchronised to clk_i using a two stage synchronizer
+  // clk_esc_tgl is synchronized to clk_i using a two stage synchronizer
   // this way assertions are synthesizable & they can be used in
   // formal or hardware as well!
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -71,14 +71,15 @@ module pwrmgr_sec_cm_checker_assert
       clk_esc_tgl_sync <= {clk_esc_tgl_sync[1:0], clk_esc_tgl};
   end
 
-  // we use the outputs from both stages of synchroniser to detect edges.
+  // we use the outputs from both stages of synchronizer to detect edges.
   assign clk_esc_edge = clk_esc_tgl_sync[2] ^ clk_esc_tgl_sync[1];
 
   // clk_esc dead counter - this counts the number of clk_i cycles for which clk_esc_i hasn't
   // toggled. If it reaches ESC_CLK_DEAD_CNT then clk_esc_i is considered dead. At that point,
   // assertion EscClkStopEscTimeout_A expects esc_timeout to be set until rst_lc_ni goes active.
   //
-  // The counter is reset when rst_ni is low, io_clk_en is low, clk_esc_edge is high (indicating clk_esc_i is alive)
+  // The counter is reset when rst_ni is low, io_clk_en is low, or clk_esc_edge is high
+  // (indicating clk_esc_i is alive)
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni || !io_clk_en || clk_esc_edge)
       clk_esc_dead_cnt <= 0;

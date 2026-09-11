@@ -39,7 +39,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
 
   // SVA control to handle side-effects of fault injections.
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (!uvm_re_match("*.u_fsm.u_state_regs*", if_proxy.path)) begin
+    if (!uvm_re_match("*.u_fast_fsm.u_state_regs*", if_proxy.path)) begin
       if (!enable) $assertoff(0, "tb.dut.pwrmgr_sec_cm_checker_assert.RomBlockActiveState_A");
       else         $asserton(0, "tb.dut.pwrmgr_sec_cm_checker_assert.RomBlockActiveState_A");
     end
@@ -89,7 +89,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
                             cfg.pwrmgr_vif.pwr_ast_req.pwr_clamp == 1 &&
                             cfg.pwrmgr_vif.pwr_ast_rsp.main_pok == 0);, msg, STATE_TRANSITION_NS)
         end
-        if (!uvm_re_match("*.u_fsm.*", if_proxy.path)) begin
+        if (!uvm_re_match("*.u_fast_fsm.*", if_proxy.path)) begin
           `uvm_info(`gfn, "detect unknown fast state", UVM_MEDIUM)
           msg = $sformatf(
               fast_st_to,

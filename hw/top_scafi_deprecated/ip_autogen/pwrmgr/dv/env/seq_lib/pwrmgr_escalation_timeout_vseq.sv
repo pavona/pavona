@@ -15,7 +15,7 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
   // The number of clock cycles with a stopped escalation clock before raising escalation is 128.
   // But the logic can wait for up to 7 more cycles before it starts the counter, and there is
   // some additional fast clock cycles of delay in the logic that triggers the escalation to
-  // be signalled. This adds 12 extra cycles to be conservative.
+  // be signaled. This adds 12 extra cycles to be conservative.
   localparam int EscTimeoutMainClkThreshold = 128 + 7 + 12;
 
   // In addition, there is a clock domain crossing to the slow clock, which can add a couple slow
