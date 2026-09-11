@@ -33,7 +33,9 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #endif
 
-#ifdef HAS_KEYMGR
+#ifdef HAS_KEYMGR_DPE
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
+#else
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif
 
@@ -455,11 +457,7 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 #endif
 }
 
-SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
-#ifdef HAS_KEYMGR
-  sc_keymgr_disable();
-#endif
-}
+SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) { sc_keymgr_disable(); }
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   const uint32_t sram_ctrl_base =
