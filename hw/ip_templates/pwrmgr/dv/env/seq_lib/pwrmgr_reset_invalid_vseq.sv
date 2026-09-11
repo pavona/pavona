@@ -37,7 +37,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
   task body();
     reset_index_e reset_index;
     resets_t enabled_resets;
-    string path = "tb.dut.u_fsm.fsm_invalid_i";
+    string path = "tb.dut.u_fast_fsm.fsm_invalid_i";
     int    num_of_target_states = 11;
 
     wait_for_rom_and_active();

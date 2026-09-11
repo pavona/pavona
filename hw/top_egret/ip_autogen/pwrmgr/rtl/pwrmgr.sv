@@ -150,7 +150,7 @@ module pwrmgr
 
   // These assertions use formal or simulation to prove that once esc_rst_req is latched, we expect
   // to see the lc reset requests in pwr_rst_o. The one exception is when escalation requests are
-  // cancelled while the CPU fetch is disabled, meaning the fast fsm is inactive.
+  // canceled while the CPU fetch is disabled, meaning the fast fsm is inactive.
 `ifdef SIMULATION
   // In simulation mode, the prim_cdc_rand_delay module inserts a random one cycle delay to the
   // two flop synchronizers. There are two CDCs in the path from escalation reset to the fast fsm
@@ -162,7 +162,8 @@ module pwrmgr
           clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |->
-          ##[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] || u_fsm.reset_reqs_i[ResetEscIdx],
+          ##[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] ||
+          u_fast_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `else
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
@@ -171,12 +172,12 @@ module pwrmgr
               slow_peri_reqs_masked.rstreqs[ResetEscIdx]
           ), clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
-          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fsm.reset_reqs_i[ResetEscIdx],
+          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fast_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `endif
 
-  `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
-          u_fsm.state_q == FastPwrStateActive |-> ##4 pwr_rst_o.rst_lc_req == 2'b11,
+  `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fast_fsm.reset_reqs_i[ResetEscIdx] &&
+          u_fast_fsm.state_q == FastPwrStateActive |-> ##4 pwr_rst_o.rst_lc_req == 2'b11,
           clk_i, !rst_ni)
 
   always_ff @(posedge clk_lc or negedge rst_lc_n) begin
@@ -358,7 +359,7 @@ module pwrmgr
   assign hw2reg.fault_status.esc_timeout.de     = esc_timeout_lc_q;
   assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
 
-  // The main power domain glitch automatically causes a reset, so regsitering
+  // The main power domain glitch automatically causes a reset, so registering
   // an alert is functionally pointless.  However, if an attacker somehow manages/
   // to silence the reset, this gives us one potential back-up path through alert_handler.
   // Allow capture of main_pd fault status whenever the system is live.
@@ -501,7 +502,7 @@ module pwrmgr
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
 
   ////////////////////////////
-  ///  Wakup and reset capture
+  ///  Wakeup and reset capture
   ////////////////////////////
 
   // reset and wakeup requests are captured into the slow clock domain and then
@@ -603,7 +604,7 @@ module pwrmgr
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
   assign low_power_entry = core_sleeping & low_power_hint;
 
-  pwrmgr_fsm u_fsm (
+  pwrmgr_fast_fsm u_fast_fsm (
     .clk_i,
     .rst_ni,
     .clk_slow_i,
@@ -753,7 +754,7 @@ module pwrmgr
 
   `endif
 
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fsm.u_state_regs,
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(FsmCheck_A, u_fast_fsm.u_state_regs,
       pwr_rst_o.rst_lc_req && pwr_rst_o.rst_sys_req)
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(SlowFsmCheck_A, u_slow_fsm.u_state_regs,
       pwr_ast_o.pwr_clamp && !pwr_ast_o.main_pd_n, 0, 2,

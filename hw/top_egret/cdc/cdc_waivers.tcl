@@ -94,7 +94,7 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                         
   -comment {Reconverged signals in RV PLIC}
 
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_egret.u_xbar_main.u_asf_35.rspfifo.storage[0]*")} -comment {Intended reconvergence in xbar main}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_egret.u_pwrmgr_aon.u_fsm.u_state_regs.u_state_flop.q_o*")} -comment {Intended reconvergence in pwrmgr fsm}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_egret.u_pwrmgr_aon.u_fast_fsm.u_state_regs.u_state_flop.q_o*")} -comment {Intended reconvergence in pwrmgr fsm}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_egret.u_xbar_main.u_asf_*.rs*fifo.sync_*ptr.u_sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_egret.*.*sync*.*sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_egret.*.*cdc*.*sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
