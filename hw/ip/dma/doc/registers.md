@@ -477,8 +477,9 @@ Firmware shall clear the Go bit when it intends to stop the hardware handshake o
 
 ### CONTROL . abort
 Aborts the DMA operation if this bit is set.
-Sets the corresponding bit in the status register once abort operation is complete.
-Any secure-side internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
+The DMA stops issuing new requests immediately and keeps `STATUS.busy` set while an accepted request drains.
+It sets `STATUS.aborted` once abort cleanup is complete.
+Any secure-side internal transactions are guaranteed to complete, but there are no completion guarantees on the SoC interface.
 
 ### CONTROL . initial_transfer
 Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
