@@ -410,8 +410,8 @@ dual_cc_library(
         ["HAS_FLASH_CTRL"],
         [],
     ) + pavona_if_ip(
-        "keymgr",
-        ["HAS_KEYMGR"],
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
         [],
     ),
     deps = dual_inputs(
@@ -451,9 +451,9 @@ dual_cc_library(
             [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
             [],
         ) + pavona_if_ip(
-            "keymgr",
+            "keymgr_dpe",
+            ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
             ["//sw/device/silicon_creator/lib/drivers:keymgr"],
-            [],
         ),
     ),
 )

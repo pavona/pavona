@@ -86,7 +86,7 @@ rom_error_t rom_boot_second_rom(void) {
   uint32_t rom_ctrl1_size =
       dt_rom_ctrl_memory_size(kDtRomCtrl1, kDtRomCtrlMemoryRom);
   const epmp_region_t second_rom_text = {
-      .start = _entry_point, .end = rom_ctrl1_base + rom_ctrl1_size};
+      .start = rom_ctrl1_base, .end = rom_ctrl1_base + rom_ctrl1_size};
   const epmp_region_t second_rom = {.start = rom_ctrl1_base,
                                     .end = rom_ctrl1_base + rom_ctrl1_size};
   epmp_prepare_boot_stage(second_rom_text, second_rom);
