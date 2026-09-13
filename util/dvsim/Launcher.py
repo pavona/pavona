@@ -134,10 +134,10 @@ class Launcher:
     def set_pyvenv(project) -> None:
         """Activate a python virtualenv if available.
 
-        The env variable <PROJECT>_PYTHON_VENV if set, points to the path
-        containing the python virtualenv created specifically for this
-        project. We can activate it if needed, before launching jobs using
-        external compute machines.
+        The env variable <PROJECT>_PYVENV, or <PROJECT>_PYVENV_<LAUNCHER> for a
+        single launcher, if set, points to the path containing the python
+        virtualenv created specifically for this project. We can activate it if
+        needed, before launching jobs using external compute machines.
 
         This is not applicable when running jobs locally on the user's machine.
         """
