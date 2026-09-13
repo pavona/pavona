@@ -116,6 +116,25 @@ static void init_peripherals(void) {
 #endif
 }
 
+// The life cycle state the chip booted in, read once in test_main.
+static dif_lc_ctrl_state_t lc_state;
+
+/**
+ * Returns whether a read of the given partition should succeed or fail.
+ *
+ * A locked partition refuses reads, except in RMA, where SECRET0, SECRET1 and
+ * SECRET2 stay readable so the RMA token and the creator key material can be
+ * read back. SECRET3 stays locked. Writes are refused either way.
+ */
+static exp_test_result_t read_exp_result(dif_otp_ctrl_partition_t partition,
+                                         exp_test_result_t exp_result) {
+  if (exp_result == kExpectFailed && lc_state == kDifLcCtrlStateRma &&
+      partition != kDifOtpCtrlPartitionSecret3) {
+    return kExpectPassed;
+  }
+  return exp_result;
+}
+
 /**
  * Attempt to write the buffer to the specified address within the given
  * partition. If exp_result is set to kExpectFailed, the test expects the
@@ -186,7 +205,8 @@ static void otp_write_read_test(test_mode_t test_mode, uint32_t address,
   }
   if (test_mode == kReadMode || test_mode == kWriteReadMode) {
     LOG_INFO("Read test at 0x%x...", address);
-    otp_read_test(address, partition, buffer, size, exp_result);
+    otp_read_test(address, partition, buffer, size,
+                  read_exp_result(partition, exp_result));
   }
 }
 
@@ -429,6 +449,7 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
 
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &state));
+  lc_state = state;
   CHECK_STATUS_OK(lc_ctrl_testutils_lc_state_log(&state));
 
   switch (state) {
