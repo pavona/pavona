@@ -18,6 +18,10 @@ from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
                    rm_path, subst_wildcards)
 
 
+def _path_is_resolved(path: str) -> bool:
+    return bool(path) and "{" not in path and "}" not in path
+
+
 class Deploy():
     """
     Abstraction to create and maintain a runnable job (builds, runs, etc.).
@@ -244,9 +248,25 @@ class Deploy():
         cmd = "make -f {} {}".format(self.flow_makefile, self.target)
         if self.dry_run is True:
             cmd += " -n"
+        cmd += " tool={}".format(shlex.quote(str(self.sim_cfg.tool).strip()))
+        extra_vars = {}
         for attr in sorted(self.mandatory_cmd_attrs.keys()):
             value = getattr(self, attr)
             if type(value) is list:
+                if self.sim_cfg.tool == "verilator" and attr in ("build_opts",
+                                                                 "run_opts"):
+                    plusargs = []
+                    non_plusargs = []
+                    for item in value:
+                        if item.startswith("+"):
+                            plusargs.append(item)
+                        else:
+                            non_plusargs.append(item)
+                    if attr == "build_opts":
+                        extra_vars["BUILD_PLUSARGS"] = plusargs
+                    else:
+                        extra_vars["RUN_PLUSARGS"] = plusargs
+                    value = non_plusargs
                 # Join attributes that are list of commands with '&&' to chain
                 # them together when executed as a Make target's recipe.
                 separator = " && " if attr in self.cmds_list_vars else " "
@@ -255,6 +275,10 @@ class Deploy():
                 value = int(value)
             if type(value) is str:
                 value = shlex.quote(value.strip())
+            cmd += " {}={}".format(attr, value)
+        for attr in sorted(extra_vars.keys()):
+            value = " ".join(item.strip() for item in extra_vars[attr])
+            value = shlex.quote(value.strip())
             cmd += " {}={}".format(attr, value)
         return cmd
 
@@ -339,8 +363,9 @@ class Deploy():
             # expected rather than noteworthy. Interrupting a large regression
             # would otherwise bury the report behind one warning per job.
             level = VERBOSE if self.launcher.status == "K" else log.WARNING
-            log.log(level, f"{self.full_name}: {e} Using dvsim-maintained "
-                           "job_runtime instead.")
+            log.log(
+                level, f"{self.full_name}: {e} Using dvsim-maintained "
+                "job_runtime instead.")
             self.job_runtime.set(self.launcher.job_runtime_secs, "s")
 
         # Extract the tool-reported memory footprint if available.
@@ -410,7 +435,7 @@ class CompileSim(Deploy):
         # 'build_mode' is used as a substitution variable in the HJson.
         self.build_mode = self.name
         self.job_name += f"_{self.build_mode}"
-        if self.sim_cfg.cov:
+        if self.sim_cfg.cov and _path_is_resolved(self.cov_db_dir):
             self.output_dirs += [self.cov_db_dir]
         self.pass_patterns = self.build_pass_patterns
         self.fail_patterns = self.build_fail_patterns
@@ -426,7 +451,8 @@ class CompileSim(Deploy):
     def pre_launch(self):
         # Delete old coverage database directories before building again. We
         # need to do this because the build directory is not 'renewed'.
-        rm_path(self.cov_db_dir)
+        if _path_is_resolved(self.cov_db_dir):
+            rm_path(self.cov_db_dir)
 
     def get_timeout_mins(self):
         """Returns the timeout in minutes.
@@ -569,6 +595,10 @@ class RunTest(Deploy):
         self.qual_name = self.run_dir_name + "." + str(self.seed)
         self.full_name = self.sim_cfg.name + ":" + self.qual_name
         self.job_name += f"_{self.build_mode}"
+        if self.sim_cfg.cov and not self.cov_db_dir:
+            self.cov_db_dir = str(Path(self.run_dir) / "cov_db.xml")
+        if self.sim_cfg.cov and not self.cov_db_test_dir:
+            self.cov_db_test_dir = self.cov_db_dir
         if self.sim_cfg.cov:
             self.output_dirs += [self.cov_db_dir]
 

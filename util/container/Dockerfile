@@ -153,10 +153,12 @@ USER dev:dev
 # version, which then fails to run.
 ENV PATH="/home/dev/.local/bin:${PATH}"
 COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
+COPY --chown=dev:dev third_party/python/wheels /tmp/third_party/python/wheels
 RUN python3 -m pip install --user -U pip "setuptools<66.0.0" \
-    && python3 -m pip install --user -r /tmp/python-requirements.txt \
+    && cd /tmp \
+    && python3 -m pip install --user -r python-requirements.txt \
         --no-warn-script-location \
-    && rm -f /tmp/python-requirements.txt
+    && rm -rf /tmp/python-requirements.txt /tmp/third_party
 
 USER root:root
 

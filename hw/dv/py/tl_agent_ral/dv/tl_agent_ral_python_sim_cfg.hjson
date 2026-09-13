@@ -1,0 +1,42 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: tl_agent_ral_python
+
+  tool: verilator
+
+  // Nominal DUT / TB names for reporting and scratch layout.
+  dut: tl_agent_smoke
+  tb: tl_agent_ral_pyuvm
+  fusesoc_core: zerorisc:dv:tl_agent_ral_pyuvm_sim:0.1
+
+  import_cfgs: [
+    "{proj_root}/hw/dv/tools/dvsim/verilator_pyuvm.hjson"
+  ]
+
+  py_tb_dir: "{proj_root}/hw/dv/py/tl_agent_ral/tb"
+
+  // Default Python UVM selectors and TB-specific knobs.
+  uvm_test: tl_agent_ral_smoke_test
+  uvm_test_seq: tl_agent_ral.seq_lib.tl_agent_ral_smoke_vseq.tl_agent_ral_smoke_vseq
+  tx_count: 0
+  test_timeout_us: 80
+  reseed: 10
+
+  tests: [
+    {
+      name: tl_agent_ral_smoke
+      run_opts: [
+        "TX_COUNT={tx_count}"
+      ]
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: ["tl_agent_ral_smoke"]
+    }
+  ]
+}
