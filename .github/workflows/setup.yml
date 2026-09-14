@@ -45,7 +45,7 @@ jobs:
           - ubuntu-24.04-arm
           - ubuntu-26.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Remove preinstalled Bazel
@@ -80,7 +80,7 @@ jobs:
           - macos-15
           - macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install system dependencies
         run: brew bundle install --file=Brewfile
       - name: Install Python dependencies
@@ -121,7 +121,7 @@ jobs:
     steps:
       - name: Bootstrap container
         run: apt-get update && apt-get install -y sudo git curl wget ca-certificates
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Build device software
@@ -154,7 +154,7 @@ jobs:
           - ubuntu-26.04
           - ubuntu-26.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -179,7 +179,7 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build container
         run: docker build -t pavona -f util/container/Dockerfile .
       - name: Run UART smoketest on Verilator and ACC ISS test

@@ -302,7 +302,7 @@ jobs:
     if: ${{ github.event_name != 'merge_group' }}
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Run fast Verilator tests
