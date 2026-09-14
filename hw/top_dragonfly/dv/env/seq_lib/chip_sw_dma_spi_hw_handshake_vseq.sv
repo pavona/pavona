@@ -7,6 +7,19 @@ class chip_sw_dma_spi_hw_handshake_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  // The SHA mode to ask the DMA for, and the delay before the abort is
+  // triggered.
+  rand int unsigned sha_mode_sel;
+  rand int unsigned abort_delay_clks;
+
+  constraint sha_mode_sel_c {
+    sha_mode_sel inside {[0:2]};
+  }
+
+  constraint abort_delay_clks_c {
+    abort_delay_clks inside {[1:10000]};
+  }
+
   localparam string DMA_FSM_STATE_PATH =
     "tb.dut.top_dragonfly.u_dma.ctrl_state_q";
 
@@ -57,7 +70,7 @@ class chip_sw_dma_spi_hw_handshake_vseq extends chip_sw_base_vseq;
     msg = m_device_dma_seq.get_data();
 
     // Randomize the SHA mode and compute the expected hash of the source data
-    unique case($urandom_range(0, 2))
+    unique case (sha_mode_sel)
       0: begin
         cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg, exp_digest[0:7]);
         sha_mode_arr = {dma_pkg::OpcSha256};
@@ -100,22 +113,22 @@ class chip_sw_dma_spi_hw_handshake_vseq extends chip_sw_base_vseq;
                 "timeout while wait for test exit complete",
                 dma_busy_timeout)
           // Wait a random delay
-          cfg.clk_rst_vif.wait_clks($urandom_range(1, 10000));
+          cfg.clk_rst_vif.wait_clks(abort_delay_clks);
 
           // Backdoor the SW to perform the abort
           kSoftwareBarrier[0] = 1;
           `uvm_info(`gfn, $sformatf("Setting kSoftwareBarrier = %0d", 1), UVM_LOW)
           sw_symbol_backdoor_overwrite("kSoftwareBarrier", kSoftwareBarrier);
 
-          // Stop the running sequence
-          p_sequencer.spi_device_sequencer_hs[0].stop_sequences();
+          // Leave the SPI sequence running across the abort. The driver takes
+          // an item and then waits for the chip select, so it holds one for
+          // nearly the whole run, and killing the sequence under it leaves its
+          // item_done with nothing outstanding. Restarting it is not needed:
+          // it supplies the second transfer as it did the first.
 
           // Wait for the sw to finish configuring the spi_host DUT
           `DV_WAIT(cfg.sw_logger_vif.printed_log == "spi host re-configuration complete",
              "Timedout waiting for spi host c configuration.")
-
-          // Restart the SPI sequence
-          m_device_dma_seq.start(p_sequencer.spi_device_sequencer_hs[0]);
         end
       end
     join_none
