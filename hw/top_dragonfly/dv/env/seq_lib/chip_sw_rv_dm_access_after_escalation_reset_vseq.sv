@@ -23,8 +23,20 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
   virtual task body();
     super.body();
 
+    // The software boots twice. The first boot locks the OTP secret partitions keymgr_dpe needs
+    // and resets to apply them; escalation happens on the second boot. A session opened on the
+    // first boot is cleared by that reset with the CSR sequence still running.
+    //
+    // Wait on rst_lc_n, which clears the debug module. It is already released here, so wait for
+    // it to assert and release again. Waiting on a software message would race: they are about
+    // two microseconds apart, a JTAG write takes longer, and printed_log holds only the last one.
+    `uvm_info(`gfn, "Waiting for the OTP lock reset", UVM_MEDIUM)
+    `DV_WAIT(cfg.chip_vif.dmi_clk_rst_if.rst_n)
+    `DV_WAIT(!cfg.chip_vif.dmi_clk_rst_if.rst_n)
+    `DV_WAIT(cfg.chip_vif.dmi_clk_rst_if.rst_n)
+
     `uvm_info(`gfn, "Waiting for HW debug to be enabled", UVM_MEDIUM)
-    `DV_WAIT(cfg.chip_vif.rv_dm_lc_hw_debug_en)
+    `DV_WAIT(cfg.chip_vif.rv_dm_dmi_hw_debug_en)
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
 
     `uvm_info(`gfn, "Activating the debug module", UVM_MEDIUM)
@@ -37,14 +49,14 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
     pause_jtag_dmi_ral_csr_rw_seq = 1;
 
     `uvm_info(`gfn, "Waiting for escalation reset to complete", UVM_MEDIUM)
-    `DV_WAIT(!cfg.chip_vif.rv_dm_lc_hw_debug_en)
+    `DV_WAIT(!cfg.chip_vif.rv_dm_dmi_hw_debug_en)
     // The JTAG CSR access sequence must have stopped by now, or else we will have issues.
     `DV_CHECK_FATAL(!jtag_dmi_ral_csr_rw_seq_busy)
 
     fork
       // The escalation reset will reset the debug module. The JTAG agent needs to also be reset.
       cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-      `DV_WAIT(cfg.chip_vif.rv_dm_lc_hw_debug_en)
+      `DV_WAIT(cfg.chip_vif.rv_dm_dmi_hw_debug_en)
     join
 
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
@@ -65,6 +77,12 @@ class chip_sw_rv_dm_access_after_escalation_reset_vseq extends chip_sw_base_vseq
     csr_rw_seq m_csr_seq = csr_rw_seq::type_id::create("m_csr_seq");
     csr_excl_item csr_excl = csr_utils_pkg::get_excl_item(jtag_dmi_ral);
     m_csr_seq.models = {jtag_dmi_ral};
+    // A pause takes effect between passes, so stopping takes as long as one pass. The pause has
+    // to complete inside the escalation phase it is requested in, or the reset arrives with JTAG
+    // accesses in flight. A pass over the whole register space is far too long for that. Testing
+    // a few registers per pass keeps it short, and each pass picks a fresh random set, so the
+    // space is still covered.
+    m_csr_seq.num_test_csrs = 2;
     if (csr_excl != null) csr_excl.print_exclusions();
     forever begin
       if (pause_jtag_dmi_ral_csr_rw_seq) wait (!pause_jtag_dmi_ral_csr_rw_seq);
