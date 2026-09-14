@@ -301,6 +301,14 @@ interface chip_if;
     (`RV_DM_HIER.gen_dmi_gating.u_rv_dm_dmi_gate.u_prim_lc_sync_strap_hw_debug_en.lc_en_o ==
      lc_ctrl_pkg::On);
 
+  // Sampled lc_hw_debug_en in RV_DM, from the copy that gates the DMI adapter.
+  //
+  // lc_en_o holds one copy per consumer, so comparing all of it against On never matches. The
+  // adapter's copy is the one that decides whether a JTAG DMI access gets through.
+  wire rv_dm_dmi_hw_debug_en =
+    (`RV_DM_HIER.gen_dmi_gating.u_rv_dm_dmi_gate.u_prim_lc_sync_strap_hw_debug_en.lc_en_o[0] ==
+     lc_ctrl_pkg::On);
+
   // Functional (dedicated) interface: Pin wake up signal.
   // TODO: For these tests, use chip_pins_if instead, so that any pin can be configured to wakeup.
   pins_if #(.Width(1), .PullStrength("Weak")) pinmux_wkup_if(
