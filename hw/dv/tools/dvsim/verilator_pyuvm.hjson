@@ -1,0 +1,167 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  flow: sim
+  dv_root: "{proj_root}/hw/dv"
+  flow_makefile: "{dv_root}/tools/dvsim/sim.mk"
+
+  import_cfgs: [
+    "{proj_root}/hw/data/common_project_cfg.hjson"
+  ]
+
+  build_dir: "{scratch_path}/{build_mode}"
+  run_dir_name: "{index}.{test}"
+  run_dir: "{scratch_path}/{run_dir_name}/latest"
+  sw_root_dir: "{proj_root}/sw"
+  sv_flist_gen_cmd: fusesoc
+  fusesoc_core_: "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
+  fusesoc_cores_root_dirs: ["--cores-root {proj_root}/hw"]
+  sv_flist_gen_opts: [
+    "{fusesoc_cores_root_dirs}",
+    "run",
+    "{sv_flist_gen_flags}",
+    "--target=sim",
+    "--work-root={build_dir}/fusesoc-work",
+    "--setup {fusesoc_core}"
+  ]
+  sv_flist_gen_dir: "{build_dir}/fusesoc-work"
+  sv_flist: "{sv_flist_gen_dir}/{fusesoc_core_}.vc"
+
+  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
+  build_seed_file_path: "{build_dir}/build_seed.log"
+
+  pre_build_cmds: []
+  build_cmd: "make -f {py_tb_dir}/Makefile dvsim_build"
+  build_opts: [
+    "SIM_BUILD={build_dir}/sim_build",
+    "RTL_FILELIST={sv_flist}"
+  ]
+  post_build_cmds: []
+
+  pre_run_cmds: []
+  run_cmd: "make -f {py_tb_dir}/Makefile dvsim_run"
+  run_opts: [
+    "SIM_BUILD={build_dir}/sim_build",
+    "COCOTB_RESULTS_FILE={run_dir}/results.xml",
+    "PYVSC_COV_DB={run_dir}/cov_db.xml",
+    "UVM_TESTNAME={uvm_test}",
+    "UVM_TEST_SEQ={uvm_test_seq}",
+    "UVM_VERBOSITY={uvm_verbosity}",
+    "DV_RANDOM_SEED={seed}",
+    "TEST_TIMEOUT_US={test_timeout_us}"
+  ]
+  post_run_cmds: []
+
+  supported_wave_formats: ["fst", "vcd"]
+
+  cov_db_dir: ""
+  cov_db_test_dir: ""
+  cov_merge_dir: "{scratch_path}/cov_merge"
+  cov_merge_db_dir: "{cov_merge_dir}/merged_cov"
+  cov_merge_db_file: "{cov_merge_db_dir}/merged_cov.xml"
+  cov_merge_cmd: "{proj_root}/hw/dv/tools/dvsim/pyucis_cov_merge.py"
+  cov_merge_opts: [
+    "{eval_cmd} echo {cov_db_dirs}",
+    "--out {cov_merge_db_file}"
+  ]
+  cov_report_dir: "{scratch_path}/cov_report"
+  cov_report_cmd: "{proj_root}/hw/dv/tools/dvsim/pyucis_cov_report.py"
+  cov_report_opts: [
+    "--db {cov_merge_db_file}",
+    "--report-dir {cov_report_dir}",
+    "--dashboard {cov_report_txt}",
+    "--html {cov_report_dir}/{cov_report_page}"
+  ]
+  cov_report_txt: "{cov_report_dir}/dashboard.txt"
+  cov_report_page: "dashboard.html"
+  run_timeout_mins: null
+  run_timeout_multiplier: null
+  build_timeout_mins: null
+
+  exports: [
+    { proj_root: "{proj_root}" }
+    { XDG_CACHE_HOME: "{scratch_path}/xdg-cache" }
+    { XDG_CONFIG_HOME: "{scratch_path}/xdg-config" }
+    { XDG_DATA_HOME: "{scratch_path}/xdg-data" }
+  ]
+
+  run_pass_patterns: [
+    "\\b(DV_)?TEST_STATUS: PASSED\\b",
+    "^\\s*\\*\\* TESTS=[0-9]+ PASS=[0-9]+ FAIL=0 SKIP=[0-9]+.*$"
+  ]
+  run_fail_patterns: [
+    "\\b(DV_)?TEST_STATUS: FAILED\\b",
+    "^\\s*\\*\\* TESTS=[0-9]+ PASS=[0-9]+ FAIL=[1-9][0-9]* SKIP=[0-9]+.*$"
+  ]
+
+  sw_images: []
+  sw_build_device: ""
+  sw_build_cmd: "bazel"
+  sw_build_opts: []
+
+  uvm_verbosity: MEDIUM
+  test_timeout_us: 80
+
+
+  build_modes: [
+    {
+      name: default
+    }
+    {
+      name: gui
+      is_sim_mode: 1
+      run_opts: []
+    }
+    {
+      name: gui_debug
+      is_sim_mode: 1
+      run_opts: []
+    }
+    {
+      name: waves
+      is_sim_mode: 1
+      build_opts: [
+        "WAVES=1",
+        "WAVE_FORMAT={waves}"
+      ]
+      run_opts: [
+        "WAVES=1",
+        "WAVE_FORMAT={waves}",
+        "WAVE_FILE={run_dir}/waves.{waves}"
+      ]
+    }
+    {
+      name: waves_off
+      is_sim_mode: 1
+      build_opts: [
+        "WAVES=0"
+      ]
+      run_opts: [
+        "WAVES=0"
+      ]
+    }
+    {
+      name: xprop
+      is_sim_mode: 1
+      run_opts: []
+    }
+    {
+      name: cov
+      is_sim_mode: 1
+      run_opts: [
+        "+en_cov=1"
+      ]
+    }
+    {
+      name: profile
+      is_sim_mode: 1
+      run_opts: []
+    }
+    {
+      name: loopdetect
+      is_sim_mode: 1
+      run_opts: []
+    }
+  ]
+}

@@ -6,7 +6,6 @@ Class describing simulation configuration object
 """
 
 import collections
-from datetime import datetime, timezone
 import fnmatch
 import json
 import logging as log
@@ -14,6 +13,7 @@ import os
 import re
 import sys
 from collections import OrderedDict
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -25,7 +25,7 @@ from SimResults import SimResults
 from tabulate import tabulate
 from Test import Test
 from Testplan import Testplan
-from utils import TS_FORMAT, rm_path, clean_odirs, mk_path
+from utils import TS_FORMAT, clean_odirs, mk_path, rm_path
 
 # This affects the bucketizer failure report.
 _MAX_UNIQUE_TESTS = 5
@@ -43,9 +43,9 @@ class SimCfg(FlowCfg):
 
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
-        "build_mode", "index", "test", "seed", "svseed", "uvm_test", "uvm_test_seq",
-        "cov_db_dirs", "sw_images", "sw_build_device", "sw_build_cmd",
-        "sw_build_opts"
+        "build_mode", "index", "test", "seed", "svseed", "uvm_test",
+        "uvm_test_seq", "run_dir", "run_dir_name", "cov_db_dirs", "sw_images",
+        "sw_build_device", "sw_build_cmd", "sw_build_opts"
     ]
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
@@ -299,7 +299,8 @@ class SimCfg(FlowCfg):
         # Parse testplan if provided.
         if self.testplan != "":
             self.testplan = Testplan(self.testplan,
-                                     repo_top=Path(self.proj_root), name=self.variant_name)
+                                     repo_top=Path(self.proj_root),
+                                     name=self.variant_name)
             # Extract tests in each stage and add them as regression target.
             self.regressions.extend(self.testplan.get_stage_regressions())
         else:
@@ -312,10 +313,12 @@ class SimCfg(FlowCfg):
 
     def _print_list(self):
         for list_item in self.list_items:
-            log.info("---- List of %s in %s ----", list_item, self.variant_name)
+            log.info("---- List of %s in %s ----", list_item,
+                     self.variant_name)
             items = getattr(self, list_item, None)
             if items is None:
-                log.error("No %s defined for %s.", list_item, self.variant_name)
+                log.error("No %s defined for %s.", list_item,
+                          self.variant_name)
 
             for item in items:
                 # Convert the item into something that can be printed in the
@@ -392,8 +395,8 @@ class SimCfg(FlowCfg):
         # Validate cfg_group override keys against the allowlist.
         for attr in self.group_overrides:
             if attr not in Regression.test_overrides:
-                log.error("cfg_groups override %r is not one of %s.",
-                          attr, list(Regression.test_overrides))
+                log.error("cfg_groups override %r is not one of %s.", attr,
+                          list(Regression.test_overrides))
                 sys.exit(1)
 
         # Process reseed override and create the build_list
@@ -503,8 +506,8 @@ class SimCfg(FlowCfg):
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
             if test.build_mode.name != build_map[test.build_mode].name:
-                test.build_mode = find_mode(
-                    build_map[test.build_mode].name, self.build_modes)
+                test.build_mode = find_mode(build_map[test.build_mode].name,
+                                            self.build_modes)
 
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
@@ -517,8 +520,9 @@ class SimCfg(FlowCfg):
 
         # GUI mode is only available for Xcelium for the moment.
         if (self.gui_debug) and (self.tool not in ['xcelium']):
-            log.error("GUI debug mode is only available for Xcelium, please remove "
-                      "--gui_debug / -gd option or switch to Xcelium tool.")
+            log.error(
+                "GUI debug mode is only available for Xcelium, please remove "
+                "--gui_debug / -gd option or switch to Xcelium tool.")
             sys.exit(1)
 
         # Add builds to the list of things to run, only if --run-only switch
@@ -635,11 +639,9 @@ class SimCfg(FlowCfg):
         def _test_result_to_dict(tr) -> dict:
             """Map a test result entry to a dict."""
             job_time_s = (tr.job_runtime.with_unit('s').get()[0]
-                          if tr.job_runtime is not None
-                          else None)
+                          if tr.job_runtime is not None else None)
             sim_time_us = (tr.simulated_time.with_unit('us').get()[0]
-                           if tr.simulated_time is not None
-                           else None)
+                           if tr.simulated_time is not None else None)
             pass_rate = tr.passing * 100.0 / tr.total if tr.total > 0 else 0
             return {
                 'name': tr.name,
@@ -734,18 +736,24 @@ class SimCfg(FlowCfg):
         if self.map_full_testplan:
             for k, d in self.testplan.progress.items():
                 results['results']['testplan_stage_summary'].append({
-                    'name': k,
-                    'total_tests': d['total'],
-                    'written_tests': d['written'],
-                    'passing_tests': d['passing'],
-                    'pass_rate': _pct_str_to_float(d['progress']),
+                    'name':
+                    k,
+                    'total_tests':
+                    d['total'],
+                    'written_tests':
+                    d['written'],
+                    'passing_tests':
+                    d['passing'],
+                    'pass_rate':
+                    _pct_str_to_float(d['progress']),
                 })
 
         # Extract coverage results if coverage has been collected in this run.
         if self.cov_report_deploy is not None:
             cov = self.cov_report_deploy.cov_results_dict
             for k, v in cov.items():
-                results['results']['coverage'][k.lower()] = _pct_str_to_float(v)
+                results['results']['coverage'][k.lower()] = _pct_str_to_float(
+                    v)
 
         # Extract failure buckets.
         if sim_results.buckets:
@@ -776,8 +784,10 @@ class SimCfg(FlowCfg):
                     })
 
                 results['results']['failure_buckets'].append({
-                    'identifier': bucket,
-                    'failing_tests': fts,
+                    'identifier':
+                    bucket,
+                    'failing_tests':
+                    fts,
                 })
 
         # Per-seed telemetry, grouped by test name. Unlike 'results' (which is
@@ -794,23 +804,34 @@ class SimCfg(FlowCfg):
             start = getattr(r.launcher, "start_time", None)
             status = run_results.get(r, "K")
             tests_by_name.setdefault(r.name, []).append({
-                'seed': str(r.seed),
-                'status': status,
-                'start': start.isoformat() if start else None,
-                'wall_time_s': _jobtime_val(r.job_wall_time, 's'),
-                'cpu_time_s': _jobtime_val(r.job_runtime, 's'),
-                'simulated_time_us': _jobtime_val(r.simulated_time, 'us'),
-                'data_structure_size_mb': r.job_mem,
-                'peak_rss_mb': r.job_peak_rss,
-                'odir_size_mb': r.job_odir_size,
+                'seed':
+                str(r.seed),
+                'status':
+                status,
+                'start':
+                start.isoformat() if start else None,
+                'wall_time_s':
+                _jobtime_val(r.job_wall_time, 's'),
+                'cpu_time_s':
+                _jobtime_val(r.job_runtime, 's'),
+                'simulated_time_us':
+                _jobtime_val(r.simulated_time, 'us'),
+                'data_structure_size_mb':
+                r.job_mem,
+                'peak_rss_mb':
+                r.job_peak_rss,
+                'odir_size_mb':
+                r.job_odir_size,
                 # Why the job failed or was killed. For a killed job this is
                 # the only record of the reason, so it matters most for the
                 # runs that never got to report anything themselves.
-                'fail_msg': (r.launcher.fail_msg.message
-                             if status != "P" else None),
+                'fail_msg':
+                (r.launcher.fail_msg.message if status != "P" else None),
             })
-        results['tests'] = [{'name': name, 'seeds': seeds}
-                            for name, seeds in tests_by_name.items()]
+        results['tests'] = [{
+            'name': name,
+            'seeds': seeds
+        } for name, seeds in tests_by_name.items()]
 
         # Store the `results` dictionary in this object.
         self.results_dict = results
@@ -834,9 +855,8 @@ class SimCfg(FlowCfg):
         def create_failure_message(test, line, context):
             message = [f"{indent_by(2)}* {test.qual_name}\\"]
             if line:
-                message.append(
-                    f"{indent_by(2)}  Line {line}, in log " +
-                    test.get_log_path())
+                message.append(f"{indent_by(2)}  Line {line}, in log " +
+                               test.get_log_path())
             else:
                 message.append(f"{indent_by(2)} Log {test.get_log_path()}")
             if context:
@@ -869,11 +889,12 @@ class SimCfg(FlowCfg):
                 unique_tests = collections.defaultdict(list)
                 for (test, line, context) in tests:
                     unique_tests[test.name].append((test, line, context))
-                for name, test_reseeds in list(unique_tests.items())[
-                        :_MAX_UNIQUE_TESTS]:
+                for name, test_reseeds in list(
+                        unique_tests.items())[:_MAX_UNIQUE_TESTS]:
                     fail_msgs.append(f"{indent_by(1)}* Test {name} has "
                                      f"{len(test_reseeds)} failures.")
-                    for test, line, context in test_reseeds[:_MAX_TEST_RESEEDS]:
+                    for test, line, context in test_reseeds[:
+                                                            _MAX_TEST_RESEEDS]:
                         fail_msgs.extend(
                             create_failure_message(test, line, context))
                     if len(test_reseeds) > _MAX_TEST_RESEEDS:
@@ -905,12 +926,11 @@ class SimCfg(FlowCfg):
             if hasattr(self, "testplan_doc_path"):
                 # The key 'testplan_doc_path' can override the path to the testplan file
                 # if it's not in the default location relative to the sim_cfg.
-                relative_path_to_testplan = (Path(self.testplan_doc_path)
-                                             .relative_to(Path(self.proj_root)))
+                relative_path_to_testplan = (Path(
+                    self.testplan_doc_path).relative_to(Path(self.proj_root)))
                 testplan = "https://{}/{}".format(
                     self.book,
-                    str(relative_path_to_testplan).replace("hjson", "html")
-                )
+                    str(relative_path_to_testplan).replace("hjson", "html"))
             else:
                 # Default filesystem layout for an ip block
                 # ├── data
@@ -929,8 +949,8 @@ class SimCfg(FlowCfg):
                 # containing the sim_cfg file...
                 testplan = "https://{}/tree/main/{}".format(
                     self.repo_server,
-                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.hjson"
-                )
+                    Path(self.rel_path).parent / 'data' /
+                    f"{self.name}_testplan.hjson")
 
             results_str += f"### [Testplan]({testplan})\n"
 
@@ -1017,21 +1037,23 @@ class SimCfg(FlowCfg):
         for cfg in self.cfgs:
             if cfg.cov_report_deploy:
                 cov_scores = cfg.cov_report_deploy.cov_results_dict
-                cov_scores = {f"{key.capitalize()} Coverage": val for key,
-                              val in cov_scores.items()}
+                cov_scores = {
+                    f"{key.capitalize()} Coverage": val
+                    for key, val in cov_scores.items()
+                }
                 row = cfg.results_summary | cov_scores
             else:
                 row = cfg.results_summary
             if row:
                 # convert name entry to relative link
                 row["Name"] = cfg._get_results_page_link(
-                    self.results_dir,
-                    row["Name"])
+                    self.results_dir, row["Name"])
                 self._add_to_row_dict(rows, batchgroups, cfg, row)
 
         if any(rows.values()):
             all_rows = [row for group in rows.values() for row in group]
-            all_keys = list(dict.fromkeys(key for row in all_rows for key in row))
+            all_keys = list(
+                dict.fromkeys(key for row in all_rows for key in row))
             # Move the "Overall Coverage" key to the end (only if coverage is enabled)
             if "Overall Coverage" in all_keys:
                 all_keys.remove("Overall Coverage")
@@ -1043,10 +1065,14 @@ class SimCfg(FlowCfg):
             for batchgroup, group_rows in rows.items():
                 if batchgroups:
                     # Insert a separator row for this batchgroup
-                    separator = [f"**{batchgroup}**"] + [""] * (len(all_keys) - 1)
+                    separator = [f"**{batchgroup}**"
+                                 ] + [""] * (len(all_keys) - 1)
                     table.append(separator)
                 for row in group_rows:
-                    normalized = {key: row.get(key, DEFAULT_VALUE) for key in all_keys}
+                    normalized = {
+                        key: row.get(key, DEFAULT_VALUE)
+                        for key in all_keys
+                    }
                     table.append(list(normalized.values()))
 
         if table:

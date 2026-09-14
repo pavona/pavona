@@ -10,6 +10,7 @@ source util/sh/lib/strict.sh
 : "${REPO_TOP:=$(realpath $0/../../..)}"
 PYTHON_REQS_IN_FILE="$REPO_TOP/pyproject.toml"
 PYTHON_REQS_OUT_FILE="$REPO_TOP/python-requirements.txt"
+PYTHON_WHEELS_DIR="third_party/python/wheels"
 
 if ! command -v uv > /dev/null; then
     echo >&2 "UV is required to generate python-requirements.txt. Please install it."
@@ -20,9 +21,12 @@ fi
 # and prepends the license and auto-generated banners at the top of the file.
 # The resolution is universal so that the lock file covers every Python version
 # allowed by `requires-python`, not just the 3.10 given below.
+cd "$REPO_TOP"
 uv pip compile \
   --universal \
   --generate-hashes \
+  --find-links "$PYTHON_WHEELS_DIR" \
+  --emit-find-links \
   --no-annotate \
   --no-header \
   --python 3.10 \
