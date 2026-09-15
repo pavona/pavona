@@ -11,6 +11,8 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+Q = 3329
+K = 12
 
 
 def gen_bitcopymask_test(
@@ -20,26 +22,26 @@ def gen_bitcopymask_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-
+    # Generate input.
     r = 0
     x_bytes = bytes()
-    for _ in range(nshares):
+    for _ in range(NSHARES):
         bit = random.getrandbits(1)
         r ^= bit
         x_bytes += int.to_bytes(bit, byteorder="little", length=32)
 
     # Generate expected result.
-    r *= 3329
+    r *= Q
     r_bytes = bytes()
-    for i in range(12):
-        ri = (r >> i) & 1
-        r_bytes += int.to_bytes(ri, byteorder="little", length=32)
-
-    rb_bytes = int.to_bytes(0, byteorder="little", length=32 * 12 * nshares)
+    for bit in range(K):
+        rbit = (r >> bit) & 1
+        r_bytes += int.to_bytes(rbit, byteorder="little", length=32)
 
     # Write input values.
-    inputs = {'xb': x_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xb': x_bytes,
+        'rb': int.to_bytes(0, byteorder="little", length=32 * 12 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

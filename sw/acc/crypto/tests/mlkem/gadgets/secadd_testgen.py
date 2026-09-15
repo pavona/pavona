@@ -11,6 +11,7 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+K = 16
 
 
 def gen_secadd_test(
@@ -20,46 +21,42 @@ def gen_secadd_test(
     if seed is not None:
         random.seed(seed)
 
-    k = 16
-    nshares = NSHARES
+    x = [0] * K
+    y = [0] * K
+    x_bytes = bytes()
+    y_bytes = bytes()
+    for _ in range(NSHARES):
+        for bit in range(K):
+            t = random.getrandbits(N)
+            x[bit] ^= t
+            x_bytes += int.to_bytes(t, byteorder="little", length=32)
+            t = random.getrandbits(N)
+            y[bit] ^= t
+            y_bytes += int.to_bytes(t, byteorder="little", length=32)
 
-    operand_nbytes = 32 * nshares * k
-
-    x = [0] * k
-    y = [0] * k
-    xb = bytes()
-    yb = bytes()
-    for _ in range(nshares):
-        for i in range(k):
-            tx = random.getrandbits(N)
-            ty = random.getrandbits(N)
-            x[i] ^= tx
-            y[i] ^= ty
-            tx = int.to_bytes(tx, byteorder="little", length=32)
-            ty = int.to_bytes(ty, byteorder="little", length=32)
-            xb += tx
-            yb += ty
-
-    r = [0] * k
-    for i in range(N):
-        xi = 0
-        yi = 0
-        for j in range(k):
-            xi |= (((x[j] >> i) & 1) << j)
-            yi |= (((y[j] >> i) & 1) << j)
-        ri = (xi + yi) & ((1 << k) - 1)
-        for j in range(k):
-            r[j] |= (((ri >> j) & 1) << i)
+    # Generate expected result.
+    m = (1 << K) - 1
+    r = [0] * K
+    for coeff in range(N):
+        x_coeff = 0
+        y_coeff = 0
+        for bit in range(K):
+            x_coeff |= (((x[bit] >> coeff) & 1) << bit)
+            y_coeff |= (((y[bit] >> coeff) & 1) << bit)
+        r_coeff = (x_coeff + y_coeff) & m
+        for bit in range(K):
+            r[bit] |= (((r_coeff >> bit) & 1) << coeff)
 
     r_bytes = bytes()
-    for i in range(k):
-        t = int.to_bytes(r[i], byteorder="little", length=32)
-        r_bytes += t
-
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    for bit in range(K):
+        r_bytes += int.to_bytes(r[bit], byteorder="little", length=32)
 
     # Write input values.
-    inputs = {'xb': xb, 'yb': yb, 'rb': rb_bytes}
+    inputs = {
+        'xb': x_bytes,
+        'yb': y_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=512 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

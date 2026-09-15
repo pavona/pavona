@@ -11,7 +11,7 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
-N_WDR = 16
+Q = 3329
 
 
 def gen_refreshmodq_test(
@@ -21,31 +21,26 @@ def gen_refreshmodq_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    q = 3329
-    operand_nbytes = 32 * N_WDR * nshares
-
     # Generate input.
-    x = [random.randint(0, q - 1) for _ in range(N)]
-    rx = x.copy()
+    x = [0] * N
+    r = [0] * N
     x_bytes = bytes()
-    for i in range(nshares - 1):
-        t = [random.randint(0, q - 1) for _ in range(N)]
-        rx = [(rx[j] - t[j]) % q for j in range(N)]
-        t_int = sum(t[j] << (j * 16) for j in range(N))
-        x_bytes += int.to_bytes(t_int, byteorder="little", length=512)
-
-    t_int = sum(rx[i] << (i * 16) for i in range(N))
-    x_bytes += int.to_bytes(t_int, byteorder="little", length=512)
+    for _ in range(NSHARES):
+        for coeff in range(N):
+            x[coeff] = random.randint(0, Q - 1)
+            r[coeff] = (r[coeff] + x[coeff]) % Q
+        x_int = sum(x[coeff] << (coeff * 16) for coeff in range(N))
+        x_bytes += int.to_bytes(x_int, byteorder="little", length=512)
 
     # Generate expected result.
-    x_int = sum(x[i] << (i * 16) for i in range(N))
-    r_bytes = int.to_bytes(x_int, byteorder="little", length=512)
-
-    ra_bytes = int.to_bytes(0, byteorder="little", length=operand_nbytes)
+    r_int = sum(r[coeff] << (coeff * 16) for coeff in range(N))
+    r_bytes = int.to_bytes(r_int, byteorder="little", length=512)
 
     # Write input values.
-    inputs = {'xa': x_bytes, 'ra': ra_bytes}
+    inputs = {
+        'xa': x_bytes,
+        'ra': int.to_bytes(0, byteorder="little", length=512 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).
