@@ -6317,11 +6317,14 @@ _LC_STATES_DEBUG_DISALLOWED = [
             ],
         ),
         deps = [
-            "//hw/top_egret/sw/autogen:top_egret",
+            "//hw/top:rv_dm_c_regs",
+            "//hw/top/dt:lc_ctrl",
+            "//hw/top/dt:rv_dm",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:epmp",
         ],
     )
     for lc_state, _ in _RV_DM_LC_DISABLED_TL_LC_STATES
