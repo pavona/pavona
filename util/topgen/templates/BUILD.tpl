@@ -66,6 +66,12 @@ if irq_test_count != expected_irq_tests.get(top["name"], irq_test_count):
        "Testplans / DV tests and this templates/BUILD.tpl file needs updating."
     )
 %>\
+## Tops without execution environments cannot run any of these tests, and
+## emitting them would only create empty test suites.
+% if not exec_envs:
+package(default_visibility = ["//visibility:public"])
+<% return STOP_RENDERING %>\
+% endif
 load(
     "//rules/pavona:defs.bzl",
 % for imp in defs_imports:
