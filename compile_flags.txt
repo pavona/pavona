@@ -15,6 +15,7 @@ sw/device/lib/base/freestanding
 -fno-common
 -nostdinc
 -Wall
+-Wcomma
 -Wconversion
 -Werror=date-time
 -Wextra

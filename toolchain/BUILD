@@ -326,6 +326,7 @@ cc_args(
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = [
         "-Wall",
+        "-Wcomma",
         "-Wconversion",
         "-Wextra",
         "-Wgnu",
