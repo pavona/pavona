@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """Build software running on ACC
@@ -46,6 +47,7 @@ from typing import List, Optional, Tuple
 
 import acc_as
 import acc_ld
+from shared.toolchain import find_tool
 from elftools.elf.elffile import ELFFile, SymbolTableSection  # type: ignore
 
 
@@ -122,13 +124,12 @@ def call_acc_ld(src_files: List[Path], out_file: Path,
 
 
 def call_rv32_objcopy(args: List[str]):
-    rv32_tool_objcopy = os.environ.get('RV32_TOOL_OBJCOPY',
-                                       'riscv32-unknown-elf-objcopy')
+    rv32_tool_objcopy = os.environ.get('RV32_TOOL_OBJCOPY') or find_tool('objcopy')
     run_cmd([rv32_tool_objcopy] + args)
 
 
 def call_rv32_ar(args: List[str]):
-    rv32_tool_ar = os.environ.get('RV32_TOOL_AR', 'riscv32-unknown-elf-ar')
+    rv32_tool_ar = os.environ.get('RV32_TOOL_AR') or find_tool('ar')
     run_cmd([rv32_tool_ar] + args)
 
 
