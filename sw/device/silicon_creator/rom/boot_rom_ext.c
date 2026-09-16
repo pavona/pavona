@@ -285,15 +285,15 @@ static rom_error_t rom_measure_otp_partitions(
       "OwnerSwCfg OTP partition digest no longer 64 bits.");
   hmac_sha256_update(
       (unsigned char *)(dt_otp_ctrl_reg_block(kDtOtpCtrl,
-                                              kDtOtpCtrlRegBlockCore),
+                                              kDtOtpCtrlRegBlockCore) +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                            OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET),
+                        OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(
       (unsigned char *)(dt_otp_ctrl_reg_block(kDtOtpCtrl,
-                                              kDtOtpCtrlRegBlockCore),
+                                              kDtOtpCtrlRegBlockCore) +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                            OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET),
+                        OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
 #ifdef DISCRETE_OTP_MAP
   hmac_sha256_update(sigverify_ctx->keys.integrity_measurement.digest,
