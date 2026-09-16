@@ -90,6 +90,16 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
   virtual task body();
     bit [BUS_DW-1:0] state;
     super.body();
+
+    // This test injects a fault on purpose. The fatal alert it raises stays asserted
+    // until reset, and some blocks raise their own alerts once escalation starts, so the
+    // sweep at the end of cip_base_vseq would call every one of them unexpected.
+    expect_fatal_alerts = 1'b1;
+
+    // That same path re-initializes the chip once the body task exits, which resets it while
+    // accesses are still in flight. pre_start has already done the initial init, so clearing
+    // the bit here only stops the one at the end.
+    do_dut_init = 1'b0;
     // tell SW whether the transition is done by JTAG or SW
     sw_symbol_backdoor_overwrite("kPerformTransitionBySW", {perform_transition_via_sw});
 
