@@ -56,7 +56,8 @@ function prepare() {
     mkdir -p "$BINDIR"
     echo "Downloading bazelisk ${release} (${url})." >> "${BINDIR}/bazelisk.log"
     tmp="$(mktemp "${BINDIR}/bazelisk.XXXXXX")"
-    curl ${CURL_FLAGS} --location "$url" --output "$tmp"
+    curl ${CURL_FLAGS} --show-error --fail --retry 5 --retry-delay 2 \
+        --location "$url" --output "$tmp"
     chmod 755 "$tmp"
     # Install atomically, so concurrent runs never see a partial download.
     mv -f "$tmp" "$file"
