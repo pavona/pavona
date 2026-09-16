@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +14,11 @@ class aes_alert_reset_vseq extends aes_base_vseq;
   aes_message_item my_message;
   status_t aes_status;
   bit finished_all_msgs = 0;
+  // Set while a fault injection is applied and still has to be removed.
+  bit injection_active = 0;
+
+  localparam string ShadowRegPath =
+      "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q";
   rand bit [$bits(aes_mode_e)-1:0] mal_error;
   constraint mal_error_c { $countones(mal_error) > 1; }
   rand bit [$bits(lc_ctrl_pkg::lc_tx_t)-1:0] lc_esc;
@@ -42,17 +48,14 @@ class aes_alert_reset_vseq extends aes_base_vseq;
             if (cfg.alert_reset_trigger == ShadowRegStorageErr) begin
               `uvm_info(`gfn, "Injecting storage error into shadowed main control register",
                   UVM_MEDIUM)
-              if (!uvm_hdl_check_path(
-                  "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"
-                  )) begin
+              if (!uvm_hdl_check_path(ShadowRegPath)) begin
                 `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND"))
               end else begin
-                void'(uvm_hdl_force(
-                    "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q",
-                    mal_error));
+                void'(uvm_hdl_force(ShadowRegPath, mal_error));
+                injection_active = 1;
                 wait(!cfg.clk_rst_vif.rst_n);
-                void'(uvm_hdl_release(
-                    "tb.dut.u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode.committed_q"));
+                void'(uvm_hdl_release(ShadowRegPath));
+                injection_active = 0;
               end
             end else if (cfg.alert_reset_trigger == PullReset) begin
               `uvm_info(`gfn, "Pulling reset", UVM_MEDIUM)
@@ -62,8 +65,10 @@ class aes_alert_reset_vseq extends aes_base_vseq;
             end else if (cfg.alert_reset_trigger == LcEscalate) begin
               `uvm_info(`gfn, "Triggering life cycle escalation", UVM_MEDIUM)
                cfg.lc_escalate_vif.drive({lc_esc,1'b1});
+               injection_active = 1;
                wait(!cfg.clk_rst_vif.rst_n);
                cfg.lc_escalate_vif.drive('0);
+               injection_active = 0;
             end else if (cfg.alert_reset_trigger == AlertTest) begin
               `uvm_info(`gfn, "Writing alert test CSR", UVM_MEDIUM)
               csr_wr(.ptr(ral.alert_test), .value(alert_test_value), .blocking(1));
@@ -97,7 +102,22 @@ class aes_alert_reset_vseq extends aes_base_vseq;
         wait (finished_all_msgs);
         wait_no_outstanding_access();
         disable fork;
+        // Remove the fault to avoid sequences after reset finding a locked AES.
+        remove_injection();
       end // fork
     join
   endtask : body
+
+
+  // Undo a fault injection that the `error` thread did not get to undo itself.
+  task remove_injection();
+    if (!injection_active) return;
+    `uvm_info(`gfn, "Removing fault injection that was not cleared by a reset", UVM_MEDIUM)
+    case (cfg.alert_reset_trigger)
+      ShadowRegStorageErr: void'(uvm_hdl_release(ShadowRegPath));
+      LcEscalate: cfg.lc_escalate_vif.drive('0);
+      default: ;
+    endcase
+    injection_active = 0;
+  endtask
 endclass
