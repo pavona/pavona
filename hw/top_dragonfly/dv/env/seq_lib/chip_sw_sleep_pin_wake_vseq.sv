@@ -97,9 +97,12 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
       // disconnect the mios_if too soon, then it will result in X-prop from the pinmux's (which is
       // in the AON domain) wakeup detection logic. So, we need to disconnect the pin from mios_if
       // at the same time the sw_straps_if is driven.
+      // pad_idx counts DIOs on the peripheral side, so it has to go through DioToDioPadMap before
+      // it can be compared against a pad. The range also has to run upwards, because inside
+      // treats a descending one as empty and the branch would never be taken.
       if (pad_type == top_dragonfly_pkg::DioPad &&
-          pad_idx inside {[top_dragonfly_pkg::DioPadGpio24:
-                           top_dragonfly_pkg::DioPadGpio22]}) begin
+          DioToDioPadMap[pad_idx] inside {[top_dragonfly_pkg::DioPadGpio22:
+                                           top_dragonfly_pkg::DioPadGpio24]}) begin
         @(cfg.chip_vif.sw_straps_if.pins_oe);
         drive_pad(pad_type, pad_idx, 1'bz);
       end
