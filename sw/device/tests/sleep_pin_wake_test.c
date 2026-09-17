@@ -40,12 +40,23 @@ enum {
   kPlicTarget = 0,
 };
 
+#if defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t kNumDio = 73;  // top_dragonfly has 73 DIOs
+#else
 static const uint32_t kNumDio = 16;  // top_egret has 16 DIOs
+#endif
 
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
+#if defined(OPENTITAN_IS_DRAGONFLY)
+// On dragonfly the clock and chip select pads belong to the SPI interface, and driving either
+// UART pad would cut off the console this test logs through. Indices must be ascending.
+#define NUM_DIRECT_DIO 7
+static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {42, 43, 44, 45, 58, 59, 60};
+#else
 #define NUM_DIRECT_DIO 5
 static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
+#endif
 
 // Preserve wakeup_detector_selected over multiple resets
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t wakeup_detector_idx;)
