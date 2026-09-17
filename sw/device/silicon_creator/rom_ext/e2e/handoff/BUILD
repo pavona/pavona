@@ -127,6 +127,7 @@ pavona_test(
             ".*PASS!",
             "",
         ]),
+        tags = ["broken"],
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [

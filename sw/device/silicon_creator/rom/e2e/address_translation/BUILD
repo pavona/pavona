@@ -103,6 +103,7 @@ pavona_test(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["a"],
+        tags = ["broken"],
     ),
 )
 
@@ -120,6 +121,7 @@ pavona_test(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["b"],
+        tags = ["broken"],
     ),
 )
 

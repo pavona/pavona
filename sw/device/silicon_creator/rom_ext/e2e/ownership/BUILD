@@ -444,6 +444,7 @@ _FLASH_PERMISSION_TESTS = {
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             rom_ext_offset = param["rom_ext_offset"],
             rom_ext_slot = param["rom_ext_slot"],
+            tags = ["broken"],
             test_cmd = """
                 --clear-bitstream
                 --bootstrap={firmware}

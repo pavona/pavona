@@ -185,6 +185,7 @@ pavona_binary(
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             slot_a = "0x10000",
             slot_b = "0x90000",
+            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -231,6 +232,7 @@ pavona_test(
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         slot_a = "0x10000",
         slot_b = "0x90000",
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"

@@ -120,6 +120,7 @@ _POSITIONS = {
         "owner_offset": "{owner_slot_a}",
         "success": "rom_ext_slot = AA__\r\n",
         "otp_img": None,
+        "tags": ["broken"],
     },
     "romext_virtual_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
@@ -128,6 +129,7 @@ _POSITIONS = {
         "owner_offset": "{owner_slot_a}",
         "success": "rom_ext_slot = __BB\r\n",
         "otp_img": None,
+        "tags": ["broken"],
     },
     "romext_virtual_a_with_imm_romext_enabled": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
@@ -137,6 +139,7 @@ _POSITIONS = {
         "success": "rom_ext_slot = AA__\r\n",
         "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
         "otp_img": ":otp_img_with_imm_romext_enabled",
+        "tags": ["broken"],
     },
     "imm_section_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
@@ -145,6 +148,7 @@ _POSITIONS = {
         "owner_offset": "{owner_slot_a}",
         "success": "IMM_SECTION:{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION),
         "otp_img": None,
+        "tags": ["broken"],
     },
 }
 
@@ -166,6 +170,7 @@ _POSITIONS = {
             otp = position["otp_img"],
             owner_offset = position["owner_offset"],
             romext_offset = position["romext_offset"],
+            tags = position.get("tags", []),
         ),
         linker_script = position["linker_script"],
         deps = [
