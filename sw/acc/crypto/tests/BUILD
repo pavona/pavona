@@ -7,6 +7,19 @@ load("//rules:acc.bzl", "acc_consttime_test", "acc_library", "acc_sim_test", "ac
 
 package(default_visibility = ["//visibility:public"])
 
+config_setting(
+    name = "acc_bench",
+    define_values = {
+        "acc_bench": "true",
+    },
+)
+
+# Collecting statistics makes tests run slower, so only do it for benchmarks.
+STATS = select({
+    ":acc_bench": True,
+    "//conditions:default": False,
+})
+
 acc_sim_test(
     name = "ed25519_encode_decode_test",
     srcs = [
@@ -80,6 +93,7 @@ acc_sim_test(
         "ed25519_sign_prehashed_test.s",
     ],
     dexp = "ed25519_sign_prehashed_test.dexp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:ed25519",
         "//sw/acc/crypto:ed25519_scalar",
@@ -96,6 +110,7 @@ acc_sim_test(
         "ed25519_sign_pure_test.s",
     ],
     dexp = "ed25519_sign_pure_test.dexp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:ed25519",
         "//sw/acc/crypto:ed25519_scalar",
@@ -112,6 +127,7 @@ acc_sim_test(
         "ed25519_verify_test.s",
     ],
     exp = "ed25519_verify_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:ed25519",
         "//sw/acc/crypto:ed25519_scalar",
@@ -128,6 +144,7 @@ acc_sim_test(
         "ed25519_verify_test2.s",
     ],
     exp = "ed25519_verify_test2.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:ed25519",
         "//sw/acc/crypto:ed25519_scalar",
@@ -135,6 +152,16 @@ acc_sim_test(
         "//sw/acc/crypto:sha512_compact",
         "//sw/acc/crypto:sha512_interface",
         "//sw/acc/crypto:sha512_padding",
+    ],
+)
+
+test_suite(
+    name = "ed25519_benchmarks",
+    tests = [
+        ":ed25519_sign_prehashed_test",
+        ":ed25519_sign_pure_test",
+        ":ed25519_verify_test",
+        ":ed25519_verify_test2",
     ],
 )
 
@@ -343,6 +370,7 @@ acc_sim_test(
         "p256_base_mult_test.s",
     ],
     exp = "p256_base_mult_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:p256_base",
         "//sw/acc/crypto:p256_isoncurve",
@@ -455,6 +483,7 @@ acc_sim_test(
         "p256_ecdsa_sign_test.s",
     ],
     exp = "p256_ecdsa_sign_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:p256_base",
         "//sw/acc/crypto:p256_isoncurve",
@@ -470,6 +499,7 @@ acc_sim_test(
         "p256_ecdsa_verify_test.s",
     ],
     exp = "p256_ecdsa_verify_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:p256_base",
         "//sw/acc/crypto:p256_isoncurve",
@@ -556,6 +586,7 @@ acc_sim_test(
         "p256_ecdh_shared_key_test.s",
     ],
     exp = "p256_ecdh_shared_key_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:p256_base",
         "//sw/acc/crypto:p256_isoncurve",
@@ -611,6 +642,16 @@ acc_sim_test_suite(
     ],
 )
 
+test_suite(
+    name = "p256_benchmarks",
+    tests = [
+        ":p256_base_mult_test",
+        ":p256_ecdh_shared_key_test",
+        ":p256_ecdsa_sign_test",
+        ":p256_ecdsa_verify_test",
+    ],
+)
+
 acc_sim_test(
     name = "p384_scalar_remask_test",
     srcs = [
@@ -627,6 +668,7 @@ acc_sim_test(
     srcs = [
         "p384_base_mult_test.s",
     ],
+    stats = STATS,
     testcase = "p384_base_mult_test.hjson",
     deps = [
         "//sw/acc/crypto:p384_base",
@@ -695,6 +737,7 @@ acc_sim_test(
         "p384_ecdh_shared_key_test.s",
     ],
     exp = "p384_ecdh_shared_key_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:p384_a2b",
         "//sw/acc/crypto:p384_base",
@@ -712,6 +755,7 @@ acc_sim_test(
     srcs = [
         "p384_ecdsa_sign_test.s",
     ],
+    stats = STATS,
     testcase = "p384_ecdsa_sign_test.hjson",
     deps = [
         "//sw/acc/crypto:p384_base",
@@ -729,6 +773,7 @@ acc_sim_test(
     srcs = [
         "p384_ecdsa_verify_test.s",
     ],
+    stats = STATS,
     testcase = "p384_ecdsa_verify_test.hjson",
     deps = [
         "//sw/acc/crypto:p384_base",
@@ -918,6 +963,16 @@ acc_consttime_test(
     subroutine = "proj_add_p384",
     deps = [
         ":p384_ecdsa_sign_test",
+    ],
+)
+
+test_suite(
+    name = "p384_benchmarks",
+    tests = [
+        ":p384_base_mult_test",
+        ":p384_ecdh_shared_key_test",
+        ":p384_ecdsa_sign_test",
+        ":p384_ecdsa_verify_test",
     ],
 )
 
@@ -1521,6 +1576,7 @@ acc_sim_test(
         "rsa_2048_dec_crt_test.s",
     ],
     exp = "rsa_2048_dec_crt_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:div",
         "//sw/acc/crypto:modexp",
@@ -1535,6 +1591,7 @@ acc_sim_test(
         "rsa_2048_enc_test.s",
     ],
     exp = "rsa_2048_enc_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:div",
         "//sw/acc/crypto:modexp",
@@ -1566,6 +1623,7 @@ acc_sim_test(
         "rsa_3072_dec_crt_test.s",
     ],
     exp = "rsa_3072_dec_crt_test.exp",
+    stats = STATS,
     tags = ["nightly"],  # slow, do not run in CI
     deps = [
         "//sw/acc/crypto:div",
@@ -1581,6 +1639,7 @@ acc_sim_test(
         "rsa_3072_enc_test.s",
     ],
     exp = "rsa_3072_enc_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:div",
         "//sw/acc/crypto:modexp",
@@ -1595,6 +1654,7 @@ acc_sim_test(
         "rsa_4096_enc_test.s",
     ],
     exp = "rsa_4096_enc_test.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:div",
         "//sw/acc/crypto:modexp",
@@ -1626,12 +1686,25 @@ acc_sim_test(
         "rsa_4096_dec_crt_test.s",
     ],
     exp = "rsa_4096_dec_crt_test.exp",
+    stats = STATS,
     tags = ["nightly"],  # slow, do not run in CI
     deps = [
         "//sw/acc/crypto:div",
         "//sw/acc/crypto:modexp",
         "//sw/acc/crypto:montmul",
         "//sw/acc/crypto:mul",
+    ],
+)
+
+test_suite(
+    name = "rsa_benchmarks",
+    tests = [
+        ":rsa_2048_dec_crt_test",
+        ":rsa_2048_enc_test",
+        ":rsa_3072_dec_crt_test",
+        ":rsa_3072_enc_test",
+        ":rsa_4096_dec_crt_test",
+        ":rsa_4096_enc_test",
     ],
 )
 
@@ -1731,6 +1804,7 @@ acc_sim_test(
         "x25519_test1.s",
     ],
     exp = "x25519_test1.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:field25519",
         "//sw/acc/crypto:x25519",
@@ -1743,6 +1817,7 @@ acc_sim_test(
         "x25519_test2.s",
     ],
     exp = "x25519_test2.exp",
+    stats = STATS,
     deps = [
         "//sw/acc/crypto:field25519",
         "//sw/acc/crypto:x25519",
@@ -1757,6 +1832,14 @@ acc_consttime_test(
     ],
 )
 
+test_suite(
+    name = "x25519_benchmarks",
+    tests = [
+        ":x25519_test1",
+        ":x25519_test2",
+    ],
+)
+
 acc_sim_test_suite(
     name = "boot_test",
     binary = "//sw/acc/crypto:boot",
@@ -1766,5 +1849,18 @@ acc_sim_test_suite(
         "boot_keygen_valid.hjson",
         "boot_mode_invalid.hjson",
         "boot_sigverify_valid.hjson",
+    ],
+)
+
+test_suite(
+    name = "benchmarks",
+    tests = [
+        ":ed25519_benchmarks",
+        ":p256_benchmarks",
+        ":p384_benchmarks",
+        ":rsa_benchmarks",
+        ":x25519_benchmarks",
+        "//sw/acc/crypto/tests/mldsa:mldsa_benchmarks",
+        "//sw/acc/crypto/tests/mlkem:mlkem_benchmarks",
     ],
 )

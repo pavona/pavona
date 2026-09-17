@@ -33,7 +33,11 @@ MODE_FOR_PARAMS = {
 
 NTESTS = 10
 
-STATS = True  # makes tests run slower but logs detailed execution stats
+# Collecting statistics makes tests run slower, so only do it for benchmarks.
+STATS = select({
+    "//sw/acc/crypto/tests:acc_bench": True,
+    "//conditions:default": False,
+})
 
 # Key generation tests
 py_binary(
@@ -275,3 +279,24 @@ acc_sim_test(
         "false_decap_test",
     ]
 ]
+
+test_suite(
+    name = "mlkem_benchmarks",
+    tests = [
+        ":" + params + "_encap_test" + str(i)
+        for i in range(NTESTS)
+        for params in MODE_FOR_PARAMS
+    ] + [
+        ":" + params + "_" + op + "_test" + str(i) + "_" + variant
+        for i in range(NTESTS)
+        for params in MODE_FOR_PARAMS
+        for op in [
+            "decap",
+            "keypair",
+        ]
+        for variant in [
+            "hardened",
+            "unprotected",
+        ]
+    ],
+)

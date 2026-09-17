@@ -29,7 +29,11 @@ MODE_FOR_PARAMS = {
 
 NTESTS = 3
 
-STATS = True  # makes tests run slower but logs detailed execution stats
+# Collecting statistics makes tests run slower, so only do it for benchmarks.
+STATS = select({
+    "//sw/acc/crypto/tests:acc_bench": True,
+    "//conditions:default": False,
+})
 
 # The kernels are runtime-parametrized; each test is compiled with -DDILITHIUM_MODE
 # only to set up that mode's params/vectors and drive the single runtime kernel.
@@ -181,7 +185,7 @@ py_binary(
 
 [
     acc_sim_test(
-        name = params + "_sign_bench_mean_" + str(idx) + "_unprotected",
+        name = params + "_sign_bench_mean_test" + str(idx) + "_unprotected",
         timeout = "long",
         binary = "//sw/acc/crypto:run_mldsa",
         pqc = True,
@@ -197,7 +201,7 @@ py_binary(
     test_suite(
         name = params + "_sign_bench_mean_unprotected",
         tags = ["manual"],
-        tests = [params + "_sign_bench_mean_" + str(idx) + "_unprotected" for idx in range(10)],
+        tests = [params + "_sign_bench_mean_test" + str(idx) + "_unprotected" for idx in range(10)],
     )
     for params in MLDSA_PARAMS
 ]
@@ -258,7 +262,7 @@ py_binary(
 
 [
     acc_sim_test(
-        name = params + "_sign_bench_mean_" + str(idx) + "_hardened",
+        name = params + "_sign_bench_mean_test" + str(idx) + "_hardened",
         timeout = "long",
         binary = "//sw/acc/crypto:run_mldsa_hardened",
         pqc = True,
@@ -274,7 +278,7 @@ py_binary(
     test_suite(
         name = params + "_sign_bench_mean_hardened",
         tags = ["manual"],
-        tests = [params + "_sign_bench_mean_" + str(idx) + "_hardened" for idx in range(10)],
+        tests = [params + "_sign_bench_mean_test" + str(idx) + "_hardened" for idx in range(10)],
     )
     for params in MLDSA_PARAMS
 ]
@@ -381,5 +385,31 @@ acc_sim_test(
         "//sw/acc/crypto/mldsa:kmac_send_msg",
         "//sw/acc/crypto/mldsa:poly",
         "//sw/acc/crypto/mldsa:rounding",
+    ],
+)
+
+test_suite(
+    name = "mldsa_benchmarks",
+    tests = [
+        ":" + params + "_verify_test" + str(i)
+        for i in range(NTESTS)
+        for params in MLDSA_PARAMS
+    ] + [
+        ":" + params + "_keypair_test" + str(i) + "_" + variant
+        for i in range(NTESTS)
+        for params in MLDSA_PARAMS
+        for variant in [
+            "hardened",
+            "unprotected",
+        ]
+    ] + [
+        # Signing cost varies with the rejection-sampling attempts.
+        ":" + params + "_sign_bench_mean_test" + str(i) + "_" + variant
+        for i in range(10)
+        for params in MLDSA_PARAMS
+        for variant in [
+            "hardened",
+            "unprotected",
+        ]
     ],
 )
