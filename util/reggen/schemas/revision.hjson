@@ -1,0 +1,20 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:revision",
+  title: "Revision",
+  description: "IP block revision metadata",
+  type: "object",
+  required: ["design_stage", "verification_stage", "version", "life_stage"]
+  properties: {
+    "version": { type: "string", description: "semantic module version in the format x.y.z{+res# }"},
+    "life_stage": { type: "string", description: "life stage of module" },
+    "design_stage": { type: "string", description: "design stage of module" },
+    "verification_stage": { type: "string", description: "verification stage of module" },
+    "dif_stage": { type: "string", description: "DIF stage of module" },
+    "commit_id": { type: "string", description: "commit ID of last stage sign-off" },
+    "notes": { type: "string", description: "random notes" },
+  }
+}

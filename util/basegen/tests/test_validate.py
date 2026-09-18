@@ -5,7 +5,7 @@ from basegen.lib import REPO_TOP, import_hjson
 from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 
-from basegen.validate import validate_schema, create_validator
+from basegen.validate import validate_schema, create_validator, all_validation_errors
 
 
 # test_topcfg_validation
@@ -14,6 +14,12 @@ KNOWN_GOOD_TOPCFGS = (
     REPO_TOP / "hw" / "top_egret" / "data" / "top_egret.hjson"
 )
 KNOWN_BAD_TOPCFGS = ({}, {"foo": 2})
+
+# test_ip_block_validation
+KNOWN_GOOD_IPDESCS = {ipdesc if (ipdesc.name == ipdesc.parents[1].name) else None
+                      for ipdesc in (REPO_TOP / "hw" / "ip").glob("*/data/*.hjson")}
+KNOWN_GOOD_IPDESCS.remove(None)
+KNOWN_BAD_IPDESCS = ({}, {"name": "foo", "clocking": {}})
 
 # test_nested_schemas
 NESTED_SCHEMAS = (
@@ -53,6 +59,18 @@ def test_topcfg_validation():
                         f"\n\t{bad}")
 
 
+def test_ip_block_validation():
+    for good in KNOWN_GOOD_IPDESCS:
+        validate_schema(import_hjson(good), "urn:reggen:ip_block")
+    for bad in KNOWN_BAD_IPDESCS:
+        try:
+            validate_schema(bad, "urn:reggen:ip_block")
+        except ValidationError:
+            continue
+        raise Exception("IP block description validation incorrectly approved bad description!"
+                        f"\n\t{bad}")
+
+
 def test_nested_schemas():
     parent, child = NESTED_SCHEMAS
     registry = SchemaRegistry().with_resources((
@@ -69,3 +87,13 @@ def test_nested_schemas():
             continue
         raise Exception("nested schema failed to catch bad dataset:"
                         f"\n\t{bad}")
+
+
+def test_all_validation_errors():
+    bad_data = {}  # this is empty, so each required field should be a separate error
+    validator = create_validator("urn:topgen:topcfg")
+    required_keys = validator.schema["required"]
+
+    all_errors = all_validation_errors(bad_data, validator)
+
+    assert len(all_errors) == len(required_keys)
