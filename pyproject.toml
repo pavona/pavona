@@ -69,6 +69,7 @@ dependencies = [
   # Type stubs for mypy checking.
   "types-pyyaml ~= 6.0",
   "types-tabulate==0.8.11",
+  "types-jsonschema==4.26.0.20260518",
 
   # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
   "anytree ~= 2.8",

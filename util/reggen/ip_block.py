@@ -7,7 +7,7 @@ import logging as log
 from typing import Sequence, Optional
 from dataclasses import dataclass
 
-import hjson  # type: ignore
+import hjson
 from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
@@ -15,13 +15,15 @@ from reggen.countermeasure import CounterMeasure
 from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
-from reggen.lib import (check_bool, check_int, check_keys, check_list,
+from reggen.lib import (check_bool, check_int, check_list,
                         check_name)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
 from reggen.signal import Signal
 from semantic_version import Version
+from basegen.lib import cast_hjson_values
+from basegen.validate import create_validator
 
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
@@ -71,95 +73,9 @@ KNOWN_CIP_IDS = {
     44: 'otp_macro',
 }
 
-REQUIRED_ALIAS_FIELDS = {
-    'alias_impl': ['s', "identifier for this alias implementation"],
-    'alias_target': ['s', "name of the component to apply the alias file to"],
-    'registers': ['l', "list of alias register definition groups"],
-    'bus_interfaces': ['l', "bus interfaces for the device"],
-}
 
-# TODO: we may want to support for countermeasure and parameter aliases
-# in the future.
-OPTIONAL_ALIAS_FIELDS: dict[str, list[str]] = {}
-
-REQUIRED_FIELDS = {
-    'name': ['s', "name of the component"],
-    'cip_id': ['d', "unique comportable IP identifier"],
-    'clocking': ['l', "clocking for the device"],
-    'bus_interfaces': ['l', "bus interfaces for the device"],
-}
-
-OPTIONAL_FIELDS = {
-    'human_name': ['s', "human-readable name of the component"],
-    'one_line_desc': ['s', "one-line description of the component"],
-    'one_paragraph_desc': ['s', "one-paragraph description of the component"],
-    # Note: this revision list may be deprecated in the future.
-    'revisions': ['l', "list with revision records"],
-    'design_spec':
-    ['s', "path to the design specification, relative to repo root"],
-    'dv_doc': ['s', "path to the DV document, relative to repo root"],
-    'hw_checklist': ['s', "path to the hw_checklist, relative to repo root"],
-    'sw_checklist': ['s', "path to the sw_checklist, relative to repo root"],
-    'design_stage': ['s', "design stage of module"],
-    'dif_stage': ['s', 'DIF stage of module'],
-    'verification_stage': ['s', "verification stage of module"],
-    'notes': ['s', "random notes"],
-    'version': ['s', "module version"],
-    'life_stage': ['s', "life stage of module"],
-    'commit_id': ['s', "commit ID of last stage sign-off"],
-    'alert_list': ['lnw', "list of peripheral alerts"],
-    'available_inout_list': ['lnw', "list of available peripheral inouts"],
-    'available_input_list': ['lnw', "list of available peripheral inputs"],
-    'available_output_list': ['lnw', "list of available peripheral outputs"],
-    'expose_reg_if': ['pb', 'if set, expose reg interface in reg2hw signal'],
-    'interrupt_list': ['lnw', "list of peripheral interrupts"],
-    'inter_signal_list': ['l', "list of inter-module signals"],
-    'no_auto_alert_regs': [
-        's', "Set to true to suppress automatic "
-        "generation of alert test registers. "
-        "Defaults to true if no alert_list is present. "
-        "Otherwise this defaults to false."
-    ],
-    'no_auto_intr_regs': [
-        's', "Set to true to suppress automatic "
-        "generation of interrupt registers. "
-        "Defaults to true if no interrupt_list is present. "
-        "Otherwise this defaults to false."
-    ],
-    'param_list': ['lp', "list of parameters of the IP"],
-    'registers':
-    ['l', "list of register definition groups and "
-     "offset control groups"],
-    'regwidth': ['d', "width of registers in bits (default 32)"],
-    'reset_request_list': ['l', 'list of signals requesting reset'],
-    'scan': ['pb', 'Indicates the module have `scanmode_i`'],
-    'scan_reset': ['pb', 'Indicates the module have `scan_rst_ni`'],
-    'scan_en': ['pb', 'Indicates the module has `scan_en_i`'],
-    'SPDX-License-Identifier': [
-        's', "License identifier (if using pure json) "
-        "Only use this if unable to put this "
-        "information in a comment at the top of the "
-        "file."
-    ],
-    'wakeup_list': ['lnw', "list of peripheral wakeups"],
-    'countermeasures': ["ln", "list of countermeasures in this block"],
-    'features': ["ln", "list of functional features in this block"],
-    'memory': ['l', "list of memory definitions"]
-}
-
-# Note that the revisions list may be deprecated in the future.
-REQUIRED_REVISIONS_FIELDS = {
-    'design_stage': ['s', "design stage of module"],
-    'verification_stage': ['s', "verification stage of module"],
-    'version': ['s', "semantic module version in the format x.y.z[+res#]"],
-    'life_stage': ['s', "life stage of module"],
-}
-
-OPTIONAL_REVISIONS_FIELDS = {
-    'dif_stage': ['s', 'DIF stage of module'],
-    'commit_id': ['s', "commit ID of last stage sign-off"],
-    'notes': ['s', "random notes"],
-}
+IP_BLOCK_VALIDATOR = create_validator('urn:reggen:ip_block')
+ALIAS_VALIDATOR = create_validator('urn:reggen:alias')
 
 
 @dataclass
@@ -222,14 +138,15 @@ class IpBlock:
                  where: str,
                  node: str = '') -> 'IpBlock':
 
-        rd = check_keys(raw, 'block at ' + where, list(REQUIRED_FIELDS.keys()),
-                        list(OPTIONAL_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate IP block from dict: block at ' + where)
+        IP_BLOCK_VALIDATOR.validate(cast_hjson_values(raw))
 
-        name = check_name(rd['name'], 'name of block at ' + where)
+        name = check_name(raw['name'], 'name of block at ' + where)
 
         what = '{} block at {}'.format(name, where)
 
-        r_regwidth = rd.get('regwidth')
+        r_regwidth = raw.get('regwidth')
         if r_regwidth is None:
             regwidth = 32
         else:
@@ -239,7 +156,7 @@ class IpBlock:
                                  '{} is not positive.'.format(what, regwidth))
 
         params = ReggenParams.from_raw('parameter list for ' + what,
-                                       rd.get('param_list', []))
+                                       raw.get('param_list', []))
         try:
             params.apply_defaults(param_defaults)
         except (ValueError, KeyError) as err:
@@ -250,17 +167,17 @@ class IpBlock:
 
         interrupts = Interrupt.from_raw_list(
             'interrupt_list for block {}'.format(name),
-            rd.get('interrupt_list', []))
+            raw.get('interrupt_list', []))
         alerts = Alert.from_raw_list('alert_list for block {}'.format(name),
-                                     rd.get('alert_list', []))
+                                     raw.get('alert_list', []))
         known_cms = {}
-        raw_cms = rd.get('countermeasures', [])
+        raw_cms = raw.get('countermeasures', [])
 
         countermeasures = CounterMeasure.from_raw_list(
             'countermeasure list for block {}'.format(name), raw_cms)
 
         features = Feature.from_raw_list(
-            'feature list for block {}'.format(name), rd.get('features', []))
+            'feature list for block {}'.format(name), raw.get('features', []))
 
         # Ensure that the countermeasures are unique
         for x in countermeasures:
@@ -269,31 +186,30 @@ class IpBlock:
             else:
                 known_cms.update({str(x): 1})
 
-        cip_id = check_int(rd.get('cip_id'), 'cip id for ' + what)
+        cip_id = check_int(raw.get('cip_id'), 'cip id for ' + what)
         # In case there are multiple past revisions of this IP, always pick the
         # newest one. Note: this revision list may be deprecated in the
         # future.
         version = Version('0.0.0')
-        if 'revisions' in rd:
-            for rev in check_list(rd['revisions'], what):
-                rev = check_keys(rev, 'rev item at ' + what,
-                                 list(REQUIRED_REVISIONS_FIELDS.keys()),
-                                 list(OPTIONAL_REVISIONS_FIELDS.keys()))
+        if 'revisions' in raw:
+            for rev in check_list(raw['revisions'], what):
                 try:
+                    if not isinstance(rev, dict):
+                        raise TypeError('revision must be in form of dict: ' + what)
                     ver = Version(rev['version'])
                 except ValueError as err:
                     raise RuntimeError(str(err) + ' in ' + what)
                 version = ver if ver >= version else version
         else:
             try:
-                version = Version(rd.get('version'))
+                version = Version(raw.get('version'))
             except ValueError as err:
                 raise RuntimeError(str(err) + ' in ' + what)
 
-        no_auto_intr = check_bool(rd.get('no_auto_intr_regs', not interrupts),
+        no_auto_intr = check_bool(raw.get('no_auto_intr_regs', not interrupts),
                                   'no_auto_intr_regs field of ' + what)
 
-        no_auto_alert = check_bool(rd.get('no_auto_alert_regs', not alerts),
+        no_auto_alert = check_bool(raw.get('no_auto_alert_regs', not alerts),
                                    'no_auto_alert_regs field of ' + what)
 
         if interrupts and not no_auto_intr:
@@ -330,9 +246,9 @@ class IpBlock:
                                value=str(len(alerts)),
                                unpacked_dimensions=None))
 
-        scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
+        scan = check_bool(raw.get('scan', False), 'scan field of ' + what)
 
-        r_inter_signals = check_list(rd.get('inter_signal_list', []),
+        r_inter_signals = check_list(raw.get('inter_signal_list', []),
                                      'inter_signal_list field')
         inter_signals = [
             InterSignal.from_raw(
@@ -342,44 +258,44 @@ class IpBlock:
         ]
 
         bus_interfaces = (BusInterfaces.from_raw(
-            rd['bus_interfaces'], 'bus_interfaces field of ' + where))
+            raw['bus_interfaces'], 'bus_interfaces field of ' + where))
         inter_signals += bus_interfaces.inter_signals()
 
-        clocking = Clocking.from_raw(rd['clocking'],
+        clocking = Clocking.from_raw(raw['clocking'],
                                      'clocking field of ' + what)
 
         # Build register block if IP really defined registers. IPs with an empty list of registers
         # but auto-generated registers should still be built.
-        if "registers" in rd:
-            reg_blocks = RegBlock.build_blocks(init_block, rd["registers"],
+        if "registers" in raw:
+            reg_blocks = RegBlock.build_blocks(init_block, raw["registers"],
                                                bus_interfaces, clocking, False)
         else:
             reg_blocks = {}
 
         memories = {
             name: Memory.from_raw(desc)
-            for (name, desc) in rd.get('memory', {}).items()  # type: ignore
+            for (name, desc) in raw.get('memory', {}).items()
         }
 
         xputs = (Signal.from_raw_list('available_inout_list for block ' + name,
-                                      rd.get('available_inout_list', [])),
+                                      raw.get('available_inout_list', [])),
                  Signal.from_raw_list('available_input_list for block ' + name,
-                                      rd.get('available_input_list', [])),
+                                      raw.get('available_input_list', [])),
                  Signal.from_raw_list(
                      'available_output_list for block ' + name,
-                     rd.get('available_output_list', [])))
+                     raw.get('available_output_list', [])))
         wakeups = Signal.from_raw_list('wakeup_list for block ' + name,
-                                       rd.get('wakeup_list', []))
+                                       raw.get('wakeup_list', []))
         rst_reqs = Signal.from_raw_list('reset_request_list for block ' + name,
-                                        rd.get('reset_request_list', []))
+                                        raw.get('reset_request_list', []))
 
-        expose_reg_if = check_bool(rd.get('expose_reg_if', False),
+        expose_reg_if = check_bool(raw.get('expose_reg_if', False),
                                    'expose_reg_if field of ' + what)
 
-        scan_reset = check_bool(rd.get('scan_reset', False),
+        scan_reset = check_bool(raw.get('scan_reset', False),
                                 'scan_reset field of ' + what)
 
-        scan_en = check_bool(rd.get('scan_en', False),
+        scan_en = check_bool(raw.get('scan_en', False),
                              'scan_en field of ' + what)
 
         # Check that register blocks are in bijection with device interfaces
@@ -450,12 +366,12 @@ class IpBlock:
         interface with the scrubbed alias reg block. This is helpful to create
         the generic CSR structure matching the alias definition automatically.
         '''
-        rd = check_keys(raw, 'block at ' + where,
-                        list(REQUIRED_ALIAS_FIELDS.keys()),
-                        list(OPTIONAL_ALIAS_FIELDS.keys()))
+        if not isinstance(raw, dict):
+            raise TypeError('must instantiate bus interfaces from dict: block at ' + where)
+        ALIAS_VALIDATOR.validate(raw)
 
         alias_bus_interfaces = (BusInterfaces.from_raw(
-            rd['bus_interfaces'], 'bus_interfaces of block at ' + where))
+            raw['bus_interfaces'], 'bus_interfaces of block at ' + where))
         if ((alias_bus_interfaces.has_unnamed_host or
              alias_bus_interfaces.named_hosts)):
             raise ValueError("Alias registers cannot be defined for host "
@@ -476,10 +392,10 @@ class IpBlock:
                                  where, list(alias_bus_device_names),
                                  self.name))
 
-        self.alias_impl = check_name(rd['alias_impl'],
+        self.alias_impl = check_name(raw['alias_impl'],
                                      'alias_impl of block at ' + where)
 
-        alias_target = check_name(rd['alias_target'],
+        alias_target = check_name(raw['alias_target'],
                                   'alias_target of block at ' + where)
 
         if alias_target != self.name:
@@ -489,7 +405,7 @@ class IpBlock:
 
         init_block = RegBlock(self.regwidth, self.params)
 
-        alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
+        alias_reg_blocks = RegBlock.build_blocks(init_block, raw['registers'],
                                                  self.bus_interfaces,
                                                  self.clocking, True)
 
