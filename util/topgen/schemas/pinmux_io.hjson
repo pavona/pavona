@@ -16,7 +16,7 @@
       type: "string",
       description: "input, output, or inout"
     },
-    idx: { type: "integer", description: "TODO" },
+    idx: { type: "integer", description: "index of the io (for bus signals with width > 1)" },
     pad: { type: "string", description: "Pad name for direct connections" },
     attr: {
       type: "string",
@@ -28,6 +28,6 @@
       description: "Specification of connection type, can be direct, manual or muxed"
     },
     desc: { type: "string", description: "Signal description" },
-    glob_idx: { type: "integer", description: "TODO" },
+    glob_idx: { type: "integer", description: "global index of the io" },
   }
 }
