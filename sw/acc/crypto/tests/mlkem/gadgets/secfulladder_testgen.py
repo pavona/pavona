@@ -20,50 +20,44 @@ def gen_secfulladder_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-
-    operand_nbytes = 32 * nshares
-
+    # Generate inputs.
     x = 0
     y = 0
     c = 0
-    xb = 0
-    yb = 0
-    cb = 0
-    for i in range(nshares):
-        tx = random.getrandbits(N)
-        ty = random.getrandbits(N)
-        tc = random.getrandbits(N)
-        x ^= tx
-        y ^= ty
-        c ^= tc
-        xb |= (tx << (i * N))
-        yb |= (ty << (i * N))
-        cb |= (tc << (i * N))
+    x_bytes = bytes()
+    y_bytes = bytes()
+    c_bytes = bytes()
+    for _ in range(NSHARES):
+        t = random.getrandbits(N)
+        x ^= t
+        x_bytes += int.to_bytes(t, byteorder='little', length=32)
+        t = random.getrandbits(N)
+        y ^= t
+        y_bytes += int.to_bytes(t, byteorder='little', length=32)
+        t = random.getrandbits(N)
+        c ^= t
+        c_bytes += int.to_bytes(t, byteorder='little', length=32)
 
-    # Compute expected result x + y + c.
-    w0 = 0
-    w1 = 0
-    for i in range(N):
-        xi = (x >> i) & 1
-        yi = (y >> i) & 1
-        ci = (c >> i) & 1
-        t = xi + yi + ci
-        w0 |= ((t & 1) << i)
-        w1 |= (((t >> 1) & 1) << i)
-    w = w0 | (w1 << N)
-
-    xb_bytes = int.to_bytes(xb, byteorder='little', length=operand_nbytes)
-    yb_bytes = int.to_bytes(yb, byteorder='little', length=operand_nbytes)
-    cb_bytes = int.to_bytes(cb, byteorder='little', length=operand_nbytes)
-    r_bytes = int.to_bytes(w, byteorder='little', length=64)
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
-    coutb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    # Compute expected result.
+    sum = 0
+    cout = 0
+    for coeff in range(N):
+        x_coeff = (x >> coeff) & 1
+        y_coeff = (y >> coeff) & 1
+        c_coeff = (c >> coeff) & 1
+        r_coeff = x_coeff + y_coeff + c_coeff
+        sum |= ((r_coeff & 1) << coeff)
+        cout |= (((r_coeff >> 1) & 1) << coeff)
+    r_bytes = int.to_bytes(sum, byteorder='little', length=32)
+    r_bytes += int.to_bytes(cout, byteorder='little', length=32)
 
     # Write input values.
     inputs = {
-        'xb': xb_bytes, 'yb': yb_bytes, 'cb': cb_bytes,
-        'rb': rb_bytes, 'coutb': coutb_bytes
+        'xb': x_bytes,
+        'yb': y_bytes,
+        'cb': c_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=32 * NSHARES),
+        'coutb': int.to_bytes(0, byteorder='little', length=32 * NSHARES)
     }
     write_test_data(inputs, data_file)
 

@@ -109,10 +109,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# poly_hocompress
+# poly_hocompress_dv
 py_binary(
-    name = "poly_hocompress_testgen",
-    srcs = ["poly_hocompress_testgen.py"],
+    name = "poly_hocompress_dv_testgen",
+    srcs = ["poly_hocompress_dv_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -123,14 +123,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "poly_hocompress_test{}".format(
+        name = "poly_hocompress_dv_test{}".format(
             str(i),
         ),
-        srcs = ["poly_hocompress_test.s"],
+        srcs = ["poly_hocompress_dv_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":poly_hocompress_testgen",
+        testgen = ":poly_hocompress_dv_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
@@ -139,10 +139,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# polyvec_hocompress
+# poly_hocompress_du
 py_binary(
-    name = "polyvec_hocompress_testgen",
-    srcs = ["polyvec_hocompress_testgen.py"],
+    name = "poly_hocompress_du_testgen",
+    srcs = ["poly_hocompress_du_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -153,14 +153,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "polyvec_hocompress_test{}".format(
+        name = "poly_hocompress_du_test{}".format(
             str(i),
         ),
-        srcs = ["polyvec_hocompress_test.s"],
+        srcs = ["poly_hocompress_du_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":polyvec_hocompress_testgen",
+        testgen = ":poly_hocompress_du_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
@@ -229,10 +229,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# poly_masked_compare_dv
+# masked_poly_compare_dv
 py_binary(
-    name = "poly_masked_compare_dv_testgen",
-    srcs = ["poly_masked_compare_dv_testgen.py"],
+    name = "masked_poly_compare_dv_testgen",
+    srcs = ["masked_poly_compare_dv_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -243,14 +243,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "poly_masked_compare_dv_test{}".format(
+        name = "masked_poly_compare_dv_test{}".format(
             str(i),
         ),
-        srcs = ["poly_masked_compare_dv_test.s"],
+        srcs = ["masked_poly_compare_dv_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":poly_masked_compare_dv_testgen",
+        testgen = ":masked_poly_compare_dv_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
@@ -259,10 +259,31 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# poly_masked_compare_du
+[
+    acc_autogen_sim_test(
+        name = "masked_poly_compare_dv_false_test{}".format(
+            str(i),
+        ),
+        srcs = ["masked_poly_compare_dv_test.s"],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":masked_poly_compare_dv_testgen",
+        testgen_args = [
+            "-i",
+        ],
+        deps = [
+            "//sw/acc/crypto/mlkem:consts",
+            "//sw/acc/crypto/mlkem:gadgets",
+        ],
+    )
+    for i in range(NTESTS)
+]
+
+# masked_poly_compare_du
 py_binary(
-    name = "poly_masked_compare_du_testgen",
-    srcs = ["poly_masked_compare_du_testgen.py"],
+    name = "masked_poly_compare_du_testgen",
+    srcs = ["masked_poly_compare_du_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -273,14 +294,35 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "poly_masked_compare_du_test{}".format(
+        name = "masked_poly_compare_du_test{}".format(
             str(i),
         ),
-        srcs = ["poly_masked_compare_du_test.s"],
+        srcs = ["masked_poly_compare_du_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":poly_masked_compare_du_testgen",
+        testgen = ":masked_poly_compare_du_testgen",
+        deps = [
+            "//sw/acc/crypto/mlkem:consts",
+            "//sw/acc/crypto/mlkem:gadgets",
+        ],
+    )
+    for i in range(NTESTS)
+]
+
+[
+    acc_autogen_sim_test(
+        name = "masked_poly_compare_du_false_test{}".format(
+            str(i),
+        ),
+        srcs = ["masked_poly_compare_du_test.s"],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":masked_poly_compare_du_testgen",
+        testgen_args = [
+            "-i",
+        ],
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",
@@ -380,10 +422,10 @@ py_binary(
     for i in range(NTESTS)
 ]
 
-# onebitdecompress
+# masked_poly_frommsg
 py_binary(
-    name = "onebitdecompress_testgen",
-    srcs = ["onebitdecompress_testgen.py"],
+    name = "masked_poly_frommsg_testgen",
+    srcs = ["masked_poly_frommsg_testgen.py"],
     imports = [
         "../../../../../../hw/ip/acc/util",
     ],
@@ -394,14 +436,14 @@ py_binary(
 
 [
     acc_autogen_sim_test(
-        name = "onebitdecompress_test{}".format(
+        name = "masked_poly_frommsg_test{}".format(
             str(i),
         ),
-        srcs = ["onebitdecompress_test.s"],
+        srcs = ["masked_poly_frommsg_test.s"],
         pqc = True,
         seed = i,
         stats = STATS,
-        testgen = ":onebitdecompress_testgen",
+        testgen = ":masked_poly_frommsg_testgen",
         deps = [
             "//sw/acc/crypto/mlkem:consts",
             "//sw/acc/crypto/mlkem:gadgets",

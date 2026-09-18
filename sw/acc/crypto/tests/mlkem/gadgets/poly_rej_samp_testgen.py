@@ -9,11 +9,11 @@ from typing import TextIO, Optional
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
-KYBER_Q = 3329
+Q = 3329
 N = 256  # number of output coefficients
-# Largest multiple of q below 2**16; a batch is rejected if any of its 16
+# Largest multiple of Q below 2**16; a batch is rejected if any of its 16
 # candidates is >= LIMIT.
-LIMIT = 19 * KYBER_Q
+LIMIT = 19 * Q
 
 
 def gen_poly_rej_samp_test(
@@ -34,14 +34,17 @@ def gen_poly_rej_samp_test(
         # The gadget accepts the whole word only if every candidate < 19*q,
         # then reduces each accepted candidate mod q.
         if all(c < LIMIT for c in word):
-            coeffs += [c % KYBER_Q for c in word]
+            coeffs += [c % Q for c in word]
 
     r_bytes = bytes()
     for c in coeffs:
         r_bytes += int.to_bytes(c, byteorder="little", length=2)
 
     # Write input values (output buffer zero-initialized).
-    inputs = {'rand_in': rand_in, 'r': int.to_bytes(0, byteorder="little", length=2 * N)}
+    inputs = {
+        'rand_in': rand_in,
+        'r': int.to_bytes(0, byteorder="little", length=2 * N)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

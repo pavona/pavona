@@ -5,12 +5,23 @@
 
 import argparse
 import random
-from typing import TextIO, Optional
+from typing import TextIO, Optional, List
 
 from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+K = 16
+
+
+def bitslice(x: List[int], k: int) -> bytes:
+    r = bytes()
+    for bit in range(k):
+        t = 0
+        for coeff in range(N):
+            t |= (((x[coeff] >> bit) & 1) << coeff)
+        r += int.to_bytes(t, byteorder="little", length=32)
+    return r
 
 
 def gen_seca2b_test(
@@ -20,45 +31,25 @@ def gen_seca2b_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    k = 16
-
-    operand_nbytes = 32 * nshares * k
-
-    m = (1 << k) - 1
-    v = [0] * N
-    x = [0] * nshares
-    for i in range(nshares):
-        x[i] = [random.randint(0, m) for _ in range(N)]
-        for j in range(N):
-            v[j] = (v[j] + x[i][j]) & m
-
-    # Bitslicing v.
-    r = [0] * k
-    for i in range(N):
-        for j in range(k):
-            r[j] |= (((v[i] >> j) & 1) << i)
-
-    r_bytes = bytes()
-    for i in range(k):
-        t = int.to_bytes(r[i], byteorder="little", length=32)
-        r_bytes += t
-
-    # Bitslicing x.
+    # Generate input.
+    m = (1 << K) - 1
+    x = [0] * N
+    r = [0] * N
     x_bytes = bytes()
-    for s in range(nshares):
-        t = [0] * k
-        for i in range(N):
-            for j in range(k):
-                t[j] |= (((x[s][i] >> j) & 1) << i)
-        for i in range(k):
-            ti = int.to_bytes(t[i], byteorder="little", length=32)
-            x_bytes += ti
+    for _ in range(NSHARES):
+        for coeff in range(N):
+            x[coeff] = random.randint(0, m)
+            r[coeff] = (r[coeff] + x[coeff]) & m
+        x_bytes += bitslice(x, K)
 
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    # Generate expected result.
+    r_bytes = bitslice(r, K)
 
     # Write input values.
-    inputs = {'xa': x_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xa': x_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=512 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

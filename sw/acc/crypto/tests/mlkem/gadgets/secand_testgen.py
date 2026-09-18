@@ -20,30 +20,29 @@ def gen_secand_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    operand_nbytes = 32 * nshares
-
+    # Generate inputs.
     x = 0
     y = 0
-    xb = 0
-    yb = 0
-    for i in range(nshares):
-        tx = random.getrandbits(N)
-        ty = random.getrandbits(N)
-        x ^= tx
-        y ^= ty
-        xb |= (tx << (i * N))
-        yb |= (ty << (i * N))
+    x_bytes = bytes()
+    y_bytes = bytes()
+    for _ in range(NSHARES):
+        t = random.getrandbits(N)
+        x ^= t
+        x_bytes += int.to_bytes(t, byteorder='little', length=32)
+        t = random.getrandbits(N)
+        y ^= t
+        y_bytes += int.to_bytes(t, byteorder='little', length=32)
 
+    # Generate expected result.
     r = x & y
-
-    xb_bytes = int.to_bytes(xb, byteorder='little', length=operand_nbytes)
-    yb_bytes = int.to_bytes(yb, byteorder='little', length=operand_nbytes)
     r_bytes = int.to_bytes(r, byteorder='little', length=32)
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
 
     # Write input values.
-    inputs = {'xb': xb_bytes, 'yb': yb_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xb': x_bytes,
+        'yb': y_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=32 * NSHARES)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

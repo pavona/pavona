@@ -11,6 +11,7 @@ from shared.testgen import write_test_data, write_test_exp, write_test_dexp
 
 N = 256
 NSHARES = 2
+K = 12
 
 
 def gen_refreshios_test(
@@ -20,31 +21,25 @@ def gen_refreshios_test(
     if seed is not None:
         random.seed(seed)
 
-    nshares = NSHARES
-    k = 12
-
-    operand_nbytes = 32 * nshares * k
-
-    x = [0] * nshares
+    # Generate input.
+    r = [0] * K
     x_bytes = bytes()
-    for i in range(nshares):
-        x[i] = [random.getrandbits(N) for _ in range(k)]
-        for j in range(k):
-            x_bytes += int.to_bytes(x[i][j], byteorder="little", length=32)
+    for _ in range(NSHARES):
+        for bit in range(K):
+            t = random.getrandbits(N)
+            r[bit] ^= t
+            x_bytes += int.to_bytes(t, byteorder="little", length=32)
 
     # Generate expected results.
-    r = x[0].copy()
-    for i in range(1, nshares):
-        for j in range(k):
-            r[j] ^= x[i][j]
     r_bytes = bytes()
-    for i in range(k):
-        r_bytes += int.to_bytes(r[i], byteorder="little", length=32)
-
-    rb_bytes = int.to_bytes(0, byteorder='little', length=operand_nbytes)
+    for bit in range(K):
+        r_bytes += int.to_bytes(r[bit], byteorder="little", length=32)
 
     # Write input values.
-    inputs = {'xb': x_bytes, 'rb': rb_bytes}
+    inputs = {
+        'xb': x_bytes,
+        'rb': int.to_bytes(0, byteorder='little', length=32 * NSHARES * K)
+    }
     write_test_data(inputs, data_file)
 
     # Write expected register values (none).

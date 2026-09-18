@@ -21,7 +21,7 @@
  * This routine is constant time.
  *
  * @param[in]  x10: dmem pointer to x
- * @param[in]  x11: dmem pointer to the twiddle factors twiddles_intt, whose
+ * @param[in]  x11: dmem pointer to the twiddle factors const_tw_intt, whose
  *                  last element folds in the final scaling by n^-1
  * @param[out] x12: dmem pointer to r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
