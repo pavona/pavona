@@ -17,7 +17,7 @@
     randcount: { type: "integer", description: "number of bits to randomize in the parameter" },
     default: { description: "the default value of the parameter" },             // any type
     local: { type: "boolean", description: "whether it is a localparam" },
-    expose: { type: "boolean", description: "seems redundant TODO" },
+    expose: { type: "boolean", description: "parameter is exposed to top level; added property" },
     name_top: { type: "string", description: "the name in the top-level" },
     randwidth: { type: "integer", description: "the number of bits" },
   }

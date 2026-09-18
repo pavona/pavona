@@ -402,7 +402,7 @@ This field must be specified if `config` is not specified.
 - <a id="properties/randcount"></a>**`randcount`** *(integer)*: number of bits to randomize in the parameter.
 - <a id="properties/default"></a>**`default`**: the default value of the parameter.
 - <a id="properties/local"></a>**`local`** *(boolean)*: whether it is a localparam.
-- <a id="properties/expose"></a>**`expose`** *(boolean)*: seems redundant TODO.
+- <a id="properties/expose"></a>**`expose`** *(boolean)*: parameter is exposed to top level; added property.
 - <a id="properties/name_top"></a>**`name_top`** *(string)*: the name in the top-level.
 - <a id="properties/randwidth"></a>**`randwidth`** *(integer)*: the number of bits.
 
@@ -432,12 +432,12 @@ This field must be specified if `config` is not specified.
 - <a id="properties/name"></a>**`name`** *(string, required)*: the name of the io.
 - <a id="properties/width"></a>**`width`** *(integer, required)*: the bit width of the io.
 - <a id="properties/type"></a>**`type`** *(string, required)*: input, output, or inout. Must be one of: `["input", "output", "inout"]`.
-- <a id="properties/idx"></a>**`idx`** *(integer)*: TODO.
+- <a id="properties/idx"></a>**`idx`** *(integer)*: index of the io (for bus signals with width > 1).
 - <a id="properties/pad"></a>**`pad`** *(string)*: Pad name for direct connections.
 - <a id="properties/attr"></a>**`attr`** *(string)*: Pad type for generating the correct attribute CSR.
 - <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
 - <a id="properties/desc"></a>**`desc`** *(string)*: Signal description.
-- <a id="properties/glob_idx"></a>**`glob_idx`** *(integer)*: TODO.
+- <a id="properties/glob_idx"></a>**`glob_idx`** *(integer)*: global index of the io.
 
 ### Pinmux I/O Count
 
