@@ -80,6 +80,7 @@ jobs:
         runner:
           - macos-15
           - macos-26
+          - xcode-27
     steps:
       - uses: actions/checkout@v7
       - name: Install system dependencies
