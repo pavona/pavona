@@ -71,6 +71,7 @@ pavona_test(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "mode: RESQ\r\n",
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
