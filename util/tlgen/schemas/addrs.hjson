@@ -1,0 +1,21 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:tlgen:addrs",
+  title: "Address configurations",
+  description: "Device Node address configuration. It contains the base address and the size in bytes.",
+  type: "object",
+  required: ["base_addrs", "size_byte"]
+  properties: {
+    "base_addrs": {
+      type: "object",
+      description: "Base addresses of the device. It is required for the device"
+    },
+    "size_byte": {
+      type: "integer",
+      description: "Memory space of the device. It is required for the device"
+    },
+  }
+}
