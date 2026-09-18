@@ -12,9 +12,15 @@ After this guide, you'll be able to refer to other guides to modify the hardware
 
 Check that your system meets the following system requirements:
 
-* Ubuntu 22.04, 24.04, or 26.04
+* Ubuntu 22.04, 24.04, or 26.04, or macOS 26 with Xcode 26 on Apple Silicon
 * At least 7 GiB RAM (32 GiB recommended)
 * At least 512 GiB of disk space
+
+We recommend using Ubuntu.
+macOS support is experimental: everything in this guide works there, but the FPGA, DV, and formal flows in the later guides require Linux.
+Where the steps differ, this guide gives them for each platform.
+
+### Ubuntu
 
 This guide describes instructions for Ubuntu 22.04 ("jammy").
 
@@ -35,6 +41,23 @@ Ensure that you have the appropriate system dependencies to proceed to the next 
 ```sh
 sudo apt update
 sudo apt upgrade
+```
+
+### macOS
+
+Install [Homebrew](https://brew.sh), which also installs the Xcode Command Line Tools and with them Git.
+The Xcode 27 SDK is not supported yet (see [#470](https://github.com/pavona/pavona/issues/470)), so keep Xcode and the Command Line Tools at version 26.
+
+```sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+The installer ends by printing the commands that add `brew` to your `PATH`.
+For the default shell, zsh, they are:
+
+```sh
+echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
 ```
 
 ## Get Pavona
@@ -70,8 +93,15 @@ For the best stability, use a Pavona release.
 If you'd like to contribute code to Pavona, create your own fork in order to open pull requests (see the [Github notes](../contributing/github_notes.md)).
 You cannot push a branch directly to the Pavona Git repository.
 
+On Ubuntu, install Git first:
+
 ```sh
 sudo apt install -y git
+```
+
+Then clone the repository:
+
+```sh
 git clone https://github.com/pavona/pavona
 ```
 which prints something like:
@@ -109,12 +139,27 @@ README.md          mypy.ini              util
 SUMMARY.md         pyproject.toml        yum-requirements.txt
 ```
 
+The additional packages you'll need in order to work with Pavona are listed in a file per platform.
+
+### Ubuntu
+
 The file `apt-requirements.txt` contains a list of the additional Ubuntu packages you'll need to install in order to work with Pavona.
 The following command processes this file and passes it to apt to install them:
 
 ```sh
 sed '/^#/d' apt-requirements.txt | xargs sudo apt install -y
 ```
+
+### macOS
+
+The file `Brewfile` contains a list of the Homebrew packages you'll need.
+The following command installs them:
+
+```sh
+brew bundle install --file=Brewfile
+```
+
+### Python
 
 Anything you build or test with Bazel brings its own Python, so no Python setup is needed here.
 The few tools that run outside Bazel, such as `util/dvsim/dvsim.py` and `util/regtool.py`, do need one; see [Python Environment Setup](setup_python.md).
@@ -175,7 +220,7 @@ You can examine the RISC-V (dis)assembly in the `bazel-bin/sw/device/examples/he
 > ```
 > common --//hw:verilator_options=--threads,8
 > ```
-> The above example would appropriate be for a machine with 8 cores (you can determine the number of cores in your CPU by running the `nproc` command).
+> The above example would appropriate be for a machine with 8 cores (you can determine the number of cores in your CPU by running the `nproc` command, or `sysctl -n hw.ncpu` on macOS).
 
 ### Run a test on Verilator
 
