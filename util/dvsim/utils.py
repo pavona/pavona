@@ -571,16 +571,19 @@ def rm_path(path, ignore_error=False):
     operation is raised, else it is ignored.
     '''
 
+    path = Path(path)
+
+    if not path.exists() and not path.is_symlink():
+        return
+
     exc = None
     try:
-        os.remove(path)
+        if path.is_file() or path.is_symlink():
+            path.unlink()
+        else:
+            shutil.rmtree(path)
     except FileNotFoundError:
         pass
-    except IsADirectoryError:
-        try:
-            shutil.rmtree(path)
-        except OSError as e:
-            exc = e
     except OSError as e:
         exc = e
 
