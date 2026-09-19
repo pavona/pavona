@@ -584,9 +584,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
                              $sformatf("transaction observed on %s for invalid configuration",
                                        if_name))
-          // Check if there is any active operation, but be aware that the Abort functionality
-          // intentionally does not wait for a bus response (this is safe because the design never
-          // blocks/stalls the TL-UL response).
+          // Check if there is any active operation. A response from an aborted operation remains
+          // expected until the accepted transaction drains, even if a status read has already
+          // marked the functional operation complete in this scoreboard.
           `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
                           "Transaction detected with no active operation")
           case (dir)
@@ -1211,7 +1211,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "status": begin
         bit busy, done, chunk_done, aborted, error, sha2_digest_valid;
-        bit exp_aborted = abort_via_reg_write;
 
         do_read_check = 1'b0;
         busy = get_field_val(ral.status.busy, item.d_data);
@@ -1247,11 +1246,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Abort and it may even have terminated in response to a TL-UL error for some sequences.
         if (abort_via_reg_write) begin
           bit bus_error = src_tl_error_detected | dst_tl_error_detected;
-          `DV_CHECK_EQ(|{aborted, bus_error, done}, 1'b1, "Transfer neither Aborted nor completed.")
-          // Invalidate any still-pending interrupt changes; the abort may have occurred after
-          // the final write has completed but before the DMA controller actually completes the
-          // transfer because e.g. the SHA digest calculation is still completing.
-          clear_intr_predictions();
+          if (busy) begin
+            // An accepted interface request cannot be cancelled. During its drain interval the
+            // operation remains busy and must not yet report abort completion.
+            `DV_CHECK_EQ(aborted, 1'b0,
+                         "STATUS.aborted set before the accepted transaction drained")
+          end else begin
+            `DV_CHECK_EQ(|{aborted, bus_error, done}, 1'b1,
+                         "Transfer neither aborted nor completed")
+            // Invalidate any still-pending interrupt changes only once the abort reaches its
+            // terminal status. The abort may have occurred after the final write completed but
+            // before the controller completed other work such as a SHA digest calculation.
+            clear_intr_predictions();
+          end
         end else begin
           `DV_CHECK_EQ(aborted, 1'b0, "STATUS.aborted bit set when not expected")
         end
