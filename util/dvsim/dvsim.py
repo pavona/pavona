@@ -322,11 +322,12 @@ def parse_args():
     parser.add_argument(
         "--tool",
         "-t",
-        help=("Explicitly set the tool to use. This is "
-              "optional for running simulations (where it can "
-              "be set in an .hjson file), but is required for "
-              "other flows. Possible tools include: vcs, questa,"
-              "xcelium, ascentlint, verixcdc, mrdc, veriblelint,"
+        help=("Explicitly set the tool to use, overriding the "
+              "tool named in the .hjson file. A config in any "
+              "flow may name its own tool, and most do, so this "
+              "is needed only where none is set, which is the "
+              "lint flow. Possible tools include: vcs, questa, "
+              "xcelium, ascentlint, verixcdc, mrdc, veriblelint, "
               "verilator, dc."))
 
     parser.add_argument("--list",
@@ -435,11 +436,14 @@ def parse_args():
     pathg.add_argument("--branch",
                        "-br",
                        metavar='B',
-                       help=('By default, dvsim creates files below '
-                             '{scratch-root}/{dut}.{flow}.{tool}/{branch}. '
-                             'If --branch is not specified, dvsim assumes the '
-                             'current directory is a git repository and uses '
-                             'the name of the current branch.'))
+                       help=('The branch component of the output path. The '
+                             'rest of that path is set by scratch_path in the '
+                             'project configuration, and is '
+                             '{scratch-root}/{branch}/{name}-{flow}-{tool} for '
+                             'Pavona. If --branch is not specified, dvsim '
+                             'assumes the current directory is a git '
+                             'repository and uses the name of the current '
+                             'branch.'))
 
     pathg.add_argument("--max-odirs",
                        "-mo",
