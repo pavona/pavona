@@ -198,10 +198,12 @@
           name: "fatal_fault",
           desc: "'Write 1 to trigger one alert event of this kind.'",
         }
+      % if enable_shadow_reg:
         { bits: "1",
           name: "recov_ctrl_update_err",
           desc: "'Write 1 to trigger one alert event of this kind.'",
         }
+      % endif
       ],
     }
     { name: "ERROR_LOG"
