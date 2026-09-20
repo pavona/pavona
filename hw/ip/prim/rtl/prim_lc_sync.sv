@@ -67,9 +67,14 @@ module prim_lc_sync #(
       always_ff @(posedge clk_i) begin
         lc_en_in_sva_q <= lc_en_i;
       end
+    // The 2-flop synchronizer has a per-bit delay in {1,2,3} cycles (race-through,
+    // normal capture, missed capture). This assertion  checks at D_max=3. The two escape
+    // clauses span the 2-cycle uncertainty window [D_min, D_max): if the input changed
+    // anywhere in that window, different bits may have captured different values.
     `ASSERT(OutputDelay_A,
             rst_ni |-> ##3 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 2)}} ||
-                           ($past(lc_en_in_sva_q, 2) != $past(lc_en_in_sva_q, 1)))
+                           ($past(lc_en_in_sva_q, 2) != $past(lc_en_in_sva_q, 1)) ||
+                           ($past(lc_en_in_sva_q, 1) != lc_en_in_sva_q))
 `endif
   end else begin : gen_no_flops
     //VCS coverage off
