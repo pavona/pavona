@@ -433,19 +433,21 @@ acc_consttime_test(
     ],
 )
 
-# TODO: Add more fine-grained DMEM tracing to the constant-time checker. This
-# test fails because p256_sign branches based on some non-secret values from
-# DMEM. However, since there are also secret values in DMEM, it's not safe to
-# mark DMEM non-secret, and the constant-time checker doesn't currently have
-# the ability to track different DMEM regions separately.
-#
-# acc_consttime_test(
-#   name = "p256_sign_consttime",
-#   deps = [
-#       "//sw/acc/crypto:run_p256"
-#   ],
-#   subroutine = "p256_sign",
-# )
+acc_consttime_test(
+    name = "p256_sign_consttime",
+    secret = [
+        "dmem:d0[:64]",
+        "dmem:d1[:64]",
+        "dmem:k0[:64]",
+        "dmem:k1[:64]",
+        "dmem:msg[:32]",
+    ],
+    subroutine = "p256_sign",
+    track_dmem = True,
+    deps = [
+        "//sw/acc/crypto:run_p256",
+    ],
+)
 
 acc_sim_test(
     name = "p256_ecdsa_sign_test",
@@ -889,19 +891,21 @@ acc_consttime_test(
     ],
 )
 
-# TODO: Add more fine-grained DMEM tracing to the constant-time checker. This
-# test fails because p384_sign branches based on some non-secret values from
-# DMEM. However, since there are also secret values in DMEM, it's not safe to
-# mark DMEM non-secret, and the constant-time checker doesn't currently have
-# the ability to track different DMEM regions separately.
-#
-# acc_consttime_test(
-#   name = "p384_sign_consttime",
-#   deps = [
-#       ":p384_ecdsa_sign_test"
-#   ],
-#   subroutine = "p384_sign",
-# )
+acc_consttime_test(
+    name = "p384_sign_consttime",
+    secret = [
+        "dmem:d0[:64]",
+        "dmem:d1[:64]",
+        "dmem:k0[:64]",
+        "dmem:k1[:64]",
+        "dmem:msg[:64]",
+    ],
+    subroutine = "p384_sign",
+    track_dmem = True,
+    deps = [
+        ":p384_ecdsa_sign_test",
+    ],
+)
 
 acc_consttime_test(
     name = "proj_add_p384_consttime",
