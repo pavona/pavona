@@ -49,8 +49,9 @@ static const uint32_t kNumDio = 16;  // top_egret has 16 DIOs
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
 #if defined(OPENTITAN_IS_DRAGONFLY)
-// On dragonfly the clock and chip select pads belong to the SPI interface, and driving either
-// UART pad would cut off the console this test logs through. Indices must be ascending.
+// On dragonfly the clock and chip select pads belong to the SPI
+// interface, and driving either UART pad would cut off the console this
+// test logs through. Indices must be ascending.
 #define NUM_DIRECT_DIO 7
 static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {42, 43, 44, 45, 58, 59, 60};
 #else
