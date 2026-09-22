@@ -67,10 +67,10 @@ Enable jittery clock
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                   |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                                                      |
-|  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of kMultiBitBool4False disables the jittery clock, while all other values enable jittery clock. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                     |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                        |
+|  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of `kMultiBitBool4False` disables the jittery clock, while all other values enable jittery clock. |
 
 ## CLK_ENABLES
 Clock enable for software gateable clocks.

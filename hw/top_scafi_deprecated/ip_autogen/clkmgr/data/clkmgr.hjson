@@ -305,8 +305,10 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, the value of !!EXTCLK_CTRL can be set.  When 0, writes to !!EXTCLK_CTRL have no
-            effect.
+            Write protection for the external clock controls. While this field is 1,
+            !!EXTCLK_CTRL accepts writes. Clearing it to 0 is permanent until the next reset,
+            so software can lock out any later attempt to move the chip onto an external
+            clock.
           '''
         },
       ]
@@ -314,7 +316,8 @@
 
     { name: "EXTCLK_CTRL",
       desc: '''
-        Select external clock
+        Request the system clocks be sourced from an external clock instead of the internal
+        oscillator.
       ''',
       regwen: "EXTCLK_CTRL_REGWEN",
       swaccess: "rw",
@@ -325,16 +328,14 @@
           name: "SEL",
           mubi: true,
           desc: '''
-            When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
-            selects external clock as clock for the system.  Writing any other value has
-            no impact.
+            Selects where the system clocks come from. `kMultiBitBool4True` requests the
+            external clock; every other value, not only `kMultiBitBool4False`, leaves them on
+            the internal oscillator, because the hardware tests for a strict true.
 
-            When the current value is kMultiBitBool4True, writing a value of kMultiBitBool4False
-            selects internal clock as clock for the system. Writing any other value during this stage
-            has no impact.
-
-            While this register can always be programmed, it only takes effect when debug functions are enabled
-            in life cycle TEST, DEV or RMA states.
+            The request is honored only while debug functions are enabled, that is in the
+            life cycle `TEST`, `DEV` or `RMA` states. The field itself is writable in any
+            state, so a write that appears to succeed does not on its own mean the clock has
+            switched. Read !!EXTCLK_STATUS.ACK to find out whether it did.
           '''
           resval: "false"
         },
@@ -343,22 +344,22 @@
           name: "HI_SPEED_SEL",
           mubi: true,
           desc: '''
-            A value of kMultiBitBool4True selects nominal speed external clock.
-            All other values selects low speed clocks.
+            Declares how fast the external clock is, so that the internal dividers can be
+            adjusted to hold the divided clocks at their usual frequencies. This field only
+            has an effect while !!EXTCLK_CTRL.SEL is `kMultiBitBool4True`.
 
-            Note this field only has an effect when the !!EXTCLK_CTRL.SEL field is set to
-            kMultiBitBool4True.
+            `kMultiBitBool4True` means nominal speed: the external clock is approximately the
+            same frequency as the internal oscillator source, the dividers are left as they
+            are, and every clock keeps running at roughly its usual frequency.
 
-            Nominal speed means the external clock is approximately the same frequency as
-            the internal oscillator source.  When this option is used, all clocks operate
-            at roughly the nominal frequency.
+            Any other value means low speed: the external clock is approximately half the
+            frequency of the internal oscillator source, so the dividers are stepped down in
+            order to keep the divided clocks at their usual frequencies. The undivided clocks
+            then run at half their usual frequency, which is the unavoidable cost of the
+            slower source rather than an intended effect.
 
-            Low speed means the external clock is approximately half the frequency of the
-            internal oscillator source. When this option is used, the internal dividers are
-            stepped down.  As a result, previously undivided clocks now run at half frequency,
-            while previously divided clocks run at roughly the nominal frequency.
-
-            See external clock switch support in documentation for more details.
+            See [external clock switch support](theory_of_operation.md#external-clock-switch-support)
+            for more details.
           '''
           resval: false
         }
@@ -381,11 +382,14 @@
           name: "ACK",
           mubi: true,
           desc: '''
-            When !!EXTCLK_CTRL.SEL is set to kMultiBitBool4True, this field reflects
-            whether the clock has been switched the external source.
+            Whether the switch requested through !!EXTCLK_CTRL.SEL has actually taken place.
+            The switch is reported complete only once the analog side has acknowledged it
+            and, where a divider step down was required, once the dividers have taken their
+            new ratio.
 
-            kMultiBitBool4True indicates the switch is complete.
-            kMultiBitBool4False indicates the switch is either not possible or still ongoing.
+            `kMultiBitBool4True` indicates the switch is complete. `kMultiBitBool4False`
+            indicates it is still ongoing, or that it was not possible because debug
+            functions are not enabled.
           '''
           resval: "false"
         },
@@ -422,7 +426,7 @@
           name: "VAL",
           desc: '''
             Enable jittery clock.
-            A value of kMultiBitBool4False disables the jittery clock,
+            A value of `kMultiBitBool4False` disables the jittery clock,
             while all other values enable jittery clock.
           ''',
           resval: false

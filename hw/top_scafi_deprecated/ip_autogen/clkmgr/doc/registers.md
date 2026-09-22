@@ -7,7 +7,7 @@
 |:-------------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------------------------------------------|
 | clkmgr.[`ALERT_TEST`](#alert_test)                                 | 0x0      |        4 | Alert Test Register                                                                      |
 | clkmgr.[`EXTCLK_CTRL_REGWEN`](#extclk_ctrl_regwen)                 | 0x4      |        4 | External clock control write enable                                                      |
-| clkmgr.[`EXTCLK_CTRL`](#extclk_ctrl)                               | 0x8      |        4 | Select external clock                                                                    |
+| clkmgr.[`EXTCLK_CTRL`](#extclk_ctrl)                               | 0x8      |        4 | Request the system clocks be sourced from an external clock instead of the internal      |
 | clkmgr.[`EXTCLK_STATUS`](#extclk_status)                           | 0xc      |        4 | Status of requested external clock switch                                                |
 | clkmgr.[`JITTER_REGWEN`](#jitter_regwen)                           | 0x10     |        4 | Jitter write enable                                                                      |
 | clkmgr.[`JITTER_ENABLE`](#jitter_enable)                           | 0x14     |        4 | Enable jittery clock                                                                     |
@@ -56,13 +56,14 @@ External clock control write enable
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                     |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                        |
-|   0    |  rw0c  |   0x1   | EN     | When 1, the value of [`EXTCLK_CTRL`](#extclk_ctrl) can be set.  When 0, writes to [`EXTCLK_CTRL`](#extclk_ctrl) have no effect. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                                       |
+|   0    |  rw0c  |   0x1   | EN     | Write protection for the external clock controls. While this field is 1, [`EXTCLK_CTRL`](#extclk_ctrl) accepts writes. Clearing it to 0 is permanent until the next reset, so software can lock out any later attempt to move the chip onto an external clock. |
 
 ## EXTCLK_CTRL
-Select external clock
+Request the system clocks be sourced from an external clock instead of the internal
+oscillator.
 - Offset: `0x8`
 - Reset default: `0x99`
 - Reset mask: `0xff`
@@ -81,34 +82,32 @@ Select external clock
 |  3:0   |   rw   |   0x9   | [SEL](#extclk_ctrl--sel)                   |
 
 ### EXTCLK_CTRL . HI_SPEED_SEL
-A value of kMultiBitBool4True selects nominal speed external clock.
-All other values selects low speed clocks.
+Declares how fast the external clock is, so that the internal dividers can be
+adjusted to hold the divided clocks at their usual frequencies. This field only
+has an effect while [`EXTCLK_CTRL.SEL`](#extclk_ctrl) is `kMultiBitBool4True`.
 
-Note this field only has an effect when the [`EXTCLK_CTRL.SEL`](#extclk_ctrl) field is set to
-kMultiBitBool4True.
+`kMultiBitBool4True` means nominal speed: the external clock is approximately the
+same frequency as the internal oscillator source, the dividers are left as they
+are, and every clock keeps running at roughly its usual frequency.
 
-Nominal speed means the external clock is approximately the same frequency as
-the internal oscillator source.  When this option is used, all clocks operate
-at roughly the nominal frequency.
+Any other value means low speed: the external clock is approximately half the
+frequency of the internal oscillator source, so the dividers are stepped down in
+order to keep the divided clocks at their usual frequencies. The undivided clocks
+then run at half their usual frequency, which is the unavoidable cost of the
+slower source rather than an intended effect.
 
-Low speed means the external clock is approximately half the frequency of the
-internal oscillator source. When this option is used, the internal dividers are
-stepped down.  As a result, previously undivided clocks now run at half frequency,
-while previously divided clocks run at roughly the nominal frequency.
-
-See external clock switch support in documentation for more details.
+See [external clock switch support](theory_of_operation.md#external-clock-switch-support)
+for more details.
 
 ### EXTCLK_CTRL . SEL
-When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
-selects external clock as clock for the system.  Writing any other value has
-no impact.
+Selects where the system clocks come from. `kMultiBitBool4True` requests the
+external clock; every other value, not only `kMultiBitBool4False`, leaves them on
+the internal oscillator, because the hardware tests for a strict true.
 
-When the current value is kMultiBitBool4True, writing a value of kMultiBitBool4False
-selects internal clock as clock for the system. Writing any other value during this stage
-has no impact.
-
-While this register can always be programmed, it only takes effect when debug functions are enabled
-in life cycle TEST, DEV or RMA states.
+The request is honored only while debug functions are enabled, that is in the
+life cycle `TEST`, `DEV` or `RMA` states. The field itself is writable in any
+state, so a write that appears to succeed does not on its own mean the clock has
+switched. Read [`EXTCLK_STATUS.ACK`](#extclk_status) to find out whether it did.
 
 ## EXTCLK_STATUS
 Status of requested external clock switch
@@ -128,11 +127,14 @@ Status of requested external clock switch
 |  3:0   |   ro   |   0x9   | [ACK](#extclk_status--ack) |
 
 ### EXTCLK_STATUS . ACK
-When [`EXTCLK_CTRL.SEL`](#extclk_ctrl) is set to kMultiBitBool4True, this field reflects
-whether the clock has been switched the external source.
+Whether the switch requested through [`EXTCLK_CTRL.SEL`](#extclk_ctrl) has actually taken place.
+The switch is reported complete only once the analog side has acknowledged it
+and, where a divider step down was required, once the dividers have taken their
+new ratio.
 
-kMultiBitBool4True indicates the switch is complete.
-kMultiBitBool4False indicates the switch is either not possible or still ongoing.
+`kMultiBitBool4True` indicates the switch is complete. `kMultiBitBool4False`
+indicates it is still ongoing, or that it was not possible because debug
+functions are not enabled.
 
 ## JITTER_REGWEN
 Jitter write enable
@@ -164,10 +166,10 @@ Enable jittery clock
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                   |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                                                      |
-|  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of kMultiBitBool4False disables the jittery clock, while all other values enable jittery clock. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                     |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                        |
+|  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of `kMultiBitBool4False` disables the jittery clock, while all other values enable jittery clock. |
 
 ## CLK_ENABLES
 Clock enable for software gateable clocks.
