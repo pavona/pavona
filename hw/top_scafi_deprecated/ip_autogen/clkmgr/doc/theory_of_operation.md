@@ -16,18 +16,18 @@ The clocks themselves may be asynchronous - the grouping is thus a logical group
 The grouping is summarized in the table below and described in more detail afterwards.
 The table shows the group name, the modules that belong to each group, and whether SW can directly (via register control) or indirectly (via wait-for-interrupt) influence the state of the clock in the form of clock gating.
 
-| Group           | Frequencies                    | Modules                                                        | Software       | Wait for Interrupt |
-| -------------   | ------------------------------ | -------------------------------------------------------------- | -------------- | ------------------ |
-| Power-up        | 100~200KHz, 24MHz              | Clock Manager, Power Manager, Reset Manager, Pinmux            | No             | No                 |
-| Transactional   | ~100MHz                        | Acc, Aes, Kmac, Hmac, Key Manager                              | Yes (1)        | Yes (2)            |
-| Infrastructural | 24MHz, ~100MHz                 | Fabric, Fabric gaskets (iopmp), Memories                       | No             | Yes (3)            |
-| Security        | 24MHz, ~100MHz                 | Alert handler, Entropy, Life cycle, Plic, Sensors              | No             | No                 |
-| Peripheral      | 24MHz, 48MHz, 96MHz            | I2c, Spi, Uart, Usb, others                                    | Yes            | Yes                |
-| Timers          | 100-200KHz, 24MHz              | AON timers, Timers, Watchdog                                   | No             | No                 |
+| Group           | Frequencies         | Modules                                                             | Software | Wait for Interrupt |
+| --------------- | ------------------- | ------------------------------------------------------------------- | -------- | ------------------ |
+| Power-up        | 100~200KHz, 24MHz   | `clkmgr`, `pwrmgr`, `rstmgr`, `pinmux`                              | No       | No                 |
+| Transactional   | ~100MHz             | `acc`, `aes`, `kmac`, `hmac`, `keymgr` / `keymgr_dpe`               | Yes (1)  | No (2)             |
+| Infrastructural | 24MHz, ~100MHz      | Fabric, Fabric gaskets (iopmp), Memories                            | No       | No (2)             |
+| Security        | 24MHz, ~100MHz      | `alert_handler`, `entropy_src`, `lc_ctrl`, `rv_plic`, `sensor_ctrl` | No       | No                 |
+| Peripheral      | 24MHz, 48MHz, 96MHz | `i2c`, `spi_host`, `spi_device`, `uart`, `usbdev`, others           | Yes      | No (2)             |
+| Timers          | 100-200KHz, 24MHz   | `aon_timer`, `rv_timer`                                             | No       | No                 |
 
 * 1 - Transactional clock group's software control is only a software hint.
-* 2 - Transactional clock group's wait-for-interrupt control is only a hint.
-* 3 - May require additional complexity to handle multi-host (non-wait-for-interrupt) scenarios
+* 2 - Wait-for-interrupt gating is not implemented in this design. These groups are the ones it
+  would apply to if it were added, see [wait-for-interrupt gating](#wait-for-interrupt-wfi-gating).
 
 ## Power-up Clock Group
 
@@ -39,7 +39,7 @@ See [block diagram](#block-diagram) for more details.
 
 ## Transactional Clock Group
 
-This group refers to the collection of modules that are transactional by nature (example: `Hmac` / `Aes` / `Kmac`).
+This group refers to the collection of modules that are transactional by nature (example: `hmac` / `aes` / `kmac`).
 This means these modules perform specific tasks (for example encrypt, decrypt or hashing).
 While performing these tasks, it is unsafe to manipulate or change the clocks.
 Once these tasks are complete, the clocks can be safely shut-off.
@@ -99,7 +99,11 @@ The controls can also be individual to each peripheral.
 ## Wait-for-Interrupt (wfi) Gating
 
 Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
-Of the groups enumerated, only transactional, infrastructural and peripheral groups can be influenced by `wfi`.
+
+**This design does not implement `wfi` gating.**
+No clock in any group is affected by the processor's sleep indication, and there is no register or hardware interface through which it could be.
+The rest of this section records how the mechanism would apply to each group should it ever be added, and why it was left out.
+Of the groups enumerated, only transactional, infrastructural and peripheral groups could be influenced by `wfi`.
 
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
 The interaction with each clock group is briefly described below.
@@ -170,7 +174,7 @@ Note, the power manager's request to turn off clocks supersedes all other local 
 This means even if a particular clock is turned on by the clock manager (for example a transactional unit that is ongoing or a peripheral that is enabled), the power manager requests will still turn clocks on / off at the root.
 
 This makes it software's responsibility to ensure low power entry requests (which can only be initiated by software) do not conflict with any ongoing activities controlled by software.
-For example, software should ensure that Aes / Acc activities have completed before initializing a low power entry process.
+For example, software should ensure that `aes` / `acc` activities have completed before initializing a low power entry process.
 
 ### Clock Division
 
@@ -185,8 +189,9 @@ Note that for debug purposes, `ast` can also request a change in the clock divis
 
 ### Wait-for-Interrupt Support
 
-Given the marginal benefits and the increased complexity of `wfi` support, the first version of this design does not support `wfi` gating.
-All `wfi CG` modules in the block diagram are thus drawn with dashed lines to indicate it can be theoretically supported but currently not implemented.
+As stated in [wait-for-interrupt gating](#wait-for-interrupt-wfi-gating), this design does not implement `wfi` gating.
+It was left out because the benefits are marginal against the added complexity.
+All `wfi CG` modules in the block diagram are drawn with dashed lines for this reason: they could be supported in theory, but are not built.
 
 It may be added for future more complex systems where there is a need to tightly control infrastructural power consumption as a result from clocks.
 
@@ -236,12 +241,12 @@ There is currently no support in hardware to dynamically synchronize a threshold
 
 The table below summarizes the valid modes and the settings required.
 
-| Mode                                            | `lc_clk_byp_req_i`     | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state               |
-| -------------                                   | ---------------------  | ----------------- | ----------------------------| -------------------------------|
-| Life cycle in `RAW`, `TEST*` and `RMA` states   | `lc_ctrl_pkg::On`      | `kMultiBit4False` | Don't care                  | Controlled by `lc_ctrl`        |
-| Internal Clocks                                 | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                            |
-| Software external high speed                    | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | `TEST_UNLOCKED*`, `DEV`, `RMA` |
-| Software external low speed                     | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | `TEST_UNLOCKED*`, `DEV`, `RMA` |
+| Mode                                          | `lc_clk_byp_req_i` | `extclk_ctrl.sel`     | `extclk_ctrl.hi_speed_sel` | life cycle state               |
+| --------------------------------------------- | ------------------ | --------------------- | -------------------------- | ------------------------------ |
+| Life cycle in `RAW`, `TEST*` and `RMA` states | `lc_ctrl_pkg::On`  | `kMultiBitBool4False` | Don't care                 | Controlled by `lc_ctrl`        |
+| Internal Clocks                               | `lc_ctrl_pkg::Off` | `kMultiBitBool4False` | Don't care                 | All                            |
+| Software external high speed                  | `lc_ctrl_pkg::Off` | `kMultiBitBool4True`  | `kMultiBitBool4True`       | `TEST_UNLOCKED*`, `DEV`, `RMA` |
+| Software external low speed                   | `lc_ctrl_pkg::Off` | `kMultiBitBool4True`  | `kMultiBitBool4False`      | `TEST_UNLOCKED*`, `DEV`, `RMA` |
 
 The table below summarizes the frequencies in each mode.
 This table assumes that the internal clock source is 96MHz.
