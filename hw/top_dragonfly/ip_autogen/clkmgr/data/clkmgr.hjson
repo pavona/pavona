@@ -222,7 +222,7 @@
           name: "VAL",
           desc: '''
             Enable jittery clock.
-            A value of kMultiBitBool4False disables the jittery clock,
+            A value of `kMultiBitBool4False` disables the jittery clock,
             while all other values enable jittery clock.
           ''',
           resval: false
