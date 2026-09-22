@@ -160,7 +160,7 @@ crypto_sign_signature_internal:
 /**
  * sign_attempt
  *
- * Rejection-retry body.  Computes w, w0/w1 + c~, c,
+ * Rejection-retry body.  Computes w, w0/w1 + c~, c, r-tilde check (hint loop),
  * z (z-loop), h (hint loop), z pack; restarts in place on rejection.
  * Inputs are taken from caller-set state (sign_gamma1_buf, sk, etc.); on
  * success returns x10 = 0, x11 = CRYPTO_BYTES.
@@ -202,6 +202,14 @@ sign_attempt:
   la  x11, sign_tmp /* aligned c~ stash */
   jal x1, sign_c
 
+  la   x10, sk
+  addi x10, x10, 128
+  la   x12, c_poly
+  la   x13, W0_POLYVEC
+  la   x14, sign_w1_repvec
+  jal  x1, sign_h_check
+  bne  x10, x0, sign_attempt
+
   la  x11, c_poly
   la  x12, sign_gamma1_buf
   la  x14, sign_c_poly_shares
@@ -211,15 +219,7 @@ sign_attempt:
   jal x1, sign_z_check
   bne x10, x0, sign_attempt
 
-  la   x10, sk
-  addi x10, x10, 128
-  la   x12, c_poly
-  la   x13, W0_POLYVEC
-  la   x14, sign_w1_repvec
-  jal  x1, sign_h_check
-  bne  x10, x0, sign_attempt
-
-  /* Every r-tilde check passed: unmask r-tilde and emit the hints. */
+  /* Both bound checks passed: unmask r-tilde and emit the hints. */
   la   x10, sk
   addi x10, x10, 128
   la   x12, c_poly
@@ -1733,6 +1733,92 @@ _sign_pack_ctilde_done:
 
   bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
 
+  /* Load pointer to packed S2 within sk. */
+  la  x5, mldsa_params
+  la  x18, sk
+  lw  x6, MLDSA_PARAM_SK_S2_OFFSET_OFFSET(x5)
+  add x18, x18, x6
+
+  /* Initialize some pointers for the loop. */
+  la x19, w0_polyvec
+  la x23, c_poly
+  la x26, tmp_poly
+
+  /* Normalize w0 to the [0, q) range (in-place). */
+  addi   x10, x19, 0
+  la     x5, modulus
+  bn.ld  w1, 0(x5)
+  la     x5, mldsa_params
+  lw     x6, MLDSA_PARAM_K_OFFSET(x5)
+  loop x6, 6
+    loopi 32, 4
+      bn.ld       w0, 0(x10)
+      bn.addv.8s  w0, w0, w1
+      bn.addvm.8s w0, w31, w0
+      bn.sd       w0, 0(x10++)
+    endloop
+    nop
+  endloop
+
+  /* Compute r0[i] = w0[i] - cp * s2[i] in place and bound-check it. Runs
+     before the z loop: it rejects more often and costs less per element. */
+  li x20, 0
+_r0_check_loop:
+    /* Unpack the next polynomial from s2. */
+    addi x10, x26, 0
+    addi x11, x18, 0
+    la   x5, mldsa_params
+    lw   x14, MLDSA_PARAM_K_OFFSET(x5)
+    jal  x1, polyeta_unpack
+    addi x10, x10, -1024
+
+    /* Update the packed s2 pointer. */
+    addi x18, x11, 0
+
+    bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
+
+    /* Compute ntt(s2[i]) in-place. */
+    addi x12, x10, 0
+    jal  x1, ntt
+
+    /* tmp = cp * s2 */
+    addi x10, x26, 0
+    addi x11, x23, 0
+    addi x12, x26, 0
+    jal  x1, poly_pointwise
+
+    /* Inverse NTT on tmp */
+    addi x10, x26, 0
+    jal  x1, intt
+
+    bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
+
+    /* w0[i] -= tmp */
+    addi x10, x19, 0
+    addi x11, x26, 0
+    addi x12, x19, 0
+    jal  x1, poly_sub
+
+    /* tmp = reduce32(w0[i]) to move to mod^{+-} for bound check */
+    addi x10, x19, 0
+    addi x11, x26, 0
+    jal  x1, poly_reduce32
+
+    /* chknorm(tmp, gamma2 - beta) */
+    addi x10, x26, 0
+    la   x5, mldsa_params
+    lw   x11, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(x5)
+    jal  x1, poly_chknorm
+
+    bne x12, x0, _rej_crypto_sign_signature_internal
+
+    /* Update pointer into w0. */
+    addi x19, x19, 1024
+    addi x20, x20, 1
+    la   x5, mldsa_params
+    lw   x6, MLDSA_PARAM_K_OFFSET(x5)
+    bne  x20, x6, _r0_check_loop
+
   /* Load pointer to packed s1 */
   la   x8, sk
   addi x8, x8, 128
@@ -1846,10 +1932,8 @@ _rejsmpl_loop:
 
   addi x10, x25, 0
 
-  /* Load pointers to packed S2 and T0 within sk. */
+  /* Load pointer to packed T0 within sk. */
   la  x8, sk
-  lw  x6, MLDSA_PARAM_SK_S2_OFFSET_OFFSET(x5)
-  add x18, x8, x6
   lw  x6, MLDSA_PARAM_SK_T0_OFFSET_OFFSET(x5)
   add x8, x8, x6
 
@@ -1868,30 +1952,10 @@ _rejsmpl_loop:
   /* Initialize the register that says whether the checks failed. */
   li x24, 0
 
-  /* Normalize w0 to the [0, q) range (in-place). */
-  addi   x10, x19, 0
-  la     x5, modulus
-  bn.ld  w1, 0(x5)
-  la     x5, mldsa_params
-  lw     x6, MLDSA_PARAM_K_OFFSET(x5)
-  loop x6, 6
-    loopi 32, 4
-      bn.ld       w0, 0(x10)
-      bn.addv.8s  w0, w0, w1
-      bn.addvm.8s w0, w31, w0
-      bn.sd       w0, 0(x10++)
-    endloop
-    nop
-  endloop
-
   /* This loop computes the hint one element at a time, and performs
-     rejection sampling. For each index i=0..k-1, it does:
+     rejection sampling. w0[i] already holds the bound-checked r0[i]. For
+     each index i=0..k-1, it does:
 
-       tmp = cp * s2[i]
-       w0[i] -= tmp
-       tmp = reduce32(w0[i])
-       if not poly_chknorm(tmp, gamma - beta):
-         reject
        tmp = cp * t0[i]
        h = reduce32(tmp)
        if not poly_chknorm(h, gamma):
@@ -1903,60 +1967,11 @@ _rejsmpl_loop:
    */
   la x5, mldsa_params
   lw x6, MLDSA_PARAM_K_OFFSET(x5)
-  loop x6, 85
+  loop x6, 54
     /* If there was a failure, skip to the end of the
        loop body (because of architectural loop rules, we have to complete
        all iterations). */
     bne x24, x0, _mldsa_sign_hint_loop_end
-
-    /* Unpack the next polynomial from s2. */
-    addi x10, x26, 0
-    addi x11, x18, 0
-    la   x5, mldsa_params
-    lw   x14, MLDSA_PARAM_K_OFFSET(x5)
-    jal  x1, polyeta_unpack
-    addi x10, x10, -1024
-
-    /* Update the packed s2 pointer. */
-    addi x18, x11, 0
-
-    bn.wsrw 0x0, mod_x2 /* MOD = 2*R | 2*Q */
-
-    /* Compute ntt(s2[i]) in-place. */
-    addi x12, x10, 0
-    jal  x1, ntt
-
-    /* tmp = cp * s2 */
-    addi x10, x26, 0
-    addi x11, x23, 0
-    addi x12, x26, 0
-    jal  x1, poly_pointwise
-
-    /* Inverse NTT on tmp */
-    addi x10, x26, 0
-    jal  x1, intt
-
-    bn.wsrw 0x0, w16 /* Restore MOD = R | Q */
-
-    /* w0[i] -= tmp */
-    addi x10, x19, 0
-    addi x11, x26, 0
-    addi x12, x19, 0
-    jal  x1, poly_sub
-
-    /* tmp = reduce32(w0[i]) to move to mod^{+-} for bound check */
-    addi x10, x19, 0
-    addi x11, x26, 0
-    jal  x1, poly_reduce32
-
-    /* chknorm(tmp, gamma2 - beta) */
-    addi x10, x26, 0
-    la   x5, mldsa_params
-    lw   x11, MLDSA_PARAM_GAMMA2_MINUS_BETA_OFFSET(x5)
-    jal  x1, poly_chknorm
-
-    /* Update the continuation register. */
-    or x24, x24, x12
 
     /* Unpack the next polynomial from t0. */
     addi x10, x26, 0
