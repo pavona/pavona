@@ -14,10 +14,6 @@
 
 #include "hw/top/keymgr_dpe_regs.h"  // Generated.
 
-// TODO: This driver implementation is a stub. It is largely copied from
-// keymgr.c, and likewise it only utilizes the first DPE slot. Some types, such
-// as the `key_type` also need to be updated to reflect multiple DPE slots.
-
 #define KEYMGR_DPE_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
 KEYMGR_DPE_ASSERT(kScKeymgrStateReset,
                   KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET);
@@ -65,8 +61,6 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   abs_mmio_write32(sc_keymgr_base() + KEYMGR_DPE_ERR_CODE_REG_OFFSET,
                    error_code);
 
-  // Read the working state with sec_mmio so that we can check the expected
-  // value periodically.
   uint32_t got_state =
       sec_mmio_read32(sc_keymgr_base() + KEYMGR_DPE_WORKING_STATE_REG_OFFSET);
   if (op_status_field == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
@@ -119,39 +113,14 @@ void sc_keymgr_max_ver_set(uint32_t max_key_ver) {
                    0);
 }
 
-void sc_keymgr_advance_state(void) {
-  uint32_t reg =
-      bitfield_field32_write(0, KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD,
-                             KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
-  reg = bitfield_field32_write(
-      reg, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
-      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
-  abs_mmio_write32_shadowed(
-      sc_keymgr_base() + KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET, reg);
-
-  abs_mmio_write32(sc_keymgr_base() + KEYMGR_DPE_START_REG_OFFSET, 1);
-}
-
-rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
-  return expected_state_check(expected_state);
-}
-
-/**
- * Fails if the keymgr is not idle.
- *
- * @return OK if the key manager is idle, kErrorKeymgrInternal otherwise.
- */
-OT_WARN_UNUSED_RESULT
-static rom_error_t keymgr_is_idle(void) {
-  uint32_t reg =
-      abs_mmio_read32(sc_keymgr_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
-  uint32_t status =
-      bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
-  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
-    HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
-    return kErrorOk;
+void sc_keymgr_max_ver_unlock_wait(void) {
+  while (!abs_mmio_read32(sc_keymgr_base() +
+                          KEYMGR_DPE_MAX_KEY_VER_REGWEN_REG_OFFSET)) {
   }
-  return kErrorKeymgrInternal;
+  // Ignore the return value since this read is performed to check and update
+  // the expected value.
+  OT_DISCARD(sec_mmio_read32(sc_keymgr_base() +
+                             KEYMGR_DPE_MAX_KEY_VER_REGWEN_REG_OFFSET));
 }
 
 /**
@@ -201,18 +170,118 @@ static rom_error_t keymgr_wait_until_done(void) {
   }
 }
 
+rom_error_t sc_keymgr_advance_state(sc_keymgr_slot_t src_slot,
+                                    sc_keymgr_slot_t dest_slot,
+                                    hardened_bool_t allow_child,
+                                    hardened_bool_t exportable,
+                                    hardened_bool_t retain_parent,
+                                    hardened_bool_t sw_binding_only) {
+  // Set `dest` to `NONE` (this is an `advance`, not a `generate` operation).
+  uint32_t ctrl =
+      bitfield_field32_write(0, KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                             KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
+  // Set source slot.
+  ctrl = bitfield_field32_write(
+      ctrl, KEYMGR_DPE_CONTROL_SHADOWED_SLOT_SRC_SEL_FIELD, src_slot);
+  // Set destination slot.
+  ctrl = bitfield_field32_write(
+      ctrl, KEYMGR_DPE_CONTROL_SHADOWED_SLOT_DST_SEL_FIELD, dest_slot);
+  // Set operation to `ADVANCE`.
+  ctrl = bitfield_field32_write(
+      ctrl, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
+  abs_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET, ctrl);
+
+  uint32_t slot_policy;
+  // Set the `allow_child` slot policy field.
+  switch (launder32(allow_child)) {
+    case kHardenedBoolFalse:
+      slot_policy =
+          bitfield_bit32_write(0, KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT, 0);
+      break;
+    case kHardenedBoolTrue:
+      slot_policy =
+          bitfield_bit32_write(0, KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT, 1);
+      break;
+    default:
+      HARDENED_TRAP();
+      break;
+  }
+  // Set the `exportable` slot policy field.
+  switch (launder32(exportable)) {
+    case kHardenedBoolFalse:
+      slot_policy = bitfield_bit32_write(
+          slot_policy, KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT, 0);
+      break;
+    case kHardenedBoolTrue:
+      slot_policy = bitfield_bit32_write(
+          slot_policy, KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT, 1);
+      break;
+    default:
+      HARDENED_TRAP();
+      break;
+  }
+  // Set the `retain_parent` slot policy field.
+  switch (launder32(retain_parent)) {
+    case kHardenedBoolFalse:
+      slot_policy = bitfield_bit32_write(
+          slot_policy, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT, 0);
+      break;
+    case kHardenedBoolTrue:
+      slot_policy = bitfield_bit32_write(
+          slot_policy, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT, 1);
+      break;
+    default:
+      HARDENED_TRAP();
+      break;
+  }
+  abs_mmio_write32_shadowed(
+      sc_keymgr_base() + KEYMGR_DPE_SLOT_POLICY_REG_OFFSET, slot_policy);
+
+  // Start the ADVANCE operation.
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_DPE_START_REG_OFFSET,
+                   1 << KEYMGR_DPE_START_EN_BIT);
+
+  // Block until keymgr is done.
+  return keymgr_wait_until_done();
+}
+
+rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
+  return expected_state_check(expected_state);
+}
+
+/**
+ * Fails if the keymgr is not idle.
+ *
+ * @return OK if the key manager is idle, kErrorKeymgrInternal otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static rom_error_t keymgr_is_idle(void) {
+  uint32_t reg =
+      abs_mmio_read32(sc_keymgr_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
+  uint32_t status =
+      bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
+  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
+    HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+    return kErrorOk;
+  }
+  return kErrorKeymgrInternal;
+}
+
 rom_error_t sc_keymgr_generate_key(
-    sc_keymgr_dest_t destination, sc_keymgr_key_type_t key_type,
+    sc_keymgr_slot_t src_slot, sc_keymgr_dest_t destination,
     sc_keymgr_diversification_t diversification) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
-  uint32_t ctrl = 0;
-
-  // Select ACC as the destination.
+  // Set the source slot.
+  uint32_t ctrl = bitfield_field32_write(
+      0, KEYMGR_DPE_CONTROL_SHADOWED_SLOT_SRC_SEL_FIELD, src_slot);
+  // Set the destination.
   ctrl = bitfield_field32_write(0, KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD,
                                 destination);
 
-  // Select the "generate" operation.
+  // Select the GENERATE operation.
   ctrl = bitfield_field32_write(
       ctrl, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
@@ -269,12 +338,16 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
   return kErrorOk;
 }
 
-rom_error_t sc_keymgr_advance(keymgr_binding_value_t *binding,
-                              uint32_t max_key_version) {
+rom_error_t sc_keymgr_advance(
+    sc_keymgr_slot_t src_slot, sc_keymgr_slot_t dest_slot,
+    hardened_bool_t allow_child, hardened_bool_t exportable,
+    hardened_bool_t retain_parent, hardened_bool_t sw_binding_only,
+    keymgr_binding_value_t *binding, uint32_t max_key_version) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
   sc_keymgr_sw_binding_set(binding);
   sc_keymgr_max_ver_set(max_key_version);
-  sc_keymgr_advance_state();
+  sc_keymgr_advance_state(src_slot, dest_slot, allow_child, exportable,
+                          retain_parent, sw_binding_only);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateAvailable));
   return kErrorOk;
 }
@@ -294,5 +367,5 @@ void sc_keymgr_disable(void) {
 }
 
 extern rom_error_t sc_keymgr_generate_key_acc(
-    sc_keymgr_key_type_t key_type, sc_keymgr_diversification_t diversification);
+    sc_keymgr_slot_t src_slot, sc_keymgr_diversification_t diversification);
 extern rom_error_t sc_keymgr_sideload_clear_acc(void);
