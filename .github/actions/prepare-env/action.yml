@@ -111,7 +111,8 @@ runs:
     - name: Install Python dependencies
       shell: bash
       run: |
-        uv pip install -r python-requirements.txt --require-hashes
+        source ci/scripts/utils.sh
+        retry 5 2 2 uv pip install -r python-requirements.txt --require-hashes
       working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verible
