@@ -578,6 +578,8 @@ rom_error_t rom_try_boot_rom_ext(const lifecycle_state_t lc_state) {
 #ifdef DISCRETE_OTP_MAP
   HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
       error, manifests.ordered[1], &imm_section_entry_point));
+#else
+  HARDENED_RETURN_IF_ERROR(error);
 #endif
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBootRomExt, 7);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerifyRomExt, 4);
