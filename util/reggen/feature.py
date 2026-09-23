@@ -4,7 +4,11 @@
 
 from typing import Dict, List
 
-from reggen.lib import check_keys, check_str, check_list, check_name
+from reggen.lib import check_str, check_list, check_name
+from basegen.validate import create_validator
+
+
+FEATURE_VALIDATOR = create_validator('urn:reggen:feature')
 
 
 class Feature:
@@ -23,10 +27,12 @@ class Feature:
         The 'raw' dict must have the keys 'name' and 'desc', where 'name' has
         to follow the canonical feature naming convention.
         """
-        rd = check_keys(raw, what, ['name', 'desc'], [])
+        if not isinstance(raw, dict):
+            raise TypeError('features must be instantiated from dict: feature of ' + what)
+        FEATURE_VALIDATOR.validate(raw)
 
-        name = check_str(rd['name'], f'name field of {what}')
-        desc = check_str(rd['desc'], f'desc field of {what}')
+        name = check_str(raw['name'], f'name field of {what}')
+        desc = check_str(raw['desc'], f'desc field of {what}')
 
         try:
             # the format is [INST_NAME].<feature>
