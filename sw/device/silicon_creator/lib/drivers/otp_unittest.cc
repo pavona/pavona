@@ -114,37 +114,6 @@ TEST_P(OtpPartitionDigestTest, ReadDigest) {
             0x1234567887654321);
 }
 
-#if defined(OPENTITAN_IS_EGRET)
-INSTANTIATE_TEST_SUITE_P(
-    ReadPartitionDigests, OtpPartitionDigestTest,
-    testing::Values(
-        DigestReadTestCase{
-            .partition = kOtpPartitionCreatorSwCfg,
-            .digest_offest = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
-        },
-        DigestReadTestCase{
-            .partition = kOtpPartitionOwnerSwCfg,
-            .digest_offest = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
-        },
-        DigestReadTestCase{
-            .partition = kOtpPartitionRotCreatorAuthCodesign,
-            .digest_offest =
-                OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET,
-        },
-        DigestReadTestCase{
-            .partition = kOtpPartitionRotCreatorAuthState,
-            .digest_offest =
-                OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET,
-        },
-        DigestReadTestCase{
-            .partition = kOtpPartitionHwCfg0,
-            .digest_offest = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
-        },
-        DigestReadTestCase{
-            .partition = kOtpPartitionHwCfg1,
-            .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
-        }));
-#elif defined(OPENTITAN_IS_DRAGONFLY)
 INSTANTIATE_TEST_SUITE_P(
     ReadPartitionDigests, OtpPartitionDigestTest,
     testing::Values(
@@ -168,6 +137,7 @@ INSTANTIATE_TEST_SUITE_P(
             .partition = kOtpPartitionRotOwnerAuthSlot1,
             .digest_offest = OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_REG_OFFSET,
         },
+#if defined(OPENTITAN_IS_DRAGONFLY)
         DigestReadTestCase{
             .partition = kOtpPartitionRomPatch,
             .digest_offest = OTP_CTRL_ROM_PATCH_DIGEST_0_REG_OFFSET,
@@ -180,6 +150,7 @@ INSTANTIATE_TEST_SUITE_P(
             .partition = kOtpPartitionSocFusesFt,
             .digest_offest = OTP_CTRL_SOC_FUSES_FT_DIGEST_0_REG_OFFSET,
         },
+#endif
         DigestReadTestCase{
             .partition = kOtpPartitionHwCfg0,
             .digest_offest = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
@@ -192,7 +163,6 @@ INSTANTIATE_TEST_SUITE_P(
             .partition = kOtpPartitionHwCfg2,
             .digest_offest = OTP_CTRL_HW_CFG2_DIGEST_0_REG_OFFSET,
         }));
-#endif
 
 class OtpDaiReadTest : public OtpReadTest,
                        public testing::WithParamInterface<int> {};

@@ -68,13 +68,6 @@
                     value: "0x0",
                 },
                 {
-                    name: "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
-                    // Enable the default boot data in PROD and PROD_END life
-                    // cycle states. See the definition of `hardened_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x739",
-                },
-                {
                     name: "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
                     value: "0xffffffff",
                 }

@@ -174,16 +174,31 @@ KEY_VALIDITY_TESTS = [
                 },
             ),
             otp_partition(
-                name = "ROT_CREATOR_AUTH_STATE",
+                name = "ROT_OWNER_AUTH_SLOT0_STATE",
                 items = {
-                    "ROT_CREATOR_AUTH_STATE_ECDSA_KEY0": test["ecdsa_state"],
-                    "ROT_CREATOR_AUTH_STATE_ECDSA_KEY1": test["ecdsa_state"],
-                    "ROT_CREATOR_AUTH_STATE_ECDSA_KEY2": test["ecdsa_state"],
-                    "ROT_CREATOR_AUTH_STATE_ECDSA_KEY3": test["ecdsa_state"],
-                    "ROT_CREATOR_AUTH_STATE_SPX_KEY0": test["spx_state"],
-                    "ROT_CREATOR_AUTH_STATE_SPX_KEY1": test["spx_state"],
-                    "ROT_CREATOR_AUTH_STATE_SPX_KEY2": test["spx_state"],
-                    "ROT_CREATOR_AUTH_STATE_SPX_KEY3": test["spx_state"],
+                    "ROT_OWNER_AUTH_SLOT0_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE": test["ecdsa_state"],
+                    "ROT_OWNER_AUTH_SLOT0_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE": test["ecdsa_state"],
+                },
+            ),
+            otp_partition(
+                name = "ROT_OWNER_AUTH_SLOT1_STATE",
+                items = {
+                    "ROT_OWNER_AUTH_SLOT1_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE": test["ecdsa_state"],
+                    "ROT_OWNER_AUTH_SLOT1_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE": test["ecdsa_state"],
+                },
+            ),
+            otp_partition(
+                name = "ROT_OWNER_AUTH_SLOT2_STATE",
+                items = {
+                    "ROT_OWNER_AUTH_SLOT2_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE": test["ecdsa_state"],
+                    "ROT_OWNER_AUTH_SLOT2_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE": test["ecdsa_state"],
+                },
+            ),
+            otp_partition(
+                name = "ROT_OWNER_AUTH_SLOT3_STATE",
+                items = {
+                    "ROT_OWNER_AUTH_SLOT3_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE": test["ecdsa_state"],
+                    "ROT_OWNER_AUTH_SLOT3_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE": test["ecdsa_state"],
                 },
             ),
         ],

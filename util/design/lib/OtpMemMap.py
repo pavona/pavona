@@ -215,9 +215,6 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool, generate_fre
     if not isinstance(part['items'], list):
         raise RuntimeError('the "items" key must contain a list')
 
-    if len(part["items"]) == 0:
-        log.warning("Partition does not contain any items.")
-
     # validate items and calculate partition size if necessary
     size = 0
     for item in part["items"]:

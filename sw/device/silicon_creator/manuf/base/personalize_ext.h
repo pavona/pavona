@@ -67,8 +67,14 @@ typedef struct personalize_extension_pre_endorse {
    */
   hmac_digest_t *otp_creator_sw_cfg_measurement;
   hmac_digest_t *otp_owner_sw_cfg_measurement;
-  hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
-  hmac_digest_t *otp_rot_creator_auth_state_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot0_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot1_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot2_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot3_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot0_state_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot1_state_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot2_state_measurement;
+  hmac_digest_t *otp_rot_owner_auth_slot3_state_measurement;
 } personalize_extension_pre_endorse_t;
 
 /**

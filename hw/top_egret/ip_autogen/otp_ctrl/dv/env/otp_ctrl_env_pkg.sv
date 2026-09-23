@@ -40,7 +40,7 @@ package otp_ctrl_env_pkg;
   parameter uint NUM_EDN             = 1;
 
   parameter uint DIGEST_SIZE         = 8;
-  parameter uint SW_WINDOW_BASE_ADDR = 'h800;
+  parameter uint SW_WINDOW_BASE_ADDR = 'h1000;
   parameter uint SW_WINDOW_SIZE      = NumSwCfgWindowWords * 4;
 
   parameter uint TL_SIZE = (TL_DW / 8);
@@ -85,13 +85,28 @@ package otp_ctrl_env_pkg;
     VendorTestOffset,
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
-    RotCreatorAuthCodesignOffset,
-    RotCreatorAuthStateOffset,
+    OwnershipSlotStateOffset,
+    RotCreatorIdentityOffset,
+    RotOwnerAuthSlot0Offset,
+    RotOwnerAuthSlot1Offset,
+    RotOwnerAuthSlot2Offset,
+    RotOwnerAuthSlot3Offset,
+    RotOwnerAuthSlot0StateOffset,
+    RotOwnerAuthSlot1StateOffset,
+    RotOwnerAuthSlot2StateOffset,
+    RotOwnerAuthSlot3StateOffset,
+    ExtNvmOffset,
+    RomPatchOffset,
+    SocFusesCpOffset,
+    SocFusesFtOffset,
+    ScratchFusesOffset,
     HwCfg0Offset,
     HwCfg1Offset,
+    HwCfg2Offset,
     Secret0Offset,
     Secret1Offset,
-    Secret2Offset
+    Secret2Offset,
+    Secret3Offset
   };
 
   // start address of special locations, either digest or zeroized field
@@ -99,13 +114,28 @@ package otp_ctrl_env_pkg;
     VendorTestOffset + VendorTestSize - 8,
     CreatorSwCfgOffset + CreatorSwCfgSize - 8,
     OwnerSwCfgOffset + OwnerSwCfgSize - 8,
-    RotCreatorAuthCodesignOffset + RotCreatorAuthCodesignSize - 8,
-    RotCreatorAuthStateOffset + RotCreatorAuthStateSize - 8,
+    OwnershipSlotStateOffset + OwnershipSlotStateSize - 8,
+    RotCreatorIdentityOffset + RotCreatorIdentitySize - 16,
+    RotOwnerAuthSlot0Offset + RotOwnerAuthSlot0Size - 16,
+    RotOwnerAuthSlot1Offset + RotOwnerAuthSlot1Size - 16,
+    RotOwnerAuthSlot2Offset + RotOwnerAuthSlot2Size - 16,
+    RotOwnerAuthSlot3Offset + RotOwnerAuthSlot3Size - 16,
+    RotOwnerAuthSlot0StateOffset + RotOwnerAuthSlot0StateSize - 8,
+    RotOwnerAuthSlot1StateOffset + RotOwnerAuthSlot1StateSize - 8,
+    RotOwnerAuthSlot2StateOffset + RotOwnerAuthSlot2StateSize - 8,
+    RotOwnerAuthSlot3StateOffset + RotOwnerAuthSlot3StateSize - 8,
+    ExtNvmOffset + ExtNvmSize - 8,
+    RomPatchOffset + RomPatchSize - 16,
+    SocFusesCpOffset + SocFusesCpSize - 8,
+    SocFusesFtOffset + SocFusesFtSize - 8,
+    ScratchFusesOffset + ScratchFusesSize - 8,
     HwCfg0Offset + HwCfg0Size - 8,
     HwCfg1Offset + HwCfg1Size - 8,
+    HwCfg2Offset + HwCfg2Size - 16,
     Secret0Offset + Secret0Size - 8,
     Secret1Offset + Secret1Size - 8,
-    Secret2Offset + Secret2Size - 8
+    Secret2Offset + Secret2Size - 8,
+    Secret3Offset + Secret3Size - 16
   };
 
   // lc partition does not have digest
@@ -113,13 +143,28 @@ package otp_ctrl_env_pkg;
     VendorTestDigestOffset >> 2,
     CreatorSwCfgDigestOffset >> 2,
     OwnerSwCfgDigestOffset >> 2,
-    RotCreatorAuthCodesignDigestOffset >> 2,
-    RotCreatorAuthStateDigestOffset >> 2,
+    -1, // This partition does not have a digest.
+    RotCreatorIdentityDigestOffset >> 2,
+    RotOwnerAuthSlot0DigestOffset >> 2,
+    RotOwnerAuthSlot1DigestOffset >> 2,
+    RotOwnerAuthSlot2DigestOffset >> 2,
+    RotOwnerAuthSlot3DigestOffset >> 2,
+    RotOwnerAuthSlot0StateDigestOffset >> 2,
+    RotOwnerAuthSlot1StateDigestOffset >> 2,
+    RotOwnerAuthSlot2StateDigestOffset >> 2,
+    RotOwnerAuthSlot3StateDigestOffset >> 2,
+    -1, // This partition does not have a digest.
+    RomPatchDigestOffset >> 2,
+    SocFusesCpDigestOffset >> 2,
+    SocFusesFtDigestOffset >> 2,
+    -1, // This partition does not have a digest.
     HwCfg0DigestOffset >> 2,
     HwCfg1DigestOffset >> 2,
+    HwCfg2DigestOffset >> 2,
     Secret0DigestOffset >> 2,
     Secret1DigestOffset >> 2,
-    Secret2DigestOffset >> 2
+    Secret2DigestOffset >> 2,
+    Secret3DigestOffset >> 2
   };
 
   // lc partition is not zeroizable
@@ -127,13 +172,28 @@ package otp_ctrl_env_pkg;
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
+    OwnershipSlotStateZerOffset >> 2,
+    RotCreatorIdentityZerOffset >> 2,
+    RotOwnerAuthSlot0ZerOffset >> 2,
+    RotOwnerAuthSlot1ZerOffset >> 2,
+    RotOwnerAuthSlot2ZerOffset >> 2,
+    RotOwnerAuthSlot3ZerOffset >> 2,
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
+    ExtNvmZerOffset >> 2,
+    RomPatchZerOffset >> 2,
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
-    -1 // This partition has no zeroized field.
+    ScratchFusesZerOffset >> 2,
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    HwCfg2ZerOffset >> 2,
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    Secret3ZerOffset >> 2
   };
 
   // types
@@ -161,13 +221,28 @@ package otp_ctrl_env_pkg;
     OtpPartitionVendorTestIdx,
     OtpPartitionCreatorSwCfgIdx,
     OtpPartitionOwnerSwCfgIdx,
-    OtpPartitionRotCreatorAuthCodesignIdx,
-    OtpPartitionRotCreatorAuthStateIdx,
+    OtpPartitionOwnershipSlotStateIdx,
+    OtpPartitionRotCreatorIdentityIdx,
+    OtpPartitionRotOwnerAuthSlot0Idx,
+    OtpPartitionRotOwnerAuthSlot1Idx,
+    OtpPartitionRotOwnerAuthSlot2Idx,
+    OtpPartitionRotOwnerAuthSlot3Idx,
+    OtpPartitionRotOwnerAuthSlot0StateIdx,
+    OtpPartitionRotOwnerAuthSlot1StateIdx,
+    OtpPartitionRotOwnerAuthSlot2StateIdx,
+    OtpPartitionRotOwnerAuthSlot3StateIdx,
+    OtpPartitionExtNvmIdx,
+    OtpPartitionRomPatchIdx,
+    OtpPartitionSocFusesCpIdx,
+    OtpPartitionSocFusesFtIdx,
+    OtpPartitionScratchFusesIdx,
     OtpPartitionHwCfg0Idx,
     OtpPartitionHwCfg1Idx,
+    OtpPartitionHwCfg2Idx,
     OtpPartitionSecret0Idx,
     OtpPartitionSecret1Idx,
     OtpPartitionSecret2Idx,
+    OtpPartitionSecret3Idx,
     OtpPartitionLifeCycleIdx
   } otp_partition_e;
 

@@ -168,7 +168,6 @@ _rom_start_boot:
   .option pop
 
 LABEL_FOR_TEST(kRomStartBootMaybeHalt)
-#ifdef DISCRETE_OTP_MAP
   // Check if we should halt here.
   li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -178,7 +177,6 @@ LABEL_FOR_TEST(kRomStartBootHalted)
 .L_halt_loop:
   wfi
   j .L_halt_loop
-#endif
 
 LABEL_FOR_TEST(kRomStartBootExecEn)
 .L_exec_en:
@@ -243,17 +241,6 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, 0x00000888
   csrc mie, t0
 
-  // Check if AST initialization should be skipped. The discrete OTP map
-  // contains a chicken bit for this; in the integrated OTP map, AST
-  // initialization unconditionally runs.
-#ifdef DISCRETE_OTP_MAP
-  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
-  li   t1, MULTIBIT_ASM_BOOL4_TRUE
-  bne  t0, t1, .L_ast_init_end
-#endif
-
   // Copy the AST configuration from OTP.
   li   a0, (TOPLEVEL_CONST(AST_BASE_ADDR))
   li   a1, (TOPLEVEL_CONST(AST_BASE_ADDR) + AST_REGAL_REG_OFFSET + 4)
@@ -275,114 +262,6 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_end:
-  // Check if we are trying to transition to RMA. If so, busy loop for
-  // CREATOR_SW_CFG_RMA_SPIN_CYCLES to let the transition start and continue
-  // looping while lc_ctrl is not ready. Reset if the CPU is still executing at
-  // the end.
-  //
-  // Integrated designs do not have straps, so the check to perform the busy
-  // loop is unconditionally disabled, and we skip straight to
-  // `.L_rma_spin_skip`.
-#ifdef DISCRETE_OTP_MAP
-  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a0)
-  li   t6, HARDENED_BOOL_TRUE
-  bne  t0, t6, .L_rma_spin_skip
-
-  li   a1, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw   t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a1)
-  beq  t1, t6, .L_rma_spin_check_straps
-  unimp
-  unimp
-  unimp
-  unimp
-
-.L_rma_spin_check_straps:
-  // Configure strap pins.
-  //
-  // | GPIO Pin:        | 24             | 23             | 22               |
-  // |                  | (SW_STRAP_2)   | (SW_STRAP_1)   | (SW_STRAP_0)     |
-  // |------------------+----------------+----------------+------------------|
-  // | RMA Entry Value: | Strong pull-up | Strong pull-up | Strong pull-down |
-  // |------------------+----------------+----------------+------------------|
-  // | Configuration:   | Input          | Input          | Input            |
-  // |                  | Pull-down      | Pull-down      | Pull-up          |
-  li   a0, (TOPLEVEL_CONST(PINMUX_AON_BASE_ADDR) + \
-            PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
-  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
-           (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
-  sw   t0, (SW_STRAP_0_PAD * 4)(a0)
-  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
-  sw   t0, (SW_STRAP_1_PAD * 4)(a0)
-  sw   t0, (SW_STRAP_2_PAD * 4)(a0)
-  li   a0, (TOPLEVEL_CONST(PINMUX_AON_BASE_ADDR) + \
-            PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
-  li   t0, SW_STRAP_0_INSEL
-  sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
-  li   t0, SW_STRAP_1_INSEL
-  sw   t0, (SW_STRAP_1_PERIPH * 4)(a0)
-  li   t0, SW_STRAP_2_INSEL
-  sw   t0, (SW_STRAP_2_PERIPH * 4)(a0)
-
-  // Spin for a minimum of 5us worth of cycles (assuming 100MHz clock), while we
-  // wait for the RMA strap pull enables to propagate to the physical pads.
-  // Since this is a wait loop, disable the watchdog.
-  csrw mcycle, zero
-  li   t0, PINMUX_PAD_ATTR_PROP_CYCLES
-.L_rma_strap_pu_spin_cycles_loop:
-  csrr t1, mcycle
-  bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
-
-  // Read the strap GPIOs and check their value.
-  li   a0, TOPLEVEL_CONST(GPIO_BASE_ADDR)
-  lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
-  li   t5, SW_STRAP_MASK
-  and  t0, t0, t5
-  li   t4, (HARDENED_BOOL_TRUE ^ SW_STRAP_RMA_ENTRY)
-  xor  t0, t0, t4
-  bne  t0, t6, .L_rma_spin_skip
-
-  // Double-check the GPIO strap value.
-  li   t6, HARDENED_BOOL_TRUE
-  li   a1, TOPLEVEL_CONST(GPIO_BASE_ADDR)
-  lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
-  and  t1, t1, t5
-  xor  t1, t1, t4
-  beq  t1, t6, .L_rma_spin_init
-  unimp
-  unimp
-  unimp
-  unimp
-
-  // Spin for the OTP-specified number of cycles while we wait for
-  // the lifecycle transition request on JTAG.  Since this is a wait
-  // loop, disable the watchdog.
-.L_rma_spin_init:
-  csrw mcycle, zero
-  li   a0, TOPLEVEL_CONST(AON_TIMER_AON_BASE_ADDR)
-  sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
-.L_rma_spin_cycles_loop:
-  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
-            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_CYCLES_OFFSET(a0)
-  csrr t1, mcycle
-  bltu t1, t0, .L_rma_spin_cycles_loop
-.L_rma_spin_lc_ctrl_loop:
-  li   a0, TOPLEVEL_CONST(LC_CTRL_REGS_BASE_ADDR)
-  lw   t0, LC_CTRL_STATUS_REG_OFFSET(a0)
-  andi t0, t0, (1 << LC_CTRL_STATUS_READY_BIT)
-  beqz t0, .L_rma_spin_lc_ctrl_loop
-  unimp
-  unimp
-  unimp
-  unimp
-#endif
-
-.L_rma_spin_skip:
-  // Label to jump to after the spin cycles
-  LABEL_FOR_TEST(kRomStartRmaSpinSkip)
   // Skip the `entropy_src` health checks configuration if the
   // `RNG_HEALTH_CONFIG_DIGEST` is not programmed. The default digest value is
   // 0 given that it is stored in a software OTP partition.
@@ -446,9 +325,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // any other value to enable.
   li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
-#ifdef DISCRETE_OTP_MAP
   lw   t2, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_SRAM_READBACK_EN_OFFSET(a0)
-#endif
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_FALSE
   beq t0, t1, .L_sram_key_renew_skip
@@ -456,10 +333,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li a1, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw a1, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 .L_sram_key_renew_skip:
-#ifdef DISCRETE_OTP_MAP
-  // In discrete designs, depending on OTP, enable the SRAM readback feature.
+  // Depending on OTP, enable the SRAM readback feature.
   sw   t2, SRAM_CTRL_READBACK_REG_OFFSET(a0)
-#endif
 
   // Zero all writable registers except for `gp` (`x3`) since it's already initialized.
   li x1,  0x0

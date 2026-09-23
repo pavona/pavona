@@ -193,8 +193,6 @@ cc_library(
         ":boot_policy_ptrs",
         ":rom_cfi",
         ":rom_epmp",
-        ":sigverify_keys_ecdsa_p256",
-        ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
@@ -280,54 +278,9 @@ cc_library(
 cc_library(
     name = "sigverify_key_types",
     hdrs = ["sigverify_key_types.h"],
-    defines = pavona_select_top(
-        {
-            "dragonfly": ["OTP_KEY_ROLE"],
-        },
-        [],
-    ),
     deps = [
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/device/silicon_creator/lib/sigverify:spx_key",
-    ],
-)
-
-cc_library(
-    name = "sigverify_keys_ecdsa_p256",
-    srcs = [
-        "sigverify_keys_ecdsa_p256.c",
-    ],
-    hdrs = [
-        "sigverify_keys_ecdsa_p256.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        ":sigverify_otp_keys",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify",
-        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-    ],
-)
-
-cc_library(
-    name = "sigverify_keys_spx",
-    srcs = [
-        "sigverify_keys_spx.c",
-    ],
-    hdrs = [
-        "sigverify_keys_spx.h",
-    ],
-    deps = [
-        ":sigverify_key_types",
-        ":sigverify_otp_keys",
-        "//hw/top:otp_ctrl_c_regs",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )

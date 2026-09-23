@@ -37,11 +37,6 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                # Enable AST initialization.
-                # CREATOR_SW_CFG_AST_CFG is handled by the manufacturing flow
-                # and not listed directly in this configuration.
-                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
-                "CREATOR_SW_CFG_ROM_EXT_SKU": otp_hex(0x0),
                 # Enable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h for
@@ -57,30 +52,11 @@ otp_json(
                 "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
                 "CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x0),
                 "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.PERSONALIZED),
-                # ROM execution is enabled if this item is set to a non-zero
-                # value.
-                "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
                 # Value to write to the cpuctrl CSR in `rom_init()`.
                 # See:
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                 # CPUCTRL = 0x1 enables ICACHE.
                 "CREATOR_SW_CFG_CPUCTRL": otp_hex(0x1),
-                # Value of the min_security_version_rom_ext field of the
-                # default boot data.
-                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(0x0),
-                # Value of the min_security_version_bl0 field of the default
-                # boot data.
-                "CREATOR_SW_CFG_MIN_SEC_VER_BL0": otp_hex(0x0),
-                # Enable the default boot data in PROD and PROD_END life cycle
-                # states. See the definition of `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
-                # This enables a busyloop in the ROM to give time to
-                # trigger an RMA lifecycle transition via JTAG.
-                # TODO: The following value needs to be updated once we have an
-                # idea of how many cycles are needed to enter RMA.
-                "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": otp_hex(0x2000000),
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": otp_hex(0xffffffff),
@@ -98,9 +74,6 @@ otp_json(
                 # Any value different than `CONST.HARDENED_FALSE` will force
                 # main SRAM scramble key rotation.
                 "CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN": otp_hex(0x0),
-
-                # Disable the use of the ROM_EXT immutable section.
-                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
             },
         ),
     ],
@@ -180,12 +153,8 @@ otp_json(
                 "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
                 "OWNER_SW_CFG_MANUF_STATE": otp_hex(0x0),
                 "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN": otp_hex(0x0),
-                # Disable ROM_EXT recovery feature.
-                "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN": otp_hex(0x0),
                 # Disable SRAM readback for both ret-ram and main sram.
                 "OWNER_SW_CFG_ROM_SRAM_READBACK_EN": otp_hex(CONST.MUBI4_FALSE << 4 | CONST.MUBI4_FALSE),
-                "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_FALSE),
-                "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE": otp_hex(CONST.HARDENED_FALSE << 16 | CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN": otp_hex(CONST.HARDENED_TRUE),
                 # By default, the sensor_ctrl should disable all sensors and mark
                 # alerts as recoverable.

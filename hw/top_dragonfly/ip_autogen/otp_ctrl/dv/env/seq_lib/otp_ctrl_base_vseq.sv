@@ -326,29 +326,29 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
       dai_wr(RotOwnerAuthSlot1DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatIntegAuthSlot0Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot2Idx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatIntegAuthSlot0DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot2DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatIntegAuthSlot1Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot3Idx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatIntegAuthSlot1DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot3DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatOwnerAuthSlot0Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot0StateIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatOwnerAuthSlot0DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot0StateDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatOwnerAuthSlot1Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot1StateIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatOwnerAuthSlot1DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot1StateDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatOwnerAuthSlot2Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot2StateIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatOwnerAuthSlot2DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot2StateDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
-    if (wr_digest[PlatOwnerAuthSlot3Idx]) begin
+    if (wr_digest[RotOwnerAuthSlot3StateIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
-      dai_wr(PlatOwnerAuthSlot3DigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+      dai_wr(RotOwnerAuthSlot3StateDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
     if (wr_digest[RomPatchIdx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
@@ -372,12 +372,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (do_rd_lock[RotCreatorIdentityIdx]) csr_wr(ral.rot_creator_identity_read_lock, 0);
     if (do_rd_lock[RotOwnerAuthSlot0Idx]) csr_wr(ral.rot_owner_auth_slot0_read_lock, 0);
     if (do_rd_lock[RotOwnerAuthSlot1Idx]) csr_wr(ral.rot_owner_auth_slot1_read_lock, 0);
-    if (do_rd_lock[PlatIntegAuthSlot0Idx]) csr_wr(ral.plat_integ_auth_slot0_read_lock, 0);
-    if (do_rd_lock[PlatIntegAuthSlot1Idx]) csr_wr(ral.plat_integ_auth_slot1_read_lock, 0);
-    if (do_rd_lock[PlatOwnerAuthSlot0Idx]) csr_wr(ral.plat_owner_auth_slot0_read_lock, 0);
-    if (do_rd_lock[PlatOwnerAuthSlot1Idx]) csr_wr(ral.plat_owner_auth_slot1_read_lock, 0);
-    if (do_rd_lock[PlatOwnerAuthSlot2Idx]) csr_wr(ral.plat_owner_auth_slot2_read_lock, 0);
-    if (do_rd_lock[PlatOwnerAuthSlot3Idx]) csr_wr(ral.plat_owner_auth_slot3_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot2Idx]) csr_wr(ral.rot_owner_auth_slot2_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot3Idx]) csr_wr(ral.rot_owner_auth_slot3_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot0StateIdx]) csr_wr(ral.rot_owner_auth_slot0_state_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot1StateIdx]) csr_wr(ral.rot_owner_auth_slot1_state_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot2StateIdx]) csr_wr(ral.rot_owner_auth_slot2_state_read_lock, 0);
+    if (do_rd_lock[RotOwnerAuthSlot3StateIdx]) csr_wr(ral.rot_owner_auth_slot3_state_read_lock, 0);
     if (do_rd_lock[ExtNvmIdx]) csr_wr(ral.ext_nvm_read_lock, 0);
     if (do_rd_lock[RomPatchIdx]) csr_wr(ral.rom_patch_read_lock, 0);
     if (do_rd_lock[SocFusesCpIdx]) csr_wr(ral.soc_fuses_cp_read_lock, 0);
@@ -400,18 +400,18 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.rot_owner_auth_slot0_digest[1]), .value(val));
     csr_rd(.ptr(ral.rot_owner_auth_slot1_digest[0]), .value(val));
     csr_rd(.ptr(ral.rot_owner_auth_slot1_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_integ_auth_slot0_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_integ_auth_slot0_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_integ_auth_slot1_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_integ_auth_slot1_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot0_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot0_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot1_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot1_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot2_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot2_digest[1]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot3_digest[0]), .value(val));
-    csr_rd(.ptr(ral.plat_owner_auth_slot3_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot2_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot2_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot3_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot3_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot0_state_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot0_state_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot1_state_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot1_state_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot2_state_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot2_state_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot3_state_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_owner_auth_slot3_state_digest[1]), .value(val));
     csr_rd(.ptr(ral.rom_patch_digest[0]), .value(val));
     csr_rd(.ptr(ral.rom_patch_digest[1]), .value(val));
     csr_rd(.ptr(ral.soc_fuses_cp_digest[0]), .value(val));
@@ -473,35 +473,35 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
           !$urandom_range(0, 4)) begin
         forced_mubi_part_access[RotOwnerAuthSlot1Idx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_integ_auth_slot0_digest[0]) ||
-           `gmv(ral.plat_integ_auth_slot0_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot2_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot2_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatIntegAuthSlot0Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot2Idx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_integ_auth_slot1_digest[0]) ||
-           `gmv(ral.plat_integ_auth_slot1_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot3_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot3_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatIntegAuthSlot1Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot3Idx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot0_digest[0]) ||
-           `gmv(ral.plat_owner_auth_slot0_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot0_state_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot0_state_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot0Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot0StateIdx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot1_digest[0]) ||
-           `gmv(ral.plat_owner_auth_slot1_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot1_state_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot1_state_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot1Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot1StateIdx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot2_digest[0]) ||
-           `gmv(ral.plat_owner_auth_slot2_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot2_state_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot2_state_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot2Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot2StateIdx].write_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot3_digest[0]) ||
-           `gmv(ral.plat_owner_auth_slot3_digest[1])) &&
+      if ((`gmv(ral.rot_owner_auth_slot3_state_digest[0]) ||
+           `gmv(ral.rot_owner_auth_slot3_state_digest[1])) &&
           !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot3Idx].write_lock = 1;
+        forced_mubi_part_access[RotOwnerAuthSlot3StateIdx].write_lock = 1;
       end
       if ((`gmv(ral.rom_patch_digest[0]) ||
            `gmv(ral.rom_patch_digest[1])) &&
@@ -576,23 +576,23 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       if ((`gmv(ral.rot_owner_auth_slot1_read_lock) == 0) && !$urandom_range(0, 4)) begin
         forced_mubi_part_access[RotOwnerAuthSlot1Idx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_integ_auth_slot0_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatIntegAuthSlot0Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot2_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot2Idx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_integ_auth_slot1_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatIntegAuthSlot1Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot3_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot3Idx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot0_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot0Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot0_state_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot0StateIdx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot1_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot1Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot1_state_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot1StateIdx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot2_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot2Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot2_state_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot2StateIdx].read_lock = 1;
       end
-      if ((`gmv(ral.plat_owner_auth_slot3_read_lock) == 0) && !$urandom_range(0, 4)) begin
-        forced_mubi_part_access[PlatOwnerAuthSlot3Idx].read_lock = 1;
+      if ((`gmv(ral.rot_owner_auth_slot3_state_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotOwnerAuthSlot3StateIdx].read_lock = 1;
       end
       if ((`gmv(ral.ext_nvm_read_lock) == 0) && !$urandom_range(0, 4)) begin
         forced_mubi_part_access[ExtNvmIdx].read_lock = 1;

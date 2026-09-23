@@ -47,23 +47,23 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == RotOwnerAuthSlot1Idx) {
       dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot1Idx);
     }
-    if (part_idx == PlatIntegAuthSlot0Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatIntegAuthSlot0Idx);
+    if (part_idx == RotOwnerAuthSlot2Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot2Idx);
     }
-    if (part_idx == PlatIntegAuthSlot1Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatIntegAuthSlot1Idx);
+    if (part_idx == RotOwnerAuthSlot3Idx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot3Idx);
     }
-    if (part_idx == PlatOwnerAuthSlot0Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatOwnerAuthSlot0Idx);
+    if (part_idx == RotOwnerAuthSlot0StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot0StateIdx);
     }
-    if (part_idx == PlatOwnerAuthSlot1Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatOwnerAuthSlot1Idx);
+    if (part_idx == RotOwnerAuthSlot1StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot1StateIdx);
     }
-    if (part_idx == PlatOwnerAuthSlot2Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatOwnerAuthSlot2Idx);
+    if (part_idx == RotOwnerAuthSlot2StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot2StateIdx);
     }
-    if (part_idx == PlatOwnerAuthSlot3Idx) {
-      dai_addr inside `PART_ADDR_RANGE(PlatOwnerAuthSlot3Idx);
+    if (part_idx == RotOwnerAuthSlot3StateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotOwnerAuthSlot3StateIdx);
     }
     if (part_idx == ExtNvmIdx) {
       dai_addr inside `PART_ADDR_RANGE(ExtNvmIdx);
@@ -120,12 +120,12 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
         RotCreatorIdentityDigestOffset,
         RotOwnerAuthSlot0DigestOffset,
         RotOwnerAuthSlot1DigestOffset,
-        PlatIntegAuthSlot0DigestOffset,
-        PlatIntegAuthSlot1DigestOffset,
-        PlatOwnerAuthSlot0DigestOffset,
-        PlatOwnerAuthSlot1DigestOffset,
-        PlatOwnerAuthSlot2DigestOffset,
-        PlatOwnerAuthSlot3DigestOffset,
+        RotOwnerAuthSlot2DigestOffset,
+        RotOwnerAuthSlot3DigestOffset,
+        RotOwnerAuthSlot0StateDigestOffset,
+        RotOwnerAuthSlot1StateDigestOffset,
+        RotOwnerAuthSlot2StateDigestOffset,
+        RotOwnerAuthSlot3StateDigestOffset,
         RomPatchDigestOffset,
         SocFusesCpDigestOffset,
         SocFusesFtDigestOffset,

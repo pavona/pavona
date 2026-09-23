@@ -193,35 +193,35 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
       force_sw_parts_ecc_reg[RotOwnerAuthSlot1Idx] = 1;
     end
-    if (fail_idx[PlatIntegAuthSlot0Idx]) begin
-      force tb.dut.gen_partitions[PlatIntegAuthSlot0Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot2Idx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot2Idx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatIntegAuthSlot0Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot2Idx] = 1;
     end
-    if (fail_idx[PlatIntegAuthSlot1Idx]) begin
-      force tb.dut.gen_partitions[PlatIntegAuthSlot1Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot3Idx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot3Idx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatIntegAuthSlot1Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot3Idx] = 1;
     end
-    if (fail_idx[PlatOwnerAuthSlot0Idx]) begin
-      force tb.dut.gen_partitions[PlatOwnerAuthSlot0Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot0StateIdx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot0StateIdx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot0Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot0StateIdx] = 1;
     end
-    if (fail_idx[PlatOwnerAuthSlot1Idx]) begin
-      force tb.dut.gen_partitions[PlatOwnerAuthSlot1Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot1StateIdx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot1StateIdx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot1Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot1StateIdx] = 1;
     end
-    if (fail_idx[PlatOwnerAuthSlot2Idx]) begin
-      force tb.dut.gen_partitions[PlatOwnerAuthSlot2Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot2StateIdx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot2StateIdx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot2Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot2StateIdx] = 1;
     end
-    if (fail_idx[PlatOwnerAuthSlot3Idx]) begin
-      force tb.dut.gen_partitions[PlatOwnerAuthSlot3Idx].gen_unbuffered.
+    if (fail_idx[RotOwnerAuthSlot3StateIdx]) begin
+      force tb.dut.gen_partitions[RotOwnerAuthSlot3StateIdx].gen_unbuffered.
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot3Idx] = 1;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot3StateIdx] = 1;
     end
     if (fail_idx[RomPatchIdx]) begin
       force tb.dut.gen_partitions[RomPatchIdx].gen_unbuffered.
@@ -272,35 +272,35 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
       force_sw_parts_ecc_reg[RotOwnerAuthSlot1Idx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatIntegAuthSlot0Idx]) begin
-      release tb.dut.gen_partitions[PlatIntegAuthSlot0Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot2Idx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot2Idx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatIntegAuthSlot0Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot2Idx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatIntegAuthSlot1Idx]) begin
-      release tb.dut.gen_partitions[PlatIntegAuthSlot1Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot3Idx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot3Idx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatIntegAuthSlot1Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot3Idx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatOwnerAuthSlot0Idx]) begin
-      release tb.dut.gen_partitions[PlatOwnerAuthSlot0Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot0StateIdx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot0StateIdx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot0Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot0StateIdx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatOwnerAuthSlot1Idx]) begin
-      release tb.dut.gen_partitions[PlatOwnerAuthSlot1Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot1StateIdx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot1StateIdx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot1Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot1StateIdx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatOwnerAuthSlot2Idx]) begin
-      release tb.dut.gen_partitions[PlatOwnerAuthSlot2Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot2StateIdx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot2StateIdx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot2Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot2StateIdx] = 0;
     end
-    if (force_sw_parts_ecc_reg[PlatOwnerAuthSlot3Idx]) begin
-      release tb.dut.gen_partitions[PlatOwnerAuthSlot3Idx].gen_unbuffered.
+    if (force_sw_parts_ecc_reg[RotOwnerAuthSlot3StateIdx]) begin
+      release tb.dut.gen_partitions[RotOwnerAuthSlot3StateIdx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
-      force_sw_parts_ecc_reg[PlatOwnerAuthSlot3Idx] = 0;
+      force_sw_parts_ecc_reg[RotOwnerAuthSlot3StateIdx] = 0;
     end
     if (force_sw_parts_ecc_reg[RomPatchIdx]) begin
       release tb.dut.gen_partitions[RomPatchIdx].gen_unbuffered.
@@ -379,12 +379,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotCreatorIdentityIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot0Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot1Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatIntegAuthSlot0Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatIntegAuthSlot1Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatOwnerAuthSlot0Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatOwnerAuthSlot1Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatOwnerAuthSlot2Idx)
-    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(PlatOwnerAuthSlot3Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot2Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot3Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot0StateIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot1StateIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot2StateIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotOwnerAuthSlot3StateIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(ExtNvmIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RomPatchIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(SocFusesCpIdx)

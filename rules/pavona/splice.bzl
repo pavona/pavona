@@ -121,7 +121,7 @@ def _bitstream_splice_impl(ctx):
     top_name = ctx.attr._top[BuildSettingInfo].value
     if top_name == "egret":
         # Egret: 1024-word OTP memory map.
-        otp_size = 1024
+        otp_size = 2048
         otp_padding = 15
     elif top_name == "dragonfly":
         # Dragonfly: 10240-word OTP memory map.
