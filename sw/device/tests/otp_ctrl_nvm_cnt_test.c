@@ -81,7 +81,7 @@ static void run_error_test(void) {
   CHECK(err == kOtpCtrlNvmCntErrOk, "No encoding errors expected");
   // Read the last word value
   CHECK_DIF_OK(dif_otp_ctrl_read_blocking(
-      &otp, kDifOtpCtrlPartitionExtNvm, (val / 32) * sizeof(uint64_t), cnt, 2));
+      &otp, kOtpPartitionExtNvm, (val / 32) * sizeof(uint64_t), cnt, 2));
   CHECK(cnt[0] > 0 && cnt[0] < 0xFFFF,
         "This word should be nonzero but have at least 16bits left");
 

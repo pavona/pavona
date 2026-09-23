@@ -177,7 +177,7 @@ status_t otp_ctrl_testutils_dai_write64(const dif_otp_ctrl_t *otp,
 OT_WARN_UNUSED_RESULT
 status_t dif_otp_ctrl_dai_read_unaligned(const dif_otp_ctrl_t *otp,
                                          uint32_t *value,
-                                         dif_otp_ctrl_partition_t partition,
+                                         otp_partition_t partition,
                                          uint32_t start_addr, uint32_t addr,
                                          uint32_t size);
 

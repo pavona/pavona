@@ -126,10 +126,10 @@ static dif_lc_ctrl_state_t lc_state;
  * SECRET2 stay readable so the RMA token and the creator key material can be
  * read back. SECRET3 stays locked. Writes are refused either way.
  */
-static exp_test_result_t read_exp_result(dif_otp_ctrl_partition_t partition,
+static exp_test_result_t read_exp_result(otp_partition_t partition,
                                          exp_test_result_t exp_result) {
   if (exp_result == kExpectFailed && lc_state == kDifLcCtrlStateRma &&
-      partition != kDifOtpCtrlPartitionSecret3) {
+      partition != kOtpPartitionSecret3) {
     return kExpectPassed;
   }
   return exp_result;
@@ -471,8 +471,8 @@ bool test_main(void) {
         reset_chip();
 
       } else if (rst_info == kDifRstmgrResetInfoSw) {
-        CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
-            &otp, kOtpPartitionSecret2, &is_computed));
+        CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(&otp, kOtpPartitionSecret2,
+                                                     &is_computed));
 #if defined(OPENTITAN_IS_DRAGONFLY)
         bool secret3_is_computed;
         CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
