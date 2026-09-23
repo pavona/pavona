@@ -130,7 +130,7 @@ status_t otp_ctrl_testutils_dai_read64_array(const dif_otp_ctrl_t *otp,
 
 status_t dif_otp_ctrl_dai_read_unaligned(const dif_otp_ctrl_t *otp,
                                          uint32_t *value,
-                                         dif_otp_ctrl_partition_t partition,
+                                         otp_partition_t partition,
                                          uint32_t start_addr, uint32_t addr,
                                          uint32_t size) {
   uint32_t align_addr_offset = (addr - start_addr) & ~3U;
@@ -338,7 +338,7 @@ status_t otp_ctrl_read_nvm_cnt(const dif_otp_ctrl_t *otp, uint32_t *val,
   *val = 0;
   for (uint32_t k = 0; k < kNvmCntWords; k++) {
     // This uses the fast memory-mapped read access path instead of the DAI.
-    TRY(dif_otp_ctrl_read_blocking(otp, kDifOtpCtrlPartitionExtNvm,
+    TRY(dif_otp_ctrl_read_blocking(otp, kOtpPartitionExtNvm,
                                    k * sizeof(uint64_t), cnt, 2));
     // Check whether the redundant copies agree.
     if (cnt[0] != cnt[1]) {
@@ -384,8 +384,8 @@ status_t otp_ctrl_prog_nvm_cnt_word_copies(const dif_otp_ctrl_t *otp,
                                            uint32_t word, uint32_t len) {
   TRY(otp_ctrl_testutils_wait_for_dai(otp));
   for (uint32_t k = 0; k < len; k++) {
-    TRY(dif_otp_ctrl_dai_program32(otp, kDifOtpCtrlPartitionExtNvm,
-                                   start_address, word));
+    TRY(dif_otp_ctrl_dai_program32(otp, kOtpPartitionExtNvm, start_address,
+                                   word));
     TRY(otp_ctrl_testutils_wait_for_dai(otp));
     TRY(otp_ctrl_dai_write_error_check(otp));
     start_address += sizeof(uint32_t);

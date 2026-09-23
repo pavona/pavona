@@ -43,8 +43,7 @@ enum {
 /**
  * Programs and checks the first word of a partition.
  */
-static void prog_test(const dif_otp_ctrl_partition_t partition,
-                      uint32_t value) {
+static void prog_test(const otp_partition_t partition, uint32_t value) {
   uint32_t result;
   CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32(&otp, partition, 0, &result));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
@@ -78,7 +77,7 @@ static void dump_otp_status(const char *tag) {
  * Read-locks a partition and checks that reads are locked out.
  */
 
-static void read_lock_test(const dif_otp_ctrl_partition_t partition) {
+static void read_lock_test(const otp_partition_t partition) {
   uint32_t result;
   bool is_locked;
   dif_otp_ctrl_status_t status;
@@ -112,8 +111,8 @@ static void read_lock_test(const dif_otp_ctrl_partition_t partition) {
 /**
  * Check whether the write lock works.
  */
-static void write_lock_test(const dif_otp_ctrl_partition_t partition,
-                            uint32_t value, bool exp_write_err) {
+static void write_lock_test(const otp_partition_t partition, uint32_t value,
+                            bool exp_write_err) {
   uint32_t result;
   dif_otp_ctrl_status_t status;
   // We still expect the same value that has been written before
@@ -178,43 +177,42 @@ bool test_main(void) {
   rstmgr_testutils_reason_clear();
   if (rst_info & kDifRstmgrResetInfoPor) {
     LOG_INFO("1) Prog/read tests");
-    prog_test(kDifOtpCtrlPartitionOwnerSwCfg, kPart0Value);
-    LOG_INFO("kDifOtpCtrlPartitionOwnerSwCfg: %x",
-             kDifOtpCtrlPartitionOwnerSwCfg);
+    prog_test(kOtpPartitionOwnerSwCfg, kPart0Value);
+    LOG_INFO("kOtpPartitionOwnerSwCfg: %x", kOtpPartitionOwnerSwCfg);
     LOG_INFO("kPart0Value: %x", kPart0Value);
 
 #if defined(OPENTITAN_IS_DRAGONFLY)
-    prog_test(kDifOtpCtrlPartitionOwnershipSlotState, kPart1Value);
-    LOG_INFO("kDifOtpCtrlPartitionOwnershipSlotState: %x",
-             kDifOtpCtrlPartitionOwnershipSlotState);
+    prog_test(kOtpPartitionOwnershipSlotState, kPart1Value);
+    LOG_INFO("kOtpPartitionOwnershipSlotState: %x",
+             kOtpPartitionOwnershipSlotState);
     LOG_INFO("kPart1Value: %x", kPart1Value);
 
-    prog_test(kDifOtpCtrlPartitionExtNvm, kPart2Value);
-    LOG_INFO("kDifOtpCtrlPartitionExtNvm: %x", kDifOtpCtrlPartitionExtNvm);
+    prog_test(kOtpPartitionExtNvm, kPart2Value);
+    LOG_INFO("kOtpPartitionExtNvm: %x", kOtpPartitionExtNvm);
     LOG_INFO("kPart2Value: %x", kPart2Value);
 #endif
 
     LOG_INFO("2) CSR read lock tests");
 
     LOG_INFO("read lock 1");
-    read_lock_test(kDifOtpCtrlPartitionOwnerSwCfg);
+    read_lock_test(kOtpPartitionOwnerSwCfg);
 #if defined(OPENTITAN_IS_DRAGONFLY)
     LOG_INFO("read lock 2");
-    read_lock_test(kDifOtpCtrlPartitionOwnershipSlotState);
+    read_lock_test(kOtpPartitionOwnershipSlotState);
 
     LOG_INFO("read lock 3");
-    read_lock_test(kDifOtpCtrlPartitionExtNvm);
+    read_lock_test(kOtpPartitionExtNvm);
 #endif
     LOG_INFO("3) Write-lock partitions and reset chip to check locks");
     // This should succeed.
-    CHECK_DIF_OK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionOwnerSwCfg,
-                                         0xAAAAAAAA));
+    CHECK_DIF_OK(
+        dif_otp_ctrl_dai_digest(&otp, kOtpPartitionOwnerSwCfg, 0xAAAAAAAA));
 #if defined(OPENTITAN_IS_DRAGONFLY)
     // These two should fail since the partitions do not have a digest.
-    CHECK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionOwnershipSlotState,
+    CHECK(dif_otp_ctrl_dai_digest(&otp, kOtpPartitionOwnershipSlotState,
                                   0xAAAAAAAA) == kDifError);
-    CHECK(dif_otp_ctrl_dai_digest(&otp, kDifOtpCtrlPartitionExtNvm,
-                                  0xAAAAAAAA) == kDifError);
+    CHECK(dif_otp_ctrl_dai_digest(&otp, kOtpPartitionExtNvm, 0xAAAAAAAA) ==
+          kDifError);
 #endif
     // Reset the chip
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
@@ -225,13 +223,13 @@ bool test_main(void) {
     LOG_INFO("4) Check write-locks");
     // Expect an error due to the write-lock.
     LOG_INFO("check write lock 1: expects an error");
-    write_lock_test(kDifOtpCtrlPartitionOwnerSwCfg, kPart0Value, true);
+    write_lock_test(kOtpPartitionOwnerSwCfg, kPart0Value, true);
 #if defined(OPENTITAN_IS_DRAGONFLY)
     // These two cannot be locked, hence we don't expect an error.
     LOG_INFO("check write lock 2: no error -- can't be locked");
-    write_lock_test(kDifOtpCtrlPartitionOwnershipSlotState, kPart1Value, false);
+    write_lock_test(kOtpPartitionOwnershipSlotState, kPart1Value, false);
     LOG_INFO("check write lock 3: no error -- can't be locked");
-    write_lock_test(kDifOtpCtrlPartitionExtNvm, kPart2Value, false);
+    write_lock_test(kOtpPartitionExtNvm, kPart2Value, false);
 #endif
     // Test passed
     return true;
