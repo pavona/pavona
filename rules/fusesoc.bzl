@@ -110,7 +110,7 @@ def _fusesoc_build_impl(ctx):
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
-        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + ctx.files._libcxx + ctx.files._include + [
+        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc + ctx.files._libcxx + ctx.files._include + ctx.files._macos_sdk + [
             cfg_file,
         ],
         tools = ([
@@ -220,6 +220,11 @@ fusesoc_build = rule(
             allow_files = True,
             default = "@llvm_toolchain_llvm//:include",
             doc = "C/C++ standard library include headers.",
+        ),
+        "_macos_sdk": attr.label(
+            allow_files = True,
+            default = "@macos_sdk//:sysroot",
+            doc = "Sysroot of the host toolchain on macOS; empty elsewhere.",
         ),
     },
     toolchains = use_cpp_toolchain(),

@@ -605,6 +605,22 @@
         ]
       }
     },
+    "//third_party/macos_sdk:extensions.bzl%macos_sdk": {
+      "general": {
+        "bzlTransitiveDigest": "JcjAOK6wEErkg33Ua8T9IurGqlvVwct3y/N77e0HlFQ=",
+        "usagesDigest": "HF81Vq77YChO0pglnoIFGCLb119n+NWtDuCT9q3gqXI=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "macos_sdk": {
+            "repoRuleId": "@@//third_party/macos_sdk:extensions.bzl%_macos_sdk",
+            "attributes": {}
+          }
+        },
+        "recordedRepoMappingEntries": []
+      }
+    },
     "//third_party/mldsa_native:extensions.bzl%mldsa_native": {
       "general": {
         "bzlTransitiveDigest": "EHhp8IV9QMml8INBW8b1mIH9xov9Q1ppyZ+E7tVfX0w=",

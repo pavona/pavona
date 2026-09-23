@@ -284,6 +284,11 @@ llvm.toolchain(
         "-nostdinc++",
         "-isystem=/usr/include/c++/v1",
     ]},
+    # Clang only reads the SDK version from `-isysroot`, not from `--sysroot`.
+    extra_link_flags = {"darwin-aarch64": [
+        "-isysroot",
+        "external/+macos_sdk+macos_sdk",
+    ]},
     llvm_versions = {"": "22.1.2"},
     sha256 = {
         "darwin-aarch64": "7b290ec4529c309b6b952d64a3513595c816dff1c217d54466a586d6e35dcec9",
@@ -300,6 +305,13 @@ llvm.toolchain(
         "linux-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-ARM64.tar.xz"],
         "linux-x86_64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
     },
+)
+
+# Pin the macOS SDK instead of using the installed one.
+llvm.sysroot(
+    name = "llvm_toolchain",
+    label = "@macos_sdk//:sysroot",
+    targets = ["darwin-aarch64"],
 )
 use_repo(llvm, "llvm_toolchain")
 use_repo(llvm, "llvm_toolchain_llvm")
@@ -451,6 +463,10 @@ use_repo(mlkem_native, "mlkem_native")
 
 mldsa_native = use_extension("//third_party/mldsa_native:extensions.bzl", "mldsa_native")
 use_repo(mldsa_native, "mldsa_native")
+
+# macOS SDK
+macos_sdk = use_extension("//third_party/macos_sdk:extensions.bzl", "macos_sdk")
+use_repo(macos_sdk, "macos_sdk")
 
 # Verilator
 verilator = use_extension("//third_party/verilator:extensions.bzl", "verilator")

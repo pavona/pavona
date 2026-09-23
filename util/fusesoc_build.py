@@ -36,14 +36,21 @@ if __name__ == "__main__":
     cxxflags = ["-stdlib=libc++"]
     if sys.platform == "darwin":
         # The model links the SDK's libc++, so use its headers too.
-        sysroot = os.environ["VERILATOR_SYSROOT"]
+        sysroot = os.path.join(cwd, os.environ["VERILATOR_SYSROOT"])
         cxxflags += [
+            "-isysroot",
+            sysroot,
+            # Clang otherwise defaults to the SDK's version.
+            "-mmacosx-version-min=11.0",
             "-nostdinc++",
             "-isystem",
             os.path.join(sysroot, "usr", "include", "c++", "v1"),
         ]
         # ld64.lld rejects `-Bstatic`/`-Bdynamic`, and macOS has no static libc.
         ldflags = [
+            "-isysroot",
+            sysroot,
+            "-mmacosx-version-min=11.0",
             "-fuse-ld=lld",
             "-stdlib=libc++",
             "-lc++abi",
