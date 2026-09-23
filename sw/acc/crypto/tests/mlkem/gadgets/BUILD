@@ -259,6 +259,37 @@ py_binary(
     for i in range(NTESTS)
 ]
 
+# poly_decompress
+py_binary(
+    name = "poly_decompress_testgen",
+    srcs = ["poly_decompress_testgen.py"],
+    imports = [
+        "../../../../../../hw/ip/acc/util",
+    ],
+    deps = [
+        "//hw/ip/acc/util/shared:testgen",
+        requirement("kyber-py"),
+    ],
+)
+
+[
+    acc_autogen_sim_test(
+        name = "poly_decompress_test{}".format(
+            str(i),
+        ),
+        srcs = ["poly_decompress_test.s"],
+        pqc = True,
+        seed = i,
+        stats = STATS,
+        testgen = ":poly_decompress_testgen",
+        deps = [
+            "//sw/acc/crypto/mlkem:consts",
+            "//sw/acc/crypto/mlkem:unpack_ciphertext",
+        ],
+    )
+    for i in range(NTESTS)
+]
+
 # poly_masked_compare_du
 py_binary(
     name = "poly_masked_compare_du_testgen",

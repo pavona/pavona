@@ -37,15 +37,15 @@
 .globl poly_decompress
 .type poly_decompress, @function
 poly_decompress:
+  addi x4, x0, 4
+  beq  x12, x4, _handle_k4_poly_decompress
+
+_handle_kn4_poly_decompress:
   /* Create constant w2 = (0x0008)^16. */
   bn.subi    w2, w31, 1
   bn.shv.16h w2, w2 >> 15
   bn.shv.16h w2, w2 << 3
 
-  addi x4, x0, 4
-  beq  x12, x4, _handle_k4_poly_decompress
-
-_handle_kn4_poly_decompress:
   bn.subi    w3, w31, 1
   bn.shv.16h w3, w3 >> 12 /* 0xf */
   addi       x4, x0, 1
@@ -83,6 +83,10 @@ _handle_k4_poly_decompress:
    * (c << (16 - d)) to acc(h) before the multiplication with q. The final
    * right shift by 16 bits is taking the high 16-bit part of the 32-bit
    * multiplication product. All of this can be done with one bn.mulv.l.16h.acc.hi. */
+  bn.subi   w2, w31, 1
+  bn.shv.8s w2, w2 >> 31
+  bn.shv.8s w2, w2 << 15 /* w2 = (0x00008000)^8 */
+
   addi   x4, x0, 1
   bn.lid x0, 0(x10++)
   loopi 3, 5
@@ -199,7 +203,7 @@ _handle_k4_poly_decompress:
  *
  * @param[in,out] w1: input vector with 16 5-bit compressed coefficients, which
  *                    is overwritten with the 16 16-bit output coefficients
- * @param[in]     w2: (0x0008)^16
+ * @param[in]     w2: (0x00008000)^8
  * @param[in]     w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                           sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  *
@@ -210,8 +214,8 @@ _handle_k4_poly_decompress:
 .type poly_decompress_k4, @function
 poly_decompress_k4:
   bn.shv.16h           w1, w1 << 11 /* << 11 */
-  bn.wsrw              acc, w2      /* Write (0x0008)^16 to acc. */
-  bn.wsrw              acch, w2     /* Write (0x0008)^16 to acch. */
+  bn.wsrw              acc, w2      /* Write (0x00008000)^8 to acc. */
+  bn.wsrw              acch, w2     /* Write (0x00008000)^8 to acch. */
   bn.mulv.l.16h.acc.hi w1, w1, sw0.0 /* * q + acc(h) */
   ret
 
