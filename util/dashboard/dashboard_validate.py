@@ -7,7 +7,9 @@ Dashboard project JSON file validation
 
 import logging as log
 
-from reggen.ip_block import OPTIONAL_FIELDS, REQUIRED_FIELDS
+from basegen.lib import cast_hjson_values
+from basegen.validate import validate_schema
+import jsonschema.exceptions
 
 
 def check_keys(obj, required_keys, optional_keys, err_prefix):
@@ -54,24 +56,28 @@ entry_optional = {
 
 
 def validate(regs, is_comportable_spec):
+    regs = cast_hjson_values(regs)
     if 'name' not in regs:
         log.error("Component has no name. Aborting.")
         return 1
     component = regs['name']
 
-    # If this is a comportable IP definition file, we
-    # need to use different requirements for validation.
-    if is_comportable_spec:
-        _field_required = REQUIRED_FIELDS
-        _field_optional = OPTIONAL_FIELDS
-    else:
-        _field_required = field_required
-        _field_optional = field_optional
-
     # If `revisions` is not in the object keys, the tool runs previous
     # version checker, which has only one version entry.
     if "revisions" not in regs:
-        error = check_keys(regs, _field_required, _field_optional, component)
+        error = 0
+
+        # If this is a comportable IP definition file, we
+        # need to use different requirements for validation.
+        if is_comportable_spec:
+            try:
+                validate_schema(regs, "urn:reggen:ip_block")
+            except jsonschema.exceptions.ValidationError as e:
+                log.error(str(e))
+                error += 1
+        else:
+            error += check_keys(regs, field_required, field_optional, component)
+
         if (error > 0):
             log.error("Component has top level errors. Aborting.")
         return error
