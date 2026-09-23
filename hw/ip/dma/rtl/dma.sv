@@ -85,6 +85,9 @@ module dma
   logic dma_state_error;
   // SEC_CM: FSM.SPARSE
   dma_ctrl_state_e ctrl_state_q, ctrl_state_d;
+  logic abort_complete;
+  logic abort_rsp_pending, abort_rsp_complete;
+  dma_ctrl_state_e abort_wait_state;
   logic set_error_code, clear_go, clear_status, clear_sha_status, chunk_done;
 
   logic [INTR_CLEAR_SOURCES_WIDTH-1:0] clear_index_d, clear_index_q;
@@ -585,6 +588,7 @@ module dma
 
   always_comb begin
     ctrl_state_d = ctrl_state_q;
+    abort_complete = 1'b0;
 
     capture_transfer_byte  = 1'b0;
     transfer_byte_d        = transfer_byte_q;
@@ -636,13 +640,51 @@ module dma
     // Default assignments for the muxed config signals for the idle state
     cfg_handshake_en = control_q.cfg_handshake_en;
 
-    // Abort has the highest priority in the state machine. In all cases, if the abort is raised,
-    // the DMA is reset to the idle state. This includes the error state and the default state,
-    // which should never be reached during normal operation. The abort condition has precedence
-    // over any outstanding TL-UL transaction.
+    // Derive the transport state that must survive an abort. A response-wait state means the
+    // request was accepted in an earlier cycle. A send-state grant means acceptance is happening
+    // now; retaining the matching wait state covers that same-cycle abort boundary as well.
+    abort_rsp_pending  = 1'b0;
+    abort_rsp_complete = 1'b0;
+    abort_wait_state   = ctrl_state_q;
+    unique case (ctrl_state_q)
+      DmaSendRead: begin
+        abort_rsp_pending  = read_gnt;
+        abort_rsp_complete = read_rsp_valid;
+        abort_wait_state   = DmaWaitReadResponse;
+      end
+      DmaWaitReadResponse: begin
+        abort_rsp_pending  = 1'b1;
+        abort_rsp_complete = read_rsp_valid;
+      end
+      DmaSendWrite: begin
+        abort_rsp_pending  = write_gnt;
+        abort_rsp_complete = write_rsp_valid;
+        abort_wait_state   = DmaWaitWriteResponse;
+      end
+      DmaWaitWriteResponse: begin
+        abort_rsp_pending  = 1'b1;
+        abort_rsp_complete = write_rsp_valid;
+      end
+      DmaWaitIntrSrcResponse: begin
+        abort_rsp_pending  = 1'b1;
+        abort_rsp_complete = intr_clear_tlul_rsp_valid;
+      end
+      default: ;
+    endcase
+
     if (cfg_abort_en) begin
-      ctrl_state_d = DmaIdle;
-      clear_go     = 1'b1;
+      // Clear GO as soon as software requests abort, preventing any further functional work. If
+      // the current state represents an accepted request, retain that response-wait state until
+      // the response drains. CONTROL.abort remains set during this interval, preserving abort's
+      // priority and preventing the normal FSM from applying response side effects.
+      clear_go = 1'b1;
+      if (abort_rsp_pending && !abort_rsp_complete) begin
+        ctrl_state_d = abort_wait_state;
+      end else begin
+        // No response is owed, or it is completing with the abort request.
+        abort_complete = 1'b1;
+        ctrl_state_d   = DmaIdle;
+      end
     end else begin
       unique case (ctrl_state_q)
         DmaIdle: begin
@@ -1160,6 +1202,8 @@ module dma
 
     // Clear the `go` bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.
+    // cfg_abort_en remains asserted during an abort drain, forcing GO low so a new operation
+    // cannot start before the old interface response has retired.
     hw2reg.control.go.de = clear_go || cfg_abort_en;
     hw2reg.control.go.d  = 1'b0;
 
@@ -1179,7 +1223,7 @@ module dma
     // address but not doing wrap-around.
     update_dst_addr_reg = 1'b0;
     update_src_addr_reg = 1'b0;
-    if (data_move_state && (ctrl_state_d == DmaIdle)) begin
+    if (data_move_state && (ctrl_state_d == DmaIdle) && !abort_complete) begin
       if (reg2hw.src_config.increment.q == AddrNoIncrement &&
           reg2hw.src_config.wrap.q == AddrNoWrapChunk) begin
         update_src_addr_reg = 1'b1;
@@ -1212,11 +1256,11 @@ module dma
 
     // Assert busy write enable on
     // - transitions from IDLE out
-    // - clearing the `go` bit (going back to idle)
-    // - abort                 (going back to idle)
+    // - normal completion when clearing the `go` bit
+    // - abort completion after any accepted interface request has drained
     hw2reg.status.busy.de = ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle)) ||
-                            clear_go                                                 ||
-                            cfg_abort_en;
+                            (clear_go && !cfg_abort_en)                              ||
+                            abort_complete;
     // If transitioning from IDLE, set busy, otherwise clear it
     hw2reg.status.busy.d  = ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle)) ? 1'b1 : 1'b0;
 
@@ -1236,7 +1280,7 @@ module dma
     hw2reg.status.error.de = (ctrl_state_d == DmaError) | clear_status;
     hw2reg.status.error.d  = clear_status? 1'b0 : 1'b1;
 
-    hw2reg.status.aborted.de = cfg_abort_en | clear_status;
+    hw2reg.status.aborted.de = abort_complete | clear_status;
     hw2reg.status.aborted.d  = clear_status? 1'b0 : 1'b1;
 
     hw2reg.status.sha2_digest_valid.de = sha2_digest_set | clear_sha_status;
@@ -1307,8 +1351,9 @@ module dma
     hw2reg.error_code.range_valid_error.d  = clear_status? '0 : next_error[DmaRangeValidErr];
     hw2reg.error_code.asid_error.d         = clear_status? '0 : next_error[DmaAsidErr];
 
-    // Clear the `control.abort` bit once we have handled the abort request
-    hw2reg.control.abort.de = hw2reg.status.aborted.de;
+    // Keep the write-only abort command asserted until any accepted response has drained. This
+    // preserves abort priority over the normal FSM throughout transport cleanup.
+    hw2reg.control.abort.de = abort_complete;
     hw2reg.control.abort.d  = 1'b0;
 
     // Clear the SHA2 digests if the SHA2 valid flag is cleared (RW1C)
