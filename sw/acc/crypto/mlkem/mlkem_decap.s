@@ -405,7 +405,7 @@ check_sk:
   bn.wsrr w8, kmac_digest
 
   /* Compare against the stored hash. */
-  addi    x5, x0, 0
+  add     x5, x0, x0
   bn.lid  x5, 0(x6)
   bn.cmp  w8, w0
   csrrs   x5, fg0, x0
