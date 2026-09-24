@@ -1444,7 +1444,7 @@ _handle_k2_compute_b:
   /* Compute b += ep. */
   la   x10, mpoly_b
   la   x11, mpoly_ep
-  addi x12, x10, 0
+  add  x12, x10, x0
   loopi NSHARES, 4
     /* Whitening. */
     bn.xor w0, w0, w0
@@ -1459,7 +1459,7 @@ _handle_k2_compute_b:
   jal  x1, masked_poly_getnoise_eta_2
 
   /* Prepare for generating at[1][0]. */
-  addi x10, x9, 0 /* seed */
+  add  x10, x9, x0 /* seed */
   la   x11, seed_ij
   addi x5, x0, 1
   sw   x5, 0(x11)

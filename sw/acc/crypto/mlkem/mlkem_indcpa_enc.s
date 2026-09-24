@@ -330,7 +330,7 @@ _pk_check4_ok:
   /* Compute v += epp. */
   la   x10, mpoly_v
   la   x11, mpoly_epp
-  addi x12, x10, 0
+  add  x12, x10, x0
   jal  x1, poly_add
 
   /* Generate ep[0]. */
