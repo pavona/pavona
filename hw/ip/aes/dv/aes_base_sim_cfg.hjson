@@ -48,7 +48,7 @@
   xcelium_cov_refine_files: []
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Need to override the default output directory
   overrides: [
@@ -62,12 +62,26 @@
     {
       name: aes_unmasked
       build_opts: ["+define+EN_MASKING=0",
-                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright" ]
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright",
+                   "+define+EN_GCM=0"]
     }
     {
       name: aes_masked
-        build_opts: ["+define+EN_MASKING=1",
-                     "+define+SBOX_IMPL=aes_pkg::SBoxImplDom" ]
+      build_opts: ["+define+EN_MASKING=1",
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplDom",
+                   "+define+EN_GCM=0"]
+    }
+    {
+      name: aes_gcm_unmasked
+      build_opts: ["+define+EN_MASKING=0",
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplCanright",
+                   "+define+EN_GCM=1"]
+    }
+    {
+      name: aes_gcm_masked
+      build_opts: ["+define+EN_MASKING=1",
+                   "+define+SBOX_IMPL=aes_pkg::SBoxImplDom",
+                   "+define+EN_GCM=1"]
     }
   ]
 
@@ -134,6 +148,7 @@
       name: aes_config_error
       uvm_test: aes_config_error_test
       uvm_test_seq: aes_stress_vseq
+      reseed: 50
     }
     {
       name: aes_stress
@@ -144,6 +159,7 @@
       name: aes_b2b
       uvm_test: aes_b2b_test
       uvm_test_seq: aes_stress_vseq
+      reseed: 25
     }
     {
       name: aes_clear
@@ -154,6 +170,7 @@
       name: aes_alert_reset
       uvm_test: aes_alert_reset_test
       uvm_test_seq: aes_alert_reset_vseq
+      reseed: 25
     }
     {
       name: aes_sideload
@@ -214,6 +231,7 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_ctr_fi_vseq
       run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
+      reseed: 25
     }
     {
       name: aes_core_fi

@@ -65,6 +65,7 @@ module top_dragonfly #(
   parameter bit SecAccSkipUrndReseedAtStart = 0,
   parameter bit AccAccPQCEn = 0,
   // parameters for aes
+  parameter bit AesAESGCMEnable = 1'b1,
   parameter bit SecAesMasking = 1,
   parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
@@ -115,9 +116,14 @@ module top_dragonfly #(
   // parameters for dma
   parameter bit DmaEnableDataIntgGen = 1'b1,
   parameter bit DmaEnableRspDataIntgCheck = 1'b1,
-  parameter logic [tlul_pkg::RsvdWidth-1:0] DmaTlUserRsvd = '0,
-  parameter top_racl_pkg::racl_role_t DmaSysRaclRole = '0,
-  parameter int unsigned DmaOtAgentId = 0,
+  parameter int DmaNumPorts = 3,
+  parameter dma_pkg::dma_port_desc_t DmaPortDesc[DmaNumPorts] =
+      '{dma_pkg::DmaPortOtInternal,
+        dma_pkg::DmaPortSocControl,
+        dma_pkg::DmaPortSocSystem},
+  parameter int unsigned DmaNumTlul32 = 2,
+  parameter int unsigned DmaNumTlul64 = 1,
+  parameter bit SecDmaAesMasking = 1'b1,
   // parameters for mbx0
   // parameters for mbx1
   // parameters for mbx2
@@ -211,8 +217,8 @@ module top_dragonfly #(
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   input  logic       pwrmgr_ext_rst_ack_i,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
-  output dma_pkg::sys_req_t       dma_sys_req_o,
-  input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
+  output dma_tlul_pkg::dma_tl_h2d_t [DmaNumTlul64-1:0] dma_host64_h2d_o,
+  input  tlul_pkg::tl_d2h_t [DmaNumTlul64-1:0] dma_host64_d2h_i,
   output logic       es_rng_enable_o,
   input  logic       es_rng_valid_i,
   input  logic [EntropySrcRngBusWidth-1:0] es_rng_bit_i,
@@ -578,6 +584,7 @@ module top_dragonfly #(
   otp_ctrl_pkg::acc_otp_key_rsp_t       otp_ctrl_acc_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_aes_key;
+  keymgr_pkg::hw_key_req_t       keymgr_dpe_dma_key;
   keymgr_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
   keymgr_pkg::acc_key_req_t       keymgr_dpe_acc_key;
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
@@ -616,8 +623,8 @@ module top_dragonfly #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
-  tlul_pkg::tl_h2d_t       soc_proxy_dma_tl_h2d;
-  tlul_pkg::tl_d2h_t       soc_proxy_dma_tl_d2h;
+  tlul_pkg::tl_h2d_t [DmaNumTlul32-1:0] dma_host32_tl_h_req;
+  tlul_pkg::tl_d2h_t [DmaNumTlul32-1:0] dma_host32_tl_h_rsp;
   tlul_pkg::tl_h2d_t       soc_proxy_ctn_tl_h2d;
   tlul_pkg::tl_d2h_t       soc_proxy_ctn_tl_d2h;
   logic [2:0] pwrmgr_aon_wakeups;
@@ -678,8 +685,6 @@ module top_dragonfly #(
   tlul_pkg::tl_d2h_t       sram_ctrl_mbox_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       dma_tl_d_req;
   tlul_pkg::tl_d2h_t       dma_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_dma__host_req;
-  tlul_pkg::tl_d2h_t       main_tl_dma__host_rsp;
   tlul_pkg::tl_h2d_t       mbx0_core_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx0_core_tl_d_rsp;
   tlul_pkg::tl_h2d_t       main_tl_mbx0__sram_req;
@@ -812,11 +817,8 @@ module top_dragonfly #(
   assign racl_policies_o = racl_ctrl_racl_policies;
 
   // define partial inter-module tie-off
-  edn_pkg::edn_rsp_t unused_edn0_edn_rsp7;
 
   // assign partial inter-module tie-off
-  assign unused_edn0_edn_rsp7 = edn0_edn_rsp[7];
-  assign edn0_edn_req[7] = '0;
 
 
   // OTP HW_CFG Broadcast signals.
@@ -1616,8 +1618,8 @@ module top_dragonfly #(
       .alert_rx_i  ( alert_rx[21:21] ),
 
       // Inter-module signals
-      .dma_tl_h2d_i(soc_proxy_dma_tl_h2d),
-      .dma_tl_d2h_o(soc_proxy_dma_tl_d2h),
+      .dma_tl_i(dma_host32_tl_h_req[1]),
+      .dma_tl_o(dma_host32_tl_h_rsp[1]),
       .misc_tl_h2d_i(ctn_misc_tl_h2d_i),
       .misc_tl_d2h_o(ctn_misc_tl_d2h_o),
       .wkup_external_req_o(pwrmgr_aon_wakeups[2]),
@@ -1809,6 +1811,7 @@ module top_dragonfly #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28:27]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(AesAESGCMEnable),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
@@ -1827,6 +1830,8 @@ module top_dragonfly #(
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[1]),
+      .output_valid_o(),
+      .input_ready_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[4]),
       .edn_i(edn0_edn_rsp[4]),
@@ -1919,6 +1924,7 @@ module top_dragonfly #(
     .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
     .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
     .RndCnstAccSeed(RndCnstKeymgrDpeAccSeed),
+    .RndCnstDmaSeed(RndCnstKeymgrDpeDmaSeed),
     .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed)
   ) u_keymgr_dpe (
 
@@ -1933,6 +1939,7 @@ module top_dragonfly #(
       .edn_o(edn0_edn_req[0]),
       .edn_i(edn0_edn_rsp[0]),
       .aes_key_o(keymgr_dpe_aes_key),
+      .dma_key_o(keymgr_dpe_dma_key),
       .kmac_key_o(keymgr_dpe_kmac_key),
       .acc_key_o(keymgr_dpe_acc_key),
       .kmac_data_o(kmac_app_req[0]),
@@ -2228,13 +2235,20 @@ module top_dragonfly #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   dma #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[46:46]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[47:46]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .EnableDataIntgGen(DmaEnableDataIntgGen),
     .EnableRspDataIntgCheck(DmaEnableRspDataIntgCheck),
-    .TlUserRsvd(DmaTlUserRsvd),
-    .SysRaclRole(DmaSysRaclRole),
-    .OtAgentId(DmaOtAgentId)
+    .NumPorts(DmaNumPorts),
+    .PortDesc(DmaPortDesc),
+    .NumTlul32(DmaNumTlul32),
+    .NumTlul64(DmaNumTlul64),
+    .SecAesMasking(SecDmaAesMasking),
+    .RndCnstClearingLfsrSeed(RndCnstDmaClearingLfsrSeed),
+    .RndCnstClearingLfsrPerm(RndCnstDmaClearingLfsrPerm),
+    .RndCnstClearingSharePerm(RndCnstDmaClearingSharePerm),
+    .RndCnstMaskingLfsrSeed(RndCnstDmaMaskingLfsrSeed),
+    .RndCnstMaskingLfsrPerm(RndCnstDmaMaskingLfsrPerm)
   ) u_dma (
 
       // Interrupt
@@ -2242,26 +2256,31 @@ module top_dragonfly #(
       .intr_dma_chunk_done_o (intr_dma_dma_chunk_done),
       .intr_dma_error_o      (intr_dma_dma_error),
       // alert_handler[46]: fatal_fault
-      .alert_tx_o  ( alert_tx[46:46] ),
-      .alert_rx_i  ( alert_rx[46:46] ),
+      // alert_handler[47]: recov_fault
+      .alert_tx_o  ( alert_tx[47:46] ),
+      .alert_rx_i  ( alert_rx[47:46] ),
 
       // Inter-module signals
       .lsio_trigger_i(dma_lsio_trigger),
-      .sys_o(dma_sys_req_o),
-      .sys_i(dma_sys_rsp_i),
-      .ctn_tl_h2d_o(soc_proxy_dma_tl_h2d),
-      .ctn_tl_d2h_i(soc_proxy_dma_tl_d2h),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .edn_o(edn0_edn_req[7]),
+      .edn_i(edn0_edn_rsp[7]),
+      .keymgr_key_i(keymgr_dpe_dma_key),
+      .host64_h2d_o(dma_host64_h2d_o),
+      .host64_d2h_i(dma_host64_d2h_i),
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
-      .host_tl_h_o(main_tl_dma__host_req),
-      .host_tl_h_i(main_tl_dma__host_rsp),
+      .host32_tl_h_o(dma_host32_tl_h_req),
+      .host32_tl_h_i(dma_host32_tl_h_rsp),
       .tl_d_i(dma_tl_d_req),
       .tl_d_o(dma_tl_d_rsp),
       .scanmode_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
-      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+      .clk_edn_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+      .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   mbx #(
     .EnableRacl(1'b1),
@@ -2269,7 +2288,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX0_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX0_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX0_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[48:47]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[49:48]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx0 (
 
@@ -2277,10 +2296,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx0_mbx_abort),
       .intr_mbx_error_o (intr_mbx0_mbx_error),
-      // alert_handler[47]: fatal_fault
-      // alert_handler[48]: recov_fault
-      .alert_tx_o  ( alert_tx[48:47] ),
-      .alert_rx_i  ( alert_rx[48:47] ),
+      // alert_handler[48]: fatal_fault
+      // alert_handler[49]: recov_fault
+      .alert_tx_o  ( alert_tx[49:48] ),
+      .alert_rx_i  ( alert_rx[49:48] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx0_doe_intr_support_o),
@@ -2306,7 +2325,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX1_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX1_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX1_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[51:50]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx1 (
 
@@ -2314,10 +2333,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx1_mbx_abort),
       .intr_mbx_error_o (intr_mbx1_mbx_error),
-      // alert_handler[49]: fatal_fault
-      // alert_handler[50]: recov_fault
-      .alert_tx_o  ( alert_tx[50:49] ),
-      .alert_rx_i  ( alert_rx[50:49] ),
+      // alert_handler[50]: fatal_fault
+      // alert_handler[51]: recov_fault
+      .alert_tx_o  ( alert_tx[51:50] ),
+      .alert_rx_i  ( alert_rx[51:50] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx1_doe_intr_support_o),
@@ -2343,7 +2362,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX2_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX2_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX2_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:51]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[53:52]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx2 (
 
@@ -2351,10 +2370,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx2_mbx_ready),
       .intr_mbx_abort_o (intr_mbx2_mbx_abort),
       .intr_mbx_error_o (intr_mbx2_mbx_error),
-      // alert_handler[51]: fatal_fault
-      // alert_handler[52]: recov_fault
-      .alert_tx_o  ( alert_tx[52:51] ),
-      .alert_rx_i  ( alert_rx[52:51] ),
+      // alert_handler[52]: fatal_fault
+      // alert_handler[53]: recov_fault
+      .alert_tx_o  ( alert_tx[53:52] ),
+      .alert_rx_i  ( alert_rx[53:52] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx2_doe_intr_support_o),
@@ -2380,7 +2399,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX3_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX3_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX3_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[54:53]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[55:54]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx3 (
 
@@ -2388,10 +2407,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx3_mbx_ready),
       .intr_mbx_abort_o (intr_mbx3_mbx_abort),
       .intr_mbx_error_o (intr_mbx3_mbx_error),
-      // alert_handler[53]: fatal_fault
-      // alert_handler[54]: recov_fault
-      .alert_tx_o  ( alert_tx[54:53] ),
-      .alert_rx_i  ( alert_rx[54:53] ),
+      // alert_handler[54]: fatal_fault
+      // alert_handler[55]: recov_fault
+      .alert_tx_o  ( alert_tx[55:54] ),
+      .alert_rx_i  ( alert_rx[55:54] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx3_doe_intr_support_o),
@@ -2417,7 +2436,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX4_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX4_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX4_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[56:55]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[57:56]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx4 (
 
@@ -2425,10 +2444,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx4_mbx_ready),
       .intr_mbx_abort_o (intr_mbx4_mbx_abort),
       .intr_mbx_error_o (intr_mbx4_mbx_error),
-      // alert_handler[55]: fatal_fault
-      // alert_handler[56]: recov_fault
-      .alert_tx_o  ( alert_tx[56:55] ),
-      .alert_rx_i  ( alert_rx[56:55] ),
+      // alert_handler[56]: fatal_fault
+      // alert_handler[57]: recov_fault
+      .alert_tx_o  ( alert_tx[57:56] ),
+      .alert_rx_i  ( alert_rx[57:56] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx4_doe_intr_support_o),
@@ -2454,7 +2473,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX5_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX5_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX5_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[58:57]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[59:58]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx5 (
 
@@ -2462,10 +2481,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx5_mbx_ready),
       .intr_mbx_abort_o (intr_mbx5_mbx_abort),
       .intr_mbx_error_o (intr_mbx5_mbx_error),
-      // alert_handler[57]: fatal_fault
-      // alert_handler[58]: recov_fault
-      .alert_tx_o  ( alert_tx[58:57] ),
-      .alert_rx_i  ( alert_rx[58:57] ),
+      // alert_handler[58]: fatal_fault
+      // alert_handler[59]: recov_fault
+      .alert_tx_o  ( alert_tx[59:58] ),
+      .alert_rx_i  ( alert_rx[59:58] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx5_doe_intr_support_o),
@@ -2491,7 +2510,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX6_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX6_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX6_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[60:59]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[61:60]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx6 (
 
@@ -2499,10 +2518,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx6_mbx_ready),
       .intr_mbx_abort_o (intr_mbx6_mbx_abort),
       .intr_mbx_error_o (intr_mbx6_mbx_error),
-      // alert_handler[59]: fatal_fault
-      // alert_handler[60]: recov_fault
-      .alert_tx_o  ( alert_tx[60:59] ),
-      .alert_rx_i  ( alert_rx[60:59] ),
+      // alert_handler[60]: fatal_fault
+      // alert_handler[61]: recov_fault
+      .alert_tx_o  ( alert_tx[61:60] ),
+      .alert_rx_i  ( alert_rx[61:60] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx6_doe_intr_support_o),
@@ -2528,7 +2547,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX_JTAG_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX_JTAG_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX_JTAG_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[62:61]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[63:62]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx_jtag (
 
@@ -2536,10 +2555,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx_jtag_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_jtag_mbx_abort),
       .intr_mbx_error_o (intr_mbx_jtag_mbx_error),
-      // alert_handler[61]: fatal_fault
-      // alert_handler[62]: recov_fault
-      .alert_tx_o  ( alert_tx[62:61] ),
-      .alert_rx_i  ( alert_rx[62:61] ),
+      // alert_handler[62]: fatal_fault
+      // alert_handler[63]: recov_fault
+      .alert_tx_o  ( alert_tx[63:62] ),
+      .alert_rx_i  ( alert_rx[63:62] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_jtag_doe_intr_support_o),
@@ -2565,7 +2584,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX_PCIE0_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX_PCIE0_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX_PCIE0_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64:63]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[65:64]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx_pcie0 (
 
@@ -2573,10 +2592,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx_pcie0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie0_mbx_abort),
       .intr_mbx_error_o (intr_mbx_pcie0_mbx_error),
-      // alert_handler[63]: fatal_fault
-      // alert_handler[64]: recov_fault
-      .alert_tx_o  ( alert_tx[64:63] ),
-      .alert_rx_i  ( alert_rx[64:63] ),
+      // alert_handler[64]: fatal_fault
+      // alert_handler[65]: recov_fault
+      .alert_tx_o  ( alert_tx[65:64] ),
+      .alert_rx_i  ( alert_rx[65:64] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_pcie0_doe_intr_support_o),
@@ -2602,7 +2621,7 @@ module top_dragonfly #(
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_VEC_MBX_PCIE1_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_WIN_MBX_PCIE1_SOC_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_WIN_MBX_PCIE1_SOC_RDATA),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[66:65]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[67:66]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_mbx_pcie1 (
 
@@ -2610,10 +2629,10 @@ module top_dragonfly #(
       .intr_mbx_ready_o (intr_mbx_pcie1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie1_mbx_abort),
       .intr_mbx_error_o (intr_mbx_pcie1_mbx_error),
-      // alert_handler[65]: fatal_fault
-      // alert_handler[66]: recov_fault
-      .alert_tx_o  ( alert_tx[66:65] ),
-      .alert_rx_i  ( alert_rx[66:65] ),
+      // alert_handler[66]: fatal_fault
+      // alert_handler[67]: recov_fault
+      .alert_tx_o  ( alert_tx[67:66] ),
+      .alert_rx_i  ( alert_rx[67:66] ),
 
       // Inter-module signals
       .doe_intr_support_o(mbx_pcie1_doe_intr_support_o),
@@ -2634,13 +2653,13 @@ module top_dragonfly #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   soc_dbg_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:67]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[69:68]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_soc_dbg_ctrl (
-      // alert_handler[67]: fatal_fault
-      // alert_handler[68]: recov_ctrl_update_err
-      .alert_tx_o  ( alert_tx[68:67] ),
-      .alert_rx_i  ( alert_rx[68:67] ),
+      // alert_handler[68]: fatal_fault
+      // alert_handler[69]: recov_ctrl_update_err
+      .alert_tx_o  ( alert_tx[69:68] ),
+      .alert_rx_i  ( alert_rx[69:68] ),
 
       // Inter-module signals
       .boot_status_i(pwrmgr_aon_boot_status),
@@ -2665,7 +2684,7 @@ module top_dragonfly #(
   );
   racl_ctrl #(
     .RaclErrorRsp(1'b1),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[70:69]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[71:70]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .NumSubscribingIps(RaclCtrlNumSubscribingIps),
     .NumExternalSubscribingIps(RaclCtrlNumExternalSubscribingIps)
@@ -2673,10 +2692,10 @@ module top_dragonfly #(
 
       // Interrupt
       .intr_racl_error_o (intr_racl_ctrl_racl_error),
-      // alert_handler[69]: fatal_fault
-      // alert_handler[70]: recov_ctrl_update_err
-      .alert_tx_o  ( alert_tx[70:69] ),
-      .alert_rx_i  ( alert_rx[70:69] ),
+      // alert_handler[70]: fatal_fault
+      // alert_handler[71]: recov_ctrl_update_err
+      .alert_tx_o  ( alert_tx[71:70] ),
+      .alert_rx_i  ( alert_rx[71:70] ),
 
       // Inter-module signals
       .racl_policies_o(racl_ctrl_racl_policies),
@@ -2694,17 +2713,17 @@ module top_dragonfly #(
     .EnableRacl(1'b1),
     .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVec(RACL_POLICY_SEL_VEC_AC_RANGE_CHECK),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[72:71]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[73:72]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RangeCheckErrorRsp(AcRangeCheckRangeCheckErrorRsp)
   ) u_ac_range_check (
 
       // Interrupt
       .intr_deny_cnt_reached_o (intr_ac_range_check_deny_cnt_reached),
-      // alert_handler[71]: recov_ctrl_update_err
-      // alert_handler[72]: fatal_fault
-      .alert_tx_o  ( alert_tx[72:71] ),
-      .alert_rx_i  ( alert_rx[72:71] ),
+      // alert_handler[72]: recov_ctrl_update_err
+      // alert_handler[73]: fatal_fault
+      .alert_tx_o  ( alert_tx[73:72] ),
+      .alert_rx_i  ( alert_rx[73:72] ),
 
       // Inter-module signals
       .range_check_overwrite_i(ac_range_check_overwrite_i),
@@ -2723,7 +2742,7 @@ module top_dragonfly #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[76:73]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[77:74]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .NEscalationSeverities(AlertHandlerEscNumSeverities),
     .WidthPingCounter(AlertHandlerEscPingCountWidth),
@@ -2764,12 +2783,12 @@ module top_dragonfly #(
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault)
   ) u_rv_core_ibex (
-      // alert_handler[73]: fatal_sw_err
-      // alert_handler[74]: recov_sw_err
-      // alert_handler[75]: fatal_hw_err
-      // alert_handler[76]: recov_hw_err
-      .alert_tx_o  ( alert_tx[76:73] ),
-      .alert_rx_i  ( alert_rx[76:73] ),
+      // alert_handler[74]: fatal_sw_err
+      // alert_handler[75]: recov_sw_err
+      // alert_handler[76]: fatal_hw_err
+      // alert_handler[77]: recov_hw_err
+      .alert_tx_o  ( alert_tx[77:74] ),
+      .alert_rx_i  ( alert_rx[77:74] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -2940,9 +2959,9 @@ module top_dragonfly #(
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),
     .tl_rv_dm__sba_o(main_tl_rv_dm__sba_rsp),
 
-    // port: tl_dma__host
-    .tl_dma__host_i(main_tl_dma__host_req),
-    .tl_dma__host_o(main_tl_dma__host_rsp),
+    // port: tl_dma__host32_0
+    .tl_dma__host32_0_i(dma_host32_tl_h_req[0]),
+    .tl_dma__host32_0_o(dma_host32_tl_h_rsp[0]),
 
     // port: tl_mbx0__sram
     .tl_mbx0__sram_i(main_tl_mbx0__sram_req),

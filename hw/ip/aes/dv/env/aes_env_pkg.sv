@@ -12,12 +12,13 @@ package aes_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
-  import push_pull_agent_pkg::*;
   import aes_reg_pkg::*;
   import aes_ral_pkg::*;
   import aes_pkg::*;
   import key_sideload_agent_pkg::*;
 
+  // AES-specific RAL extension
+  `include "aes_ral_extension.svh"
 
   // macro includes
   `include "uvm_macros.svh"
@@ -30,9 +31,13 @@ package aes_env_pkg;
   parameter uint NUM_EDN = 1;
 
   typedef enum int {
-    AES_CFG     = 0,
-    AES_DATA    = 1,
-    AES_ERR_INJ = 2
+    AES_CFG         = 0,
+    AES_DATA        = 1,
+    AES_ERR_INJ     = 2,
+    AES_GCM_AAD     = 3,
+    AES_GCM_TAG     = 4,
+    AES_GCM_SAVE    = 5,
+    AES_GCM_RESTORE = 6
   } aes_item_type_e;
 
   typedef enum int {
@@ -55,6 +60,7 @@ package aes_env_pkg;
   } error_types_t;
 
   typedef struct packed {
+    bit          gcm_phase;
     bit          key_len;
     bit          mode;
     bit          rsd_rate;
@@ -62,7 +68,7 @@ package aes_env_pkg;
   } cfg_error_type_t;
 
   // used in FI verification seq and if
-  localparam int StateWidth = 6;
+  localparam int StateWidth = GhashStateWidth;
 
 
   // Pick a name for this interface, under which it will be registered with the UVM DB. This is

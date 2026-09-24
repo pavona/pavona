@@ -36,6 +36,12 @@
       tests: []
     }
     {
+      name: sec_cm_lc_escalate_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_range_config_regwen_mubi
       desc: "Verify the countermeasure(s) RANGE.CONFIG.REGWEN_MUBI."
       stage: V2S
@@ -46,6 +52,45 @@
       desc: "Verify the countermeasure(s) FSM.SPARSE."
       stage: V2S
       tests: []
+    }
+    {
+      name: sec_cm_aes_fsm_sparse
+      desc: "Verify the countermeasure(s) AES.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_key_sideload
+      desc: "Verify the countermeasure(s) KEY.SIDELOAD."
+      stage: V2S
+      tests: ["dma_aes"]
+    }
+    {
+      name: sec_cm_key_sw_unreadable
+      desc: '''Verify the countermeasure(s) KEY.SW_UNREADABLE.
+
+             KEY_SHARE0/KEY_SHARE1 are write-only (swaccess "wo"): the automated CSR read/write
+             test writes random values and confirms every key word reads back 0 (the reset value),
+             i.e. the programmed key is never software-readable.'''
+      stage: V2S
+      tests: ["dma_csr_rw"]
+    }
+    {
+      name: sec_cm_key_sec_wipe
+      desc: '''Verify the countermeasure(s) KEY.SEC_WIPE.
+
+             dma_aes_abort aborts an in-flight AES transfer, which triggers the hardware SEC_WIPE of
+             the key/IV/state; the subsequent transfer must complete cleanly, confirming the engine
+             was wiped and re-armed. dma_aes additionally exercises the post-operation hardware wipe
+             across many randomized transfers.'''
+      stage: V2S
+      tests: ["dma_aes_abort", "dma_aes"]
+    }
+    {
+      name: sec_cm_ctrl_consistency
+      desc: "Verify the countermeasure(s) CTRL.CONSISTENCY."
+      stage: V2S
+      tests: ["dma_aes", "dma_aes_smoke"]
     }
   ]
 }

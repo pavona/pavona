@@ -25,7 +25,8 @@ module keymgr_dpe
   parameter seed_t RndCnstNoneSeed             = RndCnstNoneSeedDefault,
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstAccSeed             = RndCnstAccSeedDefault,
-  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault
+  parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
+  parameter seed_t RndCnstDmaSeed              = RndCnstDmaSeedDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -41,6 +42,7 @@ module keymgr_dpe
   output hw_key_req_t aes_key_o,
   output hw_key_req_t kmac_key_o,
   output acc_key_req_t acc_key_o,
+  output hw_key_req_t dma_key_o,
 
   // data interface to/from crypto modules
   output kmac_pkg::app_req_t kmac_data_o,
@@ -85,13 +87,14 @@ module keymgr_dpe
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 7;
+  localparam int TotalSeedWidth = KeyWidth * 8;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
   seed_t aes_seed;
   seed_t acc_seed;
   seed_t kmac_seed;
+  seed_t dma_seed;
   seed_t none_seed;
 
   localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
@@ -100,6 +103,7 @@ module keymgr_dpe
                                                         RndCnstAesSeed,
                                                         RndCnstAccSeed,
                                                         RndCnstKmacSeed,
+                                                        RndCnstDmaSeed,
                                                         RndCnstNoneSeed};
 
   prim_sec_anchor_const #(
@@ -112,6 +116,7 @@ module keymgr_dpe
             aes_seed,
             acc_seed,
             kmac_seed,
+            dma_seed,
             none_seed})
   );
 
@@ -488,7 +493,8 @@ module keymgr_dpe
   assign dest_sel = keymgr_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
   assign dest_seed = dest_sel == Aes  ? aes_seed  :
                        dest_sel == Kmac ? kmac_seed :
-                       dest_sel == Acc ? acc_seed : none_seed;
+                       dest_sel == Acc  ? acc_seed  :
+                       dest_sel == Dma  ? dma_seed  : none_seed;
   assign output_key = mubi4_test_true_strict(hw_key_sel) ? hard_output_seed :
                       soft_output_seed;
   assign gen_in = active_key_slot.valid ? {reg2hw.key_version,
@@ -628,6 +634,7 @@ module keymgr_dpe
     .prng_en_o(sideload_lfsr_en),
     .aes_key_o,
     .acc_key_o,
+    .dma_key_o,
     .kmac_key_o,
     .sideload_sel_err_o(sideload_sel_err),
     .fsm_err_o(sideload_fsm_err)
@@ -799,6 +806,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(AlertKnownO_A, alert_tx_o)
 
   `ASSERT_KNOWN(AesKeyKnownO_A,  aes_key_o)
+  `ASSERT_KNOWN(DmaKeyKnownO_A,  dma_key_o)
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(AccKeyKnownO_A, acc_key_o)
   `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)

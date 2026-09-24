@@ -77,7 +77,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h11000000, 32'h11000fff}
     }},
     '{"dma", '{
-        '{32'h22010000, 32'h220101ff}
+        '{32'h22010000, 32'h220103ff}
     }},
     '{"mbx0__core", '{
         '{32'h22000000, 32'h2200007f}
@@ -331,7 +331,7 @@ tl_host_t xbar_hosts[$] = '{
         "mbx_pcie0__core",
         "mbx_pcie1__core"}}
     ,
-    '{"dma__host", 3, '{
+    '{"dma__host32_0", 3, '{
         "sram_ctrl_main__ram",
         "sram_ctrl_mbox__ram",
         "aes",

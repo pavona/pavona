@@ -147,8 +147,8 @@ module keymgr_dpe_reg_top (
   logic [2:0] control_shadowed_operation_wd;
   logic control_shadowed_operation_storage_err;
   logic control_shadowed_operation_update_err;
-  logic [1:0] control_shadowed_dest_sel_qs;
-  logic [1:0] control_shadowed_dest_sel_wd;
+  logic [2:0] control_shadowed_dest_sel_qs;
+  logic [2:0] control_shadowed_dest_sel_wd;
   logic control_shadowed_dest_sel_storage_err;
   logic control_shadowed_dest_sel_update_err;
   logic [2:0] control_shadowed_slot_src_sel_qs;
@@ -548,11 +548,11 @@ module keymgr_dpe_reg_top (
     .err_storage (control_shadowed_operation_storage_err)
   );
 
-  //   F[dest_sel]: 13:12
+  //   F[dest_sel]: 14:12
   prim_subreg_shadow #(
-    .DW      (2),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
+    .RESVAL  (3'h0),
     .Mubi    (1'b0)
   ) u_control_shadowed_dest_sel (
     .clk_i   (clk_i),
@@ -584,7 +584,7 @@ module keymgr_dpe_reg_top (
     .err_storage (control_shadowed_dest_sel_storage_err)
   );
 
-  //   F[slot_src_sel]: 16:14
+  //   F[slot_src_sel]: 17:15
   prim_subreg_shadow #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -620,7 +620,7 @@ module keymgr_dpe_reg_top (
     .err_storage (control_shadowed_slot_src_sel_storage_err)
   );
 
-  //   F[slot_dst_sel]: 20:18
+  //   F[slot_dst_sel]: 21:19
   prim_subreg_shadow #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -656,7 +656,7 @@ module keymgr_dpe_reg_top (
     .err_storage (control_shadowed_slot_dst_sel_storage_err)
   );
 
-  //   F[sw_binding_only]: 22:22
+  //   F[sw_binding_only]: 23:23
   prim_subreg_shadow #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -2923,13 +2923,13 @@ module keymgr_dpe_reg_top (
 
   assign control_shadowed_operation_wd = reg_wdata[6:4];
 
-  assign control_shadowed_dest_sel_wd = reg_wdata[13:12];
+  assign control_shadowed_dest_sel_wd = reg_wdata[14:12];
 
-  assign control_shadowed_slot_src_sel_wd = reg_wdata[16:14];
+  assign control_shadowed_slot_src_sel_wd = reg_wdata[17:15];
 
-  assign control_shadowed_slot_dst_sel_wd = reg_wdata[20:18];
+  assign control_shadowed_slot_dst_sel_wd = reg_wdata[21:19];
 
-  assign control_shadowed_sw_binding_only_wd = reg_wdata[22];
+  assign control_shadowed_sw_binding_only_wd = reg_wdata[23];
   assign sideload_clear_we = addr_hit[7] & reg_we & !reg_error;
 
   assign sideload_clear_wd = reg_wdata[2:0];
@@ -3184,10 +3184,10 @@ module keymgr_dpe_reg_top (
 
       addr_hit[6]: begin
         reg_rdata_next[6:4] = control_shadowed_operation_qs;
-        reg_rdata_next[13:12] = control_shadowed_dest_sel_qs;
-        reg_rdata_next[16:14] = control_shadowed_slot_src_sel_qs;
-        reg_rdata_next[20:18] = control_shadowed_slot_dst_sel_qs;
-        reg_rdata_next[22] = control_shadowed_sw_binding_only_qs;
+        reg_rdata_next[14:12] = control_shadowed_dest_sel_qs;
+        reg_rdata_next[17:15] = control_shadowed_slot_src_sel_qs;
+        reg_rdata_next[21:19] = control_shadowed_slot_dst_sel_qs;
+        reg_rdata_next[23] = control_shadowed_sw_binding_only_qs;
       end
 
       addr_hit[7]: begin

@@ -264,6 +264,33 @@
         tests: ["dma_abort"]
       }
       {
+        name: dma_abort_drain
+        desc: '''
+              Directed abort/drain test for the bus-quiescence corner: abort must not leave the bus
+              live or report completion before outstanding responses have drained.
+
+              Stimulus:
+              - Start a multi-beat memory-to-memory copy and assert CONTROL.abort a swept number of
+                cycles in, so the abort lands while reads/writes are still outstanding under the
+                randomized device response latency.
+              - Immediately after requesting the abort, attempt to reprogram the port-selecting CSRs
+                (ADDRESS_SPACE_ID); this must be ignored while the abort drains (CSRs stay locked).
+              - After all aborts, run a clean copy.
+
+              Checking:
+              - No bus request is issued on any port after abort (SVA AbortNoBusReq_A); STATUS.busy
+                stays asserted until every outstanding response has drained (SVA AbortBusyHeld_A /
+                ErrorBusyHeld_A); the DMA only returns to idle once drained (SVA DrainBeforeIdle_A)
+                and the abort always completes (SVA AbortEventuallyCompletes_A).
+              - An aborted transfer never reports STATUS.done; the subsequent clean copy completes and
+                its destination data matches the source (no stale-response corruption).
+              - Coverage: dma_abort_cg samples the state and the set of outstanding responses at the
+                abort, including interrupt-clear outstanding.
+              '''
+        stage: V2
+        tests: ["dma_abort_drain"]
+      }
+      {
         name: dma_stress_all
         desc: '''
               Run the other tests in random order while injecting TL errors and running automated CSR tests in parallel.
@@ -312,8 +339,347 @@
         stage: V2S
         tests: ["dma_config_lock"]
       }
+      {
+        name: dma_hashing_partial
+        desc: '''
+              Directed test for the inline-hashing deferred-wait corner of the within-chunk fast path.
+
+              Stimulus:
+              - Configure memory-to-memory SHA (256/384/512) transfers with a total size that is not
+                a multiple of 4 bytes, forcing a partial final beat (4B transfer width).
+              - Drive responses with zero access/response delay so the DMA feeds the SHA engine
+                faster than it can consume, provoking the DmaShaWait back-pressure state on the beat
+                preceding the partial final beat.
+
+              Checking:
+              - The scoreboard's predicted SHA digest must match the DUT digest; a corrupted
+                byte-enable on the deferred-hash path would change the digest.
+              - Source/destination data and addresses are checked as in the other transfer tests.
+              '''
+        stage: V2
+        tests: ["dma_hashing_partial"]
+      }
+      {
+        name: dma_overlap
+        desc: '''
+              Directed test for the cross-port read/write overlap path.
+
+              Stimulus:
+              - Configure memory-to-memory plain copy (OpcCopy) transfers with source and destination
+                ASIDs that resolve to different host ports (OtInternalAddr vs SocControlAddr), so
+                src_port_idx != dst_port_idx and the overlap region runs.
+              - 4B transfers, moderate multi-beat sizes, zero access/response delays so the read of
+                beat i+1 overlaps the write of beat i on the two ports (DmaOverlap).
+
+              Checking:
+              - Source/destination data and addresses are checked by the existing data/address
+                scoreboard; an overlap-induced hand-off error would corrupt the copied data.
+              '''
+        stage: V2
+        tests: ["dma_overlap"]
+      }
+      {
+        name: dma_memset
+        desc: '''
+              Directed test for the memset operation (read_en=0, write_en=1, digest=none).
+
+              Stimulus:
+              - Configure memory transfers with read_en cleared so no source is read; the fill
+                pattern is taken from SRC_ADDR_LO and replicated to the destination, keyed by the
+                transfer width (1B/2B/4B) and destination byte lane.
+              - Exercise multi-beat (and partial final beat for 1B/2B) and multi-chunk transfers.
+
+              Checking:
+              - The scoreboard checks that no source read traffic is generated and that the
+                destination memory holds the replicated, little-endian fill pattern (byte-correct
+                for 1B/2B/4B including the partial final beat).
+              - The no-source-traffic SVA confirms no source-port request is issued; the no-deadlock
+                SVA confirms the FSM always reaches DmaIdle.
+              '''
+        stage: V2
+        tests: ["dma_memset"]
+      }
+      {
+        name: dma_partial_size
+        desc: '''
+              Directed memory-to-memory copies whose size is not a multiple of the chunk size and/or
+              the transfer width, exercising the automatic SRC_ADDR/DST_ADDR write-back on partial
+              final chunks and partial final beats.
+
+              Stimulus:
+              - Plain copies (increment, no wrap) with total_data_size constrained so that either the
+                final beat is partial (total not a multiple of the 4-byte transfer width) or the
+                final chunk is partial (chunk size does not divide the total), e.g. total=98/chunk=64
+                and total=100/chunk=64.
+
+              Checking:
+              - After each clean transfer the address registers must equal base + total_data_size,
+                i.e. advanced by the bytes actually moved, not rounded up to a whole chunk or whole
+                bus word. Checked both by the scoreboard's address write-back prediction and by an
+                independent read-back in the sequence.
+              '''
+        stage: V2
+        tests: ["dma_partial_size"]
+      }
+      {
+        name: dma_range_partial
+        desc: '''
+              Enabled-memory-range check on a legal final partial chunk. The DmaAddrSetup range
+              check must use the actual length of the current chunk, not the programmed
+              chunk_data_size; otherwise the final chunk of a transfer whose total is not a multiple
+              of the chunk size is wrongly checked as a full chunk and a legal access whose true end
+              is within the range is rejected with DmaSrcAddrErr/DmaDstAddrErr.
+
+              This is a directed test because the generic seq_item range constraints only require the
+              full chunk and the whole transfer to fit from the *original* address, and leave
+              generous range slack, so they essentially never generate the tight boundary where the
+              full-chunk-rounded end of the final chunk crosses the (inclusive) limit.
+
+              Stimulus (incrementing path):
+              - Cross-port copies with exactly one range-checked endpoint, programmed directly so the
+                enabled range ends exactly at the transfer's last byte (limit == base + total - 1)
+                while chunk_data_size > total_data_size (a single chunk whose full-chunk-rounded end
+                exceeds the limit). Run for both the source-checked (OT->SoC) and destination-checked
+                (SoC->OT) directions, with total values that are also not width multiples.
+
+              Stimulus (fixed-address / no-increment path):
+              - The same range span fix applies when an endpoint does not increment its address. A
+                fixed address is a FIFO endpoint in DV, so these run through the standard model flow
+                (configure_mem_model) with the range-checked OT endpoint fixed and the enabled range
+                tightened to exactly one transfer word (limit == base + width - 1). The endpoint
+                reuses that one word for the whole transfer, so the access is legal, but the pre-fix
+                check sized the span from the remaining transfer bytes and rejected it. Run for both
+                fixed-source (OT FIFO -> SoC memory) and fixed-destination (SoC memory -> OT FIFO).
+
+              Checking:
+              - Each transfer must complete with STATUS.done and no error, and ERROR_CODE must show
+                neither src_addr_error nor dst_addr_error. On the unfixed RTL the range check raises a
+                spurious address error. Data behavior: the incrementing and fixed-source cases check
+                the destination data matches the source explicitly; the fixed-destination case relies
+                on the scoreboard checking the gathered FIFO stream against the source.
+              '''
+        stage: V2
+        tests: ["dma_range_partial"]
+      }
+      {
+        name: dma_verify
+        desc: '''
+              Directed test for the verify operation (read_en=1, write_en=0, digest=sha256/384/512).
+
+              Stimulus:
+              - Configure 4B memory transfers with write_en cleared so the source is read and
+                hashed but no destination write occurs; completion is read-driven.
+              - Exercise multi-beat and multi-chunk transfers across all three digest widths.
+
+              Checking:
+              - The scoreboard checks that no destination write traffic is generated and that the
+                resulting digest matches the DPI SHA reference computed over the read bytes.
+              - The no-destination-traffic SVA confirms no destination-port request is issued; the
+                no-deadlock SVA confirms the FSM always reaches DmaShaFinalize/DmaIdle.
+              '''
+        stage: V2
+        tests: ["dma_verify"]
+      }
+      {
+        name: dma_control_combo_reject
+        desc: '''
+              Test that illegal CONTROL field combinations are rejected with DmaOpcodeErr.
+
+              Stimulus:
+              - Through the randomized generic/stress transfers, drive CONTROL field combinations
+                that are illegal: no-op (read_en=0 and write_en=0), inline hashing without a read
+                (digest!=none and read_en=0), read-and-discard (write_en=0 and digest=none), and
+                hardware handshake paired with a missing read or write path.
+
+              Checking:
+              - The DUT raises ERROR_CODE.opcode_error and the Error interrupt; the scoreboard
+                predicts the rejection from the legal-combo model and the dma_fsm_cg covergroup
+                covers the rejected combinations (cp_combo_reject).
+              '''
+        stage: V2
+        tests: ["dma_generic_stress", "dma_memory_stress"]
+      }
+      {
+        name: dma_aes_smoke
+        desc: '''
+              Directed inline AES-CTR/GCM against NIST known-answer-test vectors.
+
+              Stimulus:
+              - Program the KAT key/IV/AAD and run encrypt and decrypt (round-trip), plus a GCM
+                decrypt with a tampered ciphertext byte.
+
+              Checking:
+              - The destination matches the KAT ciphertext (encrypt) / plaintext (decrypt); for GCM
+                TAG_OUT matches the KAT tag with STATUS.tag_valid; the tamper case raises
+                STATUS.tag_failed + ERROR_CODE.aes_tag_error and suppresses done.
+              '''
+        stage: V2
+        tests: ["dma_aes_smoke"]
+      }
+      {
+        name: dma_aes_random
+        desc: '''
+              Randomized inline AES-CTR/GCM with the OpenSSL aes_model_dpi reference.
+
+              Stimulus:
+              - Random key/IV/AAD/plaintext/size over AES-128/192/256 and the CSR and keymgr
+                sideload key paths; each message runs an encrypt -> decrypt-good -> (a fraction)
+                decrypt-tamper round-trip. A DPI KAT self-check runs first to validate the packing.
+              - The PRNG reseed rate (PER_1/PER_64/PER_8K) is randomized per message, and a fraction
+                of messages route the destination to a different host port so the cross-port AES
+                datapath (gather on the OT-internal port, scatter on the SoC port) is exercised.
+
+              Checking:
+              - The scoreboard predicts the destination ciphertext/plaintext via the DPI and checks
+                it on the fly; the sequence checks TAG_OUT vs the reference and the tag_failed/done
+                status. dma_aes_cg covers cipher x dir x key_len x aad x sideload x n_blocks x
+                reseed_rate; dma_fsm_cg covers the AES sub-FSM states/transitions and cross_port.
+              - Total and chunk sizes vary independently in whole blocks, including shorter final
+                chunks and chunks larger than the total. Check address write-back, absence of
+                traffic while paused, retained CFG_REGWEN lock, ignored configuration writes,
+                and authentication only after the final chunk.
+              - Repeat CTR/GCM encrypt/decrypt with hardware-paced chunks: disabled triggers must
+                not start a transfer, and GO/BUSY and configuration locking must persist between
+                enabled triggers without chunk_done or early authentication.
+              - Arming a new initial transfer clears stale tag_valid/tag_failed before its
+                first hardware trigger, including after a previous successful GCM message.
+              '''
+        stage: V2
+        tests: ["dma_aes"]
+      }
+      {
+        name: dma_aes_fifo
+        desc: '''
+              Hardware-paced AES transfers with independent source/destination addressing.
+
+              Stimulus:
+              - Exercise CTR/GCM encryption and decryption with all increment/wrap combinations
+                on source and destination: memory-to-FIFO, FIFO-to-memory, FIFO-to-FIFO and
+                wrapping buffer windows. Supply/drain each chunk before issuing the next trigger.
+              - Cover smaller, larger and equal total/chunk sizes and shorter final chunks.
+              - Run GCM decryption with an incorrect tag after sending output to a FIFO.
+              - Abort between FIFO chunks or inject a bus error after the next trigger, then
+                verify recovery with a fresh message.
+
+              Checking:
+              - Compare each output chunk to known ciphertext/plaintext and the final GCM tag.
+              - Check every bus address, FIFO underflow/overflow, exact byte counts, idle pauses,
+                configuration locking, address write-back and final-only authentication.
+              '''
+        stage: V2
+        tests: ["dma_aes_fifo"]
+      }
+      {
+        name: dma_aes_error
+        desc: '''
+              Inline-AES legal-combination rejection.
+
+              Stimulus:
+              - Program AES transfers with one illegal aspect each: non-16-byte total or chunk size,
+                with inline digest, non-4-byte width, reserved aes_op, and
+                too many AAD blocks.
+              - Reject a non-16-byte chunk size after a hardware-handshake trigger as well.
+              - Reject all unconfigured 8-bit ASIDs on source, destination and interrupt-clear
+                targets, including reserved codewords and single-bit corruption of assigned IDs.
+                Check ASID error status and absence of data traffic.
+
+              Checking:
+              - Each is rejected with the expected ERROR_CODE bit (DmaSizeErr / DmaOpcodeErr) and
+                STATUS.error, and never sets STATUS.done.
+              '''
+        stage: V2
+        tests: ["dma_aes_error"]
+      }
+      {
+        name: dma_aes_abort
+        desc: '''
+              Abort of an in-flight inline-AES transfer and recovery.
+
+              Stimulus:
+              - Start an AES transfer and assert CONTROL.abort mid-operation, while suspended
+                between software- or hardware-paced chunks, or before the first hardware trigger;
+                then run a fresh AES transfer.
+
+              Checking:
+              - The DMA reaches a terminal state (no hang) without setting done for the aborted
+                transfer; the subsequent transfer completes without error (engine flush + SEC_WIPE
+                recovery).
+              '''
+        stage: V2
+        tests: ["dma_aes_abort"]
+      }
+      {
+        name: dma_aes_clear_mid_commit
+        desc: '''
+              Inline-AES shadow-register commit-phase desync on abort/clear.
+              The aes_core CTRL_SHADOWED / CTRL_GCM_SHADOWED registers commit on a two-write
+              protocol; a clear_i (DMA abort) landing between the two accepted writes used to reset
+              the wrapper's open-loop cfg_phase mirror but not the hardware prim_subreg_shadow
+              phase, leaving the next transfer's first write to be mis-read as the commit write. The
+              fix pulses the shadow read strobe at start_i to re-arm the hardware phase.
+
+              Stimulus:
+              - For CTR and GCM: abort an in-flight AES transfer (real clear path), then place the
+                aes_core shadow commit-phase flops into the post-abort desynced state via
+                uvm_hdl_deposit (the single-cycle natural window is not addressable from the CSR
+                abort path), confirm via uvm_hdl_read that the desync is established, and launch a
+                fresh transfer with a different key/IV/AAD.
+
+              Checking:
+              - The recovery transfer produces the correct ciphertext (scoreboard AES predictor:
+                proves the new config actually committed, not the stale one) and raises NO
+                recov_fault (no spurious recov_ctrl_update_err) and no STATUS.error. The
+                uvm_hdl_read guard fails the test if the desync was not established (no vacuous
+                pass).
+              '''
+        stage: V2
+        tests: ["dma_aes_clear_mid_commit"]
+      }
+      {
+        name: dma_aes_bus_err
+        desc: '''
+              TL-UL bus errors hit during an inline-AES transfer.
+
+              Stimulus:
+              - Complete the first chunk of an AES-CTR/GCM transfer, enable d_error injection,
+                and resume the message through software or a hardware trigger. Then run an
+                error-free recovery transfer.
+
+              Checking:
+              - When a transfer errors it reports ERROR_CODE.bus_error + STATUS.error and never
+                STATUS.done; the engine reaches a terminal state (no hang) and the subsequent
+                error-free transfer completes cleanly.
+              '''
+        stage: V2
+        tests: ["dma_aes_bus_err"]
+      }
     ]
     covergroups: [
+      {
+        name: dma_fsm_cg
+        desc: '''
+              Cover the DMA control FSM (read/write overlap design):
+              - Every control state is visited: DmaIdle, DmaClearIntrSrc, DmaWaitIntrSrcResponse,
+                DmaAddrSetup, DmaReadPrime, DmaOverlap, DmaLastWrite, DmaShaFinalize, DmaError, and
+                the inline-AES sub-FSM states DmaAesGather, DmaAesProcess, DmaAesScatter,
+                DmaAesGhashAad, DmaAesTag.
+              - FSM transitions of the per-beat overlap region: DmaAddrSetup -> DmaReadPrime,
+                DmaReadPrime -> {DmaOverlap, DmaLastWrite}, DmaOverlap -> {DmaOverlap, DmaLastWrite},
+                DmaLastWrite -> {DmaShaFinalize, DmaIdle}, and DmaShaFinalize -> DmaIdle.
+              - Inline-AES sub-FSM transitions: setup -> (GhashAad ->) Gather -> Process -> Scatter
+                -> {next-block Gather | Tag (GCM finalize) | Idle (CTR complete)}, Tag -> Idle (GCM
+                complete) and Tag -> DmaError (tag mismatch).
+              - Concurrent read/write overlap: read_issue and write_issue asserted in the same cycle
+                (the actual overlap), crossed with cross_port to confirm overlap only occurs on
+                cross-port copies.
+              - SHA back-pressure corner: in DmaReadPrime/DmaOverlap a captured beat awaits the SHA
+                engine consuming it (rd_done_q && !sha2_consumed_q), stalling the read side.
+              - CONTROL field cross (read_en x write_en x digest) over the legal operation set:
+                copy, copy+hash, memset (read_en=0), verify (write_en=0).
+              - Rejected CONTROL combinations raising DmaOpcodeErr (no-op, hash-without-read,
+                read-and-discard, handshake-without-read/write).
+              '''
+      }
       {
         name: dma_config_cg
         desc: '''
@@ -389,6 +755,24 @@
               - Cross coverage:
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing address alignment
                 * handshake interrupt enable, interrupt source clearing enablement, and interrupt source clearing write values
+              '''
+      }
+      {
+        name: dma_aes_cg
+        desc: '''
+              - Cover the inline-AES configuration per transfer:
+                * cipher mode (CTR / GCM)
+                * direction (encrypt / decrypt)
+                * key length (AES-128 / 192 / 256)
+                * AAD block count (0 / 1 / 2)
+                * key source (CSR shares / keymgr sideload)
+                * transfer size in 16-byte blocks (one / two / three-or-more)
+                * PRNG reseed rate (PER_1 / PER_64 / PER_8K)
+              - Cross coverage:
+                * mode x direction x key length
+                * mode x AAD block count
+                * key length x key source
+                * mode x direction x block count
               '''
       }
     ]

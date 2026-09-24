@@ -53,6 +53,8 @@ package keymgr_pkg;
     256'hc57f4c0b_b308e83f_3fc4bc63_d87dd67d_9071dc1c_e19484c8_3c94fb97_dd634369;
   parameter seed_t RndCnstAccSeedDefault =
     256'hcbcb4d2d_0abeb81b_ca7451ae_d1e2479d_ba13530a_d046b945_646aa127_bd4f6a38;
+  parameter seed_t RndCnstDmaSeedDefault =
+    256'h5f7a1d3e_9c2b48a0_e1f60b75_4d83c9aa_27e54f18_b6309dc2_8a4170ef_15bd62c3;
   parameter seed_t RndCnstCdiDefault =
     256'h54180905_d14c1d2f_2dda1522_f332bc0e_fcd6b92f_f0f9db75_3a9a9544_26a42eab;
 
@@ -89,7 +91,7 @@ package keymgr_pkg;
   parameter int KDFMaxWidth = 1984;
 
   // Enumeration for operations
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     Creator,
     OwnerInt,
     Owner,
@@ -97,18 +99,20 @@ package keymgr_pkg;
   } keymgr_stage_e;
 
   // Enumeration for sideload sel
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     None,
     Aes,
     Kmac,
-    Acc
+    Acc,
+    Dma
   } keymgr_key_dest_e;
 
   // Enumeration for actual key slot idx
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     AesIdx,
     KmacIdx,
     AccIdx,
+    DmaIdx,
     LastIdx
   } keymgr_sideload_slot_idx_e;
 
@@ -226,7 +230,8 @@ package keymgr_pkg;
     SideLoadClrIdle,
     SideLoadClrAes,
     SideLoadClrKmac,
-    SideLoadClrAcc
+    SideLoadClrAcc,
+    SideLoadClrDma
   } keymgr_sideload_clr_e;
 
   // Key connection to various symmetric modules

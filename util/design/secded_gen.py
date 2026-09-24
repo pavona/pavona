@@ -678,8 +678,10 @@ def generate(cfgs, args):
         # write out rtl files
         write_enc_dec_files(n, k, m, codes, suffix, args.outdir, codetype)
 
-        # write out C files, only hsiao codes are supported
-        if codetype in ["hsiao", "inv_hsiao"]:
+        # Write out C files only for Hsiao codes that request them. Some
+        # RTL-only codewords are wider than the C generator's 64-bit limit.
+        if (codetype in ["hsiao", "inv_hsiao"] and
+                cfg.get("generate_c", True)):
             write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
                           codetype)
 

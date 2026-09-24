@@ -34,7 +34,7 @@ clk_rst_if clk_rst_if_io(.clk(clk_io), .rst_n(rst_n));
 tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
 tl_if rv_core_ibex__cored_tl_if(clk_main, rst_n);
 tl_if rv_dm__sba_tl_if(clk_main, rst_n);
-tl_if dma__host_tl_if(clk_main, rst_n);
+tl_if dma__host32_0_tl_if(clk_main, rst_n);
 tl_if mbx0__sram_tl_if(clk_main, rst_n);
 tl_if mbx1__sram_tl_if(clk_main, rst_n);
 tl_if mbx2__sram_tl_if(clk_main, rst_n);
@@ -172,7 +172,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_mbox__regs, sram_ctrl_mbox, regs_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_mbox__ram, sram_ctrl_mbox, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(dma, dma, tl_d)
-    `DRIVE_CHIP_TL_HOST_IF(dma__host, dma, host_tl_h)
+    `DRIVE_CHIP_TL_HOST_IF(dma__host32_0, dma, host32_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx0__core, mbx0, core_tl_d)
     `DRIVE_CHIP_TL_HOST_IF(mbx0__sram, mbx0, sram_tl_h)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx1__core, mbx1, core_tl_d)

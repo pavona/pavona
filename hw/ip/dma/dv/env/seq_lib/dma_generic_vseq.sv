@@ -185,17 +185,19 @@ class dma_generic_vseq extends dma_base_vseq;
               stop = 1'b1;
             end else if (status[StatusDone]) begin
               // 'Done' but perhaps not yet finished
-              bit [31:0] num_written = get_bytes_written(dma_config);
+              // Verify (write_en=0) has no destination writes; track progress via bytes read.
+              bit [31:0] num_progressed = dma_config.op_writes() ? get_bytes_written(dma_config)
+                                                                 : get_bytes_read(dma_config);
               `uvm_info(`gfn,
                         $sformatf("STATUS.done bit set after 0x%0x bytes of 0x%0x-byte transfer",
-                        num_written, dma_config.total_data_size), UVM_MEDIUM)
+                        num_progressed, dma_config.total_data_size), UVM_MEDIUM)
               // Has the entire transfer been completed yet?
-              if (num_written >= dma_config.total_data_size) begin
+              if (num_progressed >= dma_config.total_data_size) begin
                 stop = 1'b1;
               end else begin
                 `uvm_fatal(`gfn,
                       $sformatf("STATUS.done bit set prematurely (0x%x byte(s) of 0x%x transferred",
-                      num_written, dma_config.total_data_size))
+                      num_progressed, dma_config.total_data_size))
               end
             end else if (status[StatusChunkDone]) begin
               if (dma_config.handshake) begin
@@ -282,7 +284,7 @@ class dma_generic_vseq extends dma_base_vseq;
         //       could otherwise time out after - for example - generating an abort stimulus.
         ending_txn(j, num_txns, dma_config, status);
 
-        if (dma_config.opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
+        if (dma_config.op_has_digest()) begin
           read_sha2_digest(dma_config.opcode, digest);
         end
 

@@ -46,8 +46,8 @@ module soc_proxy
   output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
 
   // Incoming TL ports get muxed
-  input  tlul_pkg::tl_h2d_t dma_tl_h2d_i,
-  output tlul_pkg::tl_d2h_t dma_tl_d2h_o,
+  input  tlul_pkg::tl_h2d_t dma_tl_i,
+  output tlul_pkg::tl_d2h_t dma_tl_o,
   input  tlul_pkg::tl_h2d_t misc_tl_h2d_i,
   output tlul_pkg::tl_d2h_t misc_tl_d2h_o,
 
@@ -70,8 +70,8 @@ module soc_proxy
   assign host_tl_h2d [0] = ctn_tl_i;
   assign ctn_tl_o        = host_tl_d2h[0];
 
-  assign host_tl_h2d [1] = dma_tl_h2d_i;
-  assign dma_tl_d2h_o    = host_tl_d2h[1];
+  assign host_tl_h2d [1] = dma_tl_i;
+  assign dma_tl_o        = host_tl_d2h[1];
 
   assign host_tl_h2d [2] = misc_tl_h2d_i;
   assign misc_tl_d2h_o   = host_tl_d2h[2];

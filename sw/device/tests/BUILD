@@ -110,6 +110,29 @@ pavona_test(
 )
 
 pavona_test(
+    name = "aes_gcm_test",
+    srcs = ["aes_gcm_test.c"],
+    exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top:aes_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+pavona_test(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
     exec_env = dicts.add(
@@ -762,7 +785,6 @@ pavona_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    # TODO(#16374): test doesn't make progress after enabling PWM
     verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
@@ -771,7 +793,6 @@ pavona_test(
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
@@ -799,7 +820,6 @@ pavona_test(
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
@@ -1150,6 +1170,8 @@ pavona_test(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:stdasm",
+        "//sw/device/lib/coverage:api",
+        "//sw/device/lib/coverage:ottf_runtime",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
@@ -2359,6 +2381,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//sw/device/lib/testing:keymgr_testutils",
@@ -2384,6 +2411,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/acc/crypto:x25519_sideload",
@@ -2417,6 +2449,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/acc/crypto:x25519_sideload",
@@ -2444,8 +2481,8 @@ otp_json(
         otp_partition(
             name = "SECRET1",
             items = {
-                "FLASH_ADDR_KEY_SEED": "434677540fdc9956038c1b4e7bd7394c8251c8921ed1a7fc8ed040844dde2dca",
-                "FLASH_DATA_KEY_SEED": "7cdb1a9d39c20016dcc70e44beeff5f4871b3d2726a673365cc32c34646c9a9f",
+                "NVM_ADDR_KEY_SEED": "434677540fdc9956038c1b4e7bd7394c8251c8921ed1a7fc8ed040844dde2dca",
+                "NVM_DATA_KEY_SEED": "7cdb1a9d39c20016dcc70e44beeff5f4871b3d2726a673365cc32c34646c9a9f",
                 "SRAM_DATA_KEY_SEED": "57f20b5b2e200c010e83fabc03c68203",
             },
             lock = False,
@@ -2547,6 +2584,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     deps = [
         "//hw/top:aes_c_regs",
         "//hw/top:keymgr_c_regs",
@@ -2583,6 +2625,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:keymgr_c_regs",
@@ -2616,6 +2663,11 @@ pavona_test(
             "ot-rstmgr.fatal_reset": 0,
         },
     ),
+    # Run in both Owner and non-Owner envs to test the keymgr initialization
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top:acc_c_regs",
@@ -4584,18 +4636,9 @@ pavona_test(
         "//hw/top_egret:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        # We run this as part of the manuf test suite as we want to run it in
-        # the hyper310 exec_env as this is most realistic of a provisioning
-        # scenario where this feature will be used. Without this tag, the test
-        # is not run in CI which causes a CI error ("Verify FPGA Jobs" check
-        # will fail).
-        tags = ["manuf"],
-        test_cmd = """
-            --clear-bitstream
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
+        test_cmd = "{firmware:elf}",
         test_harness = "//sw/host/tests/chip/ottf_console_with_gpio_tx_indicator",
+        testopt_clear_before_test = "True",
     ),
     deps = [
         "//hw/top_egret/sw/autogen:top_egret",
@@ -4800,6 +4843,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4840,6 +4884,7 @@ pavona_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --timeout=30s
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4876,6 +4921,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4905,6 +4951,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=disconnect
@@ -4942,6 +4989,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -4987,6 +5035,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --wake=reset
@@ -5024,6 +5073,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -5062,6 +5112,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -5102,6 +5153,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5161,6 +5213,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -5202,6 +5255,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -5243,6 +5297,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
@@ -5281,6 +5336,7 @@ pavona_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
@@ -5380,11 +5436,20 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=suspend
+            --init-phase=suspend
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5420,11 +5485,20 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-resume
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5461,11 +5535,20 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=sleep-reset
+            --init-phase=sleep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5483,7 +5566,16 @@ pavona_test(
     srcs = [
         "usbdev_sleep_disconnect_test.c",
     ],
-    cw310 = fpga_params(
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    fpga = fpga_params(
         timeout = "eternal",
         tags = [
             "manual",
@@ -5510,6 +5602,7 @@ pavona_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5546,11 +5639,20 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-resume
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5587,11 +5689,22 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
+        tags = ["broken"],
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=deep-reset
+            --init-phase=deep-resume
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5628,11 +5741,20 @@ pavona_test(
             "//hw/top_egret:sim_dv": None,
         },
     ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=deep-disconnect
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+    ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5663,6 +5785,7 @@ pavona_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=suspend
+            --strapping=USB_VBUS_SENSE
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
         """,
@@ -5909,7 +6032,7 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            # This test does not support the fpga_cw310_sival target because the
+            # This test does not support the fpga_*_sival target because the
             # test program doesn't fit inside the ROM_EXT partition size (~64KB).
             "//hw/top_egret:fpga_cw310_sival_rom_ext": None,
             "//hw/top_egret:fpga_cw310_test_rom": None,
@@ -5940,8 +6063,6 @@ pavona_test(
         "//hw/top:hmac_c_regs",
         "//hw/top:i2c_c_regs",
         "//hw/top:kmac_c_regs",
-        "//hw/top:pattgen_c_regs",
-        "//hw/top:pwm_c_regs",
         "//hw/top:spi_host_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
@@ -5962,7 +6083,6 @@ pavona_test(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
@@ -6358,6 +6478,7 @@ test_suite(
             ],
             test_cmd = " --expect-fail" if lc_state_val in _LC_STATES_DEBUG_DISALLOWED else "",
             test_harness = "//sw/host/tests/chip/rv_dm:lc_disabled",
+            testopt_bootstrap = "False",
         ),
         silicon = silicon_params(
             needs_jtag = True,
@@ -7185,6 +7306,7 @@ pavona_test(
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         needs_jtag = True,
@@ -7276,6 +7398,7 @@ pavona_test(
         tags = ["manual"],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         needs_jtag = True,
@@ -7407,6 +7530,7 @@ pavona_test(
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_epmp",
+        testopt_bootstrap = "False",
     ),
     silicon = silicon_params(
         binaries = {
@@ -7439,7 +7563,7 @@ pavona_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/top:pwm_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
         "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
@@ -7469,7 +7593,7 @@ pavona_test(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top:pwm_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top:rv_timer_c_regs",
         "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",

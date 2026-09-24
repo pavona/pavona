@@ -3,28 +3,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
-  // TL Port Configuration
-  tl_agent_cfg tl_agent_dma_host_cfg;
-  tl_agent_cfg tl_agent_dma_ctn_cfg;
-  tl_agent_cfg tl_agent_dma_sys_cfg;
+  // ASID-keyed TL host port config, generic over `dma_pkg::DmaPortDesc`. Per-port DV
+  // state (agent cfg, mem model, FIFO models, fifo-name strings) is held in associative
+  // arrays keyed by ASID, populated by looping over the descriptor in `initialize()`.
+
+  // Per-port TL agent configuration objects, keyed by the GLOBAL port index `p` (the same key
+  // used for the agent instance name `tl_agent_dma_p<p>` and the tb config_db path). 32-bit ports
+  // use `tl_agent_cfg`, 64-bit ports use `dma_tl_agent_cfg`. Keying by `p` (not ASID) lets two
+  // ports share an ASID without overwriting each other's cfg.
+  tl_agent_cfg     m_tl32_cfg[int];
+  dma_tl_agent_cfg m_tl64_cfg[int];
 
   // Interfaces
   dma_vif               dma_vif;
-  dma_sys_tl_vif        dma_sys_tl_vif;
   virtual clk_rst_if    clk_rst_vif;
 
   // Scoreboard
   dma_scoreboard        scoreboard_h;
 
-  // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus when full testing of
-  // the System bus has been explicitly waived.
-  logic [SYS_ADDR_WIDTH-1:0] soc_system_src_base_addr;
-  logic [SYS_ADDR_WIDTH-1:0] soc_system_dst_base_addr;
-
-  // Names of interfaces used in DMA block
-  // These variables are used to store names of FIFO that are used
-  // in scoreboard and environment
-  string fifo_names[3];
+  // Per-port interface names (derived from `DmaPortDesc`); the scoreboard spawns one
+  // `process_tl_txn` per name. `dma_{a,d,dir}_fifo` map each name to its analysis-FIFO name.
+  string fifo_names[];
   // Names of a_channel_fifo
   string dma_a_fifo[string];
   // Names of d_channel_fifo
@@ -37,78 +36,99 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // memory address.
   bit [7:0] src_data[];
 
-  // For each TLUL interface declare a mem_model instance and a
-  //  dma_handshake_mode_fifo instance to emulate either memory or a
-  // FIFO depending on handshake_mode_en
-  // These models are used in TL device sequences
-  // Data comparison is done in scoreboard
-  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_dst_host;
-  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_dst_ctn;
-  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_dst_sys;
+  // Inline-AES reference model selector for aes_model_dpi (0 = C model, 1 = OpenSSL/BoringSSL).
+  bit ref_model = 1;
+
+  // Inline-AES configuration the vseq programmed for the current transfer, published here so the
+  // scoreboard can predict the result via the AES model DPI (the key/IV/AAD CSRs are write-only).
+  bit [31:0] aes_key0[8];
+  bit [31:0] aes_key1[8];
+  bit [31:0] aes_iv[4];
+  bit [31:0] aes_aad[8];
+  bit [31:0] aes_tag_in[4];         // expected tag for a decrypt (TAG_IN)
+  bit [2:0]  aes_key_len = 3'b001;  // one-hot 128/192/256
+  bit [2:0]  aes_reseed_rate = 3'b001;  // one-hot PER_1/PER_64/PER_8K
+  bit [3:0]  aes_aad_blocks;
+  bit        aes_mode_gcm;          // 0 = CTR, 1 = GCM
+  bit        aes_decrypt;
+  bit        aes_sideload;          // 1 = key from the keymgr sideload interface
+  // Enables the scoreboard's AES reference prediction + data check. The randomized AES vseq sets
+  // this (and publishes the config above); the directed KAT smoke leaves it 0 and self-checks.
+  bit        aes_scb_predict;
+  // Current decrypt is an intentional GCM tamper: expect a reference tag mismatch (res < 0) and a
+  // DUT error (tag_failed, no DONE). With this clear, a negative reference result is a model bug.
+  bit        aes_expect_tag_fail;
+
+
+  // Per-port (ASID-keyed) mem_model and source/destination `dma_handshake_mode_fifo`
+  // models emulating memory or a FIFO depending on handshake_mode_en (data compared in
+  // the scoreboard). A uniform 64-bit address width lets 32-bit and 64-bit ports share types.
+  dma_handshake_mode_fifo#(.AddrWidth(dma_pkg::DMA_ADDR_WIDTH)) fifo_dst[asid_encoding_e];
   // Each interface requires separate source and destination FIFO to handle the case where the
   // read traffic and the write traffic both occur on the same interface and neither is using
   // incrementing addressing.
-  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_src_host;
-  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_src_ctn;
-  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_src_sys;
+  dma_handshake_mode_fifo#(.AddrWidth(dma_pkg::DMA_ADDR_WIDTH)) fifo_src[asid_encoding_e];
   // Memory models may be used for typical transfers where addresses are incremented.
-  mem_model#(.AddrWidth(HOST_ADDR_WIDTH), .DataWidth(HOST_DATA_WIDTH)) mem_host;
-  mem_model#(.AddrWidth(CTN_ADDR_WIDTH), .DataWidth(CTN_DATA_WIDTH)) mem_ctn;
-  mem_model#(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH)) mem_sys;
+  mem_model#(.AddrWidth(dma_pkg::DMA_ADDR_WIDTH), .DataWidth(HOST_DATA_WIDTH)) mems[asid_encoding_e];
 
-  // Associative array with mapping of ASID encoding to interface name; for textual output.
+  // Mapping of ASID encoding to interface name (textual output; scoreboard ASID<->name conversion).
   string asid_names[asid_encoding_e];
 
   `uvm_object_utils_begin(dma_env_cfg)
-    `uvm_field_object(tl_agent_dma_host_cfg, UVM_DEFAULT)
-    `uvm_field_object(tl_agent_dma_ctn_cfg, UVM_DEFAULT)
-    `uvm_field_object(tl_agent_dma_sys_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
 
+  // Return the per-port interface name for a given global port index.
+  static function string port_if_name(int unsigned p);
+    return $sformatf("p%0d", p);
+  endfunction
+
   // Function for Initialization
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
+  virtual function void initialize();
     list_of_alerts = dma_env_pkg::LIST_OF_ALERTS;
-    // Populate FIFO names
-    fifo_names = '{"host", "ctn", "sys"};
-    foreach (fifo_names[i]) begin
-      dma_a_fifo[fifo_names[i]] = $sformatf("tl_a_%s_fifo", fifo_names[i]);
-      dma_d_fifo[fifo_names[i]] = $sformatf("tl_d_%s_fifo", fifo_names[i]);
-      dma_dir_fifo[fifo_names[i]] = $sformatf("tl_dir_%s_fifo", fifo_names[i]);
+
+    // Build the per-port name maps and ASID<->name mapping from the descriptor.
+    fifo_names = new[dma_pkg::NumPortsDefault];
+    foreach (dma_pkg::DmaPortDesc[p]) begin
+      asid_encoding_e asid = dma_pkg::DmaPortDesc[p].asid;
+      string nm = port_if_name(p);
+      fifo_names[p] = nm;
+      asid_names[asid] = nm;
+      dma_a_fifo[nm]   = $sformatf("tl_a_%s_fifo", nm);
+      dma_d_fifo[nm]   = $sformatf("tl_d_%s_fifo", nm);
+      dma_dir_fifo[nm] = $sformatf("tl_dir_%s_fifo", nm);
     end
-    // Initialize mapping
-    asid_names[OtInternalAddr] = "host";
-    asid_names[SocControlAddr] = "ctn";
-    asid_names[SocSystemAddr]  = "sys";
 
     // Initialize cip_base_env_cfg
-    super.initialize(csr_base_addr);
+    super.initialize();
 
     // Interrupt count
     num_interrupts = ral.intr_state.get_n_used_bits();
 
-    // TL Agent Configuration objects - Non RAL
-    `uvm_create_obj(tl_agent_cfg, tl_agent_dma_host_cfg)
-    tl_agent_dma_host_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
-    tl_agent_dma_host_cfg.if_mode = dv_utils_pkg::Device;
-
-    `uvm_create_obj(tl_agent_cfg, tl_agent_dma_ctn_cfg)
-    tl_agent_dma_ctn_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
-    tl_agent_dma_ctn_cfg.if_mode = dv_utils_pkg::Device;
-
-    `uvm_create_obj(tl_agent_cfg, tl_agent_dma_sys_cfg)
-    tl_agent_dma_sys_cfg.max_outstanding_req = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
-    tl_agent_dma_sys_cfg.if_mode = dv_utils_pkg::Device;
+    // Per-port TL Agent Configuration objects (non-RAL), created by class from the descriptor and
+    // keyed by global port index `p`.
+    foreach (dma_pkg::DmaPortDesc[p]) begin
+      if (dma_pkg::DmaPortDesc[p].cls == dma_pkg::PortTlul32) begin
+        tl_agent_cfg c;
+        `uvm_create_obj(tl_agent_cfg, c)
+        c.max_outstanding_req        = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
+        c.if_mode                    = dv_utils_pkg::Device;
+        // The DMA controller must be able to handle combinational devices too, i.e. those with a
+        // combinational path from `a_valid` to `d_valid` on the TL-UL bus.
+        c.device_can_rsp_on_same_cycle = 1'b1;
+        m_tl32_cfg[p] = c;
+      end else begin
+        dma_tl_agent_cfg c;
+        `uvm_create_obj(dma_tl_agent_cfg, c)
+        c.max_outstanding_req        = dma_pkg::NUM_MAX_OUTSTANDING_REQS;
+        c.if_mode                    = dv_utils_pkg::Device;
+        c.device_can_rsp_on_same_cycle = 1'b1;
+        m_tl64_cfg[p] = c;
+      end
+    end
 
     // TL Agent Configuration - RAL based
     m_tl_agent_cfg.max_outstanding_req = 1;
-
-    // The DMA controller must be able to handle combinational devices too, i.e. those
-    // with a combinational path from `a_valid` to `d_valid` on the TL-UL bus.
-    tl_agent_dma_host_cfg.device_can_rsp_on_same_cycle = 1'b1;
-    tl_agent_dma_ctn_cfg.device_can_rsp_on_same_cycle = 1'b1;
-    tl_agent_dma_sys_cfg.device_can_rsp_on_same_cycle = 1'b1;
-
   endfunction: initialize
 
 endclass

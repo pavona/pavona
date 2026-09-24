@@ -689,7 +689,7 @@
  * address between #TOP_DRAGONFLY_DMA_BASE_ADDR and
  * `TOP_DRAGONFLY_DMA_BASE_ADDR + TOP_DRAGONFLY_DMA_SIZE_BYTES`.
  */
-#define TOP_DRAGONFLY_DMA_SIZE_BYTES 0x200
+#define TOP_DRAGONFLY_DMA_SIZE_BYTES 0x400
 /**
  * Peripheral base address for core device on mbx0 in top dragonfly.
  *

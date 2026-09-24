@@ -16,13 +16,16 @@
   cip_id:             "36",
   design_spec:        "../doc"
   dv_doc:             "../doc/dv"
-  version:            "1.0.0"
+  version:            "2.0.0"
 
-  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    {clock: "clk_edn_i", reset: "rst_edn_ni"}
+  ]
   scan: "true"        // Enable `scanmode_i` port
   bus_interfaces: [
     { protocol: "tlul", direction: "device", hier_path: "u_dma_reg", racl_support: true }
-    { protocol: "tlul", direction: "host", name: "host" }
+    { protocol: "tlul", direction: "host", name: "host32", count: "NumTlul32" }
   ]
   param_list: [
     { name: "NumIntClearSources",
@@ -45,26 +48,81 @@
       local: "false",
       expose: "true",
     },
-    { name: "TlUserRsvd",
-      desc: "Value of `rsvd` field in A channel of all TL-UL host ports",
-      type: "logic [tlul_pkg::RsvdWidth-1:0]"
-      default: "'0",
+    { name: "NumPorts",
+      desc: "Total number of host data ports. Override together with DmaPortDesc."
+      type: "int",
+      default: "3",
       local: "false",
       expose: "true",
     },
-    { name: "SysRaclRole",
-      desc: "RACL propagated on the Sys interface via `racl_vec`",
-      type: "top_racl_pkg::racl_role_t"
-      default: "'0",
-      local: "false",
-      expose: "true",
+    { name:                "PortDesc",
+      desc:                '''Generic host port descriptor array.
+                           Top-level connection to the host ports must follow this definition.
+                           '''
+      type:                "dma_pkg::dma_port_desc_t"
+      // unpacked_dimensions is emitted verbatim by topgen, so use the top-prefixed count name.
+      unpacked_dimensions: "[DmaNumPorts]"
+      default:             "'{dma_pkg::DmaPortOtInternal, dma_pkg::DmaPortSocControl, dma_pkg::DmaPortSocSystem}"
+      local:               "false",
+      expose:              "true",
     },
-    { name: "OtAgentId",
-      desc: "Secure Agent ID"
+    { name: "NumTlul32",
+      desc: "Number of 32-bit TLUL host ports. Per-index routing (xbar vs point-to-point) is resolved at the top level."
       type: "int unsigned"
-      default: "0",
+      default: "2",
       local: "false",
       expose: "true",
+    },
+    { name: "NumTlul64",
+      desc: "Number of 64-bit TLUL host ports (off-bus, point-to-point)."
+      type: "int unsigned"
+      default: "1",
+      local: "false",
+      expose: "true",
+    },
+    { name: "NumAadWords",
+      desc: "Number of 32-bit AAD words exposed for inline AES-GCM (AAD-from-CSR)."
+      type: "int"
+      default: "8",
+      local: "true"
+    },
+    { name: "SecAesMasking",
+      desc: "Enable (1) first-order masking of the inline AES datapath; 0 ties off EDN (non-production)."
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
+    # Random netlist constants for the inline-AES clearing/masking PRNGs (threaded into aes_core).
+    { name:    "RndCnstClearingLfsrSeed",
+      type:    "aes_pkg::clearing_lfsr_seed_t",
+      desc:    "Default seed of the inline-AES PRNG used for register clearing."
+      randcount: "64",
+      randtype:  "data"
+    },
+    { name:    "RndCnstClearingLfsrPerm",
+      type:    "aes_pkg::clearing_lfsr_perm_t",
+      desc:    "Permutation applied to the LFSR of the inline-AES clearing PRNG."
+      randcount: "64",
+      randtype:  "perm"
+    },
+    { name:    "RndCnstClearingSharePerm",
+      type:    "aes_pkg::clearing_lfsr_perm_t",
+      desc:    "Permutation applied to the clearing PRNG output for clearing the second share."
+      randcount: "64",
+      randtype:  "perm"
+    },
+    { name:    "RndCnstMaskingLfsrSeed",
+      type:    "aes_pkg::masking_lfsr_seed_t",
+      desc:    "Default seed of the inline-AES PRNG used for masking."
+      randcount: "288",
+      randtype:  "data"
+    },
+    { name:    "RndCnstMaskingLfsrPerm",
+      type:    "aes_pkg::masking_lfsr_perm_t",
+      desc:    "Permutation applied to the output of the inline-AES masking PRNG."
+      randcount: "160",
+      randtype:  "perm"
     },
   ],
   inter_signal_list: [
@@ -75,27 +133,42 @@
       struct: "lsio_trigger",
       width: "1"
     }
-    { name: "sys"
-      type: "req_rsp"
-      struct: "sys"
-      package: "dma_pkg"
-      act: "req"
-      width: "1"
-      desc: "SoC System Bus (requests and responses), synchronous"
-    }
-    { struct:  "tl_h2d"
-      package: "tlul_pkg"
+    // Inline AES inter-signals (mirror the AES IP).
+    { struct:  "lc_tx"
       type:    "uni"
-      name:    "ctn_tl_h2d"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "edn"
+      type:    "req_rsp"
+      name:    "edn"
       act:     "req"
-      desc:    "TL-UL host port for egress into CTN (request part), synchronous"
+      package: "edn_pkg"
+    }
+    { struct:  "hw_key_req"
+      type:    "uni"
+      name:    "keymgr_key"
+      act:     "rcv"
+      default: "keymgr_pkg::HW_KEY_REQ_DEFAULT"
+      package: "keymgr_pkg"
+    }
+    { struct:  "dma_tl_h2d"
+      package: "dma_tlul_pkg"
+      type:    "uni"
+      name:    "host64_h2d"
+      act:     "req"
+      width:   "NumTlul64"
+      desc:    "64-bit TLUL host (h2d) to chip top, point-to-point"
     }
     { struct:  "tl_d2h"
       package: "tlul_pkg"
       type:    "uni"
-      name:    "ctn_tl_d2h"
+      name:    "host64_d2h"
       act:     "rcv"
-      desc:    "TL-UL host port for egress into CTN (response part), synchronous"
+      width:   "NumTlul64"
+      desc:    "64-bit TLUL host (d2h) from chip top, point-to-point"
     }
     { struct:  "racl_policy_vec",
       type:    "uni",
@@ -134,7 +207,16 @@
   ]
   alert_list: [
     { name: "fatal_fault"
-      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+      desc: '''
+            This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, or on
+            an inline-AES fatal fault (aes_core fatal alert or the AES-wrapper sparse-FSM error).
+            '''
+    }
+    { name: "recov_fault"
+      desc: '''
+            This recoverable alert is triggered on an inline AES-GCM decrypt authentication tag
+            mismatch, or on an aes_core recoverable fault.
+            '''
     }
   ]
   countermeasures: [
@@ -144,11 +226,29 @@
     { name: "ASID.INTERSIG.MUBI",
       desc: "Destination and source ASID signals are multibit encoded."
     }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
+      desc: "Life-cycle escalation input to the inline AES is multibit encoded and synchronized."
+    }
     { name: "RANGE.CONFIG.REGWEN_MUBI",
       desc: "DMA enabled memory range is software multibit lockable."
     }
     { name: "FSM.SPARSE",
-      desc: "FSM is sparsely encoded. There is a single `ctrl_state` FSM."
+      desc: "The main `ctrl_state` FSM is sparsely encoded."
+    }
+    { name: "AES.FSM.SPARSE",
+      desc: "The inline-AES wrapper (`dma_aes`) sub-FSM is sparsely encoded."
+    }
+    { name: "KEY.SIDELOAD",
+      desc: "Inline AES can source its key from the keymgr sideload interface."
+    }
+    { name: "KEY.SW_UNREADABLE",
+      desc: "Inline AES KEY_SHARE and TAG_IN registers are write-only."
+    }
+    { name: "KEY.SEC_WIPE",
+      desc: "Inline AES key/IV/tag material is wiped after use (tracked)."
+    }
+    { name: "CTRL.CONSISTENCY",
+      desc: "Inline AES-GCM decrypt tag compare is glitch-resistant and fail-closed."
     }
   ]
   regwidth: "32"
@@ -236,47 +336,73 @@
       ]
     }
     { name: "ADDR_SPACE_ID"
-      desc: "Address spaces that source and destination pointers refer to."
+      desc: "Encoded source/destination port IDs. Only IDs configured in PortDesc are accepted; zero and all-ones are invalid. Encodings have minimum Hamming distance four."
       swaccess: "rw"
       hwaccess: "hro"
       regwen: "CFG_REGWEN"
       fields: [
-        { bits: "3:0"
+        { bits: "7:0"
           name: "src_asid"
-          resval: 0x7
+          resval: 0x03
           desc: "Target address space that the source address pointer refers to."
           enum: [
-            { value: "0x7"
+            { value: "0x03"
               name: "OT_ADDR"
               desc: "Secure 32-bit internal bus."
             }
-            { value: "0xa"
+            { value: "0x0c"
               name: "SOC_ADDR"
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
-            { value: "0x9"
+            { value: "0x30"
               name: "SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
+            { value: "0x3f", name: "ASID_3", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x56", name: "ASID_4", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x59", name: "ASID_5", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x65", name: "ASID_6", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x6a", name: "ASID_7", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x95", name: "ASID_8", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x9a", name: "ASID_9", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xa6", name: "ASID_10", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xa9", name: "ASID_11", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xc0", name: "ASID_12", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xcf", name: "ASID_13", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xf3", name: "ASID_14", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xfc", name: "ASID_15", desc: "Reserved unless assigned in the port descriptors." }
           ]
         }
-        { bits: "7:4"
+        { bits: "15:8"
           name: "dst_asid"
-          resval: 0x7
+          resval: 0x03
           desc: "Target address space that the destination address pointer refers to."
           enum: [
-            { value: "0x7"
+            { value: "0x03"
               name: "OT_ADDR"
               desc: "Secure 32-bit internal bus."
             }
-            { value: "0xa"
+            { value: "0x0c"
               name: "SOC_ADDR"
               desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
             }
-            { value: "0x9"
+            { value: "0x30"
               name: "SYS_ADDR"
               desc: "SoC system address bus using 64 bit SYS port."
             }
+            { value: "0x3f", name: "ASID_3", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x56", name: "ASID_4", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x59", name: "ASID_5", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x65", name: "ASID_6", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x6a", name: "ASID_7", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x95", name: "ASID_8", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0x9a", name: "ASID_9", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xa6", name: "ASID_10", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xa9", name: "ASID_11", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xc0", name: "ASID_12", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xcf", name: "ASID_13", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xf3", name: "ASID_14", desc: "Reserved unless assigned in the port descriptors." }
+            { value: "0xfc", name: "ASID_15", desc: "Reserved unless assigned in the port descriptors." }
           ]
         }
       ]
@@ -349,7 +475,9 @@
     { name: "CFG_REGWEN"
       desc: '''
             Indicates whether the configuration registers are locked because the DMA controller is operating.
-            In the idle state, this register is set to kMultiBitBool4True.
+            In the idle state, this register is set to kMultiBitBool4True unless an AES message
+            is suspended between chunks. AES keeps the configuration locked until completion,
+            abort, or error; CONTROL and STATUS remain usable to resume or abort the message.
             When the DMA is performing an operation, i.e. the DMA is busy, this register is set to kMultiBitBool4False.
             During the DMA operation, the CONTROL and STATUS registers remain usable.
             The comportable registers (the interrupt and alert configuration) are NOT locked during the DMA operation and can still be updated.
@@ -456,16 +584,30 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "3:0"
-          name: "opcode"
+        { bits: "0"
+          name: "read_en"
+          resval: 0x1
+          desc: '''
+                1 = read from source memory; 0 = memset (write data taken from SRC_ADDR_LO pattern).
+                '''
+        }
+        { bits: "1"
+          name: "write_en"
+          resval: 0x1
+          desc: '''
+                1 = write to destination; 0 = verify (digest-only, no write).
+                '''
+        }
+        { bits: "3:2"
+          name: "digest"
           resval: 0x0
           desc: '''
-                Defines the type of DMA operations.
+                Selects the inline hashing digest computed over the moved data.
                 '''
           enum: [
             { value: "0",
-              name: "COPY"
-              desc: "Copy Operation, Simple copy from source to destination."
+              name: "NONE"
+              desc: "No inline hashing."
             }
             { value: "1",
               name: "SHA256"
@@ -480,6 +622,37 @@
               desc: "Perform inline hashing using SHA512."
             }
           ]
+        }
+        { bits: "11:10"
+          name: "aes_op"
+          resval: 0x0
+          desc: '''
+                Inline AES cipher operation. Plain encoding (no fault hardening, consistent with the
+                rest of CONTROL; if FI protection is required this register would be shadowed). The
+                reserved value raises an opcode error. Mutually exclusive with the digest field.
+                '''
+          enum: [
+            { value: "0",
+              name: "OFF"
+              desc: "No inline AES cipher operation."
+            }
+            { value: "1",
+              name: "ENC"
+              desc: "AES encrypt (CIPH_FWD)."
+            }
+            { value: "2",
+              name: "DEC"
+              desc: "AES decrypt (CIPH_INV)."
+            }
+          ]
+        }
+        { bits: "12"
+          name: "aes_mode"
+          resval: 0x0
+          desc: '''
+                Inline AES block-cipher mode; only meaningful when aes_op != OFF.
+                0 = AES-CTR, 1 = AES-GCM.
+                '''
         }
         { bits: "4"
           name: "hardware_handshake_enable"
@@ -658,6 +831,32 @@
                 Cleared automatically by the hardware when starting the transfer of a new chunk.
                 '''
         }
+        { bits: "6"
+          name: "tag_valid"
+          swaccess: "ro"
+          resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
+          desc: '''
+                Inline AES-GCM: the computed authentication tag (encrypt) is valid in TAG_OUT, or
+                the supplied tag matched (decrypt). Cleared on the initial transfer and set by
+                hardware on clean completion.
+                '''
+        }
+        { bits: "7"
+          name: "tag_failed"
+          swaccess: "ro"
+          resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
+          desc: '''
+                Inline AES-GCM decrypt: the supplied authentication tag did NOT match. When set,
+                the DMA done indication is suppressed, but the DMA does not hardware-quarantine
+                the destination: plaintext was written before authentication and may already be
+                visible to other bus masters. Every consumer must wait for tag_valid; on failure,
+                software must wipe the destination before reuse. Cleared on the initial transfer.
+                '''
+        }
       ]
     }
     { name: "ERROR_CODE"
@@ -707,6 +906,11 @@
           name: "asid_error"
           resval: 0x0
           desc: "The source or destination ASID contains an invalid value."
+        }
+        { bits: "8"
+          name: "aes_tag_error"
+          resval: 0x0
+          desc: "Inline AES-GCM decrypt authentication tag mismatch."
         }
       ]
     }
@@ -763,22 +967,6 @@
         }
       ]
     }
-    { name: "CLEAR_INTR_BUS"
-      desc: '''Bus selection bit where the clearing command should be performed."
-            0: CTN/System fabric
-            1: secure-side internal crossbar
-            '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      fields: [
-        { name: "bus"
-          desc: "Bus selection bit for source N."
-          bits: "NumIntClearSources-1:0"
-          resval: 0x0
-        }
-      ]
-    }
     { multireg: {
         name: "INTR_SRC_ADDR"
         desc: "Destination address for interrupt source clearing write."
@@ -811,6 +999,166 @@
             bits: "31:0"
             resval: 0x0
           }
+        ]
+      }
+    }
+    { name: "AES_CTRL"
+      desc: "Inline AES-CTR/GCM parameter register. The cipher operation/mode live in CONTROL."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "2:0"
+          name: "key_len"
+          resval: 0x4
+          desc: '''
+                AES key length, one-hot (aes_pkg::key_len_e). AES-128/192/256 supported.
+                '''
+          enum: [
+            { value: "1", name: "AES_128", desc: "128-bit key." }
+            { value: "2", name: "AES_192", desc: "192-bit key." }
+            { value: "4", name: "AES_256", desc: "256-bit key (reset value)." }
+          ]
+        }
+        { bits: "3"
+          name: "sideload"
+          resval: 0x0
+          desc: '''
+                Key source select (plain encoding, consistent with the rest of the config; shadow
+                the register if FI protection is required).
+                0 = use KEY_SHARE0/1; 1 = use the keymgr sideload key.
+                '''
+        }
+        { bits: "7:5"
+          name: "prng_reseed_rate"
+          resval: 0x1
+          desc: "Masking-PRNG reseed rate, one-hot (aes_pkg)."
+          enum: [
+            { value: "1", name: "PER_1",  desc: "Reseed after every block." }
+            { value: "2", name: "PER_64", desc: "Reseed after 64 blocks." }
+            { value: "4", name: "PER_8K", desc: "Reseed after 8k blocks." }
+          ]
+        }
+        { bits: "11:8"
+          name: "aad_blocks"
+          resval: 0x0
+          desc: "Number of 16-byte AAD blocks (from the AAD registers) for AES-GCM."
+        }
+      ]
+    }
+    { multireg: {
+        name: "KEY_SHARE0"
+        desc: '''
+              Inline AES initial key, share 0. The effective key is KEY_SHARE0 ^ KEY_SHARE1.
+              Write-only (never software-readable); ignored when AES_CTRL.sideload selects the
+              keymgr key. Wiped by hardware after use.
+              '''
+        count: "8"
+        cname: "KEY_SHARE0"
+        swaccess: "wo"
+        hwaccess: "hrw"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "key", desc: "Key share 0 word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "KEY_SHARE1"
+        desc: "Inline AES initial key, share 1. See KEY_SHARE0."
+        count: "8"
+        cname: "KEY_SHARE1"
+        swaccess: "wo"
+        hwaccess: "hrw"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "key", desc: "Key share 1 word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "IV"
+        desc: '''
+              Inline AES-GCM/CTR initialization vector (nonce + counter), 128-bit.
+              IV[3:1] is the 96-bit nonce; IV[0] (the counter word) is hardware-forced to the GCM
+              J0 low value on a fresh operation. Wiped by hardware after use.
+              '''
+        count: "4"
+        cname: "IV"
+        swaccess: "rw"
+        hwaccess: "hrw"
+        regwen: "CFG_REGWEN"
+        // HW may overwrite IV (J0-force / SEC_WIPE), so skip the write-readback value check in the
+        // non-init CSR tests (the hw_reset init check still verifies the reset value).
+        tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
+        fields: [
+          { name: "iv", desc: "IV word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "AAD"
+        desc: '''
+              Inline AES-GCM additional authenticated data (from CSR). AES_CTRL.aad_blocks selects
+              how many 16-byte blocks are valid. Write-only; wiped by hardware after use.
+              '''
+        count: "NumAadWords"
+        cname: "AAD"
+        swaccess: "wo"
+        hwaccess: "hrw"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "aad", desc: "AAD word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "TAG_IN"
+        desc: '''
+              Inline AES-GCM decrypt: the expected authentication tag, 128-bit. Write-only (the
+              recomputed tag is never exposed); captured at start. Hardware compares internally and
+              reports the result in STATUS.tag_failed. Wiped by hardware after use.
+              '''
+        count: "4"
+        cname: "TAG_IN"
+        swaccess: "wo"
+        hwaccess: "hrw"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "tag", desc: "Expected tag word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "TAG_OUT"
+        desc: '''
+              Inline AES-GCM encrypt: the computed authentication tag, 128-bit. Hardware-driven and
+              read-only; valid when STATUS.tag_valid is set. Wiped by hardware after use.
+              '''
+        count: "4"
+        cname: "TAG_OUT"
+        swaccess: "ro"
+        hwaccess: "hrw"
+        hwext: "true"
+        hwre: "true"
+        // Hardware-driven (hwext), so the value is not RAL-predictable; skip the CSR value checks.
+        tags: ["excl:CsrAllTests:CsrExclCheck"]
+        fields: [
+          { name: "tag", desc: "Computed tag word.", bits: "31:0", resval: "0" }
+        ]
+      }
+    }
+    { multireg: {
+        name: "CLEAR_INTR_ASID"
+        desc: "Encoded target port ID for each interrupt-clearing write. An enabled source with an unconfigured or invalid ASID raises asid_error without issuing that write."
+        count: "NumIntClearSources"
+        cname: "SOURCE"
+        compact: "false"
+        swaccess: "rw"
+        hwaccess: "hro"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "asid", desc: "Target ASID from the ADDR_SPACE_ID codebook.", bits: "7:0", resval: "0" }
         ]
       }
     }

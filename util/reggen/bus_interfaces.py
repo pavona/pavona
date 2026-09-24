@@ -3,17 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Code representing a list of bus interfaces for a block'''
 
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from reggen.inter_signal import InterSignal
 from reggen.lib import (check_list, check_keys, check_str, check_optional_bool,
-                        check_optional_str)
+                        check_optional_str, check_int)
+from reggen.params import Parameter, ReggenParams
 
 
 class BusInterfaces:
 
     def __init__(self, has_unnamed_host: bool, named_hosts: List[str],
                  host_async: Dict[Optional[str], str],
+                 host_count: Dict[Optional[str], Union[int, str]],
                  has_unnamed_device: bool,
                  named_devices: List[str],
                  device_async: Dict[Optional[str], str],
@@ -37,6 +39,7 @@ class BusInterfaces:
         self.has_unnamed_host = has_unnamed_host
         self.named_hosts = named_hosts
         self.host_async = host_async
+        self.host_count = host_count
         self.has_unnamed_device = has_unnamed_device
         self.named_devices = named_devices
         self.device_async = device_async
@@ -50,6 +53,7 @@ class BusInterfaces:
         has_unnamed_host = False
         named_hosts = []
         host_async = {}
+        host_count = {}
 
         has_unnamed_device = False
         named_devices = []
@@ -63,7 +67,7 @@ class BusInterfaces:
             entry_what = 'entry {} of {}'.format(idx + 1, where)
             ed = check_keys(raw_entry, entry_what, ['protocol', 'direction'], [
                 'name', 'async', 'hier_path', 'racl_support',
-                'static_racl_support', 'racl_range_support'
+                'static_racl_support', 'racl_range_support', 'count'
             ])
 
             protocol = check_str(ed['protocol'],
@@ -112,11 +116,31 @@ class BusInterfaces:
 
                 if async_clk is not None:
                     host_async[name] = async_clk
+
+                if 'count' in ed:
+                    # count is a plain int or a string naming an exposed IP
+                    # parameter (resolved later in _resolve_count()).
+                    raw_count = ed['count']
+                    if isinstance(raw_count, str):
+                        host_count[name] = check_str(
+                            raw_count, 'count field of ' + entry_what)
+                    else:
+                        count = check_int(raw_count,
+                                          'count field of ' + entry_what)
+                        if count < 1:
+                            raise ValueError(
+                                f'count field of {entry_what} must be >= 1, '
+                                f'got {count}.')
+                        host_count[name] = count
                 if hier_path is not None:
                     raise ValueError(
                         'Hier path is not supported for host interface with '
                         f'name {name!r} at {where}')
             else:
+                if 'count' in ed:
+                    raise ValueError(
+                        'count field is only supported for host interfaces, '
+                        f'but was specified on {entry_what}.')
                 if name is None:
                     if has_unnamed_device:
                         raise ValueError('Multiple un-named device '
@@ -148,6 +172,7 @@ class BusInterfaces:
             raise ValueError('No device interface at ' + where)
 
         return BusInterfaces(has_unnamed_host, named_hosts, host_async,
+                             host_count,
                              has_unnamed_device, named_devices, device_async,
                              device_hier_paths, racl_support_map,
                              static_racl_support_map, racl_range_support_map)
@@ -203,17 +228,62 @@ class BusInterfaces:
             ret.append(self.get_port_name(is_host, name))
         return ret
 
-    def _if_inter_signal(self, is_host: bool,
-                         name: Optional[str]) -> InterSignal:
-        act = 'req' if is_host else 'rsp'
-        return InterSignal(self.get_port_name(is_host, name), None, 'tl',
-                           'tlul_pkg', 'req_rsp', act, 1, None)
+    def _resolve_count(self, name: Optional[str],
+                       params: Optional[ReggenParams]
+                       ) -> Union[int, Parameter]:
+        '''Resolve a host interface's count to an int or an exposed Parameter.
 
-    def inter_signals(self) -> List[InterSignal]:
+        A plain-int count is returned as-is. A string count names an exposed IP
+        parameter, validated like an inter_signal width-as-Parameter. Defaults to 1.
+        '''
+        raw = self.host_count.get(name, 1)
+        if not isinstance(raw, str):
+            return raw
+
+        where = f'count field of host interface {name!r}'
+        param = params.get(raw) if params is not None else None
+        if not isinstance(param, Parameter):
+            raise ValueError(
+                f'{where} names {raw!r}, which is not an IP parameter.')
+        # Validate into a LOCAL: do not mutate the shared Parameter.default,
+        # which may also back an inter-signal width elsewhere and is resolved
+        # from multiple read paths.
+        default = check_int(param.default, where)
+        if default < 1:
+            raise ValueError(f'{where} resolves to {default}, must be >= 1.')
+        # Must be exposed so topgen can vectorize the host inter-signal.
+        if not param.expose:
+            raise ValueError(f'{where} is not exposed.')
+        return param
+
+    def _if_inter_signal(self, is_host: bool, name: Optional[str],
+                         params: Optional[ReggenParams] = None) -> InterSignal:
+        act = 'req' if is_host else 'rsp'
+        width: Union[int, Parameter] = 1
+        if is_host:
+            count = self._resolve_count(name, params)
+            if isinstance(count, Parameter):
+                width = count
+            elif count > 1:
+                width = count
+        return InterSignal(self.get_port_name(is_host, name), None, 'tl',
+                           'tlul_pkg', 'req_rsp', act, width, None)
+
+    def inter_signals(self,
+                      params: Optional[ReggenParams] = None
+                      ) -> List[InterSignal]:
         return [
-            self._if_inter_signal(is_host, name)
+            self._if_inter_signal(is_host, name, params)
             for is_host, name in self._interfaces()
         ]
+
+    def host_count_value(self, name: Optional[str],
+                         params: Optional[ReggenParams] = None) -> int:
+        '''Return the integer host count, resolving a param-name count.'''
+        count = self._resolve_count(name, params)
+        if isinstance(count, Parameter):
+            return int(count.default)
+        return count
 
     def has_interface(self, is_host: bool, name: Optional[str]) -> bool:
         if is_host:

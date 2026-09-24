@@ -116,6 +116,41 @@ def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
     connect[req_key] = [rsp_key]
 
 
+def _match_counted_host(block, iname, param_decl=None):
+    """Interpret a host node name as <iface>_<index> for a counted host.
+
+    When an IP exposes a width-N host interface, the crossbar lists N nodes
+    named <iface>_0 .. <iface>_{N-1}. Returns (iface, index, count) on a
+    match with a valid index in [0, count); otherwise None.
+    """
+    if iname is None:
+        return None
+
+    bus_interfaces = block.bus_interfaces
+    for iface in bus_interfaces.host_count:
+        if iface is None:
+            continue
+        prefix = iface + "_"
+        if not iname.startswith(prefix):
+            continue
+        suffix = iname[len(prefix):]
+        if not suffix.isdigit():
+            continue
+
+        index = int(suffix)
+        count = bus_interfaces.host_count_value(iface, block.params)
+        if param_decl:
+            raw_count = bus_interfaces.host_count.get(iface, 1)
+            if isinstance(raw_count, str) and raw_count in param_decl:
+                count = int(param_decl[raw_count])
+        if count <= 1 or not bus_interfaces.has_interface(True, iface):
+            continue
+        if 0 <= index < count:
+            return iface, index, count
+
+    return None
+
+
 def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
                      xbar: OrderedDict) -> None:
     # The crossbar is connecting to modules in topcfg, plus
@@ -130,6 +165,18 @@ def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
 
     external_names = (set(topcfg['inter_module']['top']) |
                       set(topcfg["inter_module"]["external"].keys()))
+
+    # Collect counted-host fan-out connections into a single one-to-N entry,
+    # keyed by (module instance, IP host signal name) -> {host index: xbar rsp key}.
+    counted_host_conns = OrderedDict()
+
+    # A counted host's fan-out may instead be authored manually as one one-to-N
+    # connect listing all consumers. When such a manual connect exists for an IP
+    # host signal, defer to it and skip auto-grouping. Keys are `MOD.<host_sig>`.
+    manual_connect_keys = set()
+    for req in topcfg["inter_module"]["connect"]:
+        req_m, req_s, _req_i = filter_index(req)
+        manual_connect_keys.add((req_m, req_s))
 
     ports = [x for x in xbar["nodes"] if x["type"] in ["host", "device"]]
     for port in ports:
@@ -184,10 +231,31 @@ def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
             sig_name = block.bus_interfaces.find_port_name(
                 is_host, port_iname)
         except KeyError:
-            log.error(
-                'Cannot make {} connection for {!r}: the base of the '
-                'target module has no matching bus interface.'.format(
-                    'host' if is_host else 'device', port['name']))
+            # No direct match: the node may name a counted host (<iface><index>).
+            counted = _match_counted_host(block, port_iname,
+                                          port_mod.get('param_decl')) \
+                if is_host else None
+            if counted is None:
+                log.error(
+                    'Cannot make {} connection for {!r}: the base of the '
+                    'target module has no matching bus interface.'.format(
+                        'host' if is_host else 'device', port['name']))
+                continue
+
+            iface, index, count = counted
+            host_sig_name = block.bus_interfaces.get_port_name(True, iface)
+            key = (port_base, host_sig_name)
+            # Defer to a manual one-to-N connect for this host signal if present.
+            if key in manual_connect_keys:
+                continue
+            conn = counted_host_conns.setdefault(
+                key, {'count': count, 'rsps': {}})
+            if index in conn['rsps']:
+                log.error('Duplicate host node index {} for {!r}.'.format(
+                    index, port['name']))
+                continue
+            conn['rsps'][index] = "{}.{}".format(xbar["name"],
+                                                 "tl_" + esc_name)
             continue
 
         if is_host:
@@ -202,6 +270,28 @@ def autoconnect_xbar(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock],
                                        req_s=sig_name,
                                        rsp_m=xbar["name"],
                                        rsp_s="tl_" + esc_name)
+
+    # Emit one one-to-N connection per counted host: the width-N IP host port is
+    # the "one" (key), the ordered per-index xbar host nodes are the "N" (value).
+    connect = topcfg["inter_module"]["connect"]
+    for (port_base, host_sig_name), conn in counted_host_conns.items():
+        count = conn['count']
+        rsps = conn['rsps']
+        missing = [i for i in range(count) if i not in rsps]
+        if missing:
+            log.error(
+                'Counted host {}.{} (count={}) is missing crossbar host '
+                'nodes for indices {}.'.format(port_base, host_sig_name,
+                                               count, missing))
+            continue
+        req_key = "{}.{}".format(port_base, host_sig_name)
+        ordered = [rsps[i] for i in range(count)]
+        if req_key in connect:
+            for rsp_key in ordered:
+                if rsp_key not in connect[req_key]:
+                    connect[req_key].append(rsp_key)
+        else:
+            connect[req_key] = ordered
 
 
 def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
@@ -770,11 +860,10 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             if isinstance(rsp_struct["width"], Parameter):
                 param = rsp_struct["width"]
                 if param.expose:
-                    # If it's a top-level exposed parameter, we need to find
-                    # definition from there
-                    module = lib.get_module_by_name(topcfg, req_m)
-                    width = int(module['param_decl'].get(
-                        param.name, param.default))
+                    module = lib.get_module_by_name(topcfg, rsp_m)
+                    param_decl = (module.get('param_decl')
+                                  if module is not None else None) or {}
+                    width = int(param_decl.get(param.name, param.default))
                 else:
                     width = int(rsp_struct["width"].default)
             else:
@@ -830,11 +919,10 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         if isinstance(req_struct["width"], Parameter):
             param = req_struct["width"]
             if param.expose:
-                # If it's a top-level exposed parameter, we need to find
-                # definition from there
                 module = lib.get_module_by_name(topcfg, req_m)
-                width = int(module['param_decl'].get(param.name,
-                                                     param.default))
+                param_decl = (module.get('param_decl')
+                              if module is not None else None) or {}
+                width = int(param_decl.get(param.name, param.default))
             else:
                 width = int(req_struct["width"].default)
         else:
@@ -1042,6 +1130,20 @@ def im_portname(obj: OrderedDict, suffix: str = "") -> str:
     return name + suffix_s
 
 
+def _def_width(obj: OrderedDict) -> int:
+    """Resolve the integer width of an inter-module definition."""
+    width = obj["width"]
+    return width.default if isinstance(width, Parameter) else width
+
+
+def dangling_im_indices(obj: OrderedDict) -> List[int]:
+    """Return the sorted list of dangling (unpopulated) indices for a def."""
+    end_idx = obj.get("end_idx", -1)
+    if end_idx <= 0:
+        return []
+    return list(range(end_idx, _def_width(obj)))
+
+
 def get_dangling_im_def(objs: OrderedDict) -> str:
     """return partial inter-module definitions
 
@@ -1069,11 +1171,11 @@ def get_dangling_im_def(objs: OrderedDict) -> str:
     """
     unused_def = [
         obj for obj in objs
-        if obj['end_idx'] > 0 and obj['act'] == obj['suffix']
+        if dangling_im_indices(obj) and obj['act'] == obj['suffix']
     ]
 
     undriven_def = [
-        obj for obj in objs if obj['end_idx'] > 0 and
+        obj for obj in objs if dangling_im_indices(obj) and
         (obj['act'] == 'req' and obj['suffix'] == 'rsp' or
          obj['act'] == 'rsp' and obj['suffix'] == 'req' or obj['act'] == 'rcv')
     ]

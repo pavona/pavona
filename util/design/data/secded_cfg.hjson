@@ -16,6 +16,8 @@
     {k: 32,   m: 7,  code_type: "inv_hsiao"  },
     {k: 57,   m: 7,  code_type: "inv_hsiao"  },
     {k: 64,   m: 8,  code_type: "inv_hsiao"  },
+    // This codeword is used only by RTL. The C encoder currently supports k <= 64.
+    {k: 80,   m: 8,  code_type: "inv_hsiao", generate_c: false},
     {k: 16,   m: 6,  code_type: "inv_hamming"},
     {k: 32,   m: 7,  code_type: "inv_hamming"},
     {k: 64,   m: 8,  code_type: "inv_hamming"},

@@ -123,6 +123,13 @@
             .syndrome_o(_SYND),                                              \
             .err_o(_ERR));                                                   \
         end                                                                  \
+        80: begin : gen_dec_inv_hsiao_80                                     \
+          prim_secded_inv_88_80_dec _INST(                                   \
+            .data_i(_ENC_DATA),                                              \
+            .data_o(_DATA),                                                  \
+            .syndrome_o(_SYND),                                              \
+            .err_o(_ERR));                                                   \
+        end                                                                  \
         default: begin : gen_dec_inv_hsiao_default                           \
         end                                                                  \
       endcase                                                                \
@@ -249,6 +256,11 @@
         end                                                     \
         64: begin : gen_enc_inv_hsiao_64                        \
           prim_secded_inv_72_64_enc _INST(                      \
+            .data_i(_DATA),                                     \
+            .data_o(_ENC_DATA));                                \
+        end                                                     \
+        80: begin : gen_enc_inv_hsiao_80                        \
+          prim_secded_inv_88_80_enc _INST(                      \
             .data_i(_DATA),                                     \
             .data_o(_ENC_DATA));                                \
         end                                                     \

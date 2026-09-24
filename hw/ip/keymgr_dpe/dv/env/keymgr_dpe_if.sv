@@ -25,10 +25,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
   keymgr_pkg::hw_key_req_t kmac_key;
   keymgr_pkg::hw_key_req_t aes_key;
   keymgr_pkg::acc_key_req_t acc_key;
+  keymgr_pkg::hw_key_req_t dma_key;
 
   keymgr_pkg::hw_key_req_t kmac_key_exp;
   keymgr_pkg::hw_key_req_t aes_key_exp;
   keymgr_pkg::acc_key_req_t acc_key_exp;
+  keymgr_pkg::hw_key_req_t dma_key_exp;
 
   // connect KDF interface for assertion check
   wire kmac_pkg::app_req_t kmac_data_req;
@@ -56,6 +58,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // sideload status
   keymgr_dpe_sideload_status_e aes_sideload_status;
   keymgr_dpe_sideload_status_e acc_sideload_status;
+  keymgr_dpe_sideload_status_e dma_sideload_status;
 
   // When kmac sideload key is generated, `kmac_key` becomes valid with the generated digest data.
   // If SW requests keymgr_dpe to do another operation, kmac_key will be updated to the internal key
@@ -141,11 +144,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
     kmac_key_exp = '0;
     aes_key_exp  = '0;
     acc_key_exp = '0;
+    dma_key_exp = '0;
     is_kmac_key_good = 0;
     is_kmac_data_good = 0;
     kmac_sideload_status = SideLoadNotAvail;
     aes_sideload_status = SideLoadNotAvail;
     acc_sideload_status = SideLoadNotAvail;
+    dma_sideload_status = SideLoadNotAvail;
 
     // edn related
     edn_interval  = 'h100;
@@ -302,6 +307,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
           acc_sideload_status <= SideLoadAvail;
         end
       end
+      keymgr_pkg::Dma: begin
+        if (dma_sideload_status != SideLoadClear) begin
+          dma_key_exp         <= '{1'b1, trun_key_shares};
+          dma_sideload_status <= SideLoadAvail;
+        end
+      end
       default: `uvm_fatal("keymgr_dpe_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
@@ -313,9 +324,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
     if (kmac_sideload_status == SideLoadClear) kmac_sideload_status <= SideLoadNotAvail;
     if (aes_sideload_status == SideLoadClear)  aes_sideload_status  <= SideLoadNotAvail;
     if (acc_sideload_status == SideLoadClear) acc_sideload_status <= SideLoadNotAvail;
+    if (dma_sideload_status == SideLoadClear) dma_sideload_status <= SideLoadNotAvail;
     case (clear_dest)
       keymgr_pkg::SideLoadClrIdle: ; // do nothing
-      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrAcc: begin
+      keymgr_pkg::SideLoadClrAes, keymgr_pkg::SideLoadClrKmac, keymgr_pkg::SideLoadClrAcc,
+      keymgr_pkg::SideLoadClrDma: begin
         clear_one_sideload_key(clear_dest);
       end
       // clear all
@@ -323,6 +336,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         clear_one_sideload_key(keymgr_pkg::SideLoadClrAes);
         clear_one_sideload_key(keymgr_pkg::SideLoadClrKmac);
         clear_one_sideload_key(keymgr_pkg::SideLoadClrAcc);
+        clear_one_sideload_key(keymgr_pkg::SideLoadClrDma);
       end
     endcase
   endfunction
@@ -342,6 +356,10 @@ interface keymgr_dpe_if(input clk, input rst_n);
         acc_sideload_status <= SideLoadClear;
         acc_key_exp.valid <= 0;
       end
+      keymgr_pkg::SideLoadClrDma: begin
+        dma_sideload_status <= SideLoadClear;
+        dma_key_exp.valid <= 0;
+      end
       default: begin
         `uvm_fatal(msg_id, $sformatf("Unexpected clear_dest %0d", clear_dest))
       end
@@ -358,10 +376,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
     aes_key_exp.valid  <= 0;
     kmac_key_exp.valid <= 0;
     acc_key_exp.valid <= 0;
+    dma_key_exp.valid <= 0;
 
     aes_sideload_status  <= SideLoadClear;
     kmac_sideload_status <= SideLoadClear;
     acc_sideload_status <= SideLoadClear;
+    dma_sideload_status <= SideLoadClear;
   endfunction
 
   function automatic void update_edn_tolerance_upd(int edn_clk, int main_clk);
@@ -384,7 +404,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   wire [1:0] op_enables = {tb.dut.u_ctrl.gen_en_o,
                            tb.dut.u_ctrl.adv_en_o};
   kmac_pkg::app_rsp_t invalid_kmac_rsp;
-  logic [2:0] force_sideload_valids, pre_sideload_valids;
+  logic [3:0] force_sideload_valids, pre_sideload_valids;
   logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
         force_internal_key, pre_internal_key;
   task automatic inject_fault(keymgr_dpe_fault_inject_type_e fi_type);
@@ -592,6 +612,12 @@ interface keymgr_dpe_if(input clk, input rst_n);
         repeat (2) @(posedge clk);
         if (acc_sideload_status != SideLoadAvail) check_invalid_key(acc_key, "ACC");
       end
+      forever begin
+        @(dma_key or dma_sideload_status);
+        // one cycle to sync with clock, one cycle to allow design to clear the key
+        repeat (2) @(posedge clk);
+        if (dma_sideload_status != SideLoadAvail) check_invalid_key(dma_key, "DMA");
+      end
     join
   end
 
@@ -644,6 +670,18 @@ interface keymgr_dpe_if(input clk, input rst_n);
     CheckAccKeyValid,
     acc_sideload_status != SideLoadClear ->
     acc_key_exp.valid == acc_key.valid
+  )
+
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckDmaKey,
+    dma_sideload_status == SideLoadAvail &&
+    dma_key_exp.valid -> dma_key == dma_key_exp
+  )
+
+  `ASSERT_IFF_KEYMGR_DPE_LEGAL(
+    CheckDmaKeyValid,
+    dma_sideload_status != SideLoadClear ->
+    dma_key_exp.valid == dma_key.valid
   )
 
   // for EDN assertion

@@ -341,7 +341,7 @@ interface keymgr_if(input clk, input rst_n);
   wire [2:0] op_enables = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o,
                            tb.dut.u_ctrl.adv_en_o};
   kmac_pkg::app_rsp_t invalid_kmac_rsp;
-  logic [2:0] force_sideload_valids, pre_sideload_valids;
+  logic [3:0] force_sideload_valids, pre_sideload_valids;
   logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
         force_internal_key, pre_internal_key;
   task automatic inject_fault(keymgr_fault_inject_type_e fi_type);

@@ -21,16 +21,27 @@ class dma_config_lock_vseq extends dma_handshake_smoke_vseq;
   uvm_reg cfg_csrs[$];
 
   // Collect all of the configuration registers that are protected by CFG_REGWEN.
+  // Exclude address registers that have HW write-back (the DUT auto-updates SRC_ADDR/DST_ADDR
+  // at end-of-transfer even while CFG_REGWEN is locked).
   task cfgregs_collect();
     uvm_reg all_csrs[$];
+    string hw_writeback_regs[] = '{"src_addr_lo", "src_addr_hi", "dst_addr_lo", "dst_addr_hi"};
 
     `uvm_info(`gfn, "List of CFG_REGWEN-controlled registers:", UVM_MEDIUM)
     ral.get_registers(all_csrs);
     foreach (all_csrs[i]) begin
       uvm_reg csr = all_csrs[i];
       if (ral.cfg_regwen.locks_reg_or_fld(csr)) begin
-        `uvm_info(`gfn, $sformatf(" - Adding '%s'", csr.get_name()), UVM_MEDIUM)
-        cfg_csrs.push_back(csr);
+        bit skip = 0;
+        foreach (hw_writeback_regs[r]) begin
+          if (csr.get_name() == hw_writeback_regs[r]) skip = 1;
+        end
+        if (!skip) begin
+          `uvm_info(`gfn, $sformatf(" - Adding '%s'", csr.get_name()), UVM_MEDIUM)
+          cfg_csrs.push_back(csr);
+        end else begin
+          `uvm_info(`gfn, $sformatf(" - Skipping '%s' (HW write-back)", csr.get_name()), UVM_MEDIUM)
+        end
       end
     end
   endtask

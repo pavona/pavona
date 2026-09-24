@@ -48,7 +48,7 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_mbox    | regs        | `0x211D0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_mbox    |
 | rom_ctrl0         | regs        | `0x211E0000`   | `0x80`         | `0x20`         | regs device on rom_ctrl0         |
 | rom_ctrl1         | regs        | `0x211E1000`   | `0x80`         | `0x20`         | regs device on rom_ctrl1         |
-| dma               | default     | `0x22010000`   | `0x200`        | `0x80`         | dma                              |
+| dma               | default     | `0x22010000`   | `0x400`        | `0x100`        | dma                              |
 | mbx0              | core        | `0x22000000`   | `0x80`         | `0x20`         | core device on mbx0              |
 | mbx1              | core        | `0x22000100`   | `0x80`         | `0x20`         | core device on mbx1              |
 | mbx2              | core        | `0x22000200`   | `0x80`         | `0x20`         | core device on mbx2              |

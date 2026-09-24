@@ -32,7 +32,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_dma__host"
+      name:   "tl_dma__host32_0"
       act:    "rsp"
       package: "tlul_pkg"
     }

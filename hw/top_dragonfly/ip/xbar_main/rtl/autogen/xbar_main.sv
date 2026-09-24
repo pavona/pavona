@@ -164,7 +164,7 @@
 //       -> mbx_pcie0.core
 //     -> sm1_86
 //       -> mbx_pcie1.core
-// dma.host
+// dma.host32_0
 //   -> s1n_88
 //     -> sm1_53
 //       -> sram_ctrl_main.ram
@@ -239,8 +239,8 @@ module xbar_main (
   output tlul_pkg::tl_d2h_t tl_rv_core_ibex__cored_o,
   input  tlul_pkg::tl_h2d_t tl_rv_dm__sba_i,
   output tlul_pkg::tl_d2h_t tl_rv_dm__sba_o,
-  input  tlul_pkg::tl_h2d_t tl_dma__host_i,
-  output tlul_pkg::tl_d2h_t tl_dma__host_o,
+  input  tlul_pkg::tl_h2d_t tl_dma__host32_0_i,
+  output tlul_pkg::tl_d2h_t tl_dma__host32_0_o,
   input  tlul_pkg::tl_h2d_t tl_mbx0__sram_i,
   output tlul_pkg::tl_d2h_t tl_mbx0__sram_o,
   input  tlul_pkg::tl_h2d_t tl_mbx1__sram_i,
@@ -1136,8 +1136,8 @@ module xbar_main (
   assign tl_s1n_87_us_h2d = tl_rv_dm__sba_i;
   assign tl_rv_dm__sba_o = tl_s1n_87_us_d2h;
 
-  assign tl_s1n_88_us_h2d = tl_dma__host_i;
-  assign tl_dma__host_o = tl_s1n_88_us_d2h;
+  assign tl_s1n_88_us_h2d = tl_dma__host32_0_i;
+  assign tl_dma__host32_0_o = tl_s1n_88_us_d2h;
 
   assign tl_s1n_89_us_h2d = tl_mbx0__sram_i;
   assign tl_mbx0__sram_o = tl_s1n_89_us_d2h;

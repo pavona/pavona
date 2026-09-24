@@ -37,6 +37,8 @@ filesets:
       - rtl/prim_secded_inv_64_57_enc.sv
       - rtl/prim_secded_inv_72_64_dec.sv
       - rtl/prim_secded_inv_72_64_enc.sv
+      - rtl/prim_secded_inv_88_80_dec.sv
+      - rtl/prim_secded_inv_88_80_enc.sv
       - rtl/prim_secded_inv_hamming_22_16_dec.sv
       - rtl/prim_secded_inv_hamming_22_16_enc.sv
       - rtl/prim_secded_inv_hamming_39_32_dec.sv

@@ -218,7 +218,7 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
-    { name:       "dma.host",
+    { name:       "dma.host32_0",
       type:       "host",
       addr_space: "hart",
       clock:      "clk_main_i",
@@ -393,7 +393,7 @@
     ],
     // This is the same set of devices that rv_core_ibex.cored is connected to,
     // but without ROM0/1 and RV_DM.
-    dma.host: [
+    dma.host32_0: [
       "sram_ctrl_main.ram", "sram_ctrl_mbox.ram",
       "aes", "hmac", "acc", "keymgr_dpe", "kmac",
       "soc_proxy.ctn", "peri"

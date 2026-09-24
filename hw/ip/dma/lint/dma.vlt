@@ -14,3 +14,21 @@ lint_off -rule SYMRSVDWORD -file "*/rtl/dma_reg_pkg.sv" -match "Symbol matches C
 // TODO: Remove waivers when logic in dma is implemented
 lint_off -rule UNUSED -file "*/rtl/dma.sv" -match "Signal is not used:*"
 lint_off -rule UNDRIVEN -file "*/rtl/dma.sv" -match "Signal is not driven:*"
+
+// Inline AES: the DMA embeds aes_core (hw/ip/aes), whose control/status FSMs contain intentional
+// circular combinational paths that the AES IP waives in its own lint flow (hw/ip/aes/lint/aes.vlt).
+// Those waivers are not pulled into the DMA lint target, so re-state them here for the AES files now
+// elaborated as part of the inline-AES feature.
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_control_fsm*.sv"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_cipher_control_fsm*.sv"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_ctr_fsm*.sv"
+lint_off -rule UNOPTFLAT -file "*/rtl/aes_reg_status.sv"
+// dma_aes: alert_fatal is the head of the aes_core-internal alert circular path (waived above);
+// the unused aes_core hw2reg status bits are intentionally not consumed by the wrapper.
+lint_off -rule UNOPTFLAT    -file "*/rtl/dma_aes.sv" -match "*aes_alert_fatal*"
+lint_off -rule UNUSEDSIGNAL -file "*/rtl/dma_aes.sv"
+
+// Inline AES datapath: blk_ready_o from dma_aes is the head of the benign FSM<->engine valid/ready
+// handshake cone (every step is gated on registered state; no zero-delay loop), like the existing
+// sha2_ready cone in the baseline.
+lint_off -rule UNOPTFLAT -file "*/rtl/dma.sv" -match "*'dma.aes_blk_ready_out'*"
