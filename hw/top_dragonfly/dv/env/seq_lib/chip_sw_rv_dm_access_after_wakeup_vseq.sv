@@ -7,19 +7,13 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  virtual task pre_start();
-    super.pre_start();
-    // Release power button.
-    cfg.chip_vif.pwrb_in_if.drive(1'b1);
-  endtask : pre_start
+  // The software drives the first eight GPIOs and wakes on the ninth.
+  localparam int unsigned GpiosTested = 8;
+  // Pinmux DIO index of the wakeup pad, which is what the wakeup detector selects.
+  localparam int unsigned WakeupDioIdx = top_dragonfly_pkg::DioGpioGpio8;
 
   task activate_jtag_dmi();
-    // Set up JTAG RV_DM TAP.
-    cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-    // Wait a few clocks for the strap change to take effect before driving the JTAG interface
-    cfg.clk_rst_vif.wait_clks(5);
-
-    // Attempt to activate RV_DM via JTAG.
+    // Dragonfly reaches the debug module over DMI, so there is no TAP to select.
     csr_wr(.ptr(cfg.jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
     cfg.clk_rst_vif.wait_clks(5);
   endtask : activate_jtag_dmi
@@ -46,77 +40,67 @@ class chip_sw_rv_dm_access_after_wakeup_vseq extends chip_sw_base_vseq;
       .path(UVM_FRONTDOOR),
       .err_msg("straight after write."));
 
-    // Allow the software to continue execution.
+    cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[WakeupDioIdx], 0);
+
+    // The software drives the tested GPIOs, so stop the testbench driving them.
+    cfg.chip_vif.gpios_if.pins_oe[GpiosTested-1:0] = '0;
+
+    sw_symbol_backdoor_read("kSoftwareBarrier", software_barrier);
     software_barrier[0] = 1;
-    `uvm_info(`gfn, "SoftwareBarrier = 1", UVM_LOW)
     sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
 
-    // Wait for the software to fall asleep.
+    // The GPIO value the software reports here is not checked against the pads yet.
+    `DV_SPINWAIT(
+      string printed_log = "";
+      string log = "Chosen GPIO value:";
+      while (printed_log.substr(0, log.len() - 1) != log) begin
+        @(cfg.sw_logger_vif.printed_log_event);
+        printed_log = string'(cfg.sw_logger_vif.printed_log);
+      end)
+
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Entering normal sleep.");,
                  "Timed out waiting for device to enter normal sleep.", timeout_short)
 
-    // Press the power button to wake up the device.
-    `uvm_info(`gfn, "Pushing power button.", UVM_LOW)
-    cfg.chip_vif.pwrb_in_if.drive(1'b0); // pressing power button
+    // Hold the JTAG agent idle while the chip is powered down. Driving DMI
+    // across low power stalls the simulation.
+    cfg.m_jtag_riscv_agent_cfg.in_reset = 1;
 
-    // Wait for the software to wake up.
+    // Keep the pin high until the chip is awake. Releasing it while the chip
+    // is still powering up takes the wakeup stimulus away.
+    wakeup_action();
+
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Waking up from normal sleep.");,
-                 "Timed out waiting for device to wakeup from normal sleep.", timeout_short)
+                 "Timed out waiting for device to wakeup from normal sleep.", timeout_long)
 
-    `uvm_info(`gfn, "Releasing power button.", UVM_LOW)
-    cfg.chip_vif.pwrb_in_if.drive(1'b1); // releasing power button
+    release_action();
 
-    // Check the program buffer retained the expected value after a normal
-    // sleep.
+    cfg.m_jtag_riscv_agent_cfg.in_reset = 0;
+    cfg.clk_rst_vif.wait_clks(5);
+
+    // The program buffer must keep its value across a normal sleep.
     csr_rd_check(
       .ptr(cfg.jtag_dmi_ral.progbuf[0]),
       .compare_value(exp_data),
       .path(UVM_FRONTDOOR),
       .err_msg("after normal sleep."));
 
-    // Allow the software to continue execution.
+    // Dragonfly has no deep sleep, so the software ends once this is released.
     software_barrier[0] = 2;
-    `uvm_info(`gfn, "SoftwareBarrier = 2", UVM_LOW)
     sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
-
-
-    // Wait for the software to fall asleep.
-    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Entering deep sleep.");,
-                 "Timed out waiting for device to enter deep sleep.", timeout_short)
-
-    // Press the power button to wake up the device.
-    `uvm_info(`gfn, "Pushing power button.", UVM_LOW)
-    cfg.chip_vif.pwrb_in_if.drive(1'b0); // pressing power button
-
-    // Wait for the software to wake up.
-    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Waking up from deep sleep.");,
-                 "Timed out waiting for device to wakeup from deep sleep.", timeout_long)
-
-    `uvm_info(`gfn, "Releasing power button.", UVM_LOW)
-    cfg.chip_vif.pwrb_in_if.drive(1'b1); // releasing power button
-
-    // We must reset the agent side also to stay synchronized with the design
-    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-    // Wait for JTAG agent to come out of reset
-    cfg.clk_rst_vif.wait_clks(5);
-    // Reactivate DMI
-    activate_jtag_dmi();
-    exp_data = $urandom();
-    csr_wr(
-      .ptr(cfg.jtag_dmi_ral.progbuf[0]),
-      .value(exp_data),
-      .path(UVM_FRONTDOOR));
-    csr_rd_check(
-      .ptr(cfg.jtag_dmi_ral.progbuf[0]),
-      .compare_value(exp_data),
-      .path(UVM_FRONTDOOR),
-      .err_msg("after deep sleep."));
-
-    // Allow the software to continue execution.
-    software_barrier[0] = 3;
-    `uvm_info(`gfn, "SoftwareBarrier = 3", UVM_LOW)
-    sw_symbol_backdoor_overwrite("kSoftwareBarrier", software_barrier);
-
   endtask : body
+
+  task wakeup_action();
+    // The software logs that it is going to sleep before the chip is actually
+    // powered down. Driving the pin on that log alone races the power down and
+    // the edge is missed, so wait for pwrmgr to report low power first.
+    `DV_WAIT(cfg.chip_vif.pwrmgr_low_power_if.low_power == 1)
+    repeat (10) @(posedge cfg.ast_supply_vif.clk);
+    cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[WakeupDioIdx], 1);
+  endtask : wakeup_action
+
+  task release_action();
+    repeat (10) @(posedge cfg.ast_supply_vif.clk);
+    cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[WakeupDioIdx], 0);
+  endtask : release_action
 
 endclass : chip_sw_rv_dm_access_after_wakeup_vseq
