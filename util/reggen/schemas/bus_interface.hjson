@@ -1,0 +1,21 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:bus_interface",
+  title: "Bus Interface",
+  description: "Communication bus interfaces for an IP block",
+  type: "object",
+  required: ["protocol", "direction"]
+  properties: {
+    protocol: { type: "string", enum: ["tlul"] }
+    direction: { type: "string", enum: ["host", "device"] }
+    name: { type: "string" },
+    async: { type: "string", description: "async clock" },
+    hier_path: { type: "string" },
+    racl_support: { type: "boolean" },
+    static_racl_support: { type: "boolean" },
+    racl_range_support: { type: "boolean" }
+  }
+}
