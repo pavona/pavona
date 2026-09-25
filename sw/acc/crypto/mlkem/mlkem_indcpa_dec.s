@@ -60,7 +60,7 @@
  *
  * HARDENED
  * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
- *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
+ *                      w0 to w15, w17 to w26, acch, acc, mod
  * clobbered flag groups: FG0
  */
 
@@ -173,12 +173,11 @@ indcpa_dec:
   /* Unpack dk_pke[0]. */
   add x10, x9, x0
   add x11, x21, x0
-  loopi NSHARES, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
-    bn.xor  w1, w1, w1
+  loopi NSHARES, 3
     jal     x1, poly_frombytes
-    nop
+    /* Whitening. */
+    bn.xor  w0, w31, w31
+    bn.xor  w1, w31, w31
   endloop
   add x9, x10, x0
 
@@ -207,24 +206,23 @@ indcpa_dec:
   add x12, x25, x0
   add x13, x23, x0
   loopi NSHARES, 4
-    jal x1, whitening
     add x10, x22, x0
     jal x1, basemul
+    jal x1, whitening
     nop
   endloop
 
   /*** Step 2: accumulate the remaining products, for j = 1..k - 1. ***/
   addi x19, x19, -1
-  loop x19, 32
+  loop x19, 31
     /* Unpack dk_pke[j]. */
     add x10, x9, x0
     add x11, x21, x0
-    loopi NSHARES, 4
-      /* Whitening. */
-      bn.xor w0, w0, w0
-      bn.xor w1, w1, w1
+    loopi NSHARES, 3
       jal    x1, poly_frombytes
-      nop
+      /* Whitening. */
+      bn.xor w0, w31, w31
+      bn.xor w1, w31, w31
     endloop
     add x9, x10, x0
 
@@ -254,9 +252,9 @@ indcpa_dec:
     add x12, x25, x0
     add x13, x23, x0
     loopi NSHARES, 4
-      jal x1, whitening
       add x10, x22, x0
       jal x1, basemul_acc
+      jal x1, whitening
       nop
     endloop
     nop
@@ -267,8 +265,8 @@ indcpa_dec:
   la  x11, const_tw_intt
   add x12, x10, x0
   loopi NSHARES, 3
-    jal x1, whitening
     jal x1, intt
+    jal x1, whitening
     nop
   endloop
   bn.wsrw mod, w16
@@ -284,16 +282,19 @@ indcpa_dec:
   la  x11, mpoly_m
   add x12, x11, x0
   jal x1, poly_sub
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
 
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
   loopi 16, 3
     bn.lid       x0, 0(x11)
     bn.subvm.16h w0, w31, w0
     bn.sid       x0, 0(x11++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/
   la  x10, mpoly_m

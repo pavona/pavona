@@ -61,60 +61,61 @@
  * @param[in]  x13: share stride of y
  * @param[out] x15: dmem pointer to Boolean shares of r
  * @param[in]  x16: share stride of r
+ * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, w0 to w3, w5 to w8
+ * clobbered registers: x4 to x5, w0 to w7
  * clobbered flag groups: FG0
  */
 
 .globl secand
 .type secand, @function
 secand:
-  add x4, x0, x0
+  /* Compute t_0 = x_0 & y_0. */
+  addi   x4, x0, 1
+  bn.lid x4++, 0(x10)  /* w1 = x_0 */
+  bn.lid x4++, 0(x12)  /* w2 = y_0 */
+  bn.and w5, w1, w2    /* w5 = t_0 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
-  /* Load x. */
-  bn.xor w0, w0, w0   /* Whitening. */
-  bn.lid x4++, 0(x10) /* w0 = x_0 */
-  bn.xor w1, w1, w1   /* Whitening. */
+  /* Compute t_1 = x_1 & y_1. */
   add    x5, x10, x11
-  bn.lid x4++, 0(x5)  /* w1 = x_1 */
-
-  /* Load y. */
-  bn.xor w2, w2, w2   /* Whitening. */
-  bn.lid x4++, 0(x12) /* w2 = y_0 */
-  bn.xor w3, w3, w3   /* Whitening. */
+  bn.lid x4++, 0(x5)   /* w3 = x_1 */
   add    x5, x12, x13
-  bn.lid x4, 0(x5)    /* w3 = y_1 */
+  bn.lid x4, 0(x5)     /* w4 = y_1 */
+  bn.and w6, w3, w4    /* w6 = t_1 */
+  bn.xor w0, w31, w31  /* Whitening. */
 
   /* Refresh with one fresh random. */
-  bn.wsrr w5, urnd    /* w5 = s */
+  bn.wsrr w7, urnd    /* w7 = s */
 
   /* Pair (i, j) = (0, 1). */
-  bn.xor  w6, w6, w6  /* Whitening. */
-  bn.and  w6, w0, w2  /* w6 = x_0 & y_0 */
-  bn.xor  w7, w7, w7  /* Whitening. */
-  bn.xor  w7, w3, w5  /* w7 = y_1 ^ s */
-  bn.and  w7, w0, w7  /* w7 &= x_0 */
-  bn.xor  w8, w8, w8  /* Whitening. */
-  bn.not  w8, w0      /* w8 = x_0 ^ 1 */
-  bn.and  w8, w8, w5  /* w8 &= s */
-  bn.xor  w7, w7, w8  /* w7 ^= w8 */
-  bn.xor  w6, w6, w7  /* r_0 = (w6 ^ w7) */
-  addi    x4, x0, 6
-  bn.sid  x4, 0(x15)
+  bn.xor w0, w4, w7   /* w0 = y_1 ^ s */
+  bn.and w0, w0, w1   /* w0 &= x_0 */
+  bn.not w1, w1       /* w1 = x_0 ^ 1 */
+  bn.and w1, w1, w7   /* w1 &= s */
+  bn.xor w0, w0, w1   /* w0 ^= w1 */
+  bn.xor w0, w0, w5   /* r_0 = (w0 ^= t_0) */
+  bn.sid x0, 0(x15)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w4, w31, w31
+  bn.xor w5, w31, w31
 
   /* Pair (i, j) = (1, 0). */
-  bn.xor  w6, w6, w6  /* Whitening. */
-  bn.and  w6, w1, w3  /* w6 = x_1 & y_1 */
-  bn.xor  w7, w7, w7  /* Whitening. */
-  bn.xor  w7, w2, w5  /* w7 = y_0 ^ s */
-  bn.and  w7, w1, w7  /* w7 &= x_1 */
-  bn.xor  w8, w8, w8  /* Whitening. */
-  bn.not  w8, w1      /* w8 = x_1 ^ 1 */
-  bn.and  w8, w8, w5  /* w8 &= s */
-  bn.xor  w7, w7, w8  /* w7 ^= w8 */
-  bn.xor  w6, w6, w7  /* r_1 = (w6 ^ w7) */
-  add     x5, x15, x16
-  bn.sid  x4, 0(x5)
+  bn.xor w0, w2, w7   /* w0 = y_0 ^ s */
+  bn.and w0, w0, w3   /* w0 &= x_1 */
+  bn.not w3, w3       /* w3 = x_1 ^ 1 */
+  bn.and w3, w3, w7   /* w3 &= s */
+  bn.xor w0, w0, w3   /* w0 ^= w3 */
+  bn.xor w0, w0, w6   /* r_1 = (w0 ^= t_1) */
+  add    x5, x15, x16
+  bn.sid x0, 0(x5)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w6, w31, w31
 
   ret
 
@@ -142,6 +143,7 @@ secand:
  * @param[in]  x29: share stride of cin
  * @param[out] x30: dmem pointer to Boolean shares of cout
  * @param[in]  x31: share stride of cout
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4 to x5, w0 to w9
  * clobbered flag groups: FG0
@@ -150,92 +152,85 @@ secand:
 .globl secfulladder
 .type secfulladder, @function
 secfulladder:
-  add x4, x0, x0
-
-  /* Load x. */
-  bn.xor w0, w0, w0   /* Whitening. */
-  bn.lid x4++, 0(x10) /* w0 = x_0 */
-  bn.xor w1, w1, w1   /* Whitening. */
-  add    x5, x10, x11
-  bn.lid x4++, 0(x5)  /* w1 = x_1 */
-
-  /* Load y. */
-  bn.xor w2, w2, w2   /* Whitening. */
-  bn.lid x4++, 0(x12) /* w2 = y_0 */
-  bn.xor w3, w3, w3   /* Whitening. */
-  add    x5, x12, x13
-  bn.lid x4, 0(x5)    /* w3 = y_1 */
-
-  /* Compute sharewise a = x ^ y. */
-  bn.xor w4, w4, w4   /* Whitening. */
-  bn.xor w4, w0, w2
-  bn.xor w5, w5, w5   /* Whitening. */
-  bn.xor w5, w1, w3
-
-  /* Load cin. */
-  bn.xor w2, w2, w2   /* Whitening. */
-  addi   x4, x0, 2
+  /* Load share 0. */
+  addi   x4, x0, 1
+  bn.lid x0, 0(x12)   /* w0 = y_0 */
+  bn.lid x4++, 0(x10) /* w1 = x_0 */
   bn.lid x4++, 0(x17) /* w2 = cin_0 */
-  bn.xor w3, w3, w3   /* Whitening. */
-  add    x5, x17, x29
-  bn.lid x4++, 0(x5)  /* w3 = cin_1 */
+  /* Compute a_0 = x_0 ^ y_0. */
+  bn.xor w5, w1, w0
+  /* Compute r_0 = cin_0 ^ a_0. */
+  bn.xor w0, w2, w5
+  bn.sid x0, 0(x15)
+  /* Compute t_0 = x_0 ^ cin_0. */
+  bn.xor w7, w1, w2
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
-  /* Compute r = cin ^ a. */
-  bn.xor w6, w6, w6   /* Whitening. */
-  bn.xor w6, w4, w2
-  addi   x4, x0, 6
-  bn.sid x4, 0(x15)
-  bn.xor w6, w6, w6   /* Whitening. */
-  bn.xor w6, w5, w3
+  /* Load share 1. */
+  add    x5, x12, x13
+  bn.lid x0, 0(x5)     /* w0 = y_1 */
+  add    x5, x10, x11
+  bn.lid x4++, 0(x5)   /* w3 = x_1 */
+  add    x5, x17, x29
+  bn.lid x4, 0(x5)     /* w4 = cin_1 */
+  /* Compute a_1 = x_1 ^ y_1. */
+  bn.xor w6, w3, w0
+  /* Compute r_1 = cin_1 ^ a_1. */
+  bn.xor w0, w4, w6
   add    x5, x15, x16
-  bn.sid x4, 0(x5)
+  bn.sid x0, 0(x5)
+  /* Compute t_1 = x_1 ^ cin_1. */
+  bn.xor w8, w3, w4
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /* Compute cout = x ^ secand(a, x ^ cin). */
   /* Inline t = secand(a, x ^ cin) = secand(a, t).
-   *  - (a_0, a_1)     -> (w4, w5)
-   *  - (x_0, x_1)     -> (w0, w1)
-   *  - (cin_0, cin_1) -> (w2, w3) */
-
-  /* Compute t = x ^ cin. */
-  bn.xor w6, w6, w6    /* Whitening. */
-  bn.xor w6, w0, w2    /* w6 = t_0 */
-  bn.xor w7, w7, w7    /* Whitening. */
-  bn.xor w7, w1, w3    /* w7 = t_1 */
+   *  - (a_0, a_1) -> (w5, w6)
+   *  - (t_0, t_1) -> (w7, w8)
+   *  - (x_0, x_1) -> (w1, w3) */
 
   /* Refresh with one fresh random. */
-  bn.wsrr w8, urnd     /* w8 = s */
+  bn.wsrr w9, urnd     /* w9 = r */
+
+  bn.and  w2, w5, w7   /* a_0 & t_0 */
+  bn.xor  w0, w31, w31 /* Whitening. */
+  bn.and  w4, w6, w8   /* a_1 & t_1. */
+  bn.xor  w0, w31, w31 /* Whitening. */
 
   /* Pair (i, j) = (0, 1). */
-  bn.xor  w2, w2, w2   /* Whitening. */
-  bn.and  w2, w4, w6   /* w2 = a_0 & t_0 */
-  bn.xor  w3, w3, w3   /* Whitening. */
-  bn.xor  w3, w7, w8   /* w3 = t_1 ^ s */
-  bn.and  w3, w4, w3   /* w3 &= a_0 */
-  bn.xor  w9, w9, w9   /* Whitening. */
-  bn.not  w9, w4       /* w9 = a_0 ^ 1 */
-  bn.and  w9, w9, w8   /* w9 &= s */
-  bn.xor  w3, w3, w9   /* w3 ^= w9 */
-  bn.xor  w2, w2, w3   /* w2 ^= w3 */
-  bn.xor  w3, w3, w3   /* Whitening. */
-  bn.xor  w3, w2, w0   /* cout_0 = x_0 ^ w2 */
-  addi    x4, x0, 3
-  bn.sid  x4, 0(x30)
+  bn.xor  w0, w8, w9   /* w0 = t_1 ^ r */
+  bn.and  w0, w0, w5   /* w0 &= a_0 */
+  bn.not  w5, w5       /* w5 = a_0 ^ 1 */
+  bn.and  w5, w5, w9   /* w5 &= r */
+  bn.xor  w0, w0, w5   /* w0 ^= w5 */
+  bn.xor  w0, w0, w2   /* w0 ^= w2 */
+  bn.xor  w0, w0, w1   /* cout_0 = x_0 ^ w0 */
+  bn.sid  x0, 0(x30)
+  /* Whitening. */
+  bn.xor  w0, w31, w31
+  bn.xor  w1, w31, w31
+  bn.xor  w2, w31, w31
+  bn.xor  w5, w31, w31
+  bn.xor  w8, w31, w31
 
   /* Pair (i, j) = (1, 0). */
-  bn.xor  w2, w2, w2   /* Whitening. */
-  bn.and  w2, w5, w7   /* w2 = a_1 & t_1 */
-  bn.xor  w3, w3, w3   /* Whitening. */
-  bn.xor  w3, w6, w8   /* w3 = t_0 ^ s */
-  bn.and  w3, w5, w3   /* w3 &= a_1 */
-  bn.xor  w9, w9, w9   /* Whitening. */
-  bn.not  w9, w5       /* w9 = a_1 ^ 1 */
-  bn.and  w9, w9, w8   /* w9 &= s */
-  bn.xor  w3, w3, w9   /* w3 ^= w9 */
-  bn.xor  w2, w2, w3   /* w2 ^= w3 */
-  bn.xor  w3, w3, w3   /* Whitening. */
-  bn.xor  w3, w2, w1   /* cout_1 = x_1 ^ w2 */
+  bn.xor  w0, w7, w9   /* w0 = t_0 ^ r */
+  bn.and  w0, w0, w6   /* w0 &= a_1 */
+  bn.not  w6, w6       /* w6 = a_1 ^ 1 */
+  bn.and  w6, w6, w9   /* w6 &= r */
+  bn.xor  w0, w0, w6   /* w0 ^= w6 */
+  bn.xor  w0, w0, w4   /* w0 ^= w4 */
+  bn.xor  w0, w0, w3   /* cout_1 = x_1 ^ w0 */
   add     x5, x30, x31
-  bn.sid  x4, 0(x5)
+  bn.sid  x0, 0(x5)
+  /* Whitening. */
+  bn.xor  w0, w31, w31
+  bn.xor  w3, w31, w31
+  bn.xor  w4, w31, w31
+  bn.xor  w6, w31, w31
+  bn.xor  w7, w31, w31
 
   ret
 
@@ -259,6 +254,7 @@ secfulladder:
  * @param[out] x15: dmem pointer to Boolean shares of r
  * @param[in]  x16: share stride of r
  * @param[in]  x17: k, bitsize of x and y
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2, x4 to x5, x8, x10, x12, x15, x17, x29 to x31,
  *                      w0 to w9
@@ -273,7 +269,7 @@ secadd:
   sw   x8, 64(x2)
 
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x2)
   bn.sid x0, 32(x2)
 
@@ -294,9 +290,6 @@ secadd:
   /* Handle bit k - 1. */
   addi x4, x0, 1
   loopi 2, 11
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
     /* r[k - 1] = x[k - 1] ^ y[k - 1] ^ c. */
     bn.lid x0, 0(x10)
     add    x10, x10, x11
@@ -307,6 +300,9 @@ secadd:
     bn.xor w0, w0, w1
     bn.sid x0, 0(x15)
     add    x15, x15, x16
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Restore x17. */
@@ -331,6 +327,7 @@ secadd:
  * @param[in]  x10: dmem pointer to Boolean shares of x
  * @param[in]  x11: share stride of x
  * @param[out] x13: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x4, x10, x13, w0
  * clobbered flag groups: FG0
@@ -343,8 +340,6 @@ bitcopymask:
    * and zeroize the remaining bits. */
   addi x4, x0, 31
   loopi 2, 10
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x10)
     add    x10, x10, x11
     /* Copy x to bit 0. */
@@ -360,6 +355,8 @@ bitcopymask:
     /* Copy x to bit 10..11. */
     bn.sid x0, 0(x13++)
     bn.sid x0, 0(x13++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
   ret
 
@@ -380,6 +377,7 @@ bitcopymask:
  * @param[in]  x11: k, bitsize of x
  * @param[in]  x12: share stride of x and r
  * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x5 to x6, x10, x14, w0 to w1
  * clobbered flag groups: FG0
@@ -393,18 +391,18 @@ refreshios:
   loop x11, 9
     /* s <- urnd. */
     bn.wsrr w1, urnd
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     /* r_0 = x_0 ^ s. */
     bn.lid  x0, 0(x10++)
     bn.xor  w0, w0, w1
     bn.sid  x0, 0(x14++)
     /* Whitening. */
-    bn.xor  w0, w0, w0
+    bn.xor  w0, w31, w31
     /* r_1 = x_1 ^ s. */
     bn.lid  x0, 0(x5++)
     bn.xor  w0, w0, w1
     bn.sid  x0, 0(x6++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   ret
 
@@ -478,6 +476,10 @@ _rej_sample_loop:
   beq x0, x0, _rej_sample_loop
 
 _end_rej_sample_loop:
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w3, w31, w31
+  bn.xor w4, w31, w31
   ret
 
 /**
@@ -496,6 +498,7 @@ _end_rej_sample_loop:
  * @param[out] x12: dmem pointer to arithmetic shares of r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
@@ -523,19 +526,21 @@ refreshmodq:
   loopi 16, 9
     /* Load rand. */
     bn.lid       x4, 0(x5++)
-    /* Whitening. */
-    bn.xor       w0, w0, w0
     /* r_0 = x_0 + rand. */
     bn.lid       x0, 0(x10++)
     bn.addvm.16h w0, w0, w1
     bn.sid       x0, 0(x12++)
     /* Whitening. */
-    bn.xor       w0, w0, w0
+    bn.xor       w0, w31, w31
     /* r_1 = x_1 - rand. */
     bn.lid       x0, 0(x6++)
     bn.subvm.16h w0, w0, w1
     bn.sid       x0, 0(x7++)
+    /* Whitening. */
+    bn.xor       w0, w31, w31
   endloop
+  /* Whitening. */
+  bn.xor w1, w31, w31
 
   /* Restore stack. */
   addi x2, x2, 544
@@ -555,7 +560,7 @@ refreshmodq:
  * @param[out] x11: dmem pointer to bitsliced representation r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4, x10, w0 to w15, w28 to w29
+ * clobbered registers: x4, x10, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -578,6 +583,8 @@ poly_to_bitsliced:
     bn.sid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
+
+  jal x1, whitening_bitslice_transpose
   ret
 
 /**
@@ -595,7 +602,7 @@ poly_to_bitsliced:
  * @param[out] x11: dmem pointer to r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4, x10 to x11, w0 to w15, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -608,10 +615,10 @@ poly_from_bitsliced:
     bn.lid x4, 0(x10++)
     addi   x4, x4, 1
   endloop
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
+  bn.xor w12, w31, w31
+  bn.xor w13, w31, w31
+  bn.xor w14, w31, w31
+  bn.xor w15, w31, w31
 
   jal x1, _bitslice_transpose
 
@@ -621,6 +628,8 @@ poly_from_bitsliced:
     bn.sid x4, 0(x11++)
     addi   x4, x4, -1
   endloop
+
+  jal x1, whitening_bitslice_transpose
   ret
 
 /**
@@ -632,215 +641,215 @@ poly_from_bitsliced:
  * @param[in,out] w0 to w15: bit matrices to transpose
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: w0 to w15, w28 to w29
+ * clobbered registers: w0 to w15, w24 to w25
  * clobbered flag groups: FG0
  */
 
 _bitslice_transpose:
   /* Stage d=8. */
-  bn.not     w28, w31
-  bn.shv.16h w28, w28 >> 8      /* 0x00ff */
-  bn.shv.16h w29, w0 >> 8
-  bn.xor     w29, w29, w8
-  bn.and     w29, w29, w28
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 8
-  bn.xor     w29, w29, w9
-  bn.and     w29, w29, w28
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w2 >> 8
-  bn.xor     w29, w29, w10
-  bn.and     w29, w29, w28
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w3 >> 8
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w4 >> 8
-  bn.xor     w29, w29, w12
-  bn.and     w29, w29, w28
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w5 >> 8
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w6 >> 8
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w7 >> 8
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w7, w7, w29
+  bn.not     w24, w31
+  bn.shv.16h w24, w24 >> 8      /* 0x00ff */
+  bn.shv.16h w25, w0 >> 8
+  bn.xor     w25, w25, w8
+  bn.and     w25, w25, w24
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 8
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 8
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 8
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w4 >> 8
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 8
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w6 >> 8
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w7 >> 8
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 8
+  bn.xor     w7, w7, w25
   /* Stage d=4. */
-  bn.shv.16h w29, w28 << 4
-  bn.xor     w28, w28, w29      /* 0x0f0f */
-  bn.shv.16h w29, w0 >> 4
-  bn.xor     w29, w29, w4
-  bn.and     w29, w29, w28
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 4
-  bn.xor     w29, w29, w5
-  bn.and     w29, w29, w28
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w2 >> 4
-  bn.xor     w29, w29, w6
-  bn.and     w29, w29, w28
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w3 >> 4
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w8 >> 4
-  bn.xor     w29, w29, w12
-  bn.and     w29, w29, w28
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w9 >> 4
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w10 >> 4
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w11 >> 4
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 4
-  bn.xor     w11, w11, w29
+  bn.shv.16h w25, w24 << 4
+  bn.xor     w24, w24, w25      /* 0x0f0f */
+  bn.shv.16h w25, w0 >> 4
+  bn.xor     w25, w25, w4
+  bn.and     w25, w25, w24
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 4
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w2 >> 4
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w3 >> 4
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w8 >> 4
+  bn.xor     w25, w25, w12
+  bn.and     w25, w25, w24
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 4
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w10 >> 4
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w11 >> 4
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 4
+  bn.xor     w11, w11, w25
   /* Stage d=2. */
-  bn.shv.16h w29, w28 << 2
-  bn.xor     w28, w28, w29      /* 0x3333 */
-  bn.shv.16h w29, w0 >> 2
-  bn.xor     w29, w29, w2
-  bn.and     w29, w29, w28
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 2
-  bn.xor     w29, w29, w3
-  bn.and     w29, w29, w28
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w4 >> 2
-  bn.xor     w29, w29, w6
-  bn.and     w29, w29, w28
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w5 >> 2
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w8 >> 2
-  bn.xor     w29, w29, w10
-  bn.and     w29, w29, w28
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w9 >> 2
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w12 >> 2
-  bn.xor     w29, w29, w14
-  bn.and     w29, w29, w28
-  bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w13 >> 2
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 2
-  bn.xor     w13, w13, w29
+  bn.shv.16h w25, w24 << 2
+  bn.xor     w24, w24, w25      /* 0x3333 */
+  bn.shv.16h w25, w0 >> 2
+  bn.xor     w25, w25, w2
+  bn.and     w25, w25, w24
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w1 >> 2
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w4 >> 2
+  bn.xor     w25, w25, w6
+  bn.and     w25, w25, w24
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w5 >> 2
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w8 >> 2
+  bn.xor     w25, w25, w10
+  bn.and     w25, w25, w24
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w9 >> 2
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w12 >> 2
+  bn.xor     w25, w25, w14
+  bn.and     w25, w25, w24
+  bn.xor     w14, w14, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w13 >> 2
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 2
+  bn.xor     w13, w13, w25
   /* Stage d=1. */
-  bn.shv.16h w29, w28 << 1
-  bn.xor     w28, w28, w29      /* 0x5555 */
-  bn.shv.16h w29, w0 >> 1
-  bn.xor     w29, w29, w1
-  bn.and     w29, w29, w28
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w2 >> 1
-  bn.xor     w29, w29, w3
-  bn.and     w29, w29, w28
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w4 >> 1
-  bn.xor     w29, w29, w5
-  bn.and     w29, w29, w28
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w6 >> 1
-  bn.xor     w29, w29, w7
-  bn.and     w29, w29, w28
-  bn.xor     w7, w7, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w8 >> 1
-  bn.xor     w29, w29, w9
-  bn.and     w29, w29, w28
-  bn.xor     w9, w9, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w8, w8, w29
-  bn.shv.16h w29, w10 >> 1
-  bn.xor     w29, w29, w11
-  bn.and     w29, w29, w28
-  bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w10, w10, w29
-  bn.shv.16h w29, w12 >> 1
-  bn.xor     w29, w29, w13
-  bn.and     w29, w29, w28
-  bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w12, w12, w29
-  bn.shv.16h w29, w14 >> 1
-  bn.xor     w29, w29, w15
-  bn.and     w29, w29, w28
-  bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 1
-  bn.xor     w14, w14, w29
+  bn.shv.16h w25, w24 << 1
+  bn.xor     w24, w24, w25      /* 0x5555 */
+  bn.shv.16h w25, w0 >> 1
+  bn.xor     w25, w25, w1
+  bn.and     w25, w25, w24
+  bn.xor     w1, w1, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w0, w0, w25
+  bn.shv.16h w25, w2 >> 1
+  bn.xor     w25, w25, w3
+  bn.and     w25, w25, w24
+  bn.xor     w3, w3, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w2, w2, w25
+  bn.shv.16h w25, w4 >> 1
+  bn.xor     w25, w25, w5
+  bn.and     w25, w25, w24
+  bn.xor     w5, w5, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w4, w4, w25
+  bn.shv.16h w25, w6 >> 1
+  bn.xor     w25, w25, w7
+  bn.and     w25, w25, w24
+  bn.xor     w7, w7, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w6, w6, w25
+  bn.shv.16h w25, w8 >> 1
+  bn.xor     w25, w25, w9
+  bn.and     w25, w25, w24
+  bn.xor     w9, w9, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w8, w8, w25
+  bn.shv.16h w25, w10 >> 1
+  bn.xor     w25, w25, w11
+  bn.and     w25, w25, w24
+  bn.xor     w11, w11, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w10, w10, w25
+  bn.shv.16h w25, w12 >> 1
+  bn.xor     w25, w25, w13
+  bn.and     w25, w25, w24
+  bn.xor     w13, w13, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w12, w12, w25
+  bn.shv.16h w25, w14 >> 1
+  bn.xor     w25, w25, w15
+  bn.and     w25, w25, w24
+  bn.xor     w15, w15, w25
+  bn.shv.16h w25, w25 << 1
+  bn.xor     w14, w14, w25
   ret
 
 /**
@@ -859,6 +868,7 @@ _bitslice_transpose:
  * @param[in]  x11: k, bitsize of x
  * @param[in]  x12: share stride of x and r
  * @param[out] x14: dmem pointer to Boolean shares of r
+ * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x8, x10 to x13, x15 to x17, x29 to x31, w0 to w9
  * clobbered flag groups: FG0
@@ -880,13 +890,11 @@ seca2b:
 
   /* Build s = (x_0, 0). */
   add x7, x6, x0
-  loop x11, 3
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loop x11, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x6++)
   endloop
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loop x11, 1
     bn.sid x0, 0(x6++)
   endloop
@@ -896,12 +904,12 @@ seca2b:
   loop x11, 1
     bn.sid x0, 0(x5++)
   endloop
-  loop x11, 3
+  loop x11, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /* Save registers. */
   add x4, x11, x0
@@ -978,13 +986,10 @@ seca2bmodq:
   addi x5, x2, 896 /* s */
   addi x4, x0, 1
   /* Initialize cin = 0. */
-  bn.xor w2, w2, w2
+  bn.xor w2, w31, w31
 
   /* Bits 0..7: p[i] = 1. */
-  loopi 8, 9
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi 8, 7
     bn.lid x0, 0(x10++)
     bn.not w3, w0
     bn.xor w1, w3, w2
@@ -995,9 +1000,6 @@ seca2bmodq:
   endloop
 
   /* Bit 8: p[i] = 0. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
   bn.lid x0, 0(x10++)
   bn.xor w1, w0, w2
   bn.sid x4, 0(x5++)
@@ -1005,9 +1007,6 @@ seca2bmodq:
   bn.xor w2, w2, w0
 
   /* Bit 9: p[i] = 1. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
   bn.lid x0, 0(x10++)
   bn.not w3, w0
   bn.xor w1, w3, w2
@@ -1017,10 +1016,7 @@ seca2bmodq:
   bn.xor w2, w2, w0
 
   /* Bits 10..11: p[i] = 0. */
-  loopi 2, 7
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
+  loopi 2, 5
     bn.lid x0, 0(x10++)
     bn.xor w1, w0, w2
     bn.sid x4, 0(x5++)
@@ -1029,14 +1025,17 @@ seca2bmodq:
   endloop
 
   /* Bit 12: p[i] = 1 and x_0[i] = 0. */
-  /* Whitening. */
-  bn.xor w1, w1, w1
   bn.not w1, w2
   bn.sid x4, 0(x5++)
+
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+  bn.xor w2, w31, w31
+  bn.xor w3, w31, w31
   /********** End inline s = secadd(p, x_0, k + 1). **********/
 
   /* Build s = (s, 0) for (k + 1) bits. */
-  bn.xor w0, w0, w0
   loopi 13, 1
     bn.sid x0, 0(x5++)
   endloop
@@ -1046,12 +1045,11 @@ seca2bmodq:
   loopi 13, 1
     bn.sid x0, 0(x5++)
   endloop
-  loopi 12, 3
+  loopi 12, 2
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
   endloop
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x5++)
 
   /********** Start inline u = secadd(s, s', k + 1). **********/
@@ -1078,9 +1076,6 @@ seca2bmodq:
 
   addi x4, x0, 1
   loopi 2, 11
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
     /* u[12] = s[12] ^ s'[12] ^ c. */
     bn.lid x0, 0(x10)
     add    x10, x10, x11
@@ -1091,6 +1086,9 @@ seca2bmodq:
     bn.xor w0, w0, w1
     bn.sid x0, 0(x15)
     add    x15, x15, x16
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
   /********** End inline u = secadd(s, s', k + 1). **********/
 
@@ -1102,7 +1100,7 @@ seca2bmodq:
 
   /********** Start inline r = secadd(a, u, k). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 832(x2)
   bn.sid x0, 864(x2)
 
@@ -1125,9 +1123,6 @@ seca2bmodq:
 
   addi x4, x0, 1
   loopi 2, 11
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
     /* r[11] = a[11] ^ u[11] ^ c. */
     bn.lid x0, 0(x10)
     add    x10, x10, x11
@@ -1138,6 +1133,9 @@ seca2bmodq:
     bn.xor w0, w0, w1
     bn.sid x0, 0(x15)
     add    x15, x15, x16
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
   /********** End inline r = secadd(a, u, k). **********/
 
@@ -1163,6 +1161,7 @@ seca2bmodq:
  * @param[out] x12: dmem pointer to arithmetic shares of r
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x7, x10, x12, w0 to w4, acch, acc
@@ -1184,7 +1183,7 @@ seconebitb2amodq:
     bn.sid x0, 0(x5++)
   endloop
 
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loopi 16, 1
     bn.sid x0, 0(x5++)
   endloop
@@ -1221,7 +1220,7 @@ seconebitb2amodq:
   lw   x5, 1024(x2)
   addi x5, x5, 512 /* x_1 */
   add  x6, x2, x0  /* v */
-  loopi 16, 14
+  loopi 16, 18
     bn.lid       x0, 0(x5++)
     bn.subv.16h  w2, w0, w4
     /* Handle v_0. */
@@ -1231,6 +1230,9 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.addvm.16h w1, w0, w1
     bn.sid       x4, 0(x6)
+    /* Whitening. */
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
     /* Handle v_1. */
     bn.lid       x4, 512(x6)
     bn.and       w3, w1, w2
@@ -1238,7 +1240,13 @@ seconebitb2amodq:
     bn.subvm.16h w1, w3, w1
     bn.sid       x4, 512(x6)
     addi         x6, x6, 32
+    /* Whitening. */
+    bn.xor       w1, w31, w31
+    bn.xor       w3, w31, w31
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w2, w31, w31
 
   /* Compute r = refreshmodq(v). */
   add x10, x2, x0
@@ -1273,7 +1281,7 @@ seconebitb2amodq:
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x6, x8 to x17, x29 to x31,
- *                      w0 to w15, w28 to w29, acch, acc
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -1309,13 +1317,15 @@ secb2amodq:
     bn.subv.16h w0, w1, w0
     bn.sid      x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /* Bitslice zp_0 and clear zp_1 (bitsliced). */
   addi   x10, x2, 32
   add    x11, x8, x0  /* zp (bitsliced) */
   jal    x1, poly_to_bitsliced
   addi   x11, x11, 384
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   loopi 12, 1
     bn.sid x0, 0(x11++)
   endloop
@@ -1329,7 +1339,7 @@ secb2amodq:
   /********** Start inline b = secaddmodq(a, x). **********/
   /********** Start inline s = secadd(a, x, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 384(x9)
   bn.sid x0, 800(x9)
 
@@ -1355,7 +1365,7 @@ secb2amodq:
 
   /********** Start inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 32(x2)
   bn.sid x0, 64(x2)
 
@@ -1404,9 +1414,6 @@ secb2amodq:
   /* Bit 12: p[i] = 1. */
   addi   x4, x0, 1
   /* s[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
   /* s_0 */
   bn.lid x0, 0(x12)
   bn.lid x4, 0(x17)
@@ -1415,15 +1422,18 @@ secb2amodq:
   bn.not w0, w0
   bn.sid x0, 0(x12)
   add    x12, x12, x13
-
   /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
+
   /* s_1 */
   bn.lid x0, 0(x12)
   bn.lid x4, 0(x17)
   bn.xor w0, w0, w1
   bn.sid x0, 0(x12)
+  /* Whitening. */
+  bn.xor w0, w31, w31
+  bn.xor w1, w31, w31
   /********** End inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
 
   /* Compute a = bitcopymask(s[k], (k + 1) * 32). */
@@ -1499,7 +1509,7 @@ secb2amodq:
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x17, x29 to x31,
- *                      w0 to w15, w17 to w21, w28 to w29
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -1515,25 +1525,25 @@ poly_hocompress_dv:
   sw   x9, 1160(x2)
 
   /* Load all constants. */
-  addi      x4, x0, 17
+  addi      x4, x0, 20
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
   la        x5, const_qp1_half
   bn.lid    x4++, 0(x5)
-  bn.shv.8s w18, w18 >> 16
+  bn.shv.8s w21, w21 >> 16
 
   /* Create 2^(alpha - 1). */
-  bn.subi   w19, w31, 1
-  bn.shv.8s w19, w19 >> 31
-  bn.shv.8s w19, w19 << 12
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
 
-  /* Select alpha-dependent parameters: w19 = 2^(alpha - 1), x8 = the
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
    * extraction byte offset alpha * 32, x9 = dv. */
   addi      x4, x0, 4
   addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
   addi      x9, x0, 5
   beq       x13, x4, _dv_params_done
-  bn.shv.8s w19, w19 << 1
+  bn.shv.8s w22, w22 << 1
   addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
   addi      x9, x0, 4
 
@@ -1551,50 +1561,28 @@ _dv_params_done:
    *  - x >>= s
    *  - x &= ((1 << (dv + alpha)) - 1).
    */
-  loopi 2, 56
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
-
+  loopi 2, 37
     addi x4, x0, 15
     loopi 16, 18
       bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 18
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w21, w19, w20 >> 8
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
       /* Handle odd-positioned coeffs. */
-      bn.trn2.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 18
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w20, w19, w20 >> 8
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 18
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
       /* Combine the results before bitslicing. */
-      bn.trn2.16h        w0, w21, w20
+      bn.trn2.16h        w0, w18, w17
       bn.sid             x0, 0(x7++)
-      bn.trn1.16h        w0, w21, w20
+      bn.trn1.16h        w0, w18, w17
       bn.movr            x4, x0
       addi               x4, x4, -1
     endloop
@@ -1624,9 +1612,11 @@ _dv_params_done:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w19 holds 2^(alpha - 1).
-     * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w19, w19
+    jal x1, whitening_dv
+
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = dv + alpha = 18, share bytes = 576. */
@@ -1640,13 +1630,13 @@ _dv_params_done:
   add x5, x2, x8
   lw  x12, 1152(x2)
   loopi 2, 5
-    loop x9, 3
-      /* Whitening. */
-      bn.xor w0, w0, w0
+    loop x9, 2
       bn.lid x0, 0(x5++)
       bn.sid x0, 0(x12++)
     endloop
     add x5, x5, x8
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -1682,7 +1672,7 @@ _dv_params_done:
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x17, x29 to x31,
- *                      w0 to w15, w17 to w21, w28 to w30, acc
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
  * clobbered flag groups: FG0
  */
 
@@ -1698,29 +1688,29 @@ poly_hocompress_du:
   sw   x9, 1544(x2)
 
   /* Create 2^(alpha - 1). */
-  bn.subi   w30, w31, 1
-  bn.shv.8s w30, w30 >> 31
-  bn.shv.8s w30, w30 << 12
+  bn.subi   w22, w31, 1
+  bn.shv.8s w22, w22 >> 31
+  bn.shv.8s w22, w22 << 12
 
-  /* Select alpha-dependent parameters: w30 = 2^(alpha - 1), x8 = the
+  /* Select alpha-dependent parameters: w22 = 2^(alpha - 1), x8 = the
    * extraction byte offset alpha * 32, x9 = du. */
   addi      x4, x0, 4
   addi      x8, x0, 416  /* alpha * 32, alpha = 13 */
   addi      x9, x0, 11
   beq       x13, x4, _du_params_done
-  bn.shv.8s w30, w30 << 1
+  bn.shv.8s w22, w22 << 1
   addi      x8, x0, 448  /* alpha * 32, alpha = 14 (k != 4) */
   addi      x9, x0, 10
 
 _du_params_done:
   /* Load all constants. */
-  addi       x4, x0, 17
+  addi       x4, x0, 20
   la         x5, const_m_du
   bn.lid     x4++, 0(x5)
   la         x5, const_q
   bn.lid     x4, 0(x5)
-  bn.shv.8s  w18, w18 >> 17 /* 0x680 in 8 32-bit lanes. */
-  bn.trn1.8s w18, w18, w31  /* 0x680 in 4 64-bit lanes. */
+  bn.shv.8s  w21, w21 >> 17 /* 0x680 in 8 32-bit lanes. */
+  bn.trn1.8s w21, w21, w31  /* 0x680 in 4 64-bit lanes. */
 
   add x6, x2, x0 /* z */
 
@@ -1735,86 +1725,63 @@ _du_params_done:
    *  - x >>= s
    *  - x &= ((1 << (du + alpha)) - 1).
    */
-  loopi 2, 83
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w19, w19, w19
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
-
+  loopi 2, 63
     addi x4, x0, 15
     loopi 16, 44
       bn.lid          x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h      w19, w0, w31
+      bn.trn1.16h     w17, w0, w31
       /* Handle coeff[0] - coeff[4] - coeff[8] - coeff[12]. */
-      bn.trn1.8s      w20, w19, w31
-      bn.rshi         w20, w20, w31 >> 232
-      bn.add          w20, w20, w18
-      bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-      bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-      bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-      bn.trn2.4d      w20, w21, w20
+      bn.trn1.8s      w18, w17, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
       /* Handle coeff[2] - coeff[6] - coeff[10] - coeff[14]. */
-      bn.trn2.8s      w19, w19, w31
-      bn.rshi         w19, w19, w31 >> 232
-      bn.add          w19, w19, w18
-      bn.mulqacc.so.z w21.l, w19.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w19.2, w17.0, 0
-      bn.mulqacc.so.z w19.l, w19.1, w17.0, 0
-      bn.mulqacc.so.z w19.u, w19.3, w17.0, 0
-      bn.trn2.4d      w19, w21, w19
+      bn.trn2.8s      w17, w17, w31
+      bn.rshi         w17, w17, w31 >> 232
+      bn.add          w17, w17, w21
+      bn.mulqacc.so.z w19.l, w17.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w17.2, w20.0, 0
+      bn.mulqacc.so.z w17.l, w17.1, w20.0, 0
+      bn.mulqacc.so.z w17.u, w17.3, w20.0, 0
+      bn.trn2.4d      w17, w19, w17
       /* Combine the result. */
-      bn.trn1.8s      w19, w20, w19
+      bn.trn1.8s      w17, w18, w17
 
       /* Handle odd-positioned coeffs. */
       bn.trn2.16h     w0, w0, w31
       /* Handle coeff[1] - coeff[5] - coeff[9] - coeff[13]. */
-      bn.trn1.8s      w20, w0, w31
-      bn.rshi         w20, w20, w31 >> 232
-      bn.add          w20, w20, w18
-      bn.mulqacc.so.z w21.l, w20.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w20.2, w17.0, 0
-      bn.mulqacc.so.z w20.l, w20.1, w17.0, 0
-      bn.mulqacc.so.z w20.u, w20.3, w17.0, 0
-      bn.trn2.4d      w20, w21, w20
+      bn.trn1.8s      w18, w0, w31
+      bn.rshi         w18, w18, w31 >> 232
+      bn.add          w18, w18, w21
+      bn.mulqacc.so.z w19.l, w18.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w18.2, w20.0, 0
+      bn.mulqacc.so.z w18.l, w18.1, w20.0, 0
+      bn.mulqacc.so.z w18.u, w18.3, w20.0, 0
+      bn.trn2.4d      w18, w19, w18
       /* Handle coeff[3] - coeff[7] - coeff[11] - coeff[15]. */
       bn.trn2.8s      w0, w0, w31
       bn.rshi         w0, w0, w31 >> 232
-      bn.add          w0, w0, w18
-      bn.mulqacc.so.z w21.l, w0.0, w17.0, 0
-      bn.mulqacc.so.z w21.u, w0.2, w17.0, 0
-      bn.mulqacc.so.z w0.l, w0.1, w17.0, 0
-      bn.mulqacc.so.z w0.u, w0.3, w17.0, 0
-      bn.trn2.4d      w0, w21, w0
+      bn.add          w0, w0, w21
+      bn.mulqacc.so.z w19.l, w0.0, w20.0, 0
+      bn.mulqacc.so.z w19.u, w0.2, w20.0, 0
+      bn.mulqacc.so.z w0.l, w0.1, w20.0, 0
+      bn.mulqacc.so.z w0.u, w0.3, w20.0, 0
+      bn.trn2.4d      w0, w19, w0
       /* Combine the result. */
-      bn.trn1.8s      w20, w20, w0
+      bn.trn1.8s      w18, w18, w0
 
       /* Compute + 2^(alpha - 1) for the 1st share or 0 for the 2nd share. */
-      bn.addv.8s      w19, w19, w30
-      bn.addv.8s      w20, w20, w30
+      bn.addv.8s      w17, w17, w22
+      bn.addv.8s      w18, w18, w22
       /* Combine the results before bitslicing. */
-      bn.trn2.16h     w0, w19, w20
+      bn.trn2.16h     w0, w17, w18
       bn.sid          x0, 0(x7++)
-      bn.trn1.16h     w0, w19, w20
+      bn.trn1.16h     w0, w17, w18
       bn.movr         x4, x0
       addi            x4, x4, -1
     endloop
@@ -1844,9 +1811,11 @@ _du_params_done:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w30 holds 2^(alpha - 1).
-     * After that, we clear w30 for the 2nd share. */
-    bn.xor w30, w30, w30
+    jal x1, whitening_du
+
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 for the 2nd share. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = du + alpha = 24, share bytes = 768. */
@@ -1860,13 +1829,13 @@ _du_params_done:
   add x5, x2, x8
   lw  x12, 1536(x2)
   loopi 2, 5
-    loop x9, 3
-      /* Whitening. */
-      bn.xor w0, w0, w0
+    loop x9, 2
       bn.lid x0, 0(x5++)
       bn.sid x0, 0(x12++)
     endloop
     add x5, x5, x8
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -1912,15 +1881,15 @@ masked_poly_frommsg:
   /* Unpack m, matching the bitslice layout from masked_poly_tomsg. */
   addi x4, x0, 1
   loopi 2, 7
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x10++)
     loopi 16, 3
       bn.shv.16h w1, w0 >> 15
       bn.shv.16h w0, w0 << 1
       bn.sid     x4, 0(x12++)
     endloop
-    nop
+    /* Whitening. */
+    bn.xor w0, w31, w31
+    bn.xor w1, w31, w31
   endloop
 
   /* Compute mp = seconebitb2amodq(m). */
@@ -1932,9 +1901,7 @@ masked_poly_frommsg:
   la      x5, const_qp1_half_mul_2_16_modq /* ((q + 1) / 2) * (2^16) mod q. */
   addi    x4, x0, 1
   bn.lid  x4, 0(x5)
-  loopi 2, 9
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loopi 2, 8
     loopi 16, 6
       bn.lid               x0, 0(x8)
       bn.mulv.16h.acc.z.lo w0, w0, w1
@@ -1943,7 +1910,8 @@ masked_poly_frommsg:
       bn.addvm.16h         w0, w0, w31
       bn.sid               x0, 0(x8++)
     endloop
-    nop
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore the output base pointer and stack. */
@@ -1975,7 +1943,7 @@ masked_poly_frommsg:
  * @param[in]  mod: q = 3329
  *
  * clobbered registers: x2, x4 to x18, x29 to x31,
- *                      w0 to w15, w28 to w29, acch, acc
+ *                      w0 to w15, w24 to w25, acch, acc
  * clobbered flag groups: FG0
  */
 
@@ -2003,34 +1971,30 @@ masked_cbd:
   slli x4, x18, 5 /* eta * 32 */
   add  x6, x8, x4
   /* Share 0. */
-  loop x12, 7
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loop x12, 5
     /* Copy x_0. */
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
     /* Copy ~y_0. */
     bn.lid x0, 0(x11++)
     bn.not w0, w0
     bn.sid x0, 0(x6++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
   /* Share 1. */
   add x5, x5, x4
   add x6, x6, x4
-  loop x12, 6
-    /* Whitening. */
-    bn.xor w0, w0, w0
+  loop x12, 4
     /* Copy x_1. */
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
-    /* Whitening. */
-    bn.xor w0, w0, w0
     /* Copy y_1. */
     bn.lid x0, 0(x11++)
     bn.sid x0, 0(x6++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /* The block below does as follows:
    *  - ell <- 2 * eta
@@ -2044,7 +2008,7 @@ masked_cbd:
    */
   /********** Iteration i = 0, ell = 2 * eta. **********/
   /* Since ell mod 2 = 0, we clear a. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x9)
   bn.sid x0, 32(x9)
 
@@ -2071,11 +2035,11 @@ masked_cbd:
   /* b[0] <- a. */
   add x5, x2, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x17++)
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /********** Iteration i = 1, ell = eta. **********/
@@ -2086,17 +2050,17 @@ masked_cbd:
   addi x6, x8, 64
   slli x4, x18, 6 /* (2 * eta) * 32 */
   loopi 2, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x6)
     add    x6, x6, x4
     bn.sid x0, 0(x5++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
   beq x0, x0, _continue_1
 
 _cbd_eta_2:
   /* Since ell mod 2 = 0 if eta = 2, we clear a. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   bn.sid x0, 0(x9)
   bn.sid x0, 32(x9)
 
@@ -2119,11 +2083,11 @@ _continue_1:
   /* b[1] <- a. */
   addi x5, x2, 32
   loopi 2, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x17++)
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /********** Iteration i = 2, ell = eta // 2 = 1. **********/
@@ -2132,16 +2096,16 @@ _continue_1:
   add  x6, x8, x0
   slli x7, x18, 6
   loopi 2, 5
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x6)
     add    x6, x6, x7
     bn.sid x0, 0(x5)
     addi   x5, x5, 384
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /* Clear bits b[3..k - 1]. */
-  bn.xor w0, w0, w0
+  bn.xor w0, w31, w31
   addi   x5, x2, 96
   loopi 2, 3
     loopi 9, 1
@@ -2169,6 +2133,8 @@ _continue_1:
     bn.subvm.16h w0, w0, w1
     bn.sid       x0, 0(x5++)
   endloop
+  /* Whitening. */
+  bn.xor w0, w31, w31
 
   /* Restore registers and stack. */
   lw   x8, 1220(x2)
@@ -2211,19 +2177,19 @@ masked_poly_getnoise_eta_init:
   csrrw x0, kmac_cfg, x5
 
   /* Send seed. */
-  bn.xor  w0, w0, w0 /* Whitening. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening. */
   bn.lid  x0, 0(x10++)
   bn.wsrw kmac_msg1, w0
+  bn.xor  w0, w31, w31 /* Whitening. */
 
   /* Send nonce. */
   li      x5, 1
   csrrw   x0, kmac_partial_write, x5
   bn.lid  x0, 0(x11)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w0, w0
+  bn.xor  w0, w31, w31
   bn.wsrw kmac_msg1, w0
 
   ret
@@ -2303,101 +2269,63 @@ masked_poly_getnoise_eta_1:
   bn.wsrr w17, kmac_digest
   bn.wsrr w23, kmac_digest1
   bn.wsrr w18, kmac_digest
-  bn.wsrr w24, kmac_digest1
+  bn.wsrr w26, kmac_digest1
   bn.wsrr w19, kmac_digest
-  bn.wsrr w25, kmac_digest1
+  bn.wsrr w27, kmac_digest1
 
   bn.wsrr w20, kmac_digest
-  bn.wsrr w26, kmac_digest1
+  bn.wsrr w28, kmac_digest1
   bn.wsrr w21, kmac_digest
-  bn.wsrr w27, kmac_digest1
+  bn.wsrr w29, kmac_digest1
   bn.wsrr w22, kmac_digest
   bn.wsrr w30, kmac_digest1
 
   jal x1, _bitslice_eta_3
 
-  add x4, x0, x0
-  loopi 3, 2
-    bn.sid x4, 0(x10++)
-    addi   x4, x4, 1
-  endloop
-  loopi 3, 2
-    bn.sid x4, 0(x11++)
-    addi   x4, x4, 1
-  endloop
-
-  bn.xor w17, w17, w17
   bn.mov w17, w23
-  bn.xor w18, w18, w18
-  bn.mov w18, w24
-  bn.xor w19, w19, w19
-  bn.mov w19, w25
-  bn.xor w20, w20, w20
-  bn.mov w20, w26
-  bn.xor w21, w21, w21
-  bn.mov w21, w27
-  bn.xor w22, w22, w22
+  bn.mov w18, w26
+  bn.mov w19, w27
+  bn.mov w20, w28
+  bn.mov w21, w29
   bn.mov w22, w30
 
   jal x1, _bitslice_eta_3
 
-  add x4, x0, x0
-  loopi 3, 2
-    bn.sid x4, 0(x10++)
-    addi   x4, x4, 1
-  endloop
-  loopi 3, 2
-    bn.sid x4, 0(x11++)
-    addi   x4, x4, 1
-  endloop
+  /* Whitening. */
+  bn.xor w23, w31, w31
+  bn.xor w26, w31, w31
+  bn.xor w27, w31, w31
+  bn.xor w28, w31, w31
+  bn.xor w29, w31, w31
+  bn.xor w30, w31, w31
 
   beq  x0, x0, _getnoise_common
 
 _getnoise_eta_2:
-  bn.wsrr w17, kmac_digest
-  bn.wsrr w21, kmac_digest1
-  bn.wsrr w18, kmac_digest
-  bn.wsrr w22, kmac_digest1
-  bn.wsrr w19, kmac_digest
-  bn.wsrr w23, kmac_digest1
-  bn.wsrr w20, kmac_digest
-  bn.wsrr w24, kmac_digest1
+  bn.wsrr w24, kmac_digest
+  bn.wsrr w20, kmac_digest1
+  bn.wsrr w23, kmac_digest
+  bn.wsrr w19, kmac_digest1
+  bn.wsrr w22, kmac_digest
+  bn.wsrr w18, kmac_digest1
+  bn.wsrr w21, kmac_digest
+  bn.wsrr w17, kmac_digest1
 
-  addi x5, x0, 17
-  addi x6, x0, 17
-  loopi 2, 36
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
-
+  addi x5, x0, 24
+  addi x6, x0, 24
+  loopi 2, 20
     addi x4, x0, 15
     loopi 4, 8
       bn.movr x5, x6
       loopi 4, 5
         loopi 16, 2
-          bn.rshi w0, w17, w0 >> 16
-          bn.rshi w17, w31, w17 >> 4
+          bn.rshi w0, w24, w0 >> 16
+          bn.rshi w24, w31, w24 >> 4
         endloop
         bn.movr x4, x0
         addi    x4, x4, -1
       endloop
-      addi x6, x6, 1
+      addi x6, x6, -1
     endloop
 
     jal x1, _bitslice_transpose
@@ -2409,7 +2337,19 @@ _getnoise_eta_2:
     bn.sid x4, 0(x11++)
     addi   x4, x4, 1
     bn.sid x4, 0(x11++)
+
+    jal x1, whitening_getnoise_eta_e2
+    nop
   endloop
+
+  /* Whitening. */
+  bn.xor w17, w31, w31
+  bn.xor w18, w31, w31
+  bn.xor w19, w31, w31
+  bn.xor w20, w31, w31
+  bn.xor w21, w31, w31
+  bn.xor w22, w31, w31
+  bn.xor w23, w31, w31
 
 _getnoise_common:
   /* Compute r = masked_cbd(x, y, eta). */
@@ -2437,34 +2377,16 @@ _getnoise_common:
  * that masked_cbd consumes, one share per call. Called by
  * masked_poly_getnoise_eta_1 on the KYBER_K = 2 path.
  *
+ * @param[in,out] x10: dmem pointer to the x bit-planes
+ * @param[in,out] x11: dmem pointer to the y bit-planes
  * @param[in]     w17 to w22: the six digest words to bitslice
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: w0 to w15, w17 to w22, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
 _bitslice_eta_3:
-  /* Whitening. */
-  bn.xor w0, w0, w0
-  bn.xor w1, w1, w1
-  bn.xor w2, w2, w2
-  bn.xor w3, w3, w3
-  bn.xor w4, w4, w4
-  bn.xor w5, w5, w5
-  bn.xor w6, w6, w6
-  bn.xor w7, w7, w7
-  bn.xor w8, w8, w8
-  bn.xor w9, w9, w9
-  bn.xor w10, w10, w10
-  bn.xor w11, w11, w11
-  bn.xor w12, w12, w12
-  bn.xor w13, w13, w13
-  bn.xor w14, w14, w14
-  bn.xor w15, w15, w15
-  bn.xor w28, w28, w28
-  bn.xor w29, w29, w29
-
   loopi 16, 2
     bn.rshi w15, w17, w15 >> 16
     bn.rshi w17, w31, w17 >> 6
@@ -2574,6 +2496,18 @@ _bitslice_eta_3:
   endloop
 
   jal x1, _bitslice_transpose
+
+  add x4, x0, x0
+  loopi 3, 2
+    bn.sid x4, 0(x10++)
+    addi   x4, x4, 1
+  endloop
+  loopi 3, 2
+    bn.sid x4, 0(x11++)
+    addi   x4, x4, 1
+  endloop
+
+  jal x1, whitening_getnoise_eta_e3
   ret
 
 /* Undefine gadget-local macros. */
@@ -2602,7 +2536,7 @@ _bitslice_eta_3:
  * @param[in]  w31: all-zero register
  *
  * clobbered registers: x2 to x8, x10 to x17, x29 to x31,
- *                      w0 to w15, w17 to w21, w28 to w29
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -2615,17 +2549,17 @@ masked_poly_tomsg:
   sw   x12, 1028(x2)
 
   /* Load all constants. */
-  addi      x4, x0, 17
+  addi      x4, x0, 20
   la        x5, const_m_dv
   bn.lid    x4++, 0(x5)
   la        x5, const_qp1_half
   bn.lid    x4++, 0(x5)
-  bn.shv.8s w18, w18 >> 16
+  bn.shv.8s w21, w21 >> 16
 
   /* Create 2^(alpha - 1), alpha = 15. */
-  bn.subi    w19, w31, 1
-  bn.shv.8s  w19, w19 >> 31
-  bn.shv.8s  w19, w19 << 14
+  bn.subi    w22, w31, 1
+  bn.shv.8s  w22, w22 >> 31
+  bn.shv.8s  w22, w22 << 14
 
   /* Compute z_0 = Compressq(x_0, 1 + alpha) + 2^(alpha - 1),
    *         z_1 = Compressq(x_1, 1 + alpha).
@@ -2640,48 +2574,26 @@ masked_poly_tomsg:
    */
   add  x6, x2, x0 /* z */
 
-  loopi 2, 44
-    /* Whitening. */
-    bn.xor w0, w0, w0
-    bn.xor w1, w1, w1
-    bn.xor w2, w2, w2
-    bn.xor w3, w3, w3
-    bn.xor w4, w4, w4
-    bn.xor w5, w5, w5
-    bn.xor w6, w6, w6
-    bn.xor w7, w7, w7
-    bn.xor w8, w8, w8
-    bn.xor w9, w9, w9
-    bn.xor w10, w10, w10
-    bn.xor w11, w11, w11
-    bn.xor w12, w12, w12
-    bn.xor w13, w13, w13
-    bn.xor w14, w14, w14
-    bn.xor w15, w15, w15
-    bn.xor w20, w20, w20
-    bn.xor w21, w21, w21
-    bn.xor w28, w28, w28
-    bn.xor w29, w29, w29
-
+  loopi 2, 25
     addi x4, x0, 15
     loopi 16, 16
       bn.lid             x0, 0(x10++)
       /* Handle even-positioned coeffs. */
-      bn.trn1.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 16
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w21, w19, w20 >> 8
+      bn.trn1.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w18, w22, w17 >> 8
       /* Handle odd-positioned coeffs. */
-      bn.trn2.16h        w20, w0, w31
-      bn.shv.8s          w20, w20 << 16
-      bn.addv.8s         w20, w20, w18
-      bn.mulv.8s.even.hi w20, w20, w17
-      bn.mulv.8s.odd.hi  w20, w20, w17
-      bn.add             w20, w19, w20 >> 8
+      bn.trn2.16h        w17, w0, w31
+      bn.shv.8s          w17, w17 << 16
+      bn.addv.8s         w17, w17, w21
+      bn.mulv.8s.even.hi w17, w17, w20
+      bn.mulv.8s.odd.hi  w17, w17, w20
+      bn.add             w17, w22, w17 >> 8
       /* Combine results. */
-      bn.trn1.16h        w0, w21, w20
+      bn.trn1.16h        w0, w18, w17
       bn.movr            x4, x0
       addi               x4, x4, -1
     endloop
@@ -2694,9 +2606,11 @@ masked_poly_tomsg:
       addi   x4, x4, 1
     endloop
 
-    /* For the first share, w19 holds 2^(alpha - 1).
-     * After that, we clear w19 so that bn.add acts as a shift. */
-    bn.xor w19, w19, w19
+    jal x1, whitening_dv
+
+    /* For the first share, w22 holds 2^(alpha - 1).
+     * After that, we clear w22 so that bn.add acts as a shift. */
+    bn.xor w22, w31, w31
   endloop
 
   /* Compute c = seca2b(z), k = 1 + alpha = 16, share bytes = 512. */
@@ -2710,11 +2624,11 @@ masked_poly_tomsg:
   addi x5, x2, 480
   lw   x6, 1028(x2)
   loopi 2, 4
-    /* Whitening. */
-    bn.xor w0, w0, w0
     bn.lid x0, 0(x5)
     addi   x5, x5, 512
     bn.sid x0, 0(x6++)
+    /* Whitening. */
+    bn.xor w0, w31, w31
   endloop
 
   /* Restore registers. */
@@ -2740,7 +2654,7 @@ masked_poly_tomsg:
  * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2 to x17, x29 to x31,
- *                      w0 to w15, w17 to w21, w28 to w29
+ *                      w0 to w15, w17 to w18, w20 to w22, w24 to w25
  * clobbered flag groups: FG0
  */
 
@@ -3009,6 +2923,9 @@ _handle_common_dv:
   bn.sid  x4, 0(x5++)
 
 _skip_bit_4:
+  /* Whitening. */
+  bn.xor w17, w31, w31
+
   /* Compute r = secand(r, t). */
   lw   x10, 328(x2)
   addi x11, x0, 32
@@ -3045,7 +2962,7 @@ _skip_bit_4:
  * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2 to x17, x29 to x31,
- *                      w0 to w15, w17 to w21, w28 to w30, acc
+ *                      w0 to w15, w17 to w22, w24 to w25, acc
  * clobbered flag groups: FG0
  */
 
@@ -3411,6 +3328,9 @@ _handle_common_du:
   bn.sid x4, 0(x5++)
 
 _skip_bit_10:
+  /* Whitening. */
+  bn.xor w17, w31, w31
+
   /* Compute r = secand(r, t). */
   lw   x10, 716(x2)
   addi x11, x0, 32
@@ -3442,8 +3362,7 @@ _skip_bit_10:
  *                     of masked_poly_compare_{du, dv}
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: x2, x4 to x6, x11 to x13, x15 to x16,
- *                      w0 to w3, w5 to w8
+ * clobbered registers: x2, x4 to x6, x11 to x13, x15 to x16, w0 to w7
  * clobbered flag groups: FG0
  */
 
@@ -3458,11 +3377,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 128
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   /* x10 already points to r. */
@@ -3478,11 +3397,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 64
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3492,11 +3411,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 32
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3506,11 +3425,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 16
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3520,11 +3439,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 8
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3534,11 +3453,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 4
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3548,11 +3467,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 2
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
@@ -3562,11 +3481,11 @@ finalize_cmp:
   add  x5, x2, x0
   add  x6, x10, x0
   loopi 2, 4
-    /* Whitening. */
-    bn.xor  w0, w0, w0
     bn.lid  x0, 0(x6++)
     bn.rshi w0, w31, w0 >> 1
     bn.sid  x0, 0(x5++)
+    /* Whitening. */
+    bn.xor  w0, w31, w31
   endloop
   /* Compute r &= t. */
   jal  x1, secand
