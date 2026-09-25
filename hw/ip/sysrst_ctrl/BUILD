@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/sysrst_ctrl/data:all_files",
+        "//hw/ip/sysrst_ctrl/rtl:all_files",
     ],
 )
 

@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/adc_ctrl/data:all_files",
+        "//hw/ip/adc_ctrl/rtl:all_files",
     ],
 )
 
