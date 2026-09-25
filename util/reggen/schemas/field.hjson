@@ -1,0 +1,71 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:field",
+  title: "Field",
+  description: "Register field",
+  type: "object",
+  required: ["bits"]
+  properties: {
+    // basic properties
+    name: { type: "string", description: "name of the field" },
+    desc: {
+      type: "string",
+      description: "description of field (required if the field has a name). This field supports the markdown syntax.",
+    },
+    bits: {
+      type: ["integer", "string"],
+      description: "bit or bit range (msb:lsb)"
+    },
+
+    // field value information
+    mubi: { type: "boolean", description: "boolean flag for whether the field is a multi-bit type" },
+    resval: {
+      description: '''reset value, comes from register resval
+                   if not provided in field. Zero if neither
+                   are provided and the field is readable,
+                   x if neither are provided and the field
+                   is wo. Must match if both are provided.
+                   '''
+    },
+    enum: { type: "array", description: "list of permitted enumeration groups" },
+    auto_split: {
+      type: "boolean",
+      description: '''boolean flag which determines whether the field
+                   should be automatically separated into 1-bit sub-fields.
+                   This flag is used as a hint for automatically generated
+                   software headers with register description.
+                   '''
+    },
+
+    // field access
+    swaccess: {
+      type: "string",
+      description: '''software access permission, copied from
+                   register if not provided in field.
+                   (Tool adds if not provided.)
+                   '''
+    },
+    hwaccess: {
+      type: "string",
+      description: '''hardware access permission, copied from
+                   register if not provided in field.
+                   (Tool adds if not provided.)
+                   '''
+    },
+    hwqe: {
+      type: "boolean",
+      description: '''"true" if hardware uses "q" enable signal,
+                   which is latched signal of software write pulse.
+                   Copied from register if not provided in field.
+                   (Tool adds if not provided.)
+                   '''
+    },
+
+    // other options (DV tags, aliasing)
+    tags: { type: "array", description: "tags for the field, followed by the format 'tag_name:item1:item2...'" },
+    alias_target: { type: "string", description: "name of the field to apply the alias definition to." },
+  }
+}

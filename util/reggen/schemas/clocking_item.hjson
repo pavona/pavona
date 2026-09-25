@@ -1,0 +1,17 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:clocking_item",
+  title: "Clocking Item",
+  description: "Component of an IP block's clocks and resets",
+  type: "object",
+  properties: {
+    clock: { type: "string" },
+    reset: { type: "string" },
+    idle: { type: "string" },
+    primary: { type: "boolean" },
+    internal: { type: "boolean" }
+  }
+}
