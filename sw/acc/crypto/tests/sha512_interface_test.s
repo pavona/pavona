@@ -74,6 +74,15 @@ main:
   la        x18, test4_digest
   jal       x1, sha512_final
 
+  /* Test 5: SHA512 of the first 108 bytes of the test 2 message. A length
+     of 108..111 mod 128 still fits the padding in one block. */
+  jal       x1, sha512_init
+  li        x18, 108
+  la        x20, test2_msg
+  jal       x1, sha512_update
+  la        x18, test5_digest
+  jal       x1, sha512_final
+
   /* w0, w1 <= test 1 digest */
   li        x2, 0
   la        x3, test1_digest
@@ -92,6 +101,11 @@ main:
 
   /* w6, w7 <= test 4 digest */
   la        x3, test4_digest
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
+
+  /* w8, w9 <= test 5 digest */
+  la        x3, test5_digest
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
@@ -118,6 +132,11 @@ test3_digest:
 /* Temporary buffer for test 4 result. */
 .balign 32
 test4_digest:
+.zero 64
+
+/* Temporary buffer for test 5 result. */
+.balign 32
+test5_digest:
 .zero 64
 
 /* Test 1 input message (plus space for padding). */

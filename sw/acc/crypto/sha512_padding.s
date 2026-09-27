@@ -90,21 +90,24 @@ sha512_pad_message:
 
   /* Determine the number of additional zero words needed.
        x4 <= if x4 + 4 <= 32
-             then 32 - x3 - 4
-             else 64 - x3 - 4  */
+             then 32 - x4 - 4
+             else 64 - x4 - 4  */
   addi    x4, x4, 4
-  srli    x3, x4, 5
+  addi    x3, x4, -1
+  srli    x3, x3, 5
   li      x5, 32
   beq     x0, x3, _sha512_pad_message_skip_add
   addi    x5, x5, 32
   _sha512_pad_message_skip_add:
   sub     x4, x5, x4
 
-  /* Set the additional zero words. */
+  /* Set the additional zero words (if any). */
+  beq     x0, x4, _sha512_pad_message_skip_zeros
   loop    x4, 2
     sw      x0, 0(x21)
     addi    x21, x21, 4
   endloop
+  _sha512_pad_message_skip_zeros:
 
   /* Convert the message byte-length to bit-length in-place.
        dmem[dptr_len] <= dmem[dptr_len] << 3 */
