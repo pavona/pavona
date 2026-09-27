@@ -595,7 +595,7 @@ poly_uniform:
      We read the digest in 32-byte chunks from the digest register. SHAKE128
      produces output 168 bytes at a time, so once every ~5 reads we will need
      to wait about 100 cycles for the KMAC hardware block to process.
-     Carefully scheduled during this time, we store information about whether
+     After each group of stores, we store information about whether
      the coefficients we stored so far are < Q or not. For performance
      reasons, we do not discard them immediately, since it would complicate
      the vectorization of the sampling routine. The vast majority of 23-bit
@@ -620,239 +620,74 @@ poly_uniform:
        - store 8 candidates
   */
 
-  /* Process bytes 0..95 of digest (no state refresh needed). */
-
-  /* Read 32 bytes from the digest. */
-  bn.wsrr shake_reg, kmac_digest
-  /* Load 8 23-bit coefficient candidates into vector register. */
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Store 8 coefficient candidates. */
-  bn.sid x0, 0(x11++)
-  /* Load 2 23-bit coefficient candidates into vector register. */
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Save the leftover bytes (2) in the upper part of w0. */
-  bn.rshi w0, shake_reg, w0 >> 16
-  /* Read 32 bytes from the digest. */
-  bn.wsrr shake_reg, kmac_digest
-  /* Complete the partial coefficient with 1 more byte from the digest. */
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  /* Load 5 23-bit coefficient candidates into vector register. */
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Store 8 coefficient candidates. */
-  bn.sid x0, 0(x11++)
-  /* Load 5 23-bit coefficient candidates into vector register. */
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Save the leftover bytes (1) in the upper part of w0. */
-  bn.rshi w0, shake_reg, w0 >> 8
-  /* Read 32 bytes from the digest. */
-  bn.wsrr shake_reg, kmac_digest
-  /* Complete the partial coefficient with 2 more bytes from the digest. */
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  /* Load 2 23-bit coefficient candidates into vector register. */
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Store 8 coefficient candidates. */
-  bn.sid x0, 0(x11++)
-  /* Load 8 23-bit coefficient candidates into vector register. */
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  /* Store 8 coefficient candidates. */
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 96..191 of digest (state refresh before third read). */
-
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  /* While waiting for more digest, mask and check vectors 0..5. */
-  li      x6, 6
-  jal     x1, poly_uniform_mask_and_check_vectors
-  /* STATE REFRESH. */
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 192-287 of digest (no state refresh needed). */
-
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 288-383 of digest (state refresh before second read). */
-
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  /* While waiting for more digest, mask and check vectors 6..12. */
-  li      x6, 7
-  jal     x1, poly_uniform_mask_and_check_vectors
-  /* STATE REFRESH. */
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 384-479 of digest (no state refresh needed). */
-
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 480-575 of digest (state refresh before first read). */
-
-  /* Note: this loop is an inlined version of
-     poly_uniform_mask_and_check_vectors, because when there is a refresh on
-     the first read of a 96-byte cycle the checking latency slightly exceeds
-     the SHAKE latency and saving a few instructions on loading the loop size
-     and jumping actually counts. */
-  loopi  7, 8
+  /* Process 96 bytes of digest per iteration. */
+  loopi 8, 90
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Load 8 23-bit coefficient candidates into vector register. */
+    .rept 8
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Store 8 coefficient candidates. */
+    bn.sid x0, 0(x11++)
+    /* Load 2 23-bit coefficient candidates into vector register. */
+    .rept 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Save the leftover bytes (2) in the upper part of w0. */
+    bn.rshi w0, shake_reg, w0 >> 16
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Complete the partial coefficient with 1 more byte from the digest. */
+    bn.rshi w0, shake_reg, w0 >> 16
+    bn.rshi shake_reg, shake_reg, shake_reg >> 8
+    /* Load 5 23-bit coefficient candidates into vector register. */
+    .rept 5
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Store 8 coefficient candidates. */
+    bn.sid x0, 0(x11++)
+    /* Load 5 23-bit coefficient candidates into vector register. */
+    .rept 5
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Save the leftover bytes (1) in the upper part of w0. */
+    bn.rshi w0, shake_reg, w0 >> 8
+    /* Read 32 bytes from the digest. */
+    bn.wsrr shake_reg, kmac_digest
+    /* Complete the partial coefficient with 2 more bytes from the digest. */
+    bn.rshi w0, shake_reg, w0 >> 24
+    bn.rshi shake_reg, shake_reg, shake_reg >> 16
+    /* Load 2 23-bit coefficient candidates into vector register. */
+    .rept 2
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Store 8 coefficient candidates. */
+    bn.sid x0, 0(x11++)
+    /* Mask and check the three vectors stored so far in this iteration. */
+    loopi  3, 8
+      bn.lid     x31, 0(x28)
+      bn.and     w21, w21, w11
+      bn.sid     x31, 0(x28++)
+      bn.subv.8s w10, w21, w12
+      bn.and     w10, w10, w13
+      bn.cmp     w10, w13
+      bn.sel     w15, w15, w31, Z
+      bn.add     w14, w14, w15
+    endloop
+    /* Load 8 23-bit coefficient candidates into vector register. */
+    .rept 8
+      bn.rshi w0, shake_reg, w0 >> 32
+      bn.rshi shake_reg, shake_reg, shake_reg >> 24
+    .endr
+    /* Store 8 coefficient candidates. */
+    bn.sid x0, 0(x11++)
+    /* Mask and check the fourth vector (a jump cannot end the loop body). */
     bn.lid     x31, 0(x28)
     bn.and     w21, w21, w11
     bn.sid     x31, 0(x28++)
@@ -862,145 +697,6 @@ poly_uniform:
     bn.sel     w15, w15, w31, Z
     bn.add     w14, w14, w15
   endloop
-  /* STATE REFRESH. */
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 576-671 of digest (no state refresh needed). */
-
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Process bytes 672-767 of digest (state refresh before first read). */
-
-  /* While waiting for more digest, mask and check vectors 20..27. */
-  /* Note: this loop is an inlined version of
-     poly_uniform_mask_and_check_vectors, because when there is a refresh on
-     the first read of a 96-byte cycle the checking latency slightly exceeds
-     the SHAKE latency and saving a few instructions on loading the loop size
-     and jumping actually counts. */
-  loopi  8, 8
-    bn.lid     x31, 0(x28)
-    bn.and     w21, w21, w11
-    bn.sid     x31, 0(x28++)
-    bn.subv.8s w10, w21, w12
-    bn.and     w10, w10, w13
-    bn.cmp     w10, w13
-    bn.sel     w15, w15, w31, Z
-    bn.add     w14, w14, w15
-  endloop
-  /* STATE REFRESH. */
-  bn.wsrr shake_reg, kmac_digest
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 16
-  bn.rshi shake_reg, shake_reg, shake_reg >> 8
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 5
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.rshi w0, shake_reg, w0 >> 8
-  bn.wsrr shake_reg, kmac_digest
-  bn.rshi w0, shake_reg, w0 >> 24
-  bn.rshi shake_reg, shake_reg, shake_reg >> 16
-  .rept 2
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-  .rept 8
-    bn.rshi w0, shake_reg, w0 >> 32
-    bn.rshi shake_reg, shake_reg, shake_reg >> 24
-  .endr
-  bn.sid x0, 0(x11++)
-
-  /* Done sampling; mask and check the last few vectors 28..31. */
-  li  x6, 4
-  jal x1, poly_uniform_mask_and_check_vectors
 
 /* This label is for testing, so we can intentionally give the postprocessing
  * part difficult inputs. */
