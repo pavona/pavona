@@ -7,6 +7,7 @@
 package acc_reg_pkg;
 
   // Param list
+  parameter int ImemSize = 8192;
   parameter int NumAlerts = 2;
 
   // Address widths within the block

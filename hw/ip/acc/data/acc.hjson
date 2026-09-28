@@ -121,6 +121,13 @@
       local: "false",
       expose: "true"
     },
+    { name: "ImemSize",
+      type: "int",
+      default: "8192", // 32 kB
+      desc: "Size of IMEM"
+      local: true,
+      expose: false
+    }
   ]
   interrupt_list: [
     { name: "done"
@@ -780,7 +787,7 @@
     // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM",
-        items: "8192", // 32 kB
+        items: "ImemSize",
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
