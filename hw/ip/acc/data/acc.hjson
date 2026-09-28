@@ -121,6 +121,13 @@
       local: "false",
       expose: "true"
     },
+    { name: "ImemSizeWords",
+      type: "int",
+      default: "8192", // 32 kB
+      desc: "Number of items (32-bit words) in IMEM",
+      local: true,
+      expose: false
+    }
   ]
   interrupt_list: [
     { name: "done"
@@ -780,7 +787,7 @@
     // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM",
-        items: "8192", // 32 kB
+        items: "ImemSizeWords",
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
