@@ -14,7 +14,7 @@
     desc: { type: "string", description: "description of the item" },
 
     // param value information
-    type: { type: "string", description: "item type. int by default" },
+    type: { type: "string", description: "item type", default: "int" },
     unpacked_dimensions: {
       type: "string",
       description: '''unpacked dimensions of parameter e.g. [16] for a single
@@ -28,7 +28,7 @@
     expose: { type: "boolean", description: "to be exposed to top" },
 
     // random param
-    randcount: { type: "number", description: "number of bits to randomize in the parameter. 0 by default." },
+    randcount: { type: "integer", description: "number of bits to randomize in the parameter", default: 0 },
     randtype: { type: "string", description: "type of randomization to perform. none by default" },
   }
 }

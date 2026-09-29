@@ -51,7 +51,7 @@
       type: "boolean",
       description: "'true' if hardware uses 're' signal, which is latched signal of software read pulse."
     },
-    resval: { type: "number", description: "reset value of full register (default 0)", default: 0 },
+    resval: { type: "integer", description: "reset value of full register", default: 0 },
     async: {
       type: "string",
       description: '''indicates the register must cross to a different clock

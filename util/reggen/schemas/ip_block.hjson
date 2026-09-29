@@ -59,7 +59,7 @@
     reset_request_list: { type: "array", description: "list of signals requesting reset" },
 
     // registers and memory
-    regwidth: { type: "number", description: "width of registers in bits (default 32)", default: 32 },
+    regwidth: { type: "integer", description: "width of registers in bits", default: 32 },
     registers: { type: ["array", "object"], description: "list of register definition groups and offset control groups" },
     memory: { type: "object", description: "list of memory definitions" }
 

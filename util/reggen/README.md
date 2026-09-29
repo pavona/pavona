@@ -107,7 +107,7 @@ none | No Access Needed
 - <a id="properties/alert_list"></a>**`alert_list`** *(array)*: list of peripheral alerts.
 - <a id="properties/wakeup_list"></a>**`wakeup_list`** *(array)*: list of peripheral wakeups.
 - <a id="properties/reset_request_list"></a>**`reset_request_list`** *(array)*: list of signals requesting reset.
-- <a id="properties/regwidth"></a>**`regwidth`** *(number)*: width of registers in bits (default 32). Default: `32`.
+- <a id="properties/regwidth"></a>**`regwidth`** *(integer)*: width of registers in bits. Default: `32`.
 - <a id="properties/registers"></a>**`registers`** *(['array', 'object'])*: list of register definition groups and offset control groups.
 - <a id="properties/memory"></a>**`memory`** *(object)*: list of memory definitions.
 - <a id="properties/features"></a>**`features`** *(array)*: list of functional features in this block.
@@ -154,7 +154,7 @@ write protection.
 - <a id="properties/hwext"></a>**`hwext`** *(boolean)*: 'true' if the register is stored outside of the register module.
 - <a id="properties/hwqe"></a>**`hwqe`** *(boolean)*: 'true' if hardware uses 'q' enable signal, which is latched signal of software write pulse.
 - <a id="properties/hwre"></a>**`hwre`** *(boolean)*: 'true' if hardware uses 're' signal, which is latched signal of software read pulse.
-- <a id="properties/resval"></a>**`resval`** *(number)*: reset value of full register (default 0). Default: `0`.
+- <a id="properties/resval"></a>**`resval`** *(integer)*: reset value of full register. Default: `0`.
 - <a id="properties/async"></a>**`async`** *(string)*: indicates the register must cross to a different clock
 domain before use. The value shown here should correspond
 to one of the module's clocks.
@@ -334,13 +334,10 @@ Defaults to regwidth. If smaller than the regwidth then in each
 word of the window bits {regwidth-1:validbits} are unused and
 bits {validbits-1:0} are valid.
 - <a id="properties/unusual"></a>**`unusual`** *(boolean)*: True if window has unusual parameters
-(set to prevent Unusual: errors).
-Defaults to false if not present.
+(set to prevent Unusual: errors). Default: `false`.
 - <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: software access permitted.
-- <a id="properties/data-intg-passthru"></a>**`data-intg-passthru`** *(boolean)*: True if the window has data integrity pass through.
-Defaults to false if not present.
-- <a id="properties/byte-write"></a>**`byte-write`** *(boolean)*: True if byte writes are supported.
-Defaults to false if not present.
+- <a id="properties/data-intg-passthru"></a>**`data-intg-passthru`** *(boolean)*: True if the window has data integrity pass through. Default: `false`.
+- <a id="properties/byte-write"></a>**`byte-write`** *(boolean)*: True if byte writes are supported. Default: `false`.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the window.
 
 
