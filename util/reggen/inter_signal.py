@@ -4,8 +4,8 @@
 
 from typing import Dict, Optional, Union
 
-from reggen.lib import (check_int, check_keys, check_name, check_optional_str,
-                        check_str)
+from reggen.lib import check_int, check_name, check_optional_str, check_str
+from basegen.validate import validate_schema
 from reggen.params import ReggenParams, Parameter
 
 
@@ -31,32 +31,34 @@ class InterSignal:
     @staticmethod
     def from_raw(params: ReggenParams, what: str,
                  raw: object) -> 'InterSignal':
-        rd = check_keys(raw, what, ['name', 'struct', 'type', 'act'],
-                        ['desc', 'package', 'width', 'default'])
+        if not isinstance(raw, dict):
+            raise TypeError('intermodule signal must be instantiated from dict: intersignal of '
+                            + what)
+        validate_schema(raw, 'urn:reggen:inter_signal')
 
-        name = check_name(rd['name'], 'name field of ' + what)
+        name = check_name(raw['name'], 'name field of ' + what)
 
-        r_desc = rd.get('desc')
+        r_desc = raw.get('desc')
         if r_desc is None:
             desc = None
         else:
             desc = check_str(r_desc, 'desc field of ' + what)
 
-        struct = check_str(rd['struct'], 'struct field of ' + what)
+        struct = check_str(raw['struct'], 'struct field of ' + what)
 
-        r_package = rd.get('package')
+        r_package = raw.get('package')
         if r_package is None or r_package == '':
             package = None
         else:
             package = check_name(r_package, 'package field of ' + what)
 
-        signal_type = check_name(rd['type'], 'type field of ' + what)
-        act = check_name(rd['act'], 'act field of ' + what)
+        signal_type = check_name(raw['type'], 'type field of ' + what)
+        act = check_name(raw['act'], 'act field of ' + what)
 
-        default = check_optional_str(rd.get('default'),
+        default = check_optional_str(raw.get('default'),
                                      'default field of ' + what)
         width: Union[int, Parameter] = 1
-        width_p = params.get(rd.get('width'), 1)
+        width_p = params.get(raw.get('width'), 1)
         if isinstance(width_p, Parameter):
             width_p.default = check_int(width_p.default,
                                         'width field of ' + what)
@@ -67,7 +69,7 @@ class InterSignal:
                 raise ValueError(f'width field of {what} is not exposed.')
             width = width_p
         else:
-            width = check_int(rd.get('width', 1), 'width field of ' + what)
+            width = check_int(raw.get('width', 1), 'width field of ' + what)
             if width <= 0:
                 raise ValueError(f'width field of {what} is not positive.')
 
