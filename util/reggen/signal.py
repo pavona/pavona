@@ -5,7 +5,9 @@
 from typing import Dict, Sequence
 
 from reggen.bits import Bits
-from reggen.lib import check_keys, check_name, check_str, check_int, check_list, check_bool
+from reggen.lib import check_name, check_str, check_int, check_list, check_bool
+from basegen.validate import validate_schema
+from basegen.lib import cast_hjson_values
 
 
 class Signal:
@@ -18,12 +20,14 @@ class Signal:
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Signal':
-        rd = check_keys(raw, what, ["name", "desc"], ["width", "enabled_after_reset"])
+        if not isinstance(raw, dict):
+            raise TypeError('signal must be instantiated from dict: signal of ' + what)
+        validate_schema(cast_hjson_values(raw), 'urn:reggen:signal')
 
-        name = check_name(rd['name'], 'name field of ' + what)
-        desc = check_str(rd['desc'], 'desc field of ' + what)
-        width = check_int(rd.get('width', 1), 'width field of ' + what)
-        enabled_after_reset = check_bool(rd.get("enabled_after_reset", False),
+        name = check_name(raw['name'], 'name field of ' + what)
+        desc = check_str(raw['desc'], 'desc field of ' + what)
+        width = check_int(raw.get('width', 1), 'width field of ' + what)
+        enabled_after_reset = check_bool(raw.get("enabled_after_reset", False),
                                          "enabled_after_reset field of " + what)
 
         if width <= 0:
