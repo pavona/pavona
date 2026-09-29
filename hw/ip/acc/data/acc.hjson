@@ -127,6 +127,13 @@
       desc: "Size of IMEM"
       local: true,
       expose: false
+    },
+    { name: "DmemSize",
+      type: "int",
+      default: "7936", // 31kB visible over bus (1 kB scratch)
+      desc: "Size of DMEM"
+      local: true,
+      expose: false
     }
   ]
   interrupt_list: [
@@ -810,7 +817,7 @@
     // Dmem size (given as `items` below) must be a power of two.
     { window: {
         name: "DMEM",
-        items: "7936", // 31kB visible over bus (1 kB scratch)
+        items: "DmemSize",
         unusual: "true", // Needed to avoid an error because of the non-power-of-two size
         swaccess: "rw",
         data-intg-passthru: "true",
