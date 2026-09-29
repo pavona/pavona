@@ -289,11 +289,6 @@ cc_library(
     name = "acc",
     srcs = ["acc.c"],
     hdrs = ["acc.h"],
-    local_defines = select({
-        ":acc_has_pqc": ["ACC_HAS_PQC"],
-        ":acc_pqc_hardened": ["ACC_HAS_PQC"],
-        "//conditions:default": [],
-    }),
     deps = [
         ":entropy",
         "//hw/top:acc_c_regs",

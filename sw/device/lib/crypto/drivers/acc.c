@@ -26,6 +26,16 @@ static inline uint32_t acc_base(void) {
   return dt_acc_primary_reg_block(kAccDt);
 }
 
+// Verify auto-generated parameters have nonzero SRAM sizes.
+static_assert(ACC_DMEM_SIZE_BYTES > 0, "Code assumes ACC DMEM is nonzero");
+static_assert(ACC_IMEM_SIZE_BYTES > 0, "Code assumes ACC IMEM is nonzero");
+
+// Mask for the ACC IMEM/DMEM address bits aligned to a power of two.
+// Using the leading zero count and a final OR of 1 ensures that 1 word size
+// MEMs and scratch work.
+#define ACC_MEM_ADDR_MASK(mem_size) \
+  (UINT32_MAX >> __builtin_clz((uint32_t)((mem_size) - 1) | 1))
+
 enum {
   /**
    * DMEM size in bytes.
@@ -35,6 +45,10 @@ enum {
    * IMEM size in bytes.
    */
   kAccIMemSizeBytes = ACC_IMEM_SIZE_BYTES,
+  /**
+   * Mask for the DMEM address bits used by the memory-load checksum.
+   */
+  kAccDMemAddrMask = ACC_MEM_ADDR_MASK(ACC_DMEM_SIZE_BYTES),
   /**
    * ERR_BITS register value in the case of no errors.
    *
@@ -108,8 +122,8 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
  *
  * The location bytes are formatted as follows (described from MSB->LSB):
  * - The first bit (MSB) is 1 for IMEM, 0 for DMEM
- * - The next 5b are zero
- * - The next 10b are the word-index of the address in memory
+ * - The remaining 15b are the word-index of the address in memory and
+ * zero-extended from the width of the memory's address decoder
  *
  * The 48b value is read by ACC in little-endian order, so we accumulate it to
  * the checksum with least significant bytes first.
@@ -120,13 +134,8 @@ static status_t check_offset_len(uint32_t offset_bytes, size_t num_words,
  */
 static void update_checksum_for_write(uint32_t *checksum, uint32_t addr,
                                       uint32_t value) {
-#ifdef ACC_HAS_PQC
-  // Calculate prefix: addr[14:2]
-  uint16_t prefix = (addr & 0x7fff) >> 2;
-#else
-  // Calculate prefix: addr[11:2]
-  uint16_t prefix = (addr & 0xfff) >> 2;
-#endif
+  // Calculate prefix.
+  uint16_t prefix = (addr & kAccDMemAddrMask) >> 2;
   unsigned char *prefix_bytes = (unsigned char *)&prefix;
 
   // The value and prefix are reversed here because of the little-endian
