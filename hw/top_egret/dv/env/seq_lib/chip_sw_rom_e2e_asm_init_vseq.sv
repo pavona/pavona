@@ -13,7 +13,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   localparam bit [2:0] EPMP_ACCESS_RWX  = 3'b111; // Read-write-execute access.
 
   localparam bit [31:0] RAM_STACK_GUARD_ADDRESS          = 32'h1001C000;
-  localparam bit [31:0] CTN_TEXT_START_ADDRESS           = 32'h20000400;
+  localparam bit [31:0] FLASH_TEXT_START_ADDRESS         = 32'h20000400;
   localparam bit [31:0] MMIO_START_ADDRESS               = 32'h21100000;
   localparam bit [31:0] MMIO_END_ADDRESS                 = 32'h30601000;
   localparam bit [31:0] CREATOR_FW_PHY_START_ADDRESS     = 32'h20000000;
@@ -119,10 +119,10 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     // Check ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
-                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR))
+                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR,
-                                 top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_SIZE_BYTES))
+                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR,
+                                 top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13],
@@ -217,10 +217,10 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     // Check ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
-                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR))
+                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR,
-                                 top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_SIZE_BYTES))
+                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR,
+                                 top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_SIZE_BYTES))
     // Creator firmware region addresses are unchecked here because they
     // depend on the size and linkage of the test binary.
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
@@ -274,10 +274,10 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
 
     // Check ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
-                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR))
+                 epmp_addr_tor(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
-                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_BASE_ADDR,
-                                 top_egret_pkg::TOP_EGRET_ROM_CTRL0_ROM_SIZE_BYTES))
+                 epmp_addr_napot(top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_BASE_ADDR,
+                                 top_egret_pkg::TOP_EGRET_ROM_CTRL_ROM_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13],
