@@ -187,8 +187,8 @@ def elaborate_instance(instance, block: IpBlock):
     # for each module declaration, check to see that the parameter actually
     # exists and can be set
     for decl in param_decl_accounting:
-        log.error("{} is not a valid parameter of {} that can be "
-                  "set from top level".format(decl, block.name))
+        log.warning("{} is not a valid parameter of {} that can be "
+                    "set from top level".format(decl, block.name))
 
     # These objects get added-to in place by code in intermodule.py, so we have
     # to convert and copy them here.
