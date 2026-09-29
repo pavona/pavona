@@ -9,7 +9,6 @@ import io
 import logging as log
 import sys
 import textwrap
-import warnings
 from typing import List, Optional, Set, TextIO
 
 from reggen.field import Field
@@ -203,7 +202,7 @@ def gen_cdefines_module_param(outstr: TextIO, param: LocalParam,
     # added, they potentially need to be handled differently.
     known_types = ["int", "int unsigned"]
     if param.param_type not in known_types:
-        warnings.warn(
+        log.info(
             f"Cannot generate a module define of type {param.param_type}")
         return
 

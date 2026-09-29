@@ -269,7 +269,7 @@ def gen_rust_module_param(outstr: TextIO, param: LocalParam, module_name: str,
     # added, they potentially need to be handled differently.
     known_types = ["int"]
     if param.param_type not in known_types:
-        warnings.warn("Cannot generate a module define of type {}".format(
+        log.info("Cannot generate a module define of type {}".format(
             param.param_type))
         return
 

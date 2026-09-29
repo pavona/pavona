@@ -9,7 +9,6 @@ import io
 import logging as log
 import sys
 import textwrap
-import warnings
 from typing import Optional, Set, TextIO
 
 from reggen.field import Field
@@ -175,7 +174,7 @@ def gen_rust_module_param(outstr: TextIO, param: LocalParam, module_name: str,
     # added, they potentially need to be handled differently.
     known_types = ["int"]
     if param.param_type not in known_types:
-        warnings.warn(
+        log.info(
             f"Cannot generate a module define of type {param.param_type}")
         return
 
