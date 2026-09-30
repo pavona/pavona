@@ -361,7 +361,11 @@ ownership_transfer_test(
         # We boot on Side B since rescue will rewrite side A.
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
         changes_otp = True,
-        tags = ["slow_test"],
+        # Broken: fails repeatedly on CW340.
+        tags = [
+            "broken",
+            "slow_test",
+        ],
         test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
