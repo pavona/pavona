@@ -114,6 +114,7 @@ class ACCState:
 
         self._err_bits = 0
         self.pending_halt = False
+        self._pending_err_bits = 0
 
         self._urnd_client = EdnClient()
 
@@ -130,6 +131,10 @@ class ACCState:
         # WIPING state, this should be a non-negative number. Initialise to -1
         # to catch bugs if we forget to set it.
         self.wipe_cycles = -1
+
+        # Remember the last state we were in. This is used to determine whether we
+        # need to delay zeroing INSN_CNT when locking after a wipe.
+        self.old_state = self._fsm_state
 
         # This controls which state we move to when the next secure wipe ends
         self.lock_after_wipe = False
@@ -308,11 +313,11 @@ class ACCState:
                 self.invalidated_imem = True
                 self._time_to_imem_invalidation = None
 
-        old_state = self._fsm_state
+        self.old_state = self._fsm_state
 
         self._fsm_state = self._next_fsm_state
 
-        if self._fsm_state == old_state:
+        if self._fsm_state == self.old_state:
             self.cycles_in_this_state += 1
         else:
             self.cycles_in_this_state = 0
@@ -328,7 +333,7 @@ class ACCState:
         # register) but nothing else. This is just an optimisation: if
         # everything is working properly, there won't be any other pending
         # changes.
-        if old_state not in [FsmState.EXEC, FsmState.WIPING]:
+        if self.old_state not in [FsmState.EXEC, FsmState.WIPING]:
             return
 
         self.gprs.commit()
@@ -541,9 +546,45 @@ class ACCState:
         Any bits set in err_bits will be set in the ERR_BITS register when
         we're done.
 
+        Some errors are delayed by one cycle to match the RTL's behaviour.
         '''
+        # Delay certain errors due to the registering of escalation signals.
+        # For some fatal escalation sources (like predecode errors) ACC
+        # escalates one cycle after the error is detected. This is not directly
+        # modeled in this simulator as such errors only occur in real HW or
+        # during tests that inject errors into the simulation model. In case
+        # such a test injects an error it can notify the model in the correct
+        # cycle using the send_err_escalation command of the stepped simulator.
+        # However, this method cannot cover all possible escalation sources.
+        # One such example is the DMEM integrity violation error. If the test
+        # invalidates the DMEM it cannot know when the next DMEM read will
+        # happen as the binary being executed is not known to the testbench.
+        # When the memory is invalidated the next load instruction will
+        # trigger the DMEM integrity violation error by calling
+        # stop_at_end_of_cycle with the DMEM_INTG_VIOLATION error set. The
+        # model now detects that this error is set and must delay the
+        # escalation by one cycle. For this the error bit is added to the
+        # pending errors and removed from the current error bits. If there are
+        # no other error bits set the model must still commit the current
+        # instruction and thus may not set the pending_halt flag.
+        if err_bits & ErrBits.DMEM_INTG_VIOLATION:
+            # Clear the flag so it's not applied below
+            err_bits &= ~ErrBits.DMEM_INTG_VIOLATION
+            self._pending_err_bits |= ErrBits.DMEM_INTG_VIOLATION
+            # We don't want to stop if this is the only error bit set
+            if err_bits == 0:
+                return
+
+        # Any other stop request (with or without errors) happens immediately
         self._err_bits |= err_bits
         self.pending_halt = True
+
+    def take_pending_err_bits(self) -> None:
+        '''Apply any pending error bits'''
+        if self._pending_err_bits:
+            self._err_bits |= self._pending_err_bits
+            self._pending_err_bits = 0
+            self.pending_halt = True
 
     def invalidate_imem(self) -> None:
         self._time_to_imem_invalidation = 2
