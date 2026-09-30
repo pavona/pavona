@@ -311,7 +311,7 @@ value = "{}'h {:x}".format(aw, r.offset)
 <%
     win_pfx = '{}_{}'.format(ublock, w.name.upper())
     base_txt_val = "{}'h {:x}".format(aw, w.offset)
-    size_txt_val = "'h {:x}".format(w.size_in_bytes)
+    size_txt_val = w.size_txt or "'h {:x}".format(w.size_in_bytes)
 
     offset_type = 'logic [{}-1:0]'.format(aw_name)
     size_type = 'int unsigned'
