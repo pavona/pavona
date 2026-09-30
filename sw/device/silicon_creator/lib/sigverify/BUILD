@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_require_top", "pavona_select_top")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",
@@ -290,8 +290,11 @@ cc_library(
 cc_test(
     name = "sigverify_unittest",
     srcs = ["sigverify_unittest.cc"],
+    target_compatible_with = pavona_require_top("egret"),
     deps = [
-        ":sigverify",
+        ":mod_exp_ibex",
+        ":rsa_verify",
+        ":usage_constraints",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
