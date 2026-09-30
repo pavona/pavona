@@ -106,6 +106,8 @@ jobs:
         run: ./ci/scripts/check_bazel_target_names.py
       - name: DV software images
         run: ./ci/scripts/check_dv_sw_images.sh
+      - name: Unrunnable tests
+        run: ./ci/scripts/check-unrunnable-tests.sh
       - name: Build documentation
         run: ./ci/scripts/build-docs.sh
       - name: Generated files
@@ -372,9 +374,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: sw_build_test-test-results
-      - name: Check for unrunnable tests
-        run: ./ci/scripts/check-unrunnable-tests.sh
-        continue-on-error: true
 
   df_sw_build_test:
     name: Build and test software (Dragonfly)
@@ -400,9 +399,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: sw_build_test-test-results
-      - name: Check for unrunnable tests
-        run: ./ci/scripts/check-unrunnable-tests.sh
-        continue-on-error: true
 
   qemu_smoketest:
     name: QEMU smoketest
