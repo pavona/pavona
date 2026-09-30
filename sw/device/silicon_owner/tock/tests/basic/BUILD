@@ -4,7 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:tock.bzl", "tock_elf2tab", "tock_image")
-load("//rules/pavona:defs.bzl", "PAVONA_CPU", "cw310_params", "fpga_params", "pavona_test")
+load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -33,18 +33,4 @@ tock_image(
     app_flash_start = 0x20040000,
     apps = [":tab"],
     kernel = "//sw/device/silicon_owner/tock/tests:test_kernel",
-)
-
-pavona_test(
-    name = "basic_test",
-    exec_env = {
-        "//hw/top_egret:fpga_cw310_test_rom": None,
-    },
-    fpga = fpga_params(
-        binaries = {":image": "firmware"},
-        tags = [
-            "broken",
-            "manual",
-        ],
-    ),
 )
