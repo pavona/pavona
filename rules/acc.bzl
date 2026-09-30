@@ -173,7 +173,7 @@ def _acc_binary(ctx, additional_srcs = []):
         ),
     ]
 
-def _run_sim_test(ctx, exp, dexp, pqc, stats, testcase = None, additional_srcs = []):
+def _run_sim_test(ctx, exp, dexp, pqc, stats, trace, testcase = None, additional_srcs = []):
     providers = _acc_binary(ctx, additional_srcs)
 
     # Extract the output .elf file from the output group.
@@ -196,6 +196,8 @@ def _run_sim_test(ctx, exp, dexp, pqc, stats, testcase = None, additional_srcs =
         flag_content += "--pqc "
     if stats:
         flag_content += "--stats "
+    if trace:
+        flag_content += "--trace "
 
     # Create a simple script that runs the ACC test wrapper on the .elf file
     # using the provided simulator path.
@@ -224,7 +226,7 @@ def _acc_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, ctx.attr.pqc, ctx.attr.stats, testcase = ctx.file.testcase)
+    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, ctx.attr.pqc, ctx.attr.stats, ctx.attr.trace, testcase = ctx.file.testcase)
 
 def acc_sim_test_suite(name, tests, **kwargs):
     def testname(target):
@@ -275,7 +277,7 @@ def _acc_autogen_sim_test_impl(ctx):
         executable = ctx.executable.testgen,
     )
 
-    return _run_sim_test(ctx, exp, dexp, ctx.attr.pqc, ctx.attr.stats, additional_srcs = [data])
+    return _run_sim_test(ctx, exp, dexp, ctx.attr.pqc, ctx.attr.stats, ctx.attr.trace, additional_srcs = [data])
 
 def _acc_consttime_test_impl(ctx):
     """This rule checks if a program or subroutine is constant-time.
@@ -449,6 +451,7 @@ acc_sim_test = rv_rule(
         "copts": attr.string_list(),
         "pqc": attr.bool(default = False),
         "stats": attr.bool(default = False),
+        "trace": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@llvm_toolchain_llvm//:bin/llvm-ar"),
             allow_single_file = True,
@@ -519,6 +522,7 @@ acc_autogen_sim_test = rv_rule(
         "pqc": attr.bool(default = False),
         "testgen_args": attr.string_list(),
         "stats": attr.bool(default = False),
+        "trace": attr.bool(default = False),
         "_riscv32_ar": attr.label(
             default = Label("@llvm_toolchain_llvm//:bin/llvm-ar"),
             allow_single_file = True,

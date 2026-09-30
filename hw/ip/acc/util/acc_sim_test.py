@@ -85,6 +85,9 @@ def main() -> int:
     parser.add_argument('--stats',
                         action='store_true',
                         help='Print statistics (makes test run slower).')
+    parser.add_argument('--trace',
+                        action='store_true',
+                        help='Print the ISS instruction trace.')
     parser.add_argument('elf',
                         help='Path to the .elf file for the ACC program.')
     parser.add_argument('-v', '--verbose', action='store_true')
@@ -119,6 +122,9 @@ def main() -> int:
             "--dump-stats",
             "-",
         ])
+
+    if args.trace:
+        cmd_flags.append('-v')
 
     with tempfile.NamedTemporaryFile() as regs_file, tempfile.NamedTemporaryFile() as dmem_file:
         cmd = [
