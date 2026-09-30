@@ -218,7 +218,6 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
-        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:sim_verilator": None,
@@ -251,7 +250,6 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
-        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:sim_verilator": None,
@@ -286,7 +284,6 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
-        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:sim_verilator": None,
@@ -1592,7 +1589,6 @@ pavona_test(
         {
             "//hw/top_egret:silicon_creator": None,
         },
-        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -1635,7 +1631,6 @@ pavona_test(
             "//hw/top_egret:fpga_cw340_sival": None,
             "//hw/top_egret:silicon_creator": None,
         },
-        DRAGONFLY_TEST_ENVS,
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -1677,7 +1672,6 @@ pavona_test(
             "//hw/top_egret:fpga_cw340_sival": None,
             "//hw/top_egret:silicon_creator": None,
         },
-        DRAGONFLY_TEST_ENVS,
     ),
     # This test uses carefully tuned health test threshold values to trigger health test alerts
     # inside ENTROPY_SRC. Due to the probabilistic nature of the analog noise source producing the
@@ -2793,7 +2787,6 @@ pavona_test(
     srcs = ["kmac_error_conditions_test.c"],
     exec_env = dicts.add(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
-        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:fpga_cw340_sival": None,
@@ -2865,7 +2858,6 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
-        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:silicon_creator": None,
