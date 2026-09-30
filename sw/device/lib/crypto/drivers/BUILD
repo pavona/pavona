@@ -208,7 +208,6 @@ pavona_test(
     exec_env = EGRET_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
-        tags = ["broken"],  # TODO #16672 test broken by icache
     ),
     deps = [
         ":entropy",
