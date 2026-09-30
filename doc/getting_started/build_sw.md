@@ -1,8 +1,7 @@
 # Building (and Testing) Software
 
 _Before following this guide, make sure you have read the_:
-* main [Getting Started](README.md) instructions,
-* "install Verilator" section of the [Verilator guide](./setup_verilator.md), and
+* main [Getting Started](README.md) instructions, and
 * [software documentation](../../sw/README.md).
 
 All Pavona software is built with [Bazel](https://bazel.build/).
@@ -65,7 +64,7 @@ Running
 ./bazelisk.sh build //sw/...
 ```
 will build all software in our repository.
-If you do not have Verilator installed yet, you can use the `--define DISABLE_VERILATOR_BUILD=true` flag to skip the jobs that depend on that.
+To skip building the Verilated model, use the `--define DISABLE_VERILATOR_BUILD=true` flag.
 
 In general, you can build any software target (and all of it's dependencies) using the following syntax:
 ```console
