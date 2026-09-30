@@ -343,10 +343,10 @@ package acc_reg_pkg;
 
   // Window parameters
   parameter logic [BlockAw-1:0] ACC_IMEM_OFFSET = 17'h 8000;
-  parameter int unsigned        ACC_IMEM_SIZE   = 'h 8000;
+  parameter int unsigned        ACC_IMEM_SIZE   = ImemSize * 4;
   parameter int unsigned        ACC_IMEM_IDX    = 0;
   parameter logic [BlockAw-1:0] ACC_DMEM_OFFSET = 17'h 18000;
-  parameter int unsigned        ACC_DMEM_SIZE   = 'h 7c00;
+  parameter int unsigned        ACC_DMEM_SIZE   = DmemSize * 4;
   parameter int unsigned        ACC_DMEM_IDX    = 1;
 
   // Register index
