@@ -72,6 +72,13 @@
       uvm_test_seq: dma_abort_vseq
       reseed: 5
     }
+    // Directed regression for aborting after a Host request is accepted but
+    // before its response is returned.
+    {
+      name: dma_abort_outstanding
+      uvm_test_seq: dma_abort_outstanding_vseq
+      reseed: 1
+    }
     {
       name: dma_short_transfer
       uvm_test_seq: dma_short_transfer_vseq
