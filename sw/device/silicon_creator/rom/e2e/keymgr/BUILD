@@ -79,7 +79,6 @@ rom_e2e_keymgr_init_configs = [
         dv = dv_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom",
-            second_rom = "//sw/device/silicon_creator/second_rom",
         ),
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
@@ -105,7 +104,6 @@ rom_e2e_keymgr_init_configs = [
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom",
-            second_rom = "//sw/device/silicon_creator/second_rom",
         ),
         deps = [
             "//sw/device/lib/dif:keymgr",

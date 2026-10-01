@@ -299,7 +299,6 @@ pavona_test(
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
-        second_rom = "//sw/device/silicon_creator/second_rom",
     ),
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = {
