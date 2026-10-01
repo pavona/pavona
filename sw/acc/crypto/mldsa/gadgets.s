@@ -894,9 +894,6 @@ _transpose_8x8:
  * self-inverse stride 16/8/4/2/1 network, and store the transposed groups
  * via t4.  Builds mask registers:
  *   w20..w24 = butterfly masks for j = 16/8/4/2/1
- *   w25 = j=4 stripe (lanes 0-3)
- *   w26 = j=2 stripe (lanes {0,1,4,5})
- *   w27 = j=1 stripe (lanes {0,2,4,6})
  */
 _bitslice_butterfly:
   bn.not    w6,  w31
@@ -909,18 +906,9 @@ _bitslice_butterfly:
   bn.xor    w23, w22, w4
   bn.shv.8s w4,  w23 << 1
   bn.xor    w24, w23, w4
-  bn.rshi   w25, w31, w6  >> 128
-  bn.rshi   w4,  w31, w6  >> 192
-  bn.rshi   w5,  w4,  w31 >> 128
-  bn.or     w26, w4,  w5
-  bn.rshi   w4,  w31, w6  >> 224
-  bn.rshi   w5,  w4,  w31 >> 192
-  bn.or     w4,  w4,  w5
-  bn.rshi   w5,  w4,  w31 >> 128
-  bn.or     w27, w4,  w5
   li        x30, 8
 
-  loop x30, 161
+  loop x30, 141
     li x5, 0
     loopi 4, 2
       bn.lid x5, 0(x28++)
@@ -958,147 +946,127 @@ _bitslice_butterfly:
     bn.xor    w2, w2, w4
 
     /* Stage j=4 (intra-WDR). */
-    bn.rshi   w6, w31, w0 >> 128
-    bn.shv.8s w4, w0 >> 4
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w22
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 4
-    bn.xor    w0, w0, w4
-    bn.rshi   w6, w6, w31 >> 128
-    bn.and    w0, w0, w25
-    bn.or     w0, w0, w6
+    bn.trn1.2q w5, w0, w0
+    bn.trn2.2q w6, w0, w0
+    bn.shv.8s  w4, w5 >> 4
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w22
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 4
+    bn.xor     w5, w5, w4
+    bn.trn1.2q w0, w5, w6
 
-    bn.rshi   w6, w31, w1 >> 128
-    bn.shv.8s w4, w1 >> 4
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w22
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 4
-    bn.xor    w1, w1, w4
-    bn.rshi   w6, w6, w31 >> 128
-    bn.and    w1, w1, w25
-    bn.or     w1, w1, w6
+    bn.trn1.2q w5, w1, w1
+    bn.trn2.2q w6, w1, w1
+    bn.shv.8s  w4, w5 >> 4
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w22
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 4
+    bn.xor     w5, w5, w4
+    bn.trn1.2q w1, w5, w6
 
-    bn.rshi   w6, w31, w2 >> 128
-    bn.shv.8s w4, w2 >> 4
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w22
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 4
-    bn.xor    w2, w2, w4
-    bn.rshi   w6, w6, w31 >> 128
-    bn.and    w2, w2, w25
-    bn.or     w2, w2, w6
+    bn.trn1.2q w5, w2, w2
+    bn.trn2.2q w6, w2, w2
+    bn.shv.8s  w4, w5 >> 4
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w22
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 4
+    bn.xor     w5, w5, w4
+    bn.trn1.2q w2, w5, w6
 
-    bn.rshi   w6, w31, w3 >> 128
-    bn.shv.8s w4, w3 >> 4
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w22
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 4
-    bn.xor    w3, w3, w4
-    bn.rshi   w6, w6, w31 >> 128
-    bn.and    w3, w3, w25
-    bn.or     w3, w3, w6
+    bn.trn1.2q w5, w3, w3
+    bn.trn2.2q w6, w3, w3
+    bn.shv.8s  w4, w5 >> 4
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w22
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 4
+    bn.xor     w5, w5, w4
+    bn.trn1.2q w3, w5, w6
 
     /* Stage j=2 (intra-WDR). */
-    bn.and    w5, w0, w26
-    bn.rshi   w6, w31, w0 >> 64
-    bn.and    w6, w6, w26
-    bn.shv.8s w4, w5 >> 2
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w23
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 2
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 192
-    bn.or     w0, w5, w6
+    bn.trn1.4d w5, w0, w0
+    bn.trn2.4d w6, w0, w0
+    bn.shv.8s  w4, w5 >> 2
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w23
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 2
+    bn.xor     w5, w5, w4
+    bn.trn1.4d w0, w5, w6
 
-    bn.and    w5, w1, w26
-    bn.rshi   w6, w31, w1 >> 64
-    bn.and    w6, w6, w26
-    bn.shv.8s w4, w5 >> 2
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w23
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 2
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 192
-    bn.or     w1, w5, w6
+    bn.trn1.4d w5, w1, w1
+    bn.trn2.4d w6, w1, w1
+    bn.shv.8s  w4, w5 >> 2
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w23
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 2
+    bn.xor     w5, w5, w4
+    bn.trn1.4d w1, w5, w6
 
-    bn.and    w5, w2, w26
-    bn.rshi   w6, w31, w2 >> 64
-    bn.and    w6, w6, w26
-    bn.shv.8s w4, w5 >> 2
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w23
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 2
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 192
-    bn.or     w2, w5, w6
+    bn.trn1.4d w5, w2, w2
+    bn.trn2.4d w6, w2, w2
+    bn.shv.8s  w4, w5 >> 2
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w23
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 2
+    bn.xor     w5, w5, w4
+    bn.trn1.4d w2, w5, w6
 
-    bn.and    w5, w3, w26
-    bn.rshi   w6, w31, w3 >> 64
-    bn.and    w6, w6, w26
-    bn.shv.8s w4, w5 >> 2
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w23
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 2
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 192
-    bn.or     w3, w5, w6
+    bn.trn1.4d w5, w3, w3
+    bn.trn2.4d w6, w3, w3
+    bn.shv.8s  w4, w5 >> 2
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w23
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 2
+    bn.xor     w5, w5, w4
+    bn.trn1.4d w3, w5, w6
 
     /* Stage j=1 (intra-WDR). */
-    bn.and    w5, w0, w27
-    bn.rshi   w6, w31, w0 >> 32
-    bn.and    w6, w6, w27
-    bn.shv.8s w4, w5 >> 1
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w24
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 1
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 224
-    bn.or     w0, w5, w6
+    bn.trn1.8s w5, w0, w0
+    bn.trn2.8s w6, w0, w0
+    bn.shv.8s  w4, w5 >> 1
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w24
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 1
+    bn.xor     w5, w5, w4
+    bn.trn1.8s w0, w5, w6
 
-    bn.and    w5, w1, w27
-    bn.rshi   w6, w31, w1 >> 32
-    bn.and    w6, w6, w27
-    bn.shv.8s w4, w5 >> 1
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w24
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 1
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 224
-    bn.or     w1, w5, w6
+    bn.trn1.8s w5, w1, w1
+    bn.trn2.8s w6, w1, w1
+    bn.shv.8s  w4, w5 >> 1
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w24
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 1
+    bn.xor     w5, w5, w4
+    bn.trn1.8s w1, w5, w6
 
-    bn.and    w5, w2, w27
-    bn.rshi   w6, w31, w2 >> 32
-    bn.and    w6, w6, w27
-    bn.shv.8s w4, w5 >> 1
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w24
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 1
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 224
-    bn.or     w2, w5, w6
+    bn.trn1.8s w5, w2, w2
+    bn.trn2.8s w6, w2, w2
+    bn.shv.8s  w4, w5 >> 1
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w24
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 1
+    bn.xor     w5, w5, w4
+    bn.trn1.8s w2, w5, w6
 
-    bn.and    w5, w3, w27
-    bn.rshi   w6, w31, w3 >> 32
-    bn.and    w6, w6, w27
-    bn.shv.8s w4, w5 >> 1
-    bn.xor    w4, w6, w4
-    bn.and    w4, w4, w24
-    bn.xor    w6, w6, w4
-    bn.shv.8s w4, w4 << 1
-    bn.xor    w5, w5, w4
-    bn.rshi   w6, w6, w31 >> 224
-    bn.or     w3, w5, w6
+    bn.trn1.8s w5, w3, w3
+    bn.trn2.8s w6, w3, w3
+    bn.shv.8s  w4, w5 >> 1
+    bn.xor     w4, w4, w6
+    bn.and     w4, w4, w24
+    bn.xor     w6, w6, w4
+    bn.shv.8s  w4, w4 << 1
+    bn.xor     w5, w5, w4
+    bn.trn1.8s w3, w5, w6
 
     li x5, 0
     loopi 4, 2
@@ -1122,7 +1090,7 @@ _bitslice_butterfly:
  * @param[in]  x12: stride,  output WDR stride in bytes (32 for contiguous)
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x2, x5, x10, x13, x28 to x30, w0 to w27
+ * clobbered registers: x2, x5, x10, x13, x28 to x30, w0 to w24
  * clobbered flag groups: FG0
  */
 .globl bitslice
@@ -1205,7 +1173,7 @@ _bitslice_core:
  * @param[in]  x11: ptr_in,  dmem pointer to input (23 * 32 = 736 B)
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x5, x11 to x12, x28 to x30, w0 to w27
+ * clobbered registers: x5, x11 to x12, x28 to x30, w0 to w24
  * clobbered flag groups: FG0
  */
 .globl unbitslice
