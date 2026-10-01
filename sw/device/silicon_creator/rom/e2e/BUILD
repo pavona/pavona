@@ -305,8 +305,6 @@ pavona_test(
         "//hw/top_egret:sim_dv": None,
         "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_egret:sim_verilator_rom_with_fake_keys": None,
-        "//hw/top_dragonfly:sim_dv": None,
-        "//hw/top_dragonfly:sim_verilator_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         # Note: This test never prints a failure message so it will fail only

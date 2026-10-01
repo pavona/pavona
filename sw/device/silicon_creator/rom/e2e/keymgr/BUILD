@@ -87,8 +87,6 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_egret:sim_dv": None,
             "//hw/top_egret:sim_verilator": None,
             "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
-            "//hw/top_dragonfly:sim_dv": None,
-            "//hw/top_dragonfly:sim_verilator": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
