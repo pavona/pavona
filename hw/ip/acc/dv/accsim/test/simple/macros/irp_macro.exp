@@ -1,0 +1,9 @@
+# Copyright zeroRISC Inc & MPI-SP.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+w1 = 0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+w2 = 0x2222222222222222222222222222222222222222222222222222222222222222
+w3 = 0x3333333333333333333333333333333333333333333333333333333333333333
+
+INSN_CNT = 14
