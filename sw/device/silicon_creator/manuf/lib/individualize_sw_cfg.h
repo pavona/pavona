@@ -28,16 +28,28 @@ extern const otp_kv_t kOtpKvOwnerSwCfg[];
 extern const uint32_t kOwnerSwCfgRomBootstrapDisValue;
 
 /**
- * OTP RoT Creator Auth Codesign Partition.
+ * OTP RoT Owner Auth Slot Partitions.
  */
-extern const size_t kOtpKvRotCreatorAuthCodesignSize;
-extern const otp_kv_t kOtpKvRotCreatorAuthCodesign[];
+extern const size_t kOtpKvRotOwnerAuthSlot0Size;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot0[];
+extern const size_t kOtpKvRotOwnerAuthSlot1Size;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot1[];
+extern const size_t kOtpKvRotOwnerAuthSlot2Size;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot2[];
+extern const size_t kOtpKvRotOwnerAuthSlot3Size;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot3[];
 
 /**
- * OTP RoT Creator Auth State Partition.
+ * OTP RoT Owner Auth Slot State Partitions.
  */
-extern const size_t kOtpKvRotCreatorAuthStateSize;
-extern const otp_kv_t kOtpKvRotCreatorAuthState[];
+extern const size_t kOtpKvRotOwnerAuthSlot0StateSize;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot0State[];
+extern const size_t kOtpKvRotOwnerAuthSlot1StateSize;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot1State[];
+extern const size_t kOtpKvRotOwnerAuthSlot2StateSize;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot2State[];
+extern const size_t kOtpKvRotOwnerAuthSlot3StateSize;
+extern const otp_kv_t kOtpKvRotOwnerAuthSlot3State[];
 
 /**
  * Configures the CREATOR_SW_CFG OTP partition.
@@ -183,47 +195,183 @@ status_t manuf_individualize_device_partition_expected_read(
     const dif_otp_ctrl_t *otp_ctrl, otp_partition_t partition, uint8_t *buffer);
 
 /**
- * Configures and locks the ROT_CREATOR_AUTH_CODESIGN OTP partition.
+ * Configures and locks the ROT_OWNER_AUTH_SLOT0 OTP partition.
  *
- * The ROT_CREATOR_AUTH_CODESIGN partition contains the first stage
+ * The ROT_OWNER_AUTH_SLOT0 partition contains the first stage
  * (ROM->ROM_EXT) secure boot public keys.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the ROT_CREATOR_AUTH_CODESIGN partition has been locked.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT0 partition has been locked.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_rot_creator_auth_codesign(
+status_t manuf_individualize_device_rot_owner_auth_slot0(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Checks the ROT_CREATOR_AUTH_CODESIGN OTP partition end state.
+ * Checks the ROT_OWNER_AUTH_SLOT0 OTP partition end state.
  *
  * @param otp_ctrl OTP controller interface.
- * @return OK_STATUS if the ROT_CREATOR_AUTH_CODESIGN partition is locked.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT0 partition is locked.
  */
-status_t manuf_individualize_device_rot_creator_auth_codesign_check(
+status_t manuf_individualize_device_rot_owner_auth_slot0_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Configures and locks the ROT_CREATOR_AUTH_STATE OTP partition.
+ * Configures and locks the ROT_OWNER_AUTH_SLOT1 OTP partition.
  *
- * The ROT_CREATOR_AUTH_STATE partition contains the first stage
+ * The ROT_OWNER_AUTH_SLOT1 partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public keys.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT1 partition has been locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot1(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT1 OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT1 partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot1_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT2 OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT2 partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public keys.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT2 partition has been locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot2(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT2 OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT2 partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot2_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT3 OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT3 partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public keys.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT3 partition has been locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot3(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT3 OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT3 partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot3_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT0_STATE OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT0_STATE partition contains the first stage
  * (ROM->ROM_EXT) secure boot public key validity states.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the ROT_CREATOR_AUTH_STATE partition has been locked.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT0_STATE partition has been
+ * locked.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_rot_creator_auth_state(
+status_t manuf_individualize_device_rot_owner_auth_slot0_state(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Checks the ROT_CREATOR_AUTH_STATE OTP partition end state.
+ * Checks the ROT_OWNER_AUTH_SLOT0_STATE OTP partition end state.
  *
  * @param otp_ctrl OTP controller interface.
- * @return OK_STATUS if the ROT_CREATOR_AUTH_STATE partition is locked.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT0_STATE partition is locked.
  */
-status_t manuf_individualize_device_rot_creator_auth_state_check(
+status_t manuf_individualize_device_rot_owner_auth_slot0_state_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT1_STATE OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT1_STATE partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public key validity states.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT1_STATE partition has been
+ * locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot1_state(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT1_STATE OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT1_STATE partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot1_state_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT2_STATE OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT2_STATE partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public key validity states.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT2_STATE partition has been
+ * locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot2_state(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT2_STATE OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT2_STATE partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot2_state_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_OWNER_AUTH_SLOT3_STATE OTP partition.
+ *
+ * The ROT_OWNER_AUTH_SLOT3_STATE partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public key validity states.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT3_STATE partition has been
+ * locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_owner_auth_slot3_state(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_OWNER_AUTH_SLOT3_STATE OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_OWNER_AUTH_SLOT3_STATE partition is locked.
+ */
+status_t manuf_individualize_device_rot_owner_auth_slot3_state_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_

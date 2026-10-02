@@ -383,35 +383,134 @@ status_t manuf_individualize_device_owner_sw_cfg_check(
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
-status_t manuf_individualize_device_rot_creator_auth_codesign(
+status_t manuf_individualize_device_rot_owner_auth_slot0(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotCreatorAuthCodesign,
-                    kOtpKvRotCreatorAuthCodesign,
-                    kOtpKvRotCreatorAuthCodesignSize));
-  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotCreatorAuthCodesign));
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot0,
+                    kOtpKvRotOwnerAuthSlot0, kOtpKvRotOwnerAuthSlot0Size));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot0));
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_rot_creator_auth_state(
+status_t manuf_individualize_device_rot_owner_auth_slot1(
     const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotCreatorAuthState,
-                    kOtpKvRotCreatorAuthState, kOtpKvRotCreatorAuthStateSize));
-  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotCreatorAuthState));
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot1,
+                    kOtpKvRotOwnerAuthSlot1, kOtpKvRotOwnerAuthSlot1Size));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot1));
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_rot_creator_auth_codesign_check(
+status_t manuf_individualize_device_rot_owner_auth_slot2(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot2,
+                    kOtpKvRotOwnerAuthSlot2, kOtpKvRotOwnerAuthSlot2Size));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot2));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot3(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot3,
+                    kOtpKvRotOwnerAuthSlot3, kOtpKvRotOwnerAuthSlot3Size));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot3));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot0_state(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot0State,
+                    kOtpKvRotOwnerAuthSlot0State,
+                    kOtpKvRotOwnerAuthSlot0StateSize));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot0State));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot1_state(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot1State,
+                    kOtpKvRotOwnerAuthSlot1State,
+                    kOtpKvRotOwnerAuthSlot1StateSize));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot1State));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot2_state(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot2State,
+                    kOtpKvRotOwnerAuthSlot2State,
+                    kOtpKvRotOwnerAuthSlot2StateSize));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot2State));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot3_state(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(otp_img_write(otp_ctrl, kOtpPartitionRotOwnerAuthSlot3State,
+                    kOtpKvRotOwnerAuthSlot3State,
+                    kOtpKvRotOwnerAuthSlot3StateSize));
+  TRY(lock_otp_partition(otp_ctrl, kOtpPartitionRotOwnerAuthSlot3State));
+  return OK_STATUS();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot0_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
-  TRY(dif_otp_ctrl_is_digest_computed(
-      otp_ctrl, kOtpPartitionRotCreatorAuthCodesign, &is_locked));
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionRotOwnerAuthSlot0,
+                                      &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
 
-status_t manuf_individualize_device_rot_creator_auth_state_check(
+status_t manuf_individualize_device_rot_owner_auth_slot1_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionRotOwnerAuthSlot1,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot2_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionRotOwnerAuthSlot2,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot3_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kOtpPartitionRotOwnerAuthSlot3,
+                                      &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot0_state_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   bool is_locked;
   TRY(dif_otp_ctrl_is_digest_computed(
-      otp_ctrl, kOtpPartitionRotCreatorAuthState, &is_locked));
+      otp_ctrl, kOtpPartitionRotOwnerAuthSlot0State, &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot1_state_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(
+      otp_ctrl, kOtpPartitionRotOwnerAuthSlot1State, &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot2_state_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(
+      otp_ctrl, kOtpPartitionRotOwnerAuthSlot2State, &is_locked));
+  return is_locked ? OK_STATUS() : INTERNAL();
+}
+
+status_t manuf_individualize_device_rot_owner_auth_slot3_state_check(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  bool is_locked;
+  TRY(dif_otp_ctrl_is_digest_computed(
+      otp_ctrl, kOtpPartitionRotOwnerAuthSlot3State, &is_locked));
   return is_locked ? OK_STATUS() : INTERNAL();
 }
