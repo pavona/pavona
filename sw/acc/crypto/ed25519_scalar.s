@@ -123,7 +123,7 @@ sc_init:
  * @param[in]  w31: all-zero
  * @param[out] w18: c, result = a mod L
  *
- * clobbered registers: w10 to w13, w18
+ * clobbered registers: w10 to w13, w18, acc
  * clobbered flag groups: FG0
  */
 .globl sc_reduce
@@ -255,7 +255,7 @@ sc_reduce:
  * @param[in]  w31: all-zero
  * @param[out] w18: c, result = (a * b) mod L
  *
- * clobbered registers: w10 to w13, w16 to w18
+ * clobbered registers: w10 to w13, w16 to w18, acc
  * clobbered flag groups: FG0
  */
 .globl sc_mul

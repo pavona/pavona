@@ -33,7 +33,7 @@
  * @param[in]  x21:         dptr_y, pointer to y-coordinate in dmem
  * @param[in]  x30:         dptr_z, pointer to z-coordinate in dmem
  *
- * clobbered registers: x2, x3, w0 to w5, w10 to w17
+ * clobbered registers: x2 to x3, w0 to w5, w10 to w11, w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve_proj_check
@@ -91,7 +91,7 @@ p384_isoncurve_proj_check:
  * @param[out] dmem[lhs]:   left-hand side of equation.
  * @param[out] dmem[rhs]:   right-hand side of equation.
  *
- * clobbered registers: x2, x3, w0 to w5, w10 to w17
+ * clobbered registers: x2 to x3, w0 to w5, w10 to w11, w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
  .globl p384_isoncurve_proj

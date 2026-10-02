@@ -25,7 +25,7 @@
  * @param[in] w31: all-zero.
  * @param[out] [w20:w18]: c, result, max. length 768 bit.
  *
- * clobbered registers: w18 to w20
+ * clobbered registers: w18 to w20, w31, acc
  * clobbered flag groups: FG0
  */
 .globl mul384
@@ -267,7 +267,7 @@ p384_reduce_p:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * clobbered registers: w16 to w24
+ * clobbered registers: w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_reduce_n
@@ -401,7 +401,7 @@ p384_reduce_n:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * clobbered registers: w16 to w24
+ * clobbered registers: w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_mulmod_p
@@ -435,7 +435,7 @@ p384_mulmod_p:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * clobbered registers: w16 to w24
+ * clobbered registers: w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_mulmod_n
@@ -469,7 +469,7 @@ p384_mulmod_n:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * clobbered registers: w16 to w24
+ * clobbered registers: w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_mulmod448x128_n
@@ -922,7 +922,7 @@ proj_add_p384:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: w0 to w11, w16 to w30, acc
+ * clobbered registers: w0 to w11, w16 to w31, acc
  * clobbered flag groups: FG0
  */
 .globl proj_double_p384
@@ -1131,7 +1131,7 @@ proj_double_p384:
  * @param[out] [w26, w25]: x_a, affine x-coordinate of resulting point.
  * @param[out] [w28, w27]: y_a, affine y-coordinate of resulting point.
  *
- * clobbered registers: w0 to w28
+ * clobbered registers: w0 to w11, w16 to w28, w31, acc
  * clobbered flag groups: FG0
  */
  .globl proj_to_affine_p384
@@ -1365,8 +1365,8 @@ proj_to_affine_p384:
  * @param[in,out] dmem[d0..d0+64]: share 0 of 448-bit masked scalar.
  * @param[in,out] dmem[d1..d1+64]: share 1 of 448-bit masked scalar.
  *
- * clobbered registers: x3-x4, w1-w13, w31
- * clobbered flag groups: none
+ * clobbered registers: x3 to x4, w1 to w13, w31
+ * clobbered flag groups: FG0, FG1
  */
 .globl p384_scalar_remask
 .type p384_scalar_remask, @function

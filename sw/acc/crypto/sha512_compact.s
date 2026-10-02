@@ -73,8 +73,8 @@
  * @param[in]  dmem[sha512_dptr_msg]: Pointer to memory location containing the pre-
  *                                    formatted message chunks.
  *
- * clobbered registers: w0 to w7, w10, w11, w15 to w27, w31
- *                      x2, x10 to x17, x19, x20
+ * clobbered registers: x2, x10 to x11, x14 to x17, x19 to x20, w0 to w7, w10,
+ *                      w15 to w27, w31
  * clobbered flag groups: FG0
  */
 .globl sha512_compact

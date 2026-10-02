@@ -44,7 +44,7 @@
  * @param[out] [w21, w20]: result x0 (385 bits)
  * @param[out] [w11, w10]: result x1 (384 bits)
  *
- * clobbered registers: w1 to w4, w20 to w23
+ * clobbered registers: w1 to w4, w20 to w21, w28 to w29, w31
  * clobbered flag groups: FG0
  */
 .type p384_boolean_to_arithmetic, @function

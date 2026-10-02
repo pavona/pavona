@@ -199,7 +199,7 @@ gcd_cond_lshift1:
  * @param[in]     w31: all-zero
  * @param[out] dmem[dptr_y:dptr_y+n*32]: g, result
  *
- * clobbered registers: x3, x4, x21 to x25, w20 to w25
+ * clobbered registers: x3 to x4, x21 to x25, w20, w22 to w25, w31
  * clobbered flag groups: FG0, FG1
  */
 .globl gcd

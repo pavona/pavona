@@ -22,8 +22,8 @@
  * @param[in]  w31: all-zero
  * @param[out] dmem[dptr_c..dptr_c+(n*2*32)]: result, LCM(a,b)
  *
- * clobbered registers: x2 to x8, x20 to x25, w20 to w25
- * clobbered flag groups: FG0
+ * clobbered registers: x2 to x8, x20 to x26, w20 to w27, w31, acc
+ * clobbered flag groups: FG0, FG1
  */
 .type lcm, @function
 lcm:

@@ -121,7 +121,7 @@ store_proj:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2 to x5, x10, x11, x12, x15, x22 to 28, w0 to w31
+ * clobbered registers: x2 to x15, x17 to x28, w0 to w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_verify

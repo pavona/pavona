@@ -22,7 +22,7 @@
  * @param[in]  w9: enc(u), encoded Montgomery u-coordinate (256 bits)
  * @param[out] w22: result, X25519(k, u) as an encoded u-coordinate
  *
- * clobbered registers: w2 to w24
+ * clobbered registers: x2 to x3, w2 to w24, w30 to w31, acc, mod
  * clobbered flag groups: FG0
  */
 .globl X25519

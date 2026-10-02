@@ -188,7 +188,8 @@ rsa_keygen:
  * @param[out]  dmem[rsa_e..rsa_e+32] RSA private key private exponent (d)
        check value
  *
- * clobbered registers: x2 to x8, x10 to x14, x20 to x25, w20 to w25, w27
+ * clobbered registers: x2 to x8, x10 to x14, x20 to x26, x30 to x31,
+ *                      w20 to w28, w31, acc
  * clobbered flag groups: FG0, FG1
  */
 .type rsa_check_key, @function
@@ -386,7 +387,8 @@ check_crt_coeff:
  * @param[in]  w31: all-zero
  * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)] RSA private exponent (d)
  *
- * clobbered registers: x2 to x8, x10 to x12, x22 to x25, w20 to w25, w27
+ * clobbered registers: x2 to x8, x10 to x12, x20 to x26, x30, w20 to w28, w31,
+ *                      acc
  * clobbered flag groups: FG0, FG1
  */
 .type recover_d_from_crt, @function
@@ -820,7 +822,8 @@ check_d:
  * @param[out] dmem[rsa_i_q..rsa_i_q+(plen*2*32)] RSA private key CRT
        reconstruction coefficient (i_q)
  *
- * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w3, w20 to w28
+ * clobbered registers: x2 to x8, x10 to x18, x20 to x26, x30 to x31, w3,
+ *                      w20 to w28, w31, acc, mod
  * clobbered flag groups: FG0, FG1
  */
 .type rsa_key_from_cofactor, @function
@@ -2079,7 +2082,7 @@ fold_bignum_pow2_32_equiv_4:
  * @param[in]  w31: all-zero
  * @param[out] w22: result, 0 only if x is not relatively prime to F4
  *
- * clobbered registers: x2, w22, w23
+ * clobbered registers: x2, x22, w22 to w24, mod
  * clobbered flag groups: FG0
  */
 .type relprime_f4, @function
@@ -2155,7 +2158,7 @@ relprime_f4:
  * @param[in]  w31: all-zero
  * @param[out] w22: result, 0 if x is divisible by a small prime
  *
- * clobbered registers: x2, w22, w23, w24, w25, w26
+ * clobbered registers: x2 to x3, x10, x22, w22 to w26
  * clobbered flag groups: FG0
  */
 .type relprime_small_primes, @function

@@ -32,7 +32,7 @@
  * @param[out]     w18: lhs, left side of equation = (x^3 + ax + b) mod p
  * @param[out]     w19: rhs, right side of equation = y^2 mod p
  *
- * clobbered registers: x2, x3, x19, x20, w0, w18 to w29
+ * clobbered registers: x2 to x3, w18 to w29, acc, mod
  * clobbered flag groups: FG0
  */
 .type p256_isoncurve_proj, @function
