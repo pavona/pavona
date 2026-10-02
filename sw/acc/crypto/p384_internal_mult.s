@@ -40,8 +40,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the upper limb of projective y-coordinate.
  *
- * clobbered registers: x10, x11 to x13
-  *                     w2, w3, w8 to w11, w16 to w24, w29, w30
+ * clobbered registers: x10 to x13, w2 to w3, w10 to w11, w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
  .globl store_proj_randomize
@@ -160,7 +159,8 @@ store_proj_randomize:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2 to x7, x10 to x13, x18, x22 to x27, x30, w0 to w11, w16 to w31, acc
+ * clobbered registers: x2 to x7, x10 to x13, x18, x22 to x25, x27, w0 to w11,
+ *                      w14 to w31, acc
  * clobbered flag groups: FG0, FG1
  */
  .globl scalar_mult_int_p384

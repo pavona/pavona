@@ -37,9 +37,9 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2 to x6, x9 to x15, x17 to x28, x30
- *                      w0 to w31
- * clobbered flag groups: FG0
+ * clobbered registers: x2 to x7, x10 to x15, x17 to x25, x27 to x28, w0 to w31,
+ *                      acc
+ * clobbered flag groups: FG0, FG1
  */
 .globl p384_sign
 .type p384_sign, @function

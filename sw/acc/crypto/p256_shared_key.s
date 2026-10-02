@@ -34,7 +34,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x16, x17, x21, x22, w0 to w25
+ * clobbered registers: x2 to x4, x10, x16, x21 to x22, w0 to w29, w31, acc, mod
  * clobbered flag groups: FG0
  */
 .type p256_shared_key, @function
@@ -186,7 +186,7 @@ p256_shared_key:
  * @param[in]  w11: arithmetically masked value A, such that x = A + r
  * @param[out] w20: boolean masked value x', such that x = x' ^ r
  *
- * clobbered registers: w1 to w6, w11, w12, w18, w20 to w27, and w29
+ * clobbered registers: w1 to w6, w11 to w12, w18 to w22, w24 to w27, w29, w31
  * clobbered flag groups: FG0
  */
 .type arithmetic_to_boolean_mod, @function
@@ -312,7 +312,7 @@ arithmetic_to_boolean_mod:
  * @param[out] w21: upper part of boolean masked value x',
  *                  such that x = x' ^ r
  *
- * clobbered registers: w1 - w6, w11, w12, and w18 - w21
+ * clobbered registers: w1 to w6, w12, w19 to w21, w31
  * clobbered flag groups: FG0
  */
 .type arithmetic_to_boolean, @function

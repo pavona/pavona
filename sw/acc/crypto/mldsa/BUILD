@@ -174,3 +174,8 @@ acc_library(
     srcs = ["mldsa_masked_setup.s"],
     copts = ["-DHARDENED"],
 )
+
+filegroup(
+    name = "asm_srcs",
+    srcs = glob(["*.s"]),
+)

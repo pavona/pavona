@@ -41,7 +41,7 @@
  * @param[out]     w18: lhs, left side of equation = (x^3 + ax + b) mod p
  * @param[out]     w19: rhs, right side of equation = y^2 mod p
  *
- * clobbered registers: x2, x3, x19, x20, w0, w18 to w29
+ * clobbered registers: x2 to x3, w18 to w29, acc, mod
  * clobbered flag groups: FG0
  */
 .type p256_isoncurve, @function
@@ -114,7 +114,7 @@ p256_isoncurve:
  * @param[in] dmem[y]: Public key y-coordinate.
  * @param[out] dmem[ok]: success/failure of basic checks (32 bits)
  *
- * clobbered registers: x2, x3, x19, x20, w0, w2, w18 to w29
+ * clobbered registers: x2 to x3, w2, w18 to w29, w31, acc, mod
  * clobbered flag groups: FG0
  */
 .type p256_check_public_key, @function
@@ -195,6 +195,9 @@ p256_check_public_key:
  * This routine sets `ok` to false if the check fails.
  *
  * @param[out] dmem[ok] Set to HARDENED_BOOL_FALSE.
+ *
+ * clobbered registers: x2 to x3
+ * clobbered flag groups: none
  */
 .type p256_invalid_input, @function
 p256_invalid_input:

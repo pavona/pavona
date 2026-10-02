@@ -21,7 +21,7 @@
  * @param[out] w30: 38, constant
  * @param[out] MOD: p=2^255-19, modulus
  *
- * clobbered registers: x2, x3, w19, MOD
+ * clobbered registers: x2 to x3, w19, w30, mod
  * clobbered flag groups: FG0
  */
 .globl fe_init
@@ -56,7 +56,7 @@ fe_init:
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w22: c, result
  *
- * clobbered registers: w18, w20 to w22
+ * clobbered registers: w18, w20, w22, acc
  * clobbered flag groups: FG0
  */
 .globl fe_mul
@@ -169,7 +169,7 @@ fe_mul:
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w22: c, result
  *
- * clobbered registers: w17, w18, w20 to w22
+ * clobbered registers: w17 to w18, w20 to w22, acc
  * clobbered flag groups: FG0
  */
 .globl fe_square
@@ -298,7 +298,7 @@ fe_square:
  * @param[in]  w31: all-zero
  * @param[out] w22: c, result
  *
- * clobbered registers: w14, w15, w17, w18, w20 to w23
+ * clobbered registers: w14 to w15, w17 to w18, w20 to w23, acc
  * clobbered flag groups: FG0
  */
 .globl fe_inv

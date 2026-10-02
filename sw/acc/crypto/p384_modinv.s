@@ -46,7 +46,7 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2, w2, w3, w10, w11, w16 to w24
+ * clobbered registers: x2, w2 to w3, w10 to w11, w16 to w24, w31, acc
  * clobbered flag groups: FG0
  */
  .globl mod_inv_p384

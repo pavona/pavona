@@ -54,7 +54,8 @@
  * @param[out]      dmem[d0]: d0, first share of private key d (448 bits)
  * @param[out]      dmem[d1]: d1, second share of private key d (448 bits)
  *
- * clobbered registers: x2, x3, x20, w1 to w6, w16 to w29
+ * clobbered registers: x2 to x3, x20, w1 to w6, w10 to w11, w16 to w29, w31,
+ *                      acc
  * clobbered flag groups: FG0
  */
 .globl p384_key_from_seed

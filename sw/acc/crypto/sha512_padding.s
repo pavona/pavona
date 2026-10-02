@@ -38,7 +38,7 @@
  * @param[out] dmem[dptr_pad..dptr_end]: message padding
  *
  * clobbered registers: x2 to x5, x20 to x23, w27
- * clobbered flag groups: FG0
+ * clobbered flag groups: none
  */
 .globl sha512_pad_message
 .type sha512_pad_message, @function

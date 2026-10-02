@@ -61,6 +61,12 @@ decompose_88:
 
   ret
 
+/**
+ * decompose for GAMMA2 = (Q-1)/32; see decompose_88.
+ *
+ * clobbered registers: w1 to w2, w4, w30
+ * clobbered flag groups: FG0
+ */
 .globl decompose_32
 .type decompose_32, @function
 decompose_32:

@@ -56,8 +56,6 @@ jobs:
         run: ruff check
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
-      - name: ACC assembly lint
-        run: ./ci/scripts/check-acc-asm.py
       - name: C/C++ formatting
         run: ./bazelisk.sh test //quality:clang_format_check
       - name: Rust formatting
@@ -118,6 +116,8 @@ jobs:
         run: ./ci/scripts/check-sim-cfgs.py
       - name: Buildifier
         run: ./bazelisk.sh test //quality:buildifier_check
+      - name: ACC assembly lint
+        run: ./bazelisk.sh test //quality:acc_lint
       - name: Vendored files
         run: ./ci/scripts/check-vendoring.sh
       - name: Verible RTL egret

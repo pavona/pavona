@@ -23,7 +23,7 @@
  * @param[in]  dmem[state]: Initial hash state (256 bits)
  * @param[out] dmem[state]: Final hash state (256 bits)
  *
- * clobbered registers: x2, x3, x10 to x12, x21 to x23, w20 to w30
+ * clobbered registers: x2 to x3, x10 to x12, x21 to x23, w20 to w31
  * clobbered flag groups: FG0
  */
 .type sha256, @function

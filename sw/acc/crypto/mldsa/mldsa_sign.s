@@ -799,6 +799,12 @@ sign_z_pack:
   addi x25, x13, 0 /* sig_z write ptr (advances per polyz_pack) */
   beq  x0, x0, _sign_z_park
 
+/**
+ * sign_z_pack without unmasking or packing z; see sign_z_pack.
+ *
+ * clobbered registers: x2, x4 to x26, x28 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
+ */
 .globl sign_z_check
 .type sign_z_check, @function
 sign_z_check:
@@ -1043,6 +1049,12 @@ sign_h_check:
   addi x22, x0, CHECK
   beq  x0, x0, _sign_h_park
 
+/**
+ * sign_h_check followed by hint computation; see sign_h_check.
+ *
+ * clobbered registers: x2, x4 to x26, x28 to x31, w0 to w31, mod, acch, acc
+ * clobbered flag groups: FG0
+ */
 .globl sign_h
 .type sign_h, @function
 sign_h:

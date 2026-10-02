@@ -587,3 +587,11 @@ acc_binary(
         "//sw/acc/crypto/mldsa:verify_hardened",
     ],
 )
+
+filegroup(
+    name = "asm_srcs",
+    srcs = glob(["**/*.s"]) + [
+        "//sw/acc/crypto/mldsa:asm_srcs",
+        "//sw/acc/crypto/mlkem:asm_srcs",
+    ],
+)

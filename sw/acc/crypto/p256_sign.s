@@ -64,7 +64,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x16 to x23, w0 to w29
+ * clobbered registers: x2 to x3, x10, x16, x18 to x22, w0 to w29, w31, acc, mod
  * clobbered flag groups: FG0
  */
 .type p256_sign, @function

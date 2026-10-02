@@ -325,6 +325,50 @@ def _acc_consttime_test_impl(ctx):
     runfiles = runfiles.merge(ctx.attr._checker[DefaultInfo].default_runfiles)
     return [DefaultInfo(runfiles = runfiles)]
 
+AccSrcsInfo = provider(fields = ["srcs"])
+
+def _acc_srcs_aspect_impl(target, ctx):
+    deps = getattr(ctx.rule.attr, "deps", [])
+    srcs = depset(ctx.rule.files.srcs, transitive = [d[AccSrcsInfo].srcs for d in deps])
+    return [AccSrcsInfo(srcs = srcs)]
+
+_acc_srcs_aspect = aspect(
+    implementation = _acc_srcs_aspect_impl,
+    attr_aspects = ["deps"],
+)
+
+def _acc_clobbered_regs_test_impl(ctx):
+    """Checks the clobbered-register docstrings of ACC binaries."""
+    args = [ctx.executable._checker.short_path]
+    files = []
+    for dep in ctx.attr.deps:
+        elf = dep[OutputGroupInfo].elf
+        srcs = dep[AccSrcsInfo].srcs
+        args.append(elf.to_list()[0].short_path + "=" + ",".join([s.short_path for s in srcs.to_list()]))
+        files += [elf, srcs]
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = " ".join(args + ["--skip"] + ctx.attr.skip),
+    )
+
+    runfiles = ctx.runfiles(transitive_files = depset(transitive = files))
+    runfiles = runfiles.merge(ctx.attr._checker[DefaultInfo].default_runfiles)
+    return [DefaultInfo(runfiles = runfiles)]
+
+acc_clobbered_regs_test = rule(
+    implementation = _acc_clobbered_regs_test_impl,
+    test = True,
+    attrs = {
+        "deps": attr.label_list(providers = [OutputGroupInfo], aspects = [_acc_srcs_aspect]),
+        "skip": attr.string_list(),
+        "_checker": attr.label(
+            default = "//hw/ip/acc/util:check_clobbered_regs",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
 def _acc_insn_count_range(ctx):
     """This rule gets min/max possible instruction counts for an ACC program.
     """

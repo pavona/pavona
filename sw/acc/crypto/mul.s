@@ -36,7 +36,7 @@
  * @param[in]  w31: all-zero
  * @param[out] dmem[x12..x12+(n*2*32)]: result, a*b
  *
- * clobbered registers: x2 to x8, x20 to x23, w20 to w23
+ * clobbered registers: x2 to x8, x20 to x23, w20 to w23, w31, acc
  * clobbered flag groups: FG0
  */
 .type bignum_mul, @function
@@ -156,7 +156,7 @@ bignum_mul:
  * @param[in]  w31: all-zero
  * @param[out] dmem[x12..x12+(n*2*32)]: result, a*b
  *
- * clobbered registers: x2, x3, x20, x21, x22, x23, w20, w21, w22, w23
+ * clobbered registers: x2 to x3, x20 to x23, w20 to w23, acc
  * clobbered flag groups: FG0
  */
 .type bignum_mul256, @function

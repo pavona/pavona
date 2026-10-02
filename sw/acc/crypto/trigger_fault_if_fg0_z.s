@@ -17,7 +17,7 @@
  * @param[in]  FG0.Z: boolean indicating fault condition
  *
  * clobbered registers: x2
- * clobbered flag groups: none
+ * clobbered flag groups: FG0
  */
 .globl trigger_fault_if_fg0_z
 .type trigger_fault_if_fg0_z, @function

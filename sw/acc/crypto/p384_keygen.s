@@ -179,7 +179,7 @@ p384_random_scalar:
  * @param[out]  dmem[d0]: 1st private key share d0
  * @param[out]  dmem[d1]: 2nd private key share d1
  *
- * clobbered registers: x2, x3, x20, x21, w4 to w11, w14, w16 to w28
+ * clobbered registers: x2 to x3, x20 to x21, w4 to w14, w16 to w28, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_generate_random_key
@@ -220,7 +220,7 @@ p384_generate_random_key:
  * @param[out]  dmem[k0]: 1st scalar share k0
  * @param[out]  dmem[k1]: 2nd scalar share k1
  *
- * clobbered registers: x2, x3, x20, x21, w4 to w11, w14, w16 to w28
+ * clobbered registers: x2 to x3, x20 to x21, w4 to w14, w16 to w28, w31, acc
  * clobbered flag groups: FG0
  */
 .globl p384_generate_k

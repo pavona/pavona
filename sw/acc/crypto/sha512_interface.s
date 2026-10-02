@@ -26,7 +26,7 @@
  * @param[out] dmem[sha512_dptr_state]: state, pointer to working state.
  *
  * clobbered registers: x2, x3, x20, w20
- * clobbered flag groups: FG0
+ * clobbered flag groups: none
  */
 .type sha512_init, @function
 sha512_init:
@@ -86,8 +86,8 @@ sha512_init:
  * @param[in,out] dmem[partial]: Current partial message block ((len % 128) bytes).
  * @param[in,out] dmem[state]: Working hash state.
  *
- * clobbered registers: x2, x3, x10 to x22, x28
- *                      w0 to w7, w10, w11, w15 to w29
+ * clobbered registers: x2 to x3, x10 to x22, x28, w0 to w7, w10, w15 to w29,
+ *                      w31
  * clobbered flag groups: FG0
  */
 .type sha512_update, @function
@@ -182,8 +182,8 @@ sha512_update:
  * @param[in]  dmem[state]: Working hash state.
  * @param[out] dmem[dptr_result..dptr_result+64]: SHA-512 digest.
  *
- * clobbered registers: x2 to x5, x10 to x12, x14 to x17, x19 to x23, x28
- *                      w0 to w7, w10, w15 to w30
+ * clobbered registers: x2 to x5, x10 to x12, x14 to x17, x19 to x23, x28,
+ *                      w0 to w7, w10, w15 to w31
  * clobbered flag groups: FG0
  */
 .type sha512_final, @function

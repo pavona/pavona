@@ -156,6 +156,14 @@ polyz_unpack:
   beq x14, x5, polyz_unpack_17
   jal x0, polyz_unpack_19
 
+/**
+ * polyz_unpack for GAMMA1 = 2^17.
+ *
+ * Parameters as for polyz_unpack, which dispatches here.
+ *
+ * clobbered registers: x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered flag groups: FG0
+ */
 .globl polyz_unpack_17
 .type polyz_unpack_17, @function
 polyz_unpack_17:
@@ -252,6 +260,14 @@ _inner_polyz_unpack_17:
   bn.sid      x7, 0(x10++)
   ret
 
+/**
+ * polyz_unpack for GAMMA1 = 2^19.
+ *
+ * Parameters as for polyz_unpack, which dispatches here.
+ *
+ * clobbered registers: x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered flag groups: FG0
+ */
 .globl polyz_unpack_19
 .type polyz_unpack_19, @function
 polyz_unpack_19:
@@ -903,6 +919,15 @@ poly_uniform_eta:
   beq x14, x5, poly_uniform_eta_eta_4
   jal x0, poly_uniform_eta_eta_2
 
+/**
+ * poly_uniform_eta for ETA = 2.
+ *
+ * Parameters as for poly_uniform_eta, which dispatches here.
+ *
+ * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1,
+ *                      w8 to w9, w12 to w14, w20 to w21
+ * clobbered flag groups: FG0
+ */
 .globl poly_uniform_eta_eta_2
 .type poly_uniform_eta_eta_2, @function
 poly_uniform_eta_eta_2:
@@ -1000,6 +1025,15 @@ _rej_eta_sample_loop_continue_eta_2:
 
   ret
 
+/**
+ * poly_uniform_eta for ETA = 4.
+ *
+ * Parameters as for poly_uniform_eta, which dispatches here.
+ *
+ * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1,
+ *                      w8 to w9, w12, w14, w20 to w21
+ * clobbered flag groups: FG0
+ */
 .globl poly_uniform_eta_eta_4
 .type poly_uniform_eta_eta_4, @function
 poly_uniform_eta_eta_4:
@@ -1147,6 +1181,14 @@ poly_use_hint:
   beq x14, x5, poly_use_hint_88
   jal x0, poly_use_hint_32
 
+/**
+ * poly_use_hint for GAMMA2 = (Q-1)/88.
+ *
+ * Parameters as for poly_use_hint, which dispatches here.
+ *
+ * clobbered registers: x5 to x6, x10 to x12, w0 to w13, w15, w30, mod
+ * clobbered flag groups: FG0
+ */
 .globl poly_use_hint_88
 .type poly_use_hint_88, @function
 poly_use_hint_88:
@@ -1201,6 +1243,14 @@ poly_use_hint_88:
 
   ret
 
+/**
+ * poly_use_hint for GAMMA2 = (Q-1)/32.
+ *
+ * Parameters as for poly_use_hint, which dispatches here.
+ *
+ * clobbered registers: x5 to x6, x10 to x12, w0 to w2, w4 to w13, w15, w30, mod
+ * clobbered flag groups: FG0
+ */
 .globl poly_use_hint_32
 .type poly_use_hint_32, @function
 poly_use_hint_32:
@@ -1378,6 +1428,14 @@ polyeta_pack:
   beq x14, x5, polyeta_pack_eta_4
   jal x0, polyeta_pack_eta_2
 
+/**
+ * polyeta_pack for ETA = 2.
+ *
+ * Parameters as for polyeta_pack, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered flag groups: none
+ */
 .globl polyeta_pack_eta_2
 .type polyeta_pack_eta_2, @function
 polyeta_pack_eta_2:
@@ -1460,6 +1518,14 @@ _inner_polyeta_pack_eta_2:
   endloop
   ret
 
+/**
+ * polyeta_pack for ETA = 4.
+ *
+ * Parameters as for polyeta_pack, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered flag groups: none
+ */
 .globl polyeta_pack_eta_4
 .type polyeta_pack_eta_4, @function
 polyeta_pack_eta_4:
@@ -1699,6 +1765,14 @@ polyw1_pack:
   beq x14, x5, polyw1_pack_88
   jal x0, polyw1_pack_32
 
+/**
+ * polyw1_pack for GAMMA2 = (Q-1)/88.
+ *
+ * Parameters as for polyw1_pack, which dispatches here.
+ *
+ * clobbered registers: x6 to x7, x10 to x11, x29, w1 to w2, w4
+ * clobbered flag groups: none
+ */
 .globl polyw1_pack_88
 .type polyw1_pack_88, @function
 polyw1_pack_88:
@@ -1742,6 +1816,14 @@ _inner_polyw1_pack_88:
                                WDR */
   ret
 
+/**
+ * polyw1_pack for GAMMA2 = (Q-1)/32.
+ *
+ * Parameters as for polyw1_pack, which dispatches here.
+ *
+ * clobbered registers: x6 to x7, x10 to x11, x29, w1 to w2
+ * clobbered flag groups: none
+ */
 .globl polyw1_pack_32
 .type polyw1_pack_32, @function
 polyw1_pack_32:
@@ -1788,6 +1870,14 @@ polyeta_unpack:
   beq x14, x5, polyeta_unpack_eta_4
   jal x0, polyeta_unpack_eta_2
 
+/**
+ * polyeta_unpack for ETA = 2.
+ *
+ * Parameters as for polyeta_unpack, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w6
+ * clobbered flag groups: FG0
+ */
 .globl polyeta_unpack_eta_2
 .type polyeta_unpack_eta_2, @function
 polyeta_unpack_eta_2:
@@ -1857,6 +1947,14 @@ _inner_polyeta_unpack_eta_2:
   endloop
   ret
 
+/**
+ * polyeta_unpack for ETA = 4.
+ *
+ * Parameters as for polyeta_unpack, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w2, w4 to w5
+ * clobbered flag groups: FG0
+ */
 .globl polyeta_unpack_eta_4
 .type polyeta_unpack_eta_4, @function
 polyeta_unpack_eta_4:
@@ -2221,6 +2319,14 @@ poly_uniform_gamma_1:
   beq x14, x5, poly_uniform_gamma_1_17
   jal x0, poly_uniform_gamma_1_19
 
+/**
+ * poly_uniform_gamma_1 for GAMMA1 = 2^17.
+ *
+ * Parameters as for poly_uniform_gamma_1, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered flag groups: FG0
+ */
 .globl poly_uniform_gamma_1_17
 .type poly_uniform_gamma_1_17, @function
 poly_uniform_gamma_1_17:
@@ -2344,6 +2450,14 @@ _inner_poly_uniform_gamma_1_17:
   bn.sid      x7, 0(x6++)
   ret
 
+/**
+ * poly_uniform_gamma_1 for GAMMA1 = 2^19.
+ *
+ * Parameters as for poly_uniform_gamma_1, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered flag groups: FG0
+ */
 .globl poly_uniform_gamma_1_19
 .type poly_uniform_gamma_1_19, @function
 poly_uniform_gamma_1_19:
@@ -2463,6 +2577,14 @@ poly_decompose:
   beq x14, x5, poly_decompose_88
   jal x0, poly_decompose_32
 
+/**
+ * poly_decompose for GAMMA2 = (Q-1)/88.
+ *
+ * Parameters as for poly_decompose, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x12, w0 to w11, w30
+ * clobbered flag groups: FG0
+ */
 .globl poly_decompose_88
 .type poly_decompose_88, @function
 poly_decompose_88:
@@ -2507,6 +2629,14 @@ poly_decompose_88:
 
   ret
 
+/**
+ * poly_decompose for GAMMA2 = (Q-1)/32.
+ *
+ * Parameters as for poly_decompose, which dispatches here.
+ *
+ * clobbered registers: x5 to x7, x10 to x12, w0 to w2, w4 to w11, w30
+ * clobbered flag groups: FG0
+ */
 .globl poly_decompose_32
 .type poly_decompose_32, @function
 poly_decompose_32:
@@ -2649,6 +2779,14 @@ polyz_pack:
   beq x14, x5, polyz_pack_17
   jal x0, polyz_pack_19
 
+/**
+ * polyz_pack for GAMMA1 = 2^17.
+ *
+ * Parameters as for polyz_pack, which dispatches here.
+ *
+ * clobbered registers: x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered flag groups: none
+ */
 .globl polyz_pack_17
 .type polyz_pack_17, @function
 polyz_pack_17:
@@ -2806,6 +2944,14 @@ _inner_polyz_pack_17:
                                WDR */
   ret
 
+/**
+ * polyz_pack for GAMMA1 = 2^19.
+ *
+ * Parameters as for polyz_pack, which dispatches here.
+ *
+ * clobbered registers: x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered flag groups: none
+ */
 .globl polyz_pack_19
 .type polyz_pack_19, @function
 polyz_pack_19:

@@ -30,7 +30,7 @@
  * @param[in]  x11: pointer to temp reg, must be set to 2
  *
  * clobbered registers: x8, x21, w0, w2
- * clobbered Flag Groups: FG1
+ * clobbered flag groups: FG1
  */
 .type sel_sqr_or_sqrmul, @function
 sel_sqr_or_sqrmul:
@@ -91,7 +91,7 @@ sel_sqr_or_sqrmul:
  * clobbered registers: x3 to x13, x16 to x29, x31
  *                      w0 to w3, w24 to w30
  *                      w4 to w[4+N-1]
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type modexp, @function
 modexp:
@@ -226,7 +226,7 @@ modexp:
  * clobbered registers: x2 to x29, x31
  *                      w0 to w3, w20 to w30
  *                      w4 to w[4+N-1]
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type modexp_crt, @function
 modexp_crt:
@@ -607,7 +607,7 @@ modexp_crt:
  * clobbered registers: x3 to x13, x16 to x31
  *                      w0 to w3, w24 to w30
  *                      w4 to w[4+N-1]
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type modexp_65537, @function
 modexp_65537:
@@ -739,7 +739,7 @@ modexp_65537:
  * @param[in]  FG0.C: needs to be set to 0
  *
  * clobbered registers: x8, x16, x21, w2, w3
- * clobbered Flag Groups: FG0
+ * clobbered flag groups: FG0
  */
 .type cond_sub_to_dmem, @function
 cond_sub_to_dmem:
@@ -790,7 +790,7 @@ cond_sub_to_dmem:
  *
  * clobbered registers: x6, x7, x8, x12, x13, x21, x22,
  *                      w2, w3, w4 to w[4+N-1], w24 to w30
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type montmul_mul1, @function
 montmul_mul1:

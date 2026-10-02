@@ -274,7 +274,7 @@ cond_sub_shifted:
  * @param[out] dmem[dptr_q..dptr_q+n*32]: q, quotient
  * @param[out] dmem[dptr_x..dptr_x+n*32]: r, remainder
  *
- * clobbered registers: x2 to x5, x8, x23 to x25, w23 to w27
+ * clobbered registers: x2 to x5, x8, x23 to x26, w23 to w27, w31
  * clobbered flag groups: FG0
  */
 .type div, @function
@@ -403,7 +403,7 @@ div:
  * @param[in] w31: all-zero
  * @param[out] dmem[dptr_x..dptr_x+n*32]: r, remainder
  *
- * clobbered registers: x2 to x5, x8, w23 to w25, w27
+ * clobbered registers: x2 to x5, x8, x23 to x26, w23 to w25, w27, w31
  * clobbered flag groups: FG0
  */
 .type mod, @function

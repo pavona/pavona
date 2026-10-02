@@ -39,7 +39,7 @@
  * @param[in]  [w12,w11]: arithmetically masked value A, such that x = A + r
  * @param[out] [w21,w20]: boolean masked value x', such that x = x' ^ r
  *
- * clobbered registers: w1 to w6, w10 to w12, w20, w21, w23 to w28
+ * clobbered registers: w1 to w6, w10 to w12, w18 to w21, w23 to w28, w31
  * clobbered flag groups: FG0
  */
 .type p384_arithmetic_to_boolean_mod, @function
@@ -141,7 +141,7 @@ p384_arithmetic_to_boolean_mod:
  * @param[out] w21: upper part of boolean masked value x',
  *                  such that x = x' ^ r
  *
- * clobbered registers: w1 to w6, w11, w12, and w18 to w21
+ * clobbered registers: w1 to w6, w20 to w21, w31
  * clobbered flag groups: FG0
  */
 .type p384_arithmetic_to_boolean, @function

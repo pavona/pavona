@@ -88,6 +88,12 @@ ACC subroutines should always document the registers and flag groups whose value
 In addition to Doxygen-style `@param[in]` and `@param[out]` notations, ACC subroutines should also state whether the flags have meaning at the end of the subroutine.
 If a subroutine jumps to another subroutine that clobbers additional registers or flag groups, these additional names should be added to the caller's list.
 
+CI checks this with `//quality:acc_lint`:
+
+```console
+./bazelisk.sh test //quality:acc_lint --test_output=errors
+```
+
 Example:
 ```S
 /**

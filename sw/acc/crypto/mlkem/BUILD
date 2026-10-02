@@ -186,3 +186,8 @@ acc_library(
         "whitening.s",
     ],
 )
+
+filegroup(
+    name = "asm_srcs",
+    srcs = glob(["*.s"]),
+)
