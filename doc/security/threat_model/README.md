@@ -71,3 +71,4 @@ The threat model is considered for the Egret and Dragonfly top-level systems, wh
 ## Read More
 
 *   [Security Overview](../README.md)
+*   [ACC Side Channel Analysis Threat Model](./acc_sca_threat_model.md)
