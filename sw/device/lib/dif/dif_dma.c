@@ -97,17 +97,238 @@ dif_result_t dif_dma_handshake_disable(const dif_dma_t *dma) {
   return kDifOk;
 }
 
+// Decode an operation selector into the orthogonal CONTROL fields.
+//
+// Maps each `dif_dma_transaction_opcode_t` value to (read_en, write_en,
+// digest) where `digest` is one of the DMA_CONTROL_DIGEST_VALUE_* encodings.
+typedef struct dif_dma_control_fields {
+  bool read_en;
+  bool write_en;
+  uint32_t digest;
+  // Inline-AES operation written to CONTROL.aes_op (Off/Enc/Dec). OFF for the
+  // non-AES operations (zero-initialised by the positional initialisers below).
+  uint32_t aes_op;
+  // CONTROL.aes_mode: 0 = CTR, 1 = GCM (only meaningful when aes_op != Off).
+  bool aes_gcm;
+} dif_dma_control_fields_t;
+
+static dif_result_t dif_dma_decode_opcode(dif_dma_transaction_opcode_t opcode,
+                                          dif_dma_control_fields_t *fields) {
+  switch (opcode) {
+    case kDifDmaCopyOpcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaSha256Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_SHA256,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaSha384Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_SHA384,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaSha512Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_SHA512,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaMemsetOpcode:
+      *fields = (dif_dma_control_fields_t){
+          false, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaVerifySha256Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, false, DMA_CONTROL_DIGEST_VALUE_SHA256,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaVerifySha384Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, false, DMA_CONTROL_DIGEST_VALUE_SHA384,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    case kDifDmaVerifySha512Opcode:
+      *fields = (dif_dma_control_fields_t){
+          true, false, DMA_CONTROL_DIGEST_VALUE_SHA512,
+          DMA_CONTROL_AES_OP_VALUE_OFF, false};
+      break;
+    // Inline AES: a copy (read_en=1, write_en=1, no SHA digest) with
+    // CONTROL.aes_op/aes_mode selecting the cipher operation and mode.
+    case kDifDmaAesCtrEncOpcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_ENC, false};
+      break;
+    case kDifDmaAesCtrDecOpcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_DEC, false};
+      break;
+    case kDifDmaAesGcmEncOpcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_ENC, true};
+      break;
+    case kDifDmaAesGcmDecOpcode:
+      *fields = (dif_dma_control_fields_t){
+          true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+          DMA_CONTROL_AES_OP_VALUE_DEC, true};
+      break;
+    default:
+      return kDifBadArg;
+  }
+  return kDifOk;
+}
+
+// Map an operation selector to its digest length in 32-bit words (0 if the
+// operation does not compute a digest).
+static dif_result_t dif_dma_decode_digest_words(
+    dif_dma_transaction_opcode_t opcode, uint32_t *digest_len) {
+  dif_dma_control_fields_t fields;
+  DIF_RETURN_IF_ERROR(dif_dma_decode_opcode(opcode, &fields));
+  switch (fields.digest) {
+    case DMA_CONTROL_DIGEST_VALUE_NONE:
+      *digest_len = 0;
+      break;
+    case DMA_CONTROL_DIGEST_VALUE_SHA256:
+      *digest_len = 8;
+      break;
+    case DMA_CONTROL_DIGEST_VALUE_SHA384:
+      *digest_len = 12;
+      break;
+    case DMA_CONTROL_DIGEST_VALUE_SHA512:
+      *digest_len = 16;
+      break;
+    default:
+      return kDifBadArg;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_dma_start(const dif_dma_t *dma,
                            dif_dma_transaction_opcode_t opcode) {
   if (dma == NULL) {
     return kDifBadArg;
   }
 
+  dif_dma_control_fields_t fields;
+  DIF_RETURN_IF_ERROR(dif_dma_decode_opcode(opcode, &fields));
+
   uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
-  reg = bitfield_field32_write(reg, DMA_CONTROL_OPCODE_FIELD, opcode);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_READ_EN_BIT, fields.read_en);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_WRITE_EN_BIT, fields.write_en);
+  reg = bitfield_field32_write(reg, DMA_CONTROL_DIGEST_FIELD, fields.digest);
+  // Inline-AES operation/mode (Off for the non-AES operations).
+  reg = bitfield_field32_write(reg, DMA_CONTROL_AES_OP_FIELD, fields.aes_op);
+  reg = bitfield_bit32_write(reg, DMA_CONTROL_AES_MODE_BIT, fields.aes_gcm);
   reg = bitfield_bit32_write(reg, DMA_CONTROL_GO_BIT, 1);
   reg = bitfield_bit32_write(reg, DMA_CONTROL_INITIAL_TRANSFER_BIT, 1);
   mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_configure(const dif_dma_t *dma,
+                                   dif_dma_aes_config_t config) {
+  if (dma == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_field32_write(reg, DMA_AES_CTRL_KEY_LEN_FIELD, config.key_len);
+  reg = bitfield_bit32_write(reg, DMA_AES_CTRL_SIDELOAD_BIT, config.sideload);
+  reg = bitfield_field32_write(reg, DMA_AES_CTRL_PRNG_RESEED_RATE_FIELD,
+                               config.reseed_rate);
+  reg = bitfield_field32_write(reg, DMA_AES_CTRL_AAD_BLOCKS_FIELD,
+                               config.aad_blocks);
+  mmio_region_write32(dma->base_addr, DMA_AES_CTRL_REG_OFFSET, reg);
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_key_set(const dif_dma_t *dma, const uint32_t share0[8],
+                                 const uint32_t share1[8]) {
+  if (dma == NULL || share0 == NULL || share1 == NULL) {
+    return kDifBadArg;
+  }
+
+  for (size_t i = 0; i < DMA_KEY_SHARE0_MULTIREG_COUNT; ++i) {
+    mmio_region_write32(
+        dma->base_addr,
+        (ptrdiff_t)(DMA_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t)),
+        share0[i]);
+    mmio_region_write32(
+        dma->base_addr,
+        (ptrdiff_t)(DMA_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t)),
+        share1[i]);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_iv_set(const dif_dma_t *dma, const uint32_t iv[4]) {
+  if (dma == NULL || iv == NULL) {
+    return kDifBadArg;
+  }
+
+  for (size_t i = 0; i < DMA_IV_MULTIREG_COUNT; ++i) {
+    mmio_region_write32(dma->base_addr,
+                        (ptrdiff_t)(DMA_IV_0_REG_OFFSET + i * sizeof(uint32_t)),
+                        iv[i]);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_aad_set(const dif_dma_t *dma, const uint32_t *aad,
+                                 size_t num_words) {
+  if (dma == NULL || num_words > DMA_AAD_MULTIREG_COUNT ||
+      (aad == NULL && num_words > 0)) {
+    return kDifBadArg;
+  }
+
+  for (size_t i = 0; i < num_words; ++i) {
+    ptrdiff_t offset = (ptrdiff_t)(DMA_AAD_0_REG_OFFSET + i * sizeof(uint32_t));
+    mmio_region_write32(dma->base_addr, offset, aad[i]);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_tag_in_set(const dif_dma_t *dma,
+                                    const uint32_t tag[4]) {
+  if (dma == NULL || tag == NULL) {
+    return kDifBadArg;
+  }
+
+  for (size_t i = 0; i < DMA_TAG_IN_MULTIREG_COUNT; ++i) {
+    mmio_region_write32(
+        dma->base_addr,
+        (ptrdiff_t)(DMA_TAG_IN_0_REG_OFFSET + i * sizeof(uint32_t)), tag[i]);
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_tag_out_get(const dif_dma_t *dma, uint32_t tag[4]) {
+  if (dma == NULL || tag == NULL) {
+    return kDifBadArg;
+  }
+
+  for (size_t i = 0; i < DMA_TAG_OUT_MULTIREG_COUNT; ++i) {
+    tag[i] = mmio_region_read32(
+        dma->base_addr,
+        (ptrdiff_t)(DMA_TAG_OUT_0_REG_OFFSET + i * sizeof(uint32_t)));
+  }
+  return kDifOk;
+}
+
+dif_result_t dif_dma_aes_tag_status_get(const dif_dma_t *dma, bool *tag_valid,
+                                        bool *tag_failed) {
+  if (dma == NULL || tag_valid == NULL || tag_failed == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(dma->base_addr, DMA_STATUS_REG_OFFSET);
+  *tag_valid = bitfield_bit32_read(reg, DMA_STATUS_TAG_VALID_BIT);
+  *tag_failed = bitfield_bit32_read(reg, DMA_STATUS_TAG_FAILED_BIT);
   return kDifOk;
 }
 
@@ -209,8 +430,11 @@ dif_result_t dif_dma_status_write(const dif_dma_t *dma,
 }
 
 dif_result_t dif_dma_status_clear(const dif_dma_t *dma) {
+  // Clear every write-1-to-clear STATUS bit (busy and sha2_digest_valid are
+  // read-only; the AES tag_valid/tag_failed bits are read-only too).
   return dif_dma_status_write(dma, kDifDmaStatusDone | kDifDmaStatusAborted |
-                                       kDifDmaStatusError | kDifDmaStatusError);
+                                       kDifDmaStatusError |
+                                       kDifDmaStatusChunkDone);
 }
 
 dif_result_t dif_dma_status_poll(const dif_dma_t *dma,
@@ -244,20 +468,13 @@ dif_result_t dif_dma_get_digest_length(dif_dma_transaction_opcode_t opcode,
   if (digest_len == NULL) {
     return kDifBadArg;
   }
-  switch (opcode) {
-    case kDifDmaSha256Opcode:
-      *digest_len = 8;
-      break;
-    case kDifDmaSha384Opcode:
-      *digest_len = 12;
-      break;
-    case kDifDmaSha512Opcode:
-      *digest_len = 16;
-      break;
-    default:
-      return kDifBadArg;
-      break;
+  uint32_t words = 0;
+  DIF_RETURN_IF_ERROR(dif_dma_decode_digest_words(opcode, &words));
+  // Operations without a digest (e.g. copy, memset) have no length to report.
+  if (words == 0) {
+    return kDifBadArg;
   }
+  *digest_len = words;
   return kDifOk;
 }
 
@@ -301,13 +518,36 @@ dif_result_t dif_dma_handshake_clear_irq(const dif_dma_t *dma,
   return kDifOk;
 }
 
-dif_result_t dif_dma_handshake_clear_irq_bus(const dif_dma_t *dma,
-                                             uint32_t clear_irq_bus) {
-  if (dma == NULL) {
+dif_result_t dif_dma_handshake_clear_irq_asid(const dif_dma_t *dma,
+                                            uint32_t source,
+                                            dif_dma_address_space_id_t asid) {
+  if (dma == NULL || source >= DMA_PARAM_NUM_INT_CLEAR_SOURCES) {
     return kDifBadArg;
   }
-  mmio_region_write32(dma->base_addr, DMA_CLEAR_INTR_BUS_REG_OFFSET,
-                      clear_irq_bus);
+  switch (asid) {
+    case kDifDmaAsid0:
+    case kDifDmaAsid1:
+    case kDifDmaAsid2:
+    case kDifDmaAsid3:
+    case kDifDmaAsid4:
+    case kDifDmaAsid5:
+    case kDifDmaAsid6:
+    case kDifDmaAsid7:
+    case kDifDmaAsid8:
+    case kDifDmaAsid9:
+    case kDifDmaAsid10:
+    case kDifDmaAsid11:
+    case kDifDmaAsid12:
+    case kDifDmaAsid13:
+    case kDifDmaAsid14:
+    case kDifDmaAsid15:
+      break;
+    default:
+      return kDifBadArg;
+  }
+  mmio_region_write32(dma->base_addr,
+                      DMA_CLEAR_INTR_ASID_0_REG_OFFSET + (ptrdiff_t)(4 * source),
+                      (uint32_t)asid);
 
   return kDifOk;
 }

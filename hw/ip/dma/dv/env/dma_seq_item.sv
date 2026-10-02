@@ -46,15 +46,28 @@ class dma_seq_item extends uvm_sequence_item;
   rand bit [31:0] chunk_data_size;
   rand mubi4_t range_regwen;
   rand opcode_e opcode;
+  // Captured by the scoreboard at transfer start: this is an inline-AES operation (CONTROL.aes_op
+  // != Off). The scoreboard skips its copy/memset data comparison for AES (the directed AES
+  // sequence self-checks the ciphertext/plaintext and tag against the KAT).
+  bit is_aes;
+  // Inline-AES sub-config, mirrored by the scoreboard from CONTROL/AES_CTRL so check_config can
+  // model the DUT's AES legality checks. Meaningful only when is_aes.
+  bit       aes_gcm;             // 1 = GCM, 0 = CTR
+  bit [3:0] aes_num_aad_blocks;  // AES_CTRL.aad_blocks
   rand dma_transfer_width_e per_transfer_width;
   rand asid_encoding_e src_asid;
   rand asid_encoding_e dst_asid;
   // Variable to indicate if interrupt needs clearing before reading from FIFO
   rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_src;
-  // Variable to indicate the bus on which each interrupt clearing address resides
-  // 0 - CTN/SYS fabric
-  // 1 - OT internal
-  rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_bus;
+  // Encoded target port per interrupt source.
+  rand asid_encoding_e clear_intr_asid[dma_reg_pkg::NumIntClearSources];
+
+  constraint configured_asids_c {
+    // Generic traffic needs responder models; directed ASID tests cover invalid IDs.
+    ConfiguredAsids[src_asid] == 1;
+    ConfiguredAsids[dst_asid] == 1;
+    foreach (clear_intr_asid[i]) ConfiguredAsids[clear_intr_asid[i]] == 1;
+  }
   // Array with interrupt register addresses
   // size of array will be number of Handshake interrupts(dma_reg_pkg::NumIntClearSources)
   rand bit [31:0] intr_src_addr[];
@@ -75,12 +88,6 @@ class dma_seq_item extends uvm_sequence_item;
   // Variable used to constrain destination address range to lie within the DMA-enabled address
   // range (consulted iff `valid_dma_config`).
   bit dst_addr_in_range;
-  // Note: Currently we have only a 32-bit TL-UL model of the SoC System bus, but the DMA controller
-  // is restricted to transfers of less than 4GiB so we randomize the start address of the TL-UL
-  // memory model and use an adapter to adjust the addresses within the bus traffic.
-  rand bit [SYS_ADDR_WIDTH-1:0] soc_system_src_base_addr;
-  rand bit [SYS_ADDR_WIDTH-1:0] soc_system_dst_base_addr;
-
   // Bit used to indicate if the configuration is valid
   bit is_valid_config;
   // LSIO trigger input value to be driven from testbench
@@ -108,12 +115,10 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(is_valid_config, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
     `uvm_field_int(clear_intr_src, UVM_DEFAULT)
-    `uvm_field_int(clear_intr_bus, UVM_DEFAULT)
+    `uvm_field_sarray_enum(asid_encoding_e, clear_intr_asid, UVM_DEFAULT)
     `uvm_field_array_int(intr_src_addr, UVM_DEFAULT)
     `uvm_field_array_int(intr_src_wr_val, UVM_DEFAULT)
     `uvm_field_array_int(sha2_digest, UVM_DEFAULT)
-    `uvm_field_int(soc_system_src_base_addr, UVM_DEFAULT)
-    `uvm_field_int(soc_system_dst_base_addr, UVM_DEFAULT)
     `uvm_field_int(lsio_trigger_i, UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -124,12 +129,48 @@ class dma_seq_item extends uvm_sequence_item;
     (lsio_trigger_i & handshake_intr_en) != 0;
   }
 
-  // SHA hashing supports only 4-byte transactions
+  // Inline hashing (copy+hash and verify) supports only 4-byte transactions
   constraint transfer_width_c {
     if (valid_dma_config) {
-      opcode inside {OpcSha256, OpcSha384, OpcSha512} -> per_transfer_width == DmaXfer4BperTxn;
+      opcode inside {OpcSha256, OpcSha384, OpcSha512,
+                     OpcVerifySha256, OpcVerifySha384, OpcVerifySha512} ->
+        per_transfer_width == DmaXfer4BperTxn;
     }
   }
+
+  // Hardware handshake drains and completes via reads and writes respectively, so it is only legal
+  // for operations that both read and write (copy / copy+hash). For valid configs, exclude memset
+  // (no read) and verify (no write) when handshaking. Memset/verify with handshake remain reachable
+  // as rejected (DmaOpcodeErr) configurations when valid_dma_config is not set.
+  constraint handshake_opcode_c {
+    if (valid_dma_config && handshake) {
+      opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512};
+    }
+  }
+
+  // Keep the everyday copy/hash space well represented when a sequence leaves the operation
+  // unconstrained; the directed memset/verify sequences pin the opcode explicitly.
+  constraint opcode_dist_c {
+    opcode dist {
+      OpcCopy                                    := 40,
+      [OpcSha256:OpcSha512]                      := 30,
+      OpcMemset                                  := 15,
+      [OpcVerifySha256:OpcVerifySha512]          := 15
+    };
+  }
+
+  // Convenience predicates for the operation's read/write/digest semantics. Memset does not read
+  // from a source buffer; verify does not write to a destination buffer.
+  function bit op_reads();
+    return opcode != OpcMemset;
+  endfunction
+  function bit op_writes();
+    return !(opcode inside {OpcVerifySha256, OpcVerifySha384, OpcVerifySha512});
+  endfunction
+  function bit op_has_digest();
+    return opcode inside {OpcSha256, OpcSha384, OpcSha512,
+                          OpcVerifySha256, OpcVerifySha384, OpcVerifySha512};
+  endfunction
 
   // Constrain the size of sha digest array to support SHA-256, SHA-382 and SHA-512
   constraint sha2_digest_c {
@@ -146,18 +187,13 @@ class dma_seq_item extends uvm_sequence_item;
     intr_src_wr_val.size() == dma_reg_pkg::NumIntClearSources;
   }
 
-  // Constrain the Soc System source base address so that we have a full 4GiB window and ensure
-  // that it's word-aligned.
-  constraint soc_sys_src_base_c {
-    soc_system_src_base_addr <= {SYS_ADDR_WIDTH{1'b1}} - 32'hFFFF_FFFF;
-    soc_system_src_base_addr[1:0] == 2'b00;
-  }
-
   constraint src_addr_c {
     // Set solve order to make sure source address is randomized correctly in case
     // valid_dma_config is set
     solve mem_range_base, mem_range_limit before src_addr;
-    if (valid_dma_config) {
+    // For memset (read_en=0) the source address register holds the fill pattern rather than a
+    // memory address, so none of the address alignment / range constraints below apply to it.
+    if (valid_dma_config && opcode != OpcMemset) {
       // For valid configurations, the source address must be aligned to the transfer width.
       per_transfer_width == DmaXfer4BperTxn -> src_addr[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> src_addr[0] == 1'b0;
@@ -173,39 +209,31 @@ class dma_seq_item extends uvm_sequence_item;
         if (src_addr_in_range) {
           src_addr >= mem_range_base;
           src_addr <= mem_range_limit;
-          mem_range_limit - src_addr >= chunk_data_size;
+          // The limit is inclusive, so a `size`-byte buffer fits iff `addr + size - 1 <= limit`,
+          // i.e. `limit - addr >= size - 1`. Using `>= size` excludes the valid `end == limit`
+          // boundary and hides the RTL off-by-one.
+          mem_range_limit - src_addr >= chunk_data_size - 1;
           // If wrapping is not used after chunk than the entire transfer must fit within the window
           if (!src_chunk_wrap) {
-            mem_range_limit - src_addr >= total_data_size;
+            mem_range_limit - src_addr >= total_data_size - 1;
           }
         } else {
           // Choose a source address range that lies partially outside the DMA-enabled memory range.
           if (!src_chunk_wrap) {
-            // Choose start address to be too low or end address to be too high.
+            // Choose start address to be too low or end address to be too high (end > limit).
             src_addr < mem_range_base  ||
             src_addr > mem_range_limit ||
-            mem_range_limit - src_addr < total_data_size;
+            mem_range_limit - src_addr < total_data_size - 1;
           } else {
-            // Choose start address to be too low or end address to be too high.
+            // Choose start address to be too low or end address to be too high (end > limit).
             src_addr < mem_range_base  ||
             src_addr > mem_range_limit ||
-            mem_range_limit - src_addr < chunk_data_size;
+            mem_range_limit - src_addr < chunk_data_size - 1;
           }
         }
       }
     }
-    if (src_asid == SocSystemAddr) {
-      // Source address range must lie within the selected 4GiB window and not spill over.
-      src_addr >= soc_system_src_base_addr &&
-      src_addr - soc_system_src_base_addr <= 32'hFFFF_FFFF - total_data_size;
-    }
-  }
-
-  // Constrain the Soc System destination base address so that we have a full 4GiB window and ensure
-  // that it's word-aligned.
-  constraint soc_sys_dst_base_c {
-    soc_system_dst_base_addr <= {SYS_ADDR_WIDTH{1'b1}} - 32'hFFFF_FFFF;
-    soc_system_dst_base_addr[1:0] == 2'b00;
+    // SoC System bus is full 64-bit (wide `dma_tl_agent`): no 4GiB-window constraint on `src_addr`.
   }
 
   constraint dst_addr_c {
@@ -228,54 +256,45 @@ class dma_seq_item extends uvm_sequence_item;
         if (dst_addr_in_range) {
           dst_addr >= mem_range_base;
           dst_addr <= mem_range_limit;
-          mem_range_limit - dst_addr >= chunk_data_size;
+          // The limit is inclusive, so a `size`-byte buffer fits iff `addr + size - 1 <= limit`,
+          // i.e. `limit - addr >= size - 1`. Using `>= size` excludes the valid `end == limit`
+          // boundary and hides the RTL off-by-one.
+          mem_range_limit - dst_addr >= chunk_data_size - 1;
           // If wrapping is not used after chunk than the entire transfer must fit within the window
           if (!dst_chunk_wrap) {
-            mem_range_limit - dst_addr >= total_data_size;
+            mem_range_limit - dst_addr >= total_data_size - 1;
           }
         } else {
           // Choose a destination address range that lies partially outside the DMA-enabled memory
           // range.
           if (!dst_chunk_wrap) {
-            // Choose start address to be too low or end address to be too high.
+            // Choose start address to be too low or end address to be too high (end > limit).
             dst_addr < mem_range_base  ||
             dst_addr > mem_range_limit ||
-            mem_range_limit - dst_addr < total_data_size;
+            mem_range_limit - dst_addr < total_data_size - 1;
           } else {
-            // Choose start address to be too low or end address to be too high.
+            // Choose start address to be too low or end address to be too high (end > limit).
             dst_addr < mem_range_base  ||
             dst_addr > mem_range_limit ||
-            mem_range_limit - dst_addr < chunk_data_size;
+            mem_range_limit - dst_addr < chunk_data_size - 1;
           }
         }
       }
     }
-    if (dst_asid == SocSystemAddr) {
-      // Source address range must lie within the selected 4GiB window and not spill over.
-      dst_addr >= soc_system_dst_base_addr &&
-      dst_addr - soc_system_dst_base_addr <= 32'hFFFF_FFFF - total_data_size;
-    }
+    // SoC System bus is full 64-bit (wide `dma_tl_agent`): no 4GiB-window constraint on `dst_addr`.
 
-    if (src_asid == dst_asid) {
+    // Source/destination overlap only matters when the operation both reads a source buffer and
+    // writes a destination buffer (copy/hash). For memset `src_addr` is a pattern, and for verify
+    // there is no destination buffer, so the overlap avoidance does not apply.
+    if (src_asid == dst_asid &&
+        opcode inside {OpcCopy, OpcSha256, OpcSha384, OpcSha512}) {
       // Avoid overlap between source and destination buffers, also leaving a slight gap so
       // that any out-of-bounds access does not hit a contiguous buffer
       //
       // `total_data_size` here is often larger than the valid addressable range in
       // handshake mode, but keeps things simpler
-      if (src_asid == SocSystemAddr) {
-        // We must consider the two SoC System base addresses that have been chosen; the key
-        // point to understand here it is that it is permissible for the two buffers to overlap
-        // in the 64-bit address space in this case, but they _must not_ overlap within the
-        // single TL-UL 32-bit address space after the source and destination addresses have
-        // been translated.
-        (dst_addr - soc_system_dst_base_addr >
-         src_addr - soc_system_src_base_addr + total_data_size + 'h10) ||
-        (src_addr - soc_system_src_base_addr >
-         dst_addr - soc_system_dst_base_addr + total_data_size + 'h10);
-      } else {
-        (dst_addr > src_addr + total_data_size + 'h10) ||
-        (src_addr > dst_addr + total_data_size + 'h10);
-      }
+      (dst_addr > src_addr + total_data_size + 'h10) ||
+      (src_addr > dst_addr + total_data_size + 'h10);
     }
   }
 
@@ -298,7 +317,10 @@ class dma_seq_item extends uvm_sequence_item;
   constraint total_data_size_c {
     solve mem_range_limit before total_data_size;
     if (valid_dma_config) {
-      total_data_size <= mem_range_limit - mem_range_base;
+      // The range is inclusive, so the window holds `limit - base + 1` bytes. Phrased as
+      // `limit - base >= size - 1` (overflow-safe, matching the address constraints) so the exact
+      // full-window transfer (end == limit) is reachable.
+      mem_range_limit - mem_range_base >= total_data_size - 1;
       total_data_size > 0;
     }
   }
@@ -306,7 +328,8 @@ class dma_seq_item extends uvm_sequence_item;
   constraint chunk_data_size_c {
     solve mem_range_limit before chunk_data_size;
     if (valid_dma_config) {
-      chunk_data_size <= mem_range_limit - mem_range_base;
+      // Inclusive window (see total_data_size_c): `limit - base + 1` bytes.
+      mem_range_limit - mem_range_base >= chunk_data_size - 1;
       chunk_data_size > 0;
     }
     if (handshake) {
@@ -329,7 +352,9 @@ class dma_seq_item extends uvm_sequence_item;
       // SHA2 can accept a partial 32-bit word only at the very end of the message being hashed,
       // so non-final transfers must have a size of 4n. Since 4B/txn mode demands 4n alignment
       // already, constraining the chunk size is enough to guarantee 4n alignment of the chunk end.
-      opcode inside {OpcSha256, OpcSha384, OpcSha512} -> chunk_data_size[1:0] == 2'b00;
+      opcode inside {OpcSha256, OpcSha384, OpcSha512,
+                     OpcVerifySha256, OpcVerifySha384, OpcVerifySha512} ->
+        chunk_data_size[1:0] == 2'b00;
 
       // Source and destination addresses must have the same alignment at the start of non-initial
       // chunks when either is not wrapping chunks.
@@ -363,14 +388,10 @@ class dma_seq_item extends uvm_sequence_item;
   constraint mem_range_limit_c {
     // Set solver order to make sure mem range limit is randomized correctly in case
     // valid_dma_config is set.
-    //
-    // We also choose the SoC System base addresses up front, because these are simple and cannot
-    // later be invalidated. We do this even if not waiving full testing because in that case they
-    // shall simply be ignored.
-    solve soc_system_src_base_addr, soc_system_dst_base_addr, mem_range_base before mem_range_limit;
-    // For valid DMA config, [mem_range_base, mem_range_limit) describes the addressable memory
-    // window, but it need not always be enabled, and only applies to transfers crossing the divide
-    // (importing to/exporting from OT)
+    solve mem_range_base before mem_range_limit;
+    // For valid DMA config, [mem_range_base, mem_range_limit] describes the addressable memory
+    // window (both ends inclusive), but it need not always be enabled, and only applies to transfers
+    // crossing the divide (importing to/exporting from OT)
     if (valid_dma_config && mem_range_valid) {
       // Note: The DMA controller insists upon checking that a valid range has been specified
       // before it will accept any operation.
@@ -454,7 +475,7 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\tmem_range_base          : 0x%08x", mem_range_base),
         $sformatf("\n\tmem_range_limit         : 0x%08x", mem_range_limit),
         $sformatf("\n\tclear_intr_src          : 0x%8x",  clear_intr_src),
-        $sformatf("\n\tclear_intr_bus          : 0x%8x",  clear_intr_bus),
+        $sformatf("\n\tclear_intr_asid         : %p", clear_intr_asid),
         $sformatf("\n\thandshake_intr_en       : 0x%08x", handshake_intr_en),
         $sformatf("\n\tlsio_trigger_i          : 0x%08x", lsio_trigger_i)
     };
@@ -474,7 +495,7 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\tdst_chunk_wrap          : %0d",    dst_chunk_wrap),
         $sformatf("\n\tsrc_addr_inc            : %0d",    src_addr_inc),
         $sformatf("\n\tdst_addr_inc            : %0d",    dst_addr_inc),
-        $sformatf("\n\topcode                  : %0d",    opcode),
+        $sformatf("\n\topcode                  : %s",     opcode.name()),
         $sformatf("\n\tper_transfer_width      : %0d",    per_transfer_width),
         $sformatf("\n\tchunk_data_size         : 0x%x",   chunk_data_size),
         $sformatf("\n\ttotal_data_size         : 0x%x",   total_data_size)
@@ -524,63 +545,93 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_info(`gfn, $sformatf("Checking configuration (%s)", reason), UVM_MEDIUM)
 
     // Ascertain the size of the in-memory buffer(s).
+    // Memory footprint of each endpoint, matching the RTL range check: a wrapping chunk re-uses the
+    // same chunk_data_size window; a fixed (non-incrementing) address only ever accesses the single
+    // transfer word, regardless of wrap (the RTL uses the transfer-word width for that case).
     src_memory_range = total_data_size;
     if (src_chunk_wrap) begin
       src_memory_range = chunk_data_size;  // All chunks overlap each other
-      if (!src_addr_inc) begin
-        src_memory_range = 4;
-      end
+    end
+    if (!src_addr_inc) begin
+      src_memory_range = transfer_width_to_num_bytes(per_transfer_width);
     end
     dst_memory_range = total_data_size;
     if (dst_chunk_wrap) begin
-      dst_memory_range = chunk_data_size;  // All chunks overlaps each other
-      if (!dst_addr_inc) begin
-        dst_memory_range = 4;
-      end
+      dst_memory_range = chunk_data_size;  // All chunks overlap each other
+    end
+    if (!dst_addr_inc) begin
+      dst_memory_range = transfer_width_to_num_bytes(per_transfer_width);
     end
 
-    // Use of the System bus imposes additional constraints that have had to be introduced to
-    // permit testing in block level DV (see `soc_system_src|dst_base_addr` above); if the transfer
-    // lies outside of the specified 4GiB window then reads or writes will be faulted by the adapter
-    // interface.
-    if (src_asid == SocSystemAddr) begin
-      logic [SYS_ADDR_WIDTH-1:0] end_addr = soc_system_src_base_addr + 32'hFFFF_FFFC;
-      if (src_addr < soc_system_src_base_addr || src_addr > end_addr ||
-          end_addr - src_addr < src_memory_range) begin
-        `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Reads not met",
-                  UVM_MEDIUM)
-        valid_config = 0;
-      end
-    end
-    if (dst_asid == SocSystemAddr) begin
-      logic [SYS_ADDR_WIDTH-1:0] end_addr = soc_system_dst_base_addr + 32'hFFFF_FFFC;
-      if (dst_addr < soc_system_dst_base_addr || dst_addr > end_addr ||
-          end_addr - dst_addr < dst_memory_range) begin
-        `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Writes not met",
-                  UVM_MEDIUM)
-        valid_config = 0;
-      end
-    end
+    // SoC System bus is full 64-bit (wide `dma_tl_agent`): no 4GiB-window restriction applied.
 
     // Check that the ASIDs are valid
-    if (!(dst_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
+    if (handshake) begin
+      foreach (clear_intr_asid[i]) begin
+        if (clear_intr_src[i] && !dma_asid_configured(clear_intr_asid[i]))
+          valid_config = 0;
+      end
+    end
+    if (!dma_asid_configured(dst_asid)) begin
       `uvm_info(`gfn, " - Destination ASID invalid", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (!(src_asid inside {OtInternalAddr, SocControlAddr, SocSystemAddr})) begin
+    if (!dma_asid_configured(src_asid)) begin
       `uvm_info(`gfn, " - Source ASID invalid", UVM_MEDIUM)
       valid_config = 0;
     end
 
-    // Check if operation is valid
-    if (opcode inside {OpcSha256, OpcSha384, OpcSha512}) begin
-      if (per_transfer_width != DmaXfer4BperTxn) begin
-        `uvm_info(`gfn, $sformatf(" - SHA hashing operates only on 4B/txn"), UVM_MEDIUM)
+    // Check if operation is valid. Inline hashing (copy+hash and verify) operates only on 4B/txn.
+    if (op_has_digest() && per_transfer_width != DmaXfer4BperTxn) begin
+      `uvm_info(`gfn, $sformatf(" - SHA hashing operates only on 4B/txn"), UVM_MEDIUM)
+      valid_config = 0;
+    end
+    // Legal-combo check, mirroring the DUT's `DmaOpcodeErr` gating on the captured CONTROL fields:
+    //  - at least one of read/write must be enabled (no no-op),
+    //  - hashing requires a read (digest covers the read data),
+    //  - a write with no digest is meaningless when there is no read (read-and-discard),
+    //  - hardware handshake drains/completes via reads and writes, so it requires both.
+    if (!op_reads() && !op_writes()) begin
+      `uvm_info(`gfn, " - No-op: neither read nor write enabled", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    if (op_has_digest() && !op_reads()) begin
+      `uvm_info(`gfn, " - Inline hashing requires a source read", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    if (!op_writes() && !op_has_digest()) begin
+      `uvm_info(`gfn, " - Read with no write and no digest discards the data", UVM_MEDIUM)
+      valid_config = 0;
+    end
+    if (handshake && (!op_reads() || !op_writes())) begin
+      `uvm_info(`gfn, " - Hardware handshake requires both read and write", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // Inline-AES legal-combination checks, mirroring the DUT (dma.sv). The sideload key is always
+    // driven valid by the TB, so the DUT's sideload-valid check cannot fire here.
+    if (is_aes) begin
+      if (!op_reads() || !op_writes() || op_has_digest()) begin
+        `uvm_info(`gfn, " - AES requires a read+write copy with no digest",
+                  UVM_MEDIUM)
         valid_config = 0;
       end
-    end else if (opcode != OpcCopy) begin
-      `uvm_info(`gfn, $sformatf(" - Unsupported DMA operation: %s", opcode.name()), UVM_MEDIUM)
-      valid_config = 0;
+      if (per_transfer_width != DmaXfer4BperTxn) begin
+        `uvm_info(`gfn, " - AES requires 4B/txn transfers", UVM_MEDIUM)
+        valid_config = 0;
+      end
+      if (|total_data_size[3:0] || |chunk_data_size[3:0]) begin
+        `uvm_info(`gfn, " - AES requires 16B-multiple sizes", UVM_MEDIUM)
+        valid_config = 0;
+      end
+      if (aes_num_aad_blocks > 4'd2) begin
+        `uvm_info(`gfn, " - AES allows at most 2 AAD blocks", UVM_MEDIUM)
+        valid_config = 0;
+      end
+      if (aes_gcm && |total_data_size[31:17]) begin
+        `uvm_info(`gfn, " - GCM transfer exceeds the 8191-block text limit", UVM_MEDIUM)
+        valid_config = 0;
+      end
     end
 
     // The DMA-enabled memory range must have been set up, even though it may not be used
@@ -599,7 +650,7 @@ class dma_seq_item extends uvm_sequence_item;
     // For all valid configurations, either source or destination address space Id must point
     // to OT internal address space, but the memory range restriction does not apply if _both_
     // are within the OT internal address space.
-    if (src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
+    if (op_reads() && src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
       if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0],
                                                              src_memory_range)) begin
         // If source address space ID points to OT internal address space,
@@ -611,7 +662,7 @@ class dma_seq_item extends uvm_sequence_item;
                 UVM_MEDIUM)
         valid_config = 0;
       end
-    end else if (dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
+    end else if (op_writes() && dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
       // If destination address space ID points to OT internal address space
       // it must be within DMA enabled address range.
       if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0],
@@ -626,12 +677,13 @@ class dma_seq_item extends uvm_sequence_item;
     end
 
     // Check that the upper 32 bits of the destination and source address are zero for
-    // 32-bit address spaces
-    if (dst_asid != SocSystemAddr && |dst_addr[63:32]) begin
+    // 32-bit address spaces. These per-side checks only apply when the side is actually used:
+    // memset has no source read, verify has no destination write.
+    if (op_writes() && dst_asid != SocSystemAddr && |dst_addr[63:32]) begin
       `uvm_info(`gfn, " - Destination address out of range for destination ASID", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (src_asid != SocSystemAddr && |src_addr[63:32]) begin
+    if (op_reads() && src_asid != SocSystemAddr && |src_addr[63:32]) begin
       `uvm_info(`gfn, " - Source addess out of range for source ASID", UVM_MEDIUM)
       valid_config = 0;
     end
@@ -654,11 +706,13 @@ class dma_seq_item extends uvm_sequence_item;
       end
     endcase
 
-    if (|(src_addr & align_mask)) begin
+    // Source/destination alignment is only checked for the side actually exercised: memset has no
+    // source read (src_addr is a fill pattern), verify has no destination write.
+    if (op_reads() && |(src_addr & align_mask)) begin
       `uvm_info(`gfn, " - Source address does not meet alignment requirements", UVM_MEDIUM)
       valid_config = 0;
     end
-    if (|(dst_addr & align_mask)) begin
+    if (op_writes() && |(dst_addr & align_mask)) begin
       `uvm_info(`gfn, " - Destination address does not meet alignment requirements", UVM_MEDIUM)
       valid_config = 0;
     end
@@ -714,6 +768,22 @@ class dma_seq_item extends uvm_sequence_item;
     return transfer_width_to_num_bytes(per_transfer_width);
   endfunction
 
+  // For memset, the fill pattern is taken from the low 32 bits of the source address register.
+  function bit [31:0] fill_value();
+    return src_addr[31:0];
+  endfunction
+
+  // The byte that the DUT writes to destination byte-lane `lane` (0..3) for a memset, after the
+  // dst-keyed replication of the (little-endian) fill pattern. Mirrors the RTL `fill_replicate`
+  // mux: 1B replicates byte 0, 2B replicates the low halfword, 4B passes the word through.
+  function bit [7:0] fill_byte_for_lane(int lane);
+    case (per_transfer_width)
+      DmaXfer1BperTxn: return fill_value()[7:0];
+      DmaXfer2BperTxn: return fill_value()[8*(lane % 2) +: 8];
+      default:         return fill_value()[8*(lane % 4) +: 8];
+    endcase
+  endfunction
+
   // Reset all variable values
   function void reset_config();
     src_addr = 0;
@@ -730,6 +800,8 @@ class dma_seq_item extends uvm_sequence_item;
     dst_chunk_wrap = 0;
     src_chunk_wrap = 0;
     handshake = 0;
+    clear_intr_src = '0;
+    foreach (clear_intr_asid[i]) clear_intr_asid[i] = asid_encoding_e'('0);
     // reset non random variables
     valid_dma_config = 0;
     range_regwen = MuBi4True;

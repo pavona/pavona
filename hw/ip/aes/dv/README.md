@@ -57,6 +57,10 @@ The AES RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
 
+```console
+$REPO_TOP/util/regtool.py $REPO_TOP/hw/ip/aes/data/aes.hjson -s --outdir <path_to_directory>
+```
+
 ### Stimulus strategy
 #### Test sequences
 All test sequences reside in `hw/ip/aes/dv/env/seq_lib`.
@@ -138,12 +142,13 @@ We are using our in-house developed [regression tool](../../../../util/dvsim/REA
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```sh
-$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_sim_cfg.hjson -i aes_smoke
+$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hjson -i aes_smoke
 ```
 Here's how to run a basic test without DPI calls:
 ```sh
 $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/aes/dv/aes_${VARIANT}_sim_cfg.hjson -i aes_wakeup
 ```
-In this run command, $VARIANT can be `masked` or `unmasked`.
+In these commands, `$VARIANT` can be `masked`, `unmasked`, `gcm_masked` or `gcm_unmasked`.
+
 ## Testplan
 [Testplan](../data/aes_testplan.hjson)

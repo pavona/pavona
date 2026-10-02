@@ -11,6 +11,7 @@ module aes
   import aes_reg_pkg::*;
 #(
   parameter bit          AES192Enable          = 1, // Can be 0 (disable), or 1 (enable).
+  parameter bit          AESGCMEnable          = 1, // Can be 0 (disable), or 1 (enable).
   parameter bit          SecMasking            = 1, // Can be 0 (no masking), or
                                                     // 1 (first-order masking) of the cipher
                                                     // core. Masking requires the use of a
@@ -44,6 +45,10 @@ module aes
 
   // Idle indicator for clock manager
   output prim_mubi_pkg::mubi4_t                     idle_o,
+
+  // Status indicators for DMA integrations
+  output logic                                      output_valid_o,
+  output logic                                      input_ready_o,
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t                       lc_escalate_en_i,
@@ -176,6 +181,7 @@ module aes
   // AES core
   aes_core #(
     .AES192Enable             ( AES192Enable             ),
+    .AESGCMEnable             ( AESGCMEnable             ),
     .SecMasking               ( SecMasking               ),
     .SecSBoxImpl              ( SecSBoxImpl              ),
     .SecStartTriggerDelay     ( SecStartTriggerDelay     ),
@@ -208,11 +214,15 @@ module aes
     .alert_recov_o          ( alert[AlertRecovCtrlUpdateErrIdx] ),
     .alert_fatal_o          ( alert[AlertFatalFaultIdx]         ),
 
+    .gcm_init_done_o        (                                   ), // GCM sequencing internal to AES
+
     .reg2hw                 ( reg2hw                            ),
     .hw2reg                 ( hw2reg                            )
   );
 
   assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.status.idle.q);
+  assign output_valid_o = reg2hw.status.output_valid.q;
+  assign input_ready_o = reg2hw.status.input_ready.q;
 
   ////////////
   // Alerts //
@@ -293,6 +303,24 @@ module aes
               u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
           alert_tx_o[1])
     end
+  end
+
+  if (AESGCMEnable) begin : gen_ghash_fsm_sva
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesGhashFsmCheck_A,
+        u_aes_core.gen_ghash.u_aes_ghash.u_state_regs,
+        alert_tx_o[1])
+  end
+
+  if (AESGCMEnable && SecMasking) begin : gen_ghash_onehot_sva
+    for (genvar s = 0; s < 2; s++) begin : gen_ghash_onehot_add_in_sva
+      `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashAadOnehotCheck_A,
+          u_aes_core.gen_ghash.u_aes_ghash.gen_masked_add.gen_add_in_muxes[s].
+              u_prim_onehot_check_add_in_sel,
+          alert_tx_o[1])
+    end
+    `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashMultOnehotCheck_A,
+        u_aes_core.gen_ghash.u_aes_ghash.gen_gf_mult1_mux.u_prim_onehot_check_gf_mult1_in_sel,
+        alert_tx_o[1])
   end
 
   // Alert assertions for reg_we onehot check

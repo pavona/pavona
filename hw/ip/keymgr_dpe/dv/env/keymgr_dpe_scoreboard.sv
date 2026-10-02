@@ -480,6 +480,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                         current_state,
                                         get_operation(),
                                         cfg.keymgr_dpe_vif.aes_sideload_status == SideLoadAvail,
+                                        cfg.keymgr_dpe_vif.dma_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.kmac_sideload_status == SideLoadAvail,
                                         cfg.keymgr_dpe_vif.acc_sideload_status == SideLoadAvail,
                                         cfg_regwen);
@@ -577,6 +578,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   $sformatf({"After a disable acc sideload key was not preseved",
                     "exp 'h%0h vs. act 'h%0h"},
                   cfg.keymgr_dpe_vif.acc_key_exp, cfg.keymgr_dpe_vif.acc_key))
+            end
+
+            if (cfg.keymgr_dpe_vif.dma_key_exp != cfg.keymgr_dpe_vif.dma_key) begin
+                `uvm_error(`gfn,
+                  $sformatf({"After a disable dma sideload key was not preserved",
+                  "exp 'h%0h vs. act 'h%0h"},
+                  cfg.keymgr_dpe_vif.dma_key_exp, cfg.keymgr_dpe_vif.dma_key))
             end
 
             if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin

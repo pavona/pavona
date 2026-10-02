@@ -361,7 +361,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write dma's alert_test reg and check alert_cause.
-  for (dif_dma_alert_t i = 0; i < 1; ++i) {
+  for (dif_dma_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_dma_alert_force(&dma, kDifDmaAlertFatalFault + i));
 
     // Verify that alert handler received it.

@@ -265,6 +265,10 @@ The artifacts are generated for each type and width, and include the following:
 - SV types and constant functions that can be used in generate blocks
 - Macros to instantiate encode and decode prims driven by parameters using case generates
 
+C encoder generation defaults to enabled for Hsiao codes. A configuration that is used only by
+RTL can set `generate_c: false`; this is required for data widths above the C generator's 64-bit
+limit.
+
 The functions and macros to be used for parameterized cases have comments that explain their use.
 These functions are in `hw/ip/prim/rtl/prim_secded_pkg.sv`, and the macros in `hw/ip/prim/rtl/prim_secded_inc.svh`.
 An example of how to parameterize secded is in `hw/ip/otp_macro/rtl/otp_macro.sv`.

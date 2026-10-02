@@ -343,7 +343,7 @@ class IpBlock:
 
         bus_interfaces = (BusInterfaces.from_raw(
             rd['bus_interfaces'], 'bus_interfaces field of ' + where))
-        inter_signals += bus_interfaces.inter_signals()
+        inter_signals += bus_interfaces.inter_signals(params)
 
         clocking = Clocking.from_raw(rd['clocking'],
                                      'clocking field of ' + what)

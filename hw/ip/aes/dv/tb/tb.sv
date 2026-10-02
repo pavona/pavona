@@ -15,7 +15,6 @@ module tb;
 
   wire                                    clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0]           interrupts;
-  wire                                    edn_req;
   wire [$bits(lc_ctrl_pkg::lc_tx_t) : 0]  lc_escalate;
   wire                                    idle;
   prim_mubi_pkg::mubi4_t                  idle_s;
@@ -46,14 +45,17 @@ module tb;
 
   // dut
   aes #(
-    .SecMasking  ( `EN_MASKING   ),
-    .SecSBoxImpl ( `SBOX_IMPL    )
+    .SecMasking   ( `EN_MASKING   ),
+    .SecSBoxImpl  ( `SBOX_IMPL    ),
+    .AESGCMEnable ( `EN_GCM       )
   ) dut (
     .clk_i            ( clk                               ),
     .rst_ni           ( rst_n                             ),
     .rst_shadowed_ni  ( rst_shadowed_n                    ),
 
     .idle_o           ( idle_s                            ),
+    .output_valid_o   (                                   ),
+    .input_ready_o    (                                   ),
     .lc_escalate_en_i ( lc_escalate_en                    ),
     .clk_edn_i        ( edn_clk                           ),
     .rst_edn_ni       ( edn_rst_n                         ),

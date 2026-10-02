@@ -905,10 +905,16 @@
     },
     { name: "dma",
       type: "dma",
-      clock_srcs: {clk_i: "main"}
+      clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc"},
+      reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
       base_addr: {hart: "0x22010000"},
+      param_decl: {
+        NumPorts: 3,
+        PortDesc: "'{dma_pkg::DmaPortOtInternal,\n        dma_pkg::DmaPortSocControl,\n        dma_pkg::DmaPortSocSystem}"
+        NumTlul32: "2",
+        NumTlul64: "1",
+      }
     },
     { name: "mbx0",
       type: "mbx",
@@ -1232,7 +1238,7 @@
       // Edn connections
       'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'kmac.entropy',
                                  'alert_handler.edn', 'aes.edn', 'acc.edn_urnd',
-                                 'rv_core_ibex.edn'],
+                                 'rv_core_ibex.edn', 'dma.edn'],
       'edn1.edn'              : ['acc.edn_rnd'],
 
       // ACC OTP scramble key
@@ -1241,6 +1247,7 @@
       // KeyMgr Sideload & KDF function
       'otp_ctrl.otp_keymgr_key' : ['keymgr_dpe.otp_key'],
       'keymgr_dpe.aes_key'      : ['aes.keymgr_key'],
+      'keymgr_dpe.dma_key'      : ['dma.keymgr_key'],
       'keymgr_dpe.kmac_key'     : ['kmac.keymgr_key'],
       'keymgr_dpe.acc_key'     : ['acc.keymgr_key'],
 
@@ -1297,7 +1304,8 @@
                                       'sram_ctrl_ret_aon.lc_escalate_en',
                                       'sram_ctrl_mbox.lc_escalate_en',
                                       'aon_timer_aon.lc_escalate_en',
-                                      'rv_dm.lc_escalate_en'],
+                                      'rv_dm.lc_escalate_en',
+                                      'dma.lc_escalate_en'],
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
                                       'rv_dm.lc_check_byp_en'],
@@ -1338,9 +1346,9 @@
       // Reset manager software reset request to pwrmgr
       'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
 
-      // SOC Proxy TLUL Muxing
-      'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
-      'soc_proxy.dma_tl_d2h' : ['dma.ctn_tl_d2h']
+      // DMA 32-bit host vector, routed per index: index 0 -> main xbar node,
+      // index 1 -> point-to-point to soc_proxy.
+      'dma.host32_tl_h' : ['main.tl_dma__host32_0', 'soc_proxy.dma_tl']
 
       'soc_proxy.ctn_tl_h2d' : ['ac_range_check.ctn_tl_h2d']
       'soc_proxy.ctn_tl_d2h' : ['ac_range_check.ctn_tl_d2h']
@@ -1414,7 +1422,8 @@
         'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
         'pwrmgr_aon.ext_rst_ack'               : 'pwrmgr_ext_rst_ack',
         'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
-        'dma.sys'                              : 'dma_sys',
+        'dma.host64_h2d'                       : 'dma_host64_h2d',
+        'dma.host64_d2h'                       : 'dma_host64_d2h',
         'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
         'entropy_src.entropy_src_rng_valid'    : 'es_rng_valid',
         'entropy_src.entropy_src_rng_bits'     : 'es_rng_bit',

@@ -30,6 +30,26 @@ The DMA is envisioned to operate in two main modes:
     up or drain out hardware FIFO data for low speed IO peripherals (or
     other peripherals) that support it.
 
+The data movement performed in either mode is selected by three
+orthogonal fields of the [*CONTROL*](registers.md#control) register
+(`read_en`, `write_en`, and `digest`), which combine to yield the
+following operations:
+
+1.  **Copy** (`read_en = 1`, `write_en = 1`, `digest = NONE`): read
+    data from the source and write it to the destination.
+2.  **Copy + Hash** (`read_en = 1`, `write_en = 1`, `digest = SHA*`):
+    copy the data while also computing its SHA-2 digest on-the-fly.
+3.  **Memset** (`read_en = 0`, `write_en = 1`, `digest = NONE`): fill
+    the destination with the pattern programmed in
+    [*SRC_ADDR_LO*](registers.md#src_addr_lo) without reading the
+    source.
+4.  **Verify** (`read_en = 1`, `write_en = 0`, `digest = SHA*`): read a
+    region and compute its digest without writing to a destination, for
+    integrity or attestation checks.
+
+Illegal field combinations are rejected and reported in the
+[*ERROR_CODE*](registers.md#error_code) register.
+
 ### Generic DMA operation
 
 Mode of operation & interactions with components considered external to
@@ -54,8 +74,10 @@ the Trusted Compute Boundary
 
     -   Size of the data object to be moved.
 
-    -   Opcode - Type of any optionally supported operation e.g.
-        Cryptographic hash.
+    -   Type of operation - the data movement and any optionally
+        supported inline operation (e.g. a cryptographic hash),
+        selected via the `read_en`, `write_en`, and `digest` fields
+        of the control register.
 
 -   Secure-side firmware parses the command object passed through the mailbox.
 -   Secure-side firmware sanitizes mailbox objects as required.
@@ -65,9 +87,11 @@ the Trusted Compute Boundary
     corresponding address space Identifier.
 -   Secure-side firmware configures DMA destination address register &
     corresponding address space Identifier.
--   Secure-side firmware completes other configurations such as operation size,
-    OPCODE of any additional inline operations requested (e.g.
-    cryptographic hash calculation of data blob being moved).
+-   Secure-side firmware completes other configurations such as operation size
+    and the type of operation, selecting the data movement (`read_en`,
+    `write_en`) and any additional inline operation requested (e.g. the
+    `digest` field for cryptographic hash calculation of the data blob
+    being moved).
 -   Secure-side firmware triggers the DMA operation.
 -   DMA hardware performs appropriate address and configuration checks
     to enforce the defined security and access control properties.
@@ -123,7 +147,7 @@ hardware handshake DMA operation.
     receive FIFO read out register.
 -   [*Destination address*](registers.md#dst_addr_lo): address to the memory
     buffer where received data is placed.
--   [*Address space ID*](registers.md#addr_space_id) (ASID): (Secure/Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): encoded configured port ID
 
     -   Source ASID: Specify the address space in which the LSIO FIFO is
         visible.
@@ -156,8 +180,9 @@ hardware handshake DMA operation.
     per the Source Configuration description above.
 -   [*DMAC Control register*](registers.md#control):
 
-    -   Opcode: Type of operation requested. Typically set to copy
-        operation in case of hardware handshake mode of operation.
+    -   Type of operation: selected via the `read_en`, `write_en`, and
+        `digest` fields. For hardware handshake mode this is typically a
+        copy operation (`read_en = 1`, `write_en = 1`, `digest = NONE`).
 
     -   Hardware handshake enable = 1
 
@@ -185,7 +210,7 @@ hardware handshake DMA operation.
     memory buffer.
 -   [*Destination address*](registers.md#dst_addr_lo): pointer to the FIFO
     register.
--   [*Address space ID*](registers.md#addr_space_id) (ASID): (Secure/Internal, CTN or System)
+-   [*Address space ID*](registers.md#addr_space_id) (ASID): encoded configured port ID
 
     -   Source ASID: Specify the address space in which the source
         buffer resides.
@@ -220,8 +245,9 @@ hardware handshake DMA operation.
 
 -   [*DMAC Control register*](registers.md#control)
 
-    -   Opcode: Type of operation requested. Typically set to copy
-        operation in case of hardware handshake mode of operation.
+    -   Type of operation: selected via the `read_en`, `write_en`, and
+        `digest` fields. For hardware handshake mode this is typically a
+        copy operation (`read_en = 1`, `write_en = 1`, `digest = NONE`).
 
     -   Hardware handshake enable = 1
 
@@ -328,12 +354,118 @@ the data being transferred, using any of the following algorithms:
 - SHA-384 - SHA-2 hash with a 384-bit digest.
 - SHA-512 - SHA-2 hash with a 512-bit digest.
 
-This is achieved simply by modifying the [*opcode*](registers.md#control--opcode)
-field of the [*CONTROL*](registers.md#control) and collecting the
+This is achieved simply by selecting the desired algorithm in the
+[*digest*](registers.md#control--digest) field of the
+[*CONTROL*](registers.md#control) register and collecting the
 [digest](registers.md#sha2_digest) from the registers interface when the
 transfer has completed.
 
+## Inline AES Encryption
+
+The DMA controller can encrypt or decrypt the data it moves on-the-fly using
+**AES-128/192/256** in **CTR** or **GCM** mode.
+This follows option 1 below (a dedicated module): the controller embeds the
+hardened `aes_core` datapath (masked cipher + CTR + GHASH) of the AES IP, so the
+operation reuses the same FI/SCA-hardened, NIST-validated engine.
+
+### Selecting the operation
+
+The cipher operation is orthogonal to the read/write/digest controls and is
+selected by two [*CONTROL*](registers.md#control) fields:
+
+- [*aes_op*](registers.md#control--aes_op): `Off`, `Enc` (encrypt), or `Dec`
+  (decrypt).
+- [*aes_mode*](registers.md#control--aes_mode): `CTR` or `GCM`.
+
+The cipher is mutually exclusive with inline hashing (`digest` must be `None`)
+and requires a read+write stream (`read_en = write_en = 1`).
+
+### Key, IV and parameters
+
+- The key is supplied either as two software shares in
+  [*KEY_SHARE0*](registers.md#key_share0)/[*KEY_SHARE1*](registers.md#key_share1)
+  (effective key = `KEY_SHARE0 ^ KEY_SHARE1`, write-only), or sideloaded from the
+  key manager when [*AES_CTRL.sideload*](registers.md#aes_ctrl--sideload) is set.
+- The key length is chosen with
+  [*AES_CTRL.key_len*](registers.md#aes_ctrl--key_len).
+- The 96-bit nonce is written to [*IV*](registers.md#iv)`[3:1]`; the counter word
+  `IV[0]` is hardware-forced to the GCM J0 low value on a fresh operation, so
+  software cannot pin the counter.
+- For GCM, associated authenticated data is written to the
+  [*AAD*](registers.md#aad) registers and its block count to
+  [*AES_CTRL.aad_blocks*](registers.md#aes_ctrl--aad_blocks); it is absorbed into
+  GHASH before the text.
+
+### Authentication tag (GCM)
+
+- On **encrypt**, the computed tag appears in [*TAG_OUT*](registers.md#tag_out)
+  and [*STATUS.tag_valid*](registers.md#status--tag_valid) is set on completion.
+- On **decrypt**, software writes the expected tag to
+  [*TAG_IN*](registers.md#tag_in) before starting. The hardware compares it with
+  a glitch-resistant, fail-closed comparison. On mismatch it raises
+  [*STATUS.tag_failed*](registers.md#status--tag_failed),
+  [*ERROR_CODE.aes_tag_error*](registers.md#error_code--aes_tag_error) and the
+  `recov_fault` alert, and **suppresses the done indication**.
+  The recomputed tag is never exposed (TAG_IN is write-only).
+
+  Because GCM is a streaming cipher, the decrypted plaintext is written to the
+  destination *before* the tag is verified. The DMA does not lock, hide, or otherwise
+  hardware-quarantine those writes. Suppressing `done` therefore does not prevent the CPU,
+  another bus master, or a peripheral from reading unauthenticated plaintext. **Every consumer
+  must remain blocked until `STATUS.tag_valid` is observed. On `STATUS.tag_failed`, software
+  must wipe the destination before it can be reused.** An integration that cannot enforce this
+  rule must not use inline GCM decrypt for security-sensitive plaintext.
+
+### Operation and constraints (v1)
+
+The cipher runs as a block-serial sub-operation: the controller gathers each
+16-byte block from four read beats, runs it through the engine, and scatters the
+result as four write beats. Consequently v1 requires:
+
+- a 4-byte transfer width and nonzero 16-byte-multiple total and chunk sizes.
+
+Source and destination addressing are independent. An endpoint with `increment = 0` accesses
+the same FIFO register on every beat. With `increment = 1`, it advances within the chunk;
+`wrap = 1` reuses its base for each chunk, while `wrap = 0` advances the base by bytes moved.
+FIFO pops/pushes still advance the message byte count and cipher state even when addresses repeat.
+
+Total and chunk sizes may differ. In software-paced mode, at each intermediate chunk boundary the controller reports
+`chunk_done`, clears `go` and `busy`, and waits for software to resume with `initial_transfer = 0`.
+The cipher state and configuration lock persist across this pause. Non-wrapping incrementing
+addresses advance by the actual chunk length; the final chunk may be shorter than the programmed
+chunk size. AAD is absorbed only once and GCM authentication occurs only at the end of the full
+message. All destination chunks remain unauthenticated until that final check succeeds.
+Abort or error clears the retained session and releases its configuration lock. A new initial
+transfer during a suspended session is rejected; software must abort before replacing it.
+The GCM text limit remains 8191 blocks across all chunks, and AAD is limited to two full blocks.
+
+Hardware handshake instead keeps `go` and `busy` asserted between chunks and waits for an
+enabled LSIO trigger before starting each chunk, including the first. It uses the existing
+optional interrupt-clear writes and does not report intermediate `chunk_done` events.
+The cipher state and configuration lock persist while waiting. Triggers are level-sensitive:
+a continuously asserted trigger permits consecutive chunks. The device must provide enough
+source data or destination capacity for the whole chunk before triggering. This supports FIFO
+registers, wrapping buffer windows and contiguous memory buffers on either side.
+GCM decrypt output is unauthenticated until the final tag check, including output sent to a
+FIFO; a consuming device must withhold its use until authentication succeeds.
+
+Illegal combinations are rejected with `DmaOpcodeErr`/`DmaSizeErr` at
+configuration time.
+
+### Security
+
+The key/IV/AAD/tag registers are hardware-wiped (SEC_WIPE) when the operation
+ends, aborts, or errors. The masked datapath draws entropy from EDN over a
+dedicated clock domain (disable with the `SecAesMasking` parameter for
+non-production builds), and life-cycle escalation gates the engine. AES faults
+are reported through the `fatal_fault` (aes_core fatal / FSM) and `recov_fault`
+(tag mismatch / aes_core recoverable) alerts.
+
 ## Extension: Inline Operations
+
+The following captures the original design rationale for inline cryptographic
+operations; the inline AES feature above implements option 1 (a dedicated
+embedded module).
 
 In a next generation, the DMA controller can be extended to perform
 inline operations on data it is transferring. We primarily foresee
@@ -405,11 +537,27 @@ Two of these interfaces are TL-UL (TileLink Uncached Light) as per the register 
 
 The third host interface of the DMA controller uses a different bus specification which is described below.
 
+### Read-ahead response ordering
+
+Plain copies between the OT-internal and CTN ports may have up to
+`NUM_MAX_OUTSTANDING_REQS` reads in flight. The DMA matches responses to destination metadata
+by arrival order and does not inspect `d_source`. Responses must therefore return in request
+acceptance order across all source IDs.
+
+The OT-internal fabric provides this ordering. External CTN integrations must also guarantee
+it, set `NUM_MAX_OUTSTANDING_REQS = 1`, or add a `d_source`-indexed reorder buffer. The SYS
+port is always single-outstanding and is unaffected.
+
+Violating this requirement can pair read data with the wrong destination address and byte
+enables without raising an error.
+
 ### SoC System Bus
 
 Unlike the TL-UL ports, the SoC System Bus requires a 64-bit address space.
 The signaling is similar to that of the TL-UL bus except that read and write channels are separated.
-The DMA controller, however, presently issues only a single read or a single write request at a time.
+The DMA controller issues only a single read or a single write request at a time on the SYS
+port (the read-ahead datapath is restricted to the TL-UL OT-internal and CTN ports), so the
+SYS port is inherently order-agnostic.
 
 #### SoC System Bus Request
 

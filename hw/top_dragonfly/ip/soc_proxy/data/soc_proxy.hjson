@@ -59,19 +59,12 @@
   ]
 
   inter_signal_list: [
-    { struct:  "tl_h2d"
+    { struct:  "tl"
       package: "tlul_pkg"
-      type:    "uni"
-      name:    "dma_tl_h2d"
-      act:     "rcv"
-      desc:    "TL-UL host port for the DMA to egress into CTN (request part), synchronous"
-    }
-    { struct:  "tl_d2h"
-      package: "tlul_pkg"
-      type:    "uni"
-      name:    "dma_tl_d2h"
-      act:     "req"
-      desc:    "TL-UL host port for the DMA to egress into CTN (response part), synchronous"
+      type:    "req_rsp"
+      name:    "dma_tl"
+      act:     "rsp"
+      desc:    "TL-UL host port for the DMA to egress into CTN (point-to-point), synchronous"
     }
     { struct:  "tl_h2d"
       package: "tlul_pkg"

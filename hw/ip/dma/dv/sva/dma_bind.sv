@@ -22,24 +22,32 @@ module dma_bind;
     .d2h    (tl_d_o)
   );
 
-  // Bind assertion module to CTN interface
-  bind dma tlul_assert #(
-    .EndpointType("Device")
-  ) tlul_assert_ctn (
+  // Bind a TL-UL protocol assertion to each present 32-bit host port.
+  // The generate loop lives inside the bound wrapper so VCS does not see a
+  // genvar-indexed bind (which it rejects with V2KGVIU).
+  bind dma dma_tlul_assert_host32_bind #(
+    .NumPorts(dma_pkg::dma_max1(NumTlul32))
+  ) u_tlul_assert_host32_bind (
     .clk_i,
     .rst_ni,
-    .h2d  (ctn_tl_h2d_o),
-    .d2h  (ctn_tl_d2h_i)
+    .h2d  (host32_tl_h_o),
+    .d2h  (host32_tl_h_i)
   );
 
-  // Bind assertion module to HOST interface
-  bind dma tlul_assert #(
-    .EndpointType("Device")
-  ) tlul_assert_host (
+  // NOTE: host64 ports have no bound TL-UL protocol assertion. The stock `tlul_assert` handles
+  // only the 32-bit `tl_h2d_t`, and there is no 64-bit `dma_tl_h2d_t`-aware equivalent, so the wide
+  // ports are protocol-checked by the scoreboard/agent rather than by a bound assertion.
+
+  // Bind the memset/verify no-traffic and no-deadlock assertions.
+  bind dma dma_memset_verify_sva u_dma_memset_verify_sva (
     .clk_i,
     .rst_ni,
-    .h2d  (host_tl_h_o),
-    .d2h  (host_tl_h_i)
+    .gated_clk    (gated_clk),
+    .ctrl_state_q (ctrl_state_q),
+    .do_read      (do_read),
+    .do_write     (do_write),
+    .read_issue   (rd_issue),
+    .write_issue  (wr_issue)
   );
 
 endmodule

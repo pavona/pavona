@@ -70,7 +70,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0000ffff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__REGS = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MBOX__RAM  = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000001ff;
+  localparam logic [31:0] ADDR_MASK_DMA                  = 32'h 000003ff;
   localparam logic [31:0] ADDR_MASK_MBX0__CORE           = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_MBX1__CORE           = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_MBX2__CORE           = 32'h 0000007f;
@@ -127,7 +127,7 @@ package tl_main_pkg;
     TlRvCoreIbexCorei = 0,
     TlRvCoreIbexCored = 1,
     TlRvDmSba = 2,
-    TlDmaHost = 3,
+    TlDmaHost320 = 3,
     TlMbx0Sram = 4,
     TlMbx1Sram = 5,
     TlMbx2Sram = 6,

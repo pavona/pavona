@@ -123,7 +123,7 @@
       mbx_pcie0.core
       mbx_pcie1.core
     ]
-    dma.host:
+    dma.host32_0:
     [
       sram_ctrl_main.ram
       sram_ctrl_mbox.ram
@@ -756,7 +756,7 @@
           {
             hart: 0x22010000
           }
-          size_byte: 0x200
+          size_byte: 0x400
         }
       ]
       xbar: false
@@ -764,7 +764,7 @@
       pipeline: true
     }
     {
-      name: dma.host
+      name: dma.host32_0
       type: host
       addr_space: hart
       clock: clk_main_i
@@ -1175,7 +1175,7 @@
       index: -1
     }
     {
-      name: tl_dma__host
+      name: tl_dma__host32_0
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -1183,9 +1183,8 @@
       inst_name: main
       width: 1
       default: ""
-      end_idx: -1
-      top_signame: main_tl_dma__host
-      index: -1
+      top_signame: dma_host32_tl_h
+      index: 0
     }
     {
       name: tl_mbx0__sram

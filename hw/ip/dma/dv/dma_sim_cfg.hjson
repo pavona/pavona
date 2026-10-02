@@ -43,6 +43,13 @@
 
   sim_tops: ["dma_cov_bind", "dma_bind"]
 
+  // The AES model DPI #includes headers from lowrisc:model:aes. FuseSoC emits +incdir+ for SV but
+  // VCS's C compiler needs explicit -I flags; pass them via -CFLAGS.
+  // The linker also needs -lcrypto for the OpenSSL EVP functions used by the AES reference model.
+  build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/lowrisc_model_aes_1.0",
+               "-CFLAGS -I{build_dir}/fusesoc-work/src/lowrisc_dv_aes_model_dpi_0",
+               "-LDFLAGS -lcrypto"]
+
   xcelium_cov_refine_files: []
 
   // List of test specifications.
@@ -73,6 +80,11 @@
       reseed: 5
     }
     {
+      name: dma_abort_drain
+      uvm_test_seq: dma_abort_drain_vseq
+      reseed: 5
+    }
+    {
       name: dma_short_transfer
       uvm_test_seq: dma_short_transfer_vseq
       reseed: 25
@@ -86,6 +98,71 @@
     {
       name: dma_mem_enabled
       uvm_test_seq: dma_mem_enabled_vseq
+      reseed: 5
+    }
+    {
+      name: dma_hashing_partial
+      uvm_test_seq: dma_hashing_partial_vseq
+      reseed: 20
+    }
+    {
+      name: dma_overlap
+      uvm_test_seq: dma_overlap_vseq
+      reseed: 15
+    }
+    {
+      name: dma_memset
+      uvm_test_seq: dma_memset_vseq
+      reseed: 15
+    }
+    {
+      name: dma_verify
+      uvm_test_seq: dma_verify_vseq
+      reseed: 15
+    }
+    {
+      name: dma_partial_size
+      uvm_test_seq: dma_partial_size_vseq
+      reseed: 5
+    }
+    {
+      name: dma_range_partial
+      uvm_test_seq: dma_range_partial_vseq
+      reseed: 1
+    }
+    {
+      name: dma_aes_smoke
+      uvm_test_seq: dma_aes_smoke_vseq
+      reseed: 1
+    }
+    {
+      name: dma_aes_fifo
+      uvm_test_seq: dma_aes_fifo_vseq
+      reseed: 1
+    }
+    {
+      name: dma_aes
+      uvm_test_seq: dma_aes_vseq
+      reseed: 5
+    }
+    {
+      name: dma_aes_error
+      uvm_test_seq: dma_aes_error_vseq
+      reseed: 1
+    }
+    {
+      name: dma_aes_abort
+      uvm_test_seq: dma_aes_abort_vseq
+      reseed: 5
+    }
+    {
+      name: dma_aes_clear_mid_commit
+      uvm_test_seq: dma_aes_clear_mid_commit_vseq
+      reseed: 5
+    }
+    {
+      name: dma_aes_bus_err
+      uvm_test_seq: dma_aes_bus_err_vseq
       reseed: 5
     }
     {
@@ -123,11 +200,12 @@
   regressions: [
     {
       name: smoke
-      tests: ["dma_memory_smoke", "dma_handshake_smoke", "dma_generic_smoke"]
+      tests: ["dma_memory_smoke", "dma_handshake_smoke", "dma_generic_smoke", "dma_aes_smoke"]
     }
     {
       name: stress
-      tests: ["dma_memory_stress", "dma_handshake_stress", "dma_generic_stress", "dma_stress_all"]
+      tests: ["dma_memory_stress", "dma_handshake_stress", "dma_generic_stress", "dma_stress_all",
+              "dma_aes", "dma_aes_fifo", "dma_aes_bus_err", "dma_aes_abort", "dma_aes_clear_mid_commit"]
     }
   ]
 }

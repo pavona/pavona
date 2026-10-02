@@ -6,8 +6,6 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
 
   `uvm_object_param_utils(dma_pull_seq#(AddrWidth))
 
-  logic [AddrWidth-1:0] base_addr[SYS_NUM_REQ_CH];
-
   // FIFO enable bits
   bit read_fifo_en;
   bit write_fifo_en;
@@ -36,14 +34,6 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     bytes_written = 0;
   endfunction: new
 
-  // Set the base address of the TL-UL address space within a larger address space, where required.
-  // There is a separate base address for each command type (Read/Write), for a bit more testing.
-  // (This permits a 32-bit TL-UL agent to be employed within a restricted window of a 64-bit SoC
-  //  System bus address space).
-  virtual function void set_base_addr(sys_cmd_type_e cmd, logic [AddrWidth-1:0] addr);
-    base_addr[cmd] = addr;
-  endfunction
-
   // Specify the number of bytes/transaction on the bus, so that the number of bytes read may be
   // tracked.
   virtual function void set_txn_bytes(uint bytes);
@@ -71,12 +61,8 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
     bit [AddrWidth-1:0] a_addr = rsp.a_addr;
     bit [65:0] intg;
 
-    // Do we need to reinstate the upper address bits because of the narrower address space of the
-    // TL-UL agent?
-    if (AddrWidth > $bits(rsp.a_addr)) begin
-      sys_cmd_type_e cmd = (rsp.a_opcode == Get) ? SysCmdRead : SysCmdWrite;
-      a_addr += base_addr[cmd];
-    end
+    // Services only the 32-bit ports (addresses fit in `rsp.a_addr`); the 64-bit SoC
+    // System port is handled by `dma_tl_device_seq`.
 
     if (mem != null) begin
       if (rsp.a_opcode inside {PutFullData, PutPartialData}) begin

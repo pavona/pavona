@@ -184,6 +184,20 @@ def elaborate_instance(instance, block: IpBlock):
 
     instance["param_list"] = new_params
 
+    # Mangle parameter names inside `unpacked_dimensions` strings so they
+    # reference the instance-scoped top-level name, e.g. `[NumPorts]` →
+    # `[DmaNumPorts]`. Match complete SV identifier tokens; unknown tokens
+    # pass through unchanged.
+    _name_to_top = {p['name']: p['name_top'] for p in new_params if 'name_top' in p}
+    for p in new_params:
+        dim = p.get('unpacked_dimensions')
+        if not dim:
+            continue
+        p['unpacked_dimensions'] = re.sub(
+            r'[A-Za-z_]\w*',
+            lambda m: _name_to_top.get(m.group(), m.group()),
+            dim)
+
     # for each module declaration, check to see that the parameter actually
     # exists and can be set
     for decl in param_decl_accounting:
