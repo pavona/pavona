@@ -70,7 +70,7 @@ _continue:
   srli    x5, x5, 5
   /* Send ek_pke. */
   loop x5, 2
-    bn.lid  x0, 0(x11++)
+    bn.ld   w0, 0(x11++)
     bn.wsrw kmac_msg, w0
   endloop
   /* Retrieve h. */
@@ -83,17 +83,17 @@ _continue:
   addi  x5, x5, SHA3_512_CFG
   csrrw x0, kmac_cfg, x5
   /* Send m. */
-  bn.lid  x0, 0(x8)
+  bn.ld   w0, 0(x8)
   bn.wsrw kmac_msg, w0
   /* Send h. */
   bn.wsrw kmac_msg, w1
   /* Retrieve ss. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x13)
+  bn.sd   w0, 0(x13)
   /* Retrieve r. */
   la      x5, indcpa_enc_seed
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 
   /*** Step 3: c = indcpa_enc(m, ek_pke, r). ***/
   add  x10, x8, x0

@@ -54,8 +54,8 @@
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
- * clobbered registers: x2 to x5, x8 to x13, x18 to x19, x21 to x25,
- *                      w0 to w15, w17 to w26, acch, acc, mod
+ * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
+ *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
  * clobbered flag groups: FG0
  *
  * HARDENED
@@ -290,9 +290,9 @@ indcpa_dec:
   /* Whitening. */
   bn.xor w0, w0, w0
   loopi 16, 3
-    bn.lid       x0, 0(x11)
+    bn.ld        w0, 0(x11)
     bn.subvm.16h w0, w31, w0
-    bn.sid       x0, 0(x11++)
+    bn.sd        w0, 0(x11++)
   endloop
 
   /*** Step 6: r = masked_poly_tomsg(m). ***/

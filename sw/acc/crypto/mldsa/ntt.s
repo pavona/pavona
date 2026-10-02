@@ -39,29 +39,28 @@ ntt:
   li x7, 18
 
   /* Load twiddle factors for layers 1--4 */
-  bn.lid x6, 0(x11)  /* w17 */
-  bn.lid x7, 32(x11) /* w18 */
+  bn.ld  w17, 0(x11) /* w17 */
+  bn.ld  w18, 32(x11) /* w18 */
   bn.mov w19, w17    /* Save first batch of Twiddle factors */
 
-  loopi 2, 294
+  loopi 2, 292
     /* Load input data */
-    addi   x5, x0, 0
-    bn.lid x5++, 0(x10)
-    bn.lid x5++, 64(x10)
-    bn.lid x5++, 128(x10)
-    bn.lid x5++, 192(x10)
-    bn.lid x5++, 256(x10)
-    bn.lid x5++, 320(x10)
-    bn.lid x5++, 384(x10)
-    bn.lid x5++, 448(x10)
-    bn.lid x5++, 512(x10)
-    bn.lid x5++, 576(x10)
-    bn.lid x5++, 640(x10)
-    bn.lid x5++, 704(x10)
-    bn.lid x5++, 768(x10)
-    bn.lid x5++, 832(x10)
-    bn.lid x5++, 896(x10)
-    bn.lid x5++, 960(x10)
+    bn.ld  w0, 0(x10)
+    bn.ld  w1, 64(x10)
+    bn.ld  w2, 128(x10)
+    bn.ld  w3, 192(x10)
+    bn.ld  w4, 256(x10)
+    bn.ld  w5, 320(x10)
+    bn.ld  w6, 384(x10)
+    bn.ld  w7, 448(x10)
+    bn.ld  w8, 512(x10)
+    bn.ld  w9, 576(x10)
+    bn.ld  w10, 640(x10)
+    bn.ld  w11, 704(x10)
+    bn.ld  w12, 768(x10)
+    bn.ld  w13, 832(x10)
+    bn.ld  w14, 896(x10)
+    bn.ld  w15, 960(x10)
 
     /* Layer 1, stride 128 */
 
@@ -375,23 +374,22 @@ ntt:
     bn.mov w17, w19 /* Copy the first batch of Twiddle factors back for next loop. */
 
     /* Store output data */
-    addi   x5, x0, 0
-    bn.sid x5++, 0(x12)
-    bn.sid x5++, 64(x12)
-    bn.sid x5++, 128(x12)
-    bn.sid x5++, 192(x12)
-    bn.sid x5++, 256(x12)
-    bn.sid x5++, 320(x12)
-    bn.sid x5++, 384(x12)
-    bn.sid x5++, 448(x12)
-    bn.sid x5++, 512(x12)
-    bn.sid x5++, 576(x12)
-    bn.sid x5++, 640(x12)
-    bn.sid x5++, 704(x12)
-    bn.sid x5++, 768(x12)
-    bn.sid x5++, 832(x12)
-    bn.sid x5++, 896(x12)
-    bn.sid x5++, 960(x12)
+    bn.sd  w0, 0(x12)
+    bn.sd  w1, 64(x12)
+    bn.sd  w2, 128(x12)
+    bn.sd  w3, 192(x12)
+    bn.sd  w4, 256(x12)
+    bn.sd  w5, 320(x12)
+    bn.sd  w6, 384(x12)
+    bn.sd  w7, 448(x12)
+    bn.sd  w8, 512(x12)
+    bn.sd  w9, 576(x12)
+    bn.sd  w10, 640(x12)
+    bn.sd  w11, 704(x12)
+    bn.sd  w12, 768(x12)
+    bn.sd  w13, 832(x12)
+    bn.sd  w14, 896(x12)
+    bn.sd  w15, 960(x12)
 
     addi x10, x10, 32
     addi x12, x12, 32
@@ -408,28 +406,27 @@ ntt:
   /* w16--w23 are used for the twiddle factors on layers 5--8 */
   loopi 2, 403
     /* Load input data */
-    addi   x5, x0, 0
-    bn.lid x5++, 0(x12)
-    bn.lid x5++, 32(x12)
-    bn.lid x5++, 64(x12)
-    bn.lid x5++, 96(x12)
-    bn.lid x5++, 128(x12)
-    bn.lid x5++, 160(x12)
-    bn.lid x5++, 192(x12)
-    bn.lid x5++, 224(x12)
-    bn.lid x5++, 256(x12)
-    bn.lid x5++, 288(x12)
-    bn.lid x5++, 320(x12)
-    bn.lid x5++, 352(x12)
-    bn.lid x5++, 384(x12)
-    bn.lid x5++, 416(x12)
-    bn.lid x5++, 448(x12)
-    bn.lid x5++, 480(x12)
+    bn.ld  w0, 0(x12)
+    bn.ld  w1, 32(x12)
+    bn.ld  w2, 64(x12)
+    bn.ld  w3, 96(x12)
+    bn.ld  w4, 128(x12)
+    bn.ld  w5, 160(x12)
+    bn.ld  w6, 192(x12)
+    bn.ld  w7, 224(x12)
+    bn.ld  w8, 256(x12)
+    bn.ld  w9, 288(x12)
+    bn.ld  w10, 320(x12)
+    bn.ld  w11, 352(x12)
+    bn.ld  w12, 384(x12)
+    bn.ld  w13, 416(x12)
+    bn.ld  w14, 448(x12)
+    bn.ld  w15, 480(x12)
 
     /* Layer 5, stride 8 */
 
     /* Load twiddle factors */
-    bn.lid x6, 0(x11++)
+    bn.ld  w17, 0(x11++)
 
     /* Butterflies */
     bn.mulv.l.8s.even.acc.z.lo w30, w1, sw1.0
@@ -565,7 +562,7 @@ ntt:
 
     /* Layer 6, stride 4 */
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
     #define wtmp w8
 
     /* Butterflies */
@@ -605,7 +602,7 @@ ntt:
     bn.subvm.8s              w31, w27, wtmp
     bn.addvm.8s              w27, w27, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w4, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -645,7 +642,7 @@ ntt:
 
     /* Layer 7, stride 2 */
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     /* Butterflies */
     bn.mulv.8s.even.acc.z.lo wtmp, w26, w17
@@ -666,7 +663,7 @@ ntt:
     bn.subvm.8s              w27, w25, wtmp
     bn.addvm.8s              w25, w25, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w30, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -686,7 +683,7 @@ ntt:
     bn.subvm.8s              w31, w29, wtmp
     bn.addvm.8s              w29, w29, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w2, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -706,7 +703,7 @@ ntt:
     bn.subvm.8s              w3, w1, wtmp
     bn.addvm.8s              w1, w1, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w6, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -729,7 +726,7 @@ ntt:
     /* Layer 8, stride 1 */
 
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w25, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -740,7 +737,7 @@ ntt:
     bn.subvm.8s              w25, w24, wtmp
     bn.addvm.8s              w24, w24, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w27, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -751,7 +748,7 @@ ntt:
     bn.subvm.8s              w27, w26, wtmp
     bn.addvm.8s              w26, w26, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w29, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -762,7 +759,7 @@ ntt:
     bn.subvm.8s              w29, w28, wtmp
     bn.addvm.8s              w28, w28, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w31, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -773,7 +770,7 @@ ntt:
     bn.subvm.8s              w31, w30, wtmp
     bn.addvm.8s              w30, w30, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w1, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -784,7 +781,7 @@ ntt:
     bn.subvm.8s              w1, w0, wtmp
     bn.addvm.8s              w0, w0, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w3, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -795,7 +792,7 @@ ntt:
     bn.subvm.8s              w3, w2, wtmp
     bn.addvm.8s              w2, w2, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w5, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -806,7 +803,7 @@ ntt:
     bn.subvm.8s              w5, w4, wtmp
     bn.addvm.8s              w4, w4, wtmp
 
-    bn.lid x6, 0(x11++) /* Load twiddle factors */
+    bn.ld  w17, 0(x11++) /* Load twiddle factors */
 
     bn.mulv.8s.even.acc.z.lo wtmp, w7, w17
     bn.mulv.l.8s.even.lo     wtmp, wtmp, sw0.1
@@ -875,22 +872,23 @@ ntt:
     bn.trn2.2q w7, w27, w31
 
     addi   x5, x0, 0
-    bn.sid x5++, 0(x12)
-    bn.sid x5++, 32(x12)
-    bn.sid x5++, 64(x12)
-    bn.sid x5++, 96(x12)
-    bn.sid x5++, 128(x12)
-    bn.sid x5++, 160(x12)
-    bn.sid x5++, 192(x12)
-    bn.sid x5++, 224(x12)
-    bn.sid x5++, 256(x12)
-    bn.sid x5++, 288(x12)
-    bn.sid x5++, 320(x12)
-    bn.sid x5++, 352(x12)
-    bn.sid x5++, 384(x12)
-    bn.sid x5++, 416(x12)
-    bn.sid x5++, 448(x12)
-    bn.sid x5++, 480(x12)
+    bn.sd  w0, 0(x12)
+    bn.sd  w1, 32(x12)
+    bn.sd  w2, 64(x12)
+    bn.sd  w3, 96(x12)
+    bn.sd  w4, 128(x12)
+    bn.sd  w5, 160(x12)
+    bn.sd  w6, 192(x12)
+    bn.sd  w7, 224(x12)
+    bn.sd  w8, 256(x12)
+    bn.sd  w9, 288(x12)
+    bn.sd  w10, 320(x12)
+    bn.sd  w11, 352(x12)
+    bn.sd  w12, 384(x12)
+    bn.sd  w13, 416(x12)
+    bn.sd  w14, 448(x12)
+    bn.sd  w15, 480(x12)
+    addi t0, t0, 16  /* restore the wide-register index */
 
     addi x10, x10, 512
     addi x12, x12, 512

@@ -54,13 +54,13 @@
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
- * clobbered registers: x2 to x13, x18 to x19, x21 to x28,
- *                      w0 to w15, w17 to w26, mod, acch, acc
+ * clobbered registers: x2 to x19, x21 to x31,
+ *                      w0 to w15, w17 to w30, acc, acch, mod
  * clobbered flag groups: FG0
  *
  * HARDENED
- * clobbered registers: x2 to x19, x21 to x24, x26 to x31,
- *                      w0 to w15, w17 to w30, acc, mod, acch
+ * clobbered registers: x2 to x19, x21 to x31,
+ *                      w0 to w15, w17 to w30, acc, acch, mod
  * clobbered flag groups: FG0
  */
 
@@ -123,7 +123,7 @@ _continue_compute_v:
   add    x10, x18, x0
   la     x11, nonce
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_getnoise_eta_init
 
   /* Unpack ek_pke[0]. */
@@ -323,7 +323,7 @@ _handle_k2_compute_v:
   add    x10, x9, x0
   la     x11, seed_ij
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Compress v. */
@@ -338,21 +338,19 @@ _handle_k2_compute_v:
   loop x21, 1
     add x6, x6, x27
   endloop
-  addi x4, x0, 1
   srli x7, x26, 5
 
   bn.subi w2, w31, 1
   bn.mov  w4, w31
   loop x7, 5
-    bn.lid x0, 0(x5++)
-    bn.lid x4, 0(x6++)
+    bn.ld  w0, 0(x5++)
+    bn.ld  w1, 0(x6++)
     bn.cmp w0, w1
     bn.sel w3, w31, w2, FG0.Z
     bn.or  w4, w4, w3
   endloop
   /* First write to r; the later compares read-modify-write it. */
-  addi   x4, x0, 4
-  bn.sid x4, 0(x2)
+  bn.sd  w4, 0(x2)
   /**************************************************************************/
 
 
@@ -497,15 +495,15 @@ _handle_k2_compute_v:
     bn.subi w2, w31, 1
     bn.mov  w4, w31
     loop x7, 5
-      bn.lid x0, 0(x5++)
-      bn.lid x4, 0(x6++)
+      bn.ld  w0, 0(x5++)
+      bn.ld  w1, 0(x6++)
       bn.cmp w0, w1
       bn.sel w3, w31, w2, FG0.Z
       bn.or  w4, w4, w3
     endloop
-    bn.lid x0, 0(x2)
+    bn.ld  w0, 0(x2)
     bn.or  w0, w0, w4
-    bn.sid x0, 0(x2)
+    bn.sd  w0, 0(x2)
     add    x19, x19, x27
   endloop
 
@@ -598,14 +596,14 @@ _handle_k2_compute_v:
   bn.subi w2, w31, 1
   bn.mov  w4, w31
   loop x7, 5
-    bn.lid x0, 0(x5++)
-    bn.lid x4, 0(x6++)
+    bn.ld  w0, 0(x5++)
+    bn.ld  w1, 0(x6++)
     bn.cmp w0, w1
     bn.sel w3, w31, w2, FG0.Z
     bn.or  w4, w4, w3
   endloop
   /*** Step 4: w0 = acc. ***/
-  bn.lid x0, 0(x2)
+  bn.ld  w0, 0(x2)
   bn.or  w0, w0, w4 /* w0 is the comparison result. */
   /**************************************************************************/
   /* Restore x2 and x3. */
@@ -698,15 +696,15 @@ _handle_k2_compute_b:
   bn.subi w2, w31, 1
   bn.mov  w4, w31
   loop x7, 5
-    bn.lid x0, 0(x5++)
-    bn.lid x4, 0(x6++)
+    bn.ld  w0, 0(x5++)
+    bn.ld  w1, 0(x6++)
     bn.cmp w0, w1
     bn.sel w3, w31, w2, FG0.Z
     bn.or  w4, w4, w3
   endloop
-  bn.lid x0, 0(x2)
+  bn.ld  w0, 0(x2)
   bn.or  w0, w0, w4
-  bn.sid x0, 0(x2)
+  bn.sd  w0, 0(x2)
 
   /* Generate at[1][0]. */
   la  x11, poly_at
@@ -772,14 +770,14 @@ _handle_k2_compute_b:
   bn.subi w2, w31, 1
   bn.mov  w4, w31
   loop x7, 5
-    bn.lid x0, 0(x5++)
-    bn.lid x4, 0(x6++)
+    bn.ld  w0, 0(x5++)
+    bn.ld  w1, 0(x6++)
     bn.cmp w0, w1
     bn.sel w3, w31, w2, FG0.Z
     bn.or  w4, w4, w3
   endloop
   /*** Step 4: w0 = acc. ***/
-  bn.lid x0, 0(x2)
+  bn.ld  w0, 0(x2)
   bn.or  w0, w0, w4 /* w0 is the comparison result. */
   /**************************************************************************/
   add  x2, x3, x0
@@ -804,9 +802,9 @@ _continue:
 
   /* The first share of r is (1 << N) - 1. The other shares are 0. */
   bn.subi w0, w31, 1
-  bn.sid  x0, 0(x2)
+  bn.sd   w0, 0(x2)
   bn.xor  w0, w31, w31
-  bn.sid  x0, 32(x2)
+  bn.sd   w0, 32(x2)
 
   /*** Step 1: kpoly = masked_poly_frommsg(m). ***/
   /* x10 already points to m. */
@@ -838,7 +836,7 @@ _continue_compute_v:
   add    x10, x18, x0
   la     x11, nonce
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, masked_poly_getnoise_eta_init
 
   /* Unpack ek_pke[0]. */
@@ -1091,7 +1089,7 @@ _handle_k2_compute_v:
   add    x10, x9, x0
   la     x11, seed_ij
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Compare v and c[k * cu :]. Output to r. */
@@ -1559,9 +1557,9 @@ _finalize_compare:
 
   /* Unmask comparison result. */
   add    x10, x2, x0
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   addi   x4, x0, 1
-  bn.lid x4, 0(x10++)
+  bn.ld  w1, 0(x10++)
   bn.xor w0, w0, w1
 
   add  x2, x3, x0

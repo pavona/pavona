@@ -45,23 +45,22 @@
 basemul:
   /* basemul is basemul_acc with a zeroed destination. The stores also
    * initialize the destination before basemul_acc reads it back. */
-  addi   x4, x0, 31
-  bn.sid x4, 0(x13)
-  bn.sid x4, 32(x13)
-  bn.sid x4, 64(x13)
-  bn.sid x4, 96(x13)
-  bn.sid x4, 128(x13)
-  bn.sid x4, 160(x13)
-  bn.sid x4, 192(x13)
-  bn.sid x4, 224(x13)
-  bn.sid x4, 256(x13)
-  bn.sid x4, 288(x13)
-  bn.sid x4, 320(x13)
-  bn.sid x4, 352(x13)
-  bn.sid x4, 384(x13)
-  bn.sid x4, 416(x13)
-  bn.sid x4, 448(x13)
-  bn.sid x4, 480(x13)
+  bn.sd  w31, 0(x13)
+  bn.sd  w31, 32(x13)
+  bn.sd  w31, 64(x13)
+  bn.sd  w31, 96(x13)
+  bn.sd  w31, 128(x13)
+  bn.sd  w31, 160(x13)
+  bn.sd  w31, 192(x13)
+  bn.sd  w31, 224(x13)
+  bn.sd  w31, 256(x13)
+  bn.sd  w31, 288(x13)
+  bn.sd  w31, 320(x13)
+  bn.sd  w31, 352(x13)
+  bn.sd  w31, 384(x13)
+  bn.sd  w31, 416(x13)
+  bn.sd  w31, 448(x13)
+  bn.sd  w31, 480(x13)
   /* Fall through into basemul_acc. */
 
 
@@ -97,27 +96,26 @@ basemul:
 .type basemul_acc, @function
 basemul_acc:
   /* Set up wide registers for inputs*/
-  loopi 2, 164
+  loopi 2, 163
     /* Load x. */
-    add    x4, x0, x0
-    bn.lid x4++, 0(x10)
-    bn.lid x4++, 32(x10)
-    bn.lid x4++, 64(x10)
-    bn.lid x4++, 96(x10)
-    bn.lid x4++, 128(x10)
-    bn.lid x4++, 160(x10)
-    bn.lid x4++, 192(x10)
-    bn.lid x4++, 224(x10)
+    bn.ld  w0, 0(x10)
+    bn.ld  w1, 32(x10)
+    bn.ld  w2, 64(x10)
+    bn.ld  w3, 96(x10)
+    bn.ld  w4, 128(x10)
+    bn.ld  w5, 160(x10)
+    bn.ld  w6, 192(x10)
+    bn.ld  w7, 224(x10)
 
     /* Load y. */
-    bn.lid x4++, 0(x11)
-    bn.lid x4++, 32(x11)
-    bn.lid x4++, 64(x11)
-    bn.lid x4++, 96(x11)
-    bn.lid x4++, 128(x11)
-    bn.lid x4++, 160(x11)
-    bn.lid x4++, 192(x11)
-    bn.lid x4++, 224(x11)
+    bn.ld  w8, 0(x11)
+    bn.ld  w9, 32(x11)
+    bn.ld  w10, 64(x11)
+    bn.ld  w11, 96(x11)
+    bn.ld  w12, 128(x11)
+    bn.ld  w13, 160(x11)
+    bn.ld  w14, 192(x11)
+    bn.ld  w15, 224(x11)
 
     /* Point to the next half of the input polynomials. */
     addi x10, x10, 256
@@ -170,7 +168,7 @@ basemul_acc:
      * of unity into one vector using bn.trn. After multiplication, we return the results to
      * the original vectors. */
     addi                 x4, x0, 26
-    bn.lid               x4, 0(x12++)
+    bn.ld                w26, 0(x12++)
     bn.trn2.16h          w24, w25, w17
     bn.mulv.16h.acc.z.lo w24, w24, w26
     bn.mulv.l.16h.lo     w24, w24, sw0.2
@@ -179,7 +177,7 @@ basemul_acc:
     bn.rshi              w24, w31, w24 >> 16
     bn.trn1.16h          w17, w17, w24
 
-    bn.lid               x4, 0(x12++)
+    bn.ld                w26, 0(x12++)
     bn.trn2.16h          w24, w18, w19
     bn.mulv.16h.acc.z.lo w24, w24, w26
     bn.mulv.l.16h.lo     w24, w24, sw0.2
@@ -188,7 +186,7 @@ basemul_acc:
     bn.rshi              w24, w31, w24 >> 16
     bn.trn1.16h          w19, w19, w24
 
-    bn.lid               x4, 0(x12++)
+    bn.ld                w26, 0(x12++)
     bn.trn2.16h          w24, w20, w21
     bn.mulv.16h.acc.z.lo w24, w24, w26
     bn.mulv.l.16h.lo     w24, w24, sw0.2
@@ -197,7 +195,7 @@ basemul_acc:
     bn.rshi              w24, w31, w24 >> 16
     bn.trn1.16h          w21, w21, w24
 
-    bn.lid               x4, 0(x12++)
+    bn.ld                w26, 0(x12++)
     bn.trn2.16h          w24, w22, w23
     bn.mulv.16h.acc.z.lo w24, w24, w26
     bn.mulv.l.16h.lo     w24, w24, sw0.2
@@ -267,58 +265,58 @@ basemul_acc:
     bn.trn1.16h  w0, w25, w8
     bn.trn2.16h  w8, w25, w8
     bn.addvm.16h w8, w0, w8
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w8
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w1, w17, w9
     bn.trn2.16h  w9, w17, w9
     bn.addvm.16h w1, w1, w9
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w1
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w2, w18, w10
     bn.trn2.16h  w10, w18, w10
     bn.addvm.16h w2, w2, w10
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w2
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w3, w19, w11
     bn.trn2.16h  w11, w19, w11
     bn.addvm.16h w3, w3, w11
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w3
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w4, w20, w12
     bn.trn2.16h  w12, w20, w12
     bn.addvm.16h w4, w4, w12
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w4
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w5, w21, w13
     bn.trn2.16h  w13, w21, w13
     bn.addvm.16h w5, w5, w13
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w5
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w6, w22, w14
     bn.trn2.16h  w14, w22, w14
     bn.addvm.16h w6, w6, w14
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w6
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
 
     bn.trn1.16h  w7, w23, w15
     bn.trn2.16h  w15, w23, w15
     bn.addvm.16h w7, w7, w15
-    bn.lid       x0, 0(x13)
+    bn.ld        w0, 0(x13)
     bn.addvm.16h w0, w0, w7
-    bn.sid       x0, 0(x13++)
+    bn.sd        w0, 0(x13++)
   endloop
 
   /* Reset twiddle pointer. */

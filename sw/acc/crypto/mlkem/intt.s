@@ -37,23 +37,22 @@
 .type intt, @function
 intt:
   /* Load x. */
-  add    x4, x0, x0
-  bn.lid x4++, 0(x10)
-  bn.lid x4++, 32(x10)
-  bn.lid x4++, 64(x10)
-  bn.lid x4++, 96(x10)
-  bn.lid x4++, 128(x10)
-  bn.lid x4++, 160(x10)
-  bn.lid x4++, 192(x10)
-  bn.lid x4++, 224(x10)
-  bn.lid x4++, 256(x10)
-  bn.lid x4++, 288(x10)
-  bn.lid x4++, 320(x10)
-  bn.lid x4++, 352(x10)
-  bn.lid x4++, 384(x10)
-  bn.lid x4++, 416(x10)
-  bn.lid x4++, 448(x10)
-  bn.lid x4++, 480(x10)
+  bn.ld  w0, 0(x10)
+  bn.ld  w1, 32(x10)
+  bn.ld  w2, 64(x10)
+  bn.ld  w3, 96(x10)
+  bn.ld  w4, 128(x10)
+  bn.ld  w5, 160(x10)
+  bn.ld  w6, 192(x10)
+  bn.ld  w7, 224(x10)
+  bn.ld  w8, 256(x10)
+  bn.ld  w9, 288(x10)
+  bn.ld  w10, 320(x10)
+  bn.ld  w11, 352(x10)
+  bn.ld  w12, 384(x10)
+  bn.ld  w13, 416(x10)
+  bn.ld  w14, 448(x10)
+  bn.ld  w15, 480(x10)
   addi   x10, x10, 512 /* Point to next polynomial. */
 
   /* Transpose for Layer 7--5. */
@@ -112,57 +111,56 @@ intt:
   bn.trn2.2q w7, w11, w15
 
   /* Layer 7, stride 2. */
-  addi                 x4, x0, 17
-  bn.lid               x4, 0(x11)
+  bn.ld                w17, 0(x11)
   bn.subvm.16h         w8, w18, w19
   bn.addvm.16h         w18, w18, w19
   bn.mulv.16h.acc.z.lo w19, w8, w17
   bn.mulv.l.16h.lo     w19, w19, sw0.2
   bn.mulv.l.16h.acc.hi w19, w19, sw0.0
 
-  bn.lid               x4, 32(x11)
+  bn.ld                w17, 32(x11)
   bn.subvm.16h         w8, w20, w21
   bn.addvm.16h         w20, w20, w21
   bn.mulv.16h.acc.z.lo w21, w8, w17
   bn.mulv.l.16h.lo     w21, w21, sw0.2
   bn.mulv.l.16h.acc.hi w21, w21, sw0.0
 
-  bn.lid               x4, 64(x11)
+  bn.ld                w17, 64(x11)
   bn.subvm.16h         w8, w22, w23
   bn.addvm.16h         w22, w22, w23
   bn.mulv.16h.acc.z.lo w23, w8, w17
   bn.mulv.l.16h.lo     w23, w23, sw0.2
   bn.mulv.l.16h.acc.hi w23, w23, sw0.0
 
-  bn.lid               x4, 96(x11)
+  bn.ld                w17, 96(x11)
   bn.subvm.16h         w8, w24, w25
   bn.addvm.16h         w24, w24, w25
   bn.mulv.16h.acc.z.lo w25, w8, w17
   bn.mulv.l.16h.lo     w25, w25, sw0.2
   bn.mulv.l.16h.acc.hi w25, w25, sw0.0
 
-  bn.lid               x4, 128(x11)
+  bn.ld                w17, 128(x11)
   bn.subvm.16h         w8, w0, w1
   bn.addvm.16h         w0, w0, w1
   bn.mulv.16h.acc.z.lo w1, w8, w17
   bn.mulv.l.16h.lo     w1, w1, sw0.2
   bn.mulv.l.16h.acc.hi w1, w1, sw0.0
 
-  bn.lid               x4, 160(x11)
+  bn.ld                w17, 160(x11)
   bn.subvm.16h         w8, w2, w3
   bn.addvm.16h         w2, w2, w3
   bn.mulv.16h.acc.z.lo w3, w8, w17
   bn.mulv.l.16h.lo     w3, w3, sw0.2
   bn.mulv.l.16h.acc.hi w3, w3, sw0.0
 
-  bn.lid               x4, 192(x11)
+  bn.ld                w17, 192(x11)
   bn.subvm.16h         w8, w4, w5
   bn.addvm.16h         w4, w4, w5
   bn.mulv.16h.acc.z.lo w5, w8, w17
   bn.mulv.l.16h.lo     w5, w5, sw0.2
   bn.mulv.l.16h.acc.hi w5, w5, sw0.0
 
-  bn.lid               x4, 224(x11)
+  bn.ld                w17, 224(x11)
   bn.subvm.16h         w8, w6, w7
   bn.addvm.16h         w6, w6, w7
   bn.mulv.16h.acc.z.lo w7, w8, w17
@@ -170,7 +168,7 @@ intt:
   bn.mulv.l.16h.acc.hi w7, w7, sw0.0
 
   /* Layer 6, stride 4. */
-  bn.lid               x4, 256(x11)
+  bn.ld                w17, 256(x11)
   bn.subvm.16h         w8, w18, w20
   bn.addvm.16h         w18, w18, w20
   bn.mulv.16h.acc.z.lo w20, w8, w17
@@ -183,7 +181,7 @@ intt:
   bn.mulv.l.16h.lo     w21, w21, sw0.2
   bn.mulv.l.16h.acc.hi w21, w21, sw0.0
 
-  bn.lid               x4, 288(x11)
+  bn.ld                w17, 288(x11)
   bn.subvm.16h         w8, w22, w24
   bn.addvm.16h         w22, w22, w24
   bn.mulv.16h.acc.z.lo w24, w8, w17
@@ -196,7 +194,7 @@ intt:
   bn.mulv.l.16h.lo     w25, w25, sw0.2
   bn.mulv.l.16h.acc.hi w25, w25, sw0.0
 
-  bn.lid               x4, 320(x11)
+  bn.ld                w17, 320(x11)
   bn.subvm.16h         w8, w0, w2
   bn.addvm.16h         w0, w0, w2
   bn.mulv.16h.acc.z.lo w2, w8, w17
@@ -209,7 +207,7 @@ intt:
   bn.mulv.l.16h.lo     w3, w3, sw0.2
   bn.mulv.l.16h.acc.hi w3, w3, sw0.0
 
-  bn.lid               x4, 352(x11)
+  bn.ld                w17, 352(x11)
   bn.subvm.16h         w8, w4, w6
   bn.addvm.16h         w4, w4, w6
   bn.mulv.16h.acc.z.lo w6, w8, w17
@@ -223,7 +221,7 @@ intt:
   bn.mulv.l.16h.acc.hi w7, w7, sw0.0
 
   /* Layer 5, stride 8. */
-  bn.lid               x4, 384(x11)
+  bn.ld                w17, 384(x11)
   bn.subvm.16h         w8, w18, w22
   bn.addvm.16h         w18, w18, w22
   bn.mulv.16h.acc.z.lo w22, w8, w17
@@ -248,7 +246,7 @@ intt:
   bn.mulv.l.16h.lo     w25, w25, sw0.2
   bn.mulv.l.16h.acc.hi w25, w25, sw0.0
 
-  bn.lid               x4, 416(x11)
+  bn.ld                w17, 416(x11)
   bn.subvm.16h         w8, w0, w4
   bn.addvm.16h         w0, w0, w4
   bn.mulv.16h.acc.z.lo w4, w8, w17
@@ -329,7 +327,7 @@ intt:
   bn.trn2.2q w7, w21, w25
 
   /* Layer 4, stride 16. */
-  bn.lid                 x4, 448(x11)
+  bn.ld                  w17, 448(x11)
   bn.subvm.16h           w24, w0, w1
   bn.addvm.16h           w0, w0, w1
   bn.mulv.l.16h.acc.z.lo w1, w24, sw1.0
@@ -587,21 +585,22 @@ intt:
 
   /* Store r. */
   add    x4, x0, x0
-  bn.sid x4++, 0(x12)
-  bn.sid x4++, 32(x12)
-  bn.sid x4++, 64(x12)
-  bn.sid x4++, 96(x12)
-  bn.sid x4++, 128(x12)
-  bn.sid x4++, 160(x12)
-  bn.sid x4++, 192(x12)
-  bn.sid x4++, 224(x12)
-  bn.sid x4++, 256(x12)
-  bn.sid x4++, 288(x12)
-  bn.sid x4++, 320(x12)
-  bn.sid x4++, 352(x12)
-  bn.sid x4++, 384(x12)
-  bn.sid x4++, 416(x12)
-  bn.sid x4++, 448(x12)
-  bn.sid x4++, 480(x12)
+  bn.sd  w0, 0(x12)
+  bn.sd  w1, 32(x12)
+  bn.sd  w2, 64(x12)
+  bn.sd  w3, 96(x12)
+  bn.sd  w4, 128(x12)
+  bn.sd  w5, 160(x12)
+  bn.sd  w6, 192(x12)
+  bn.sd  w7, 224(x12)
+  bn.sd  w8, 256(x12)
+  bn.sd  w9, 288(x12)
+  bn.sd  w10, 320(x12)
+  bn.sd  w11, 352(x12)
+  bn.sd  w12, 384(x12)
+  bn.sd  w13, 416(x12)
+  bn.sd  w14, 448(x12)
+  bn.sd  w15, 480(x12)
+  addi x4, x4, 16  /* restore the wide-register index */
   addi   x12, x12, 512 /* Point to next polynomial. */
   ret

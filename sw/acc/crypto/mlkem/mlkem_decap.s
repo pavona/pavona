@@ -58,8 +58,8 @@
  * @param[in]  w31: all-zero register
  *
  * UNPROTECTED
- * clobbered registers: x2 to x15, x18 to x19, x21 to x28,
- *                      w0 to w15, w17 to w26, mod, acch, acc
+ * clobbered registers: x2 to x19, x21 to x31,
+ *                      w0 to w15, w17 to w30, acc, mod, acch
  * clobbered flag groups: FG0
  *
  * HARDENED
@@ -183,7 +183,7 @@ _kem_dec_sk_ok:
     bn.xor w0, w0, w0
     bn.xor w1, w1, w1
     bn.xor w2, w2, w2
-    bn.lid x0, 0(x5++)
+    bn.ld  w0, 0(x5++)
     loopi 16, 5
       bn.shv.16h w2, w0 >> 15
       loopi 16, 2
@@ -192,7 +192,7 @@ _kem_dec_sk_ok:
       endloop
       bn.shv.16h w0, w0 << 1
     endloop
-    bn.sid x4, 0(x6++)
+    bn.sd  w1, 0(x6++)
   endloop
 
   /* Initialize SHA3-512 operation. */
@@ -206,15 +206,15 @@ _kem_dec_sk_ok:
   /* Send m. */
   la      x5, mtmp
   bn.xor  w0, w0, w0    /* Whitening. */
-  bn.lid  x0, 0(x5++)
+  bn.ld   w0, 0(x5++)
   bn.wsrw kmac_msg, w0  /* m[0] */
   bn.xor  w0, w0, w0    /* Whitening. */
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg1, w0 /* m[1] */
   /* Send h. */
   la      x5, dptr_h
   lw      x5, 0(x5)
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg, w0  /* h */
   bn.xor  w0, w0, w0
   bn.wsrw kmac_msg1, w0 /* 0 */
@@ -222,17 +222,17 @@ _kem_dec_sk_ok:
   la      x5, kr
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest1
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   /* Retrieve r'. */
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   bn.xor  w0, w0, w0    /* Whitening. */
   bn.wsrr w0, kmac_digest1
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
 
 #else
   /* Initialize SHA3-512 operation. */
@@ -242,20 +242,20 @@ _kem_dec_sk_ok:
   csrrw   x0, kmac_cfg, x5
   /* Send m. */
   la      x5, m
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg, w0
   /* Send h. */
   la      x5, dptr_h
   lw      x5, 0(x5)
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg, w0
   /* Retrieve K_true. */
   la      x5, kr
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   /* Retrieve r'. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
 #endif
 
   /*** Step 4: K_false <- SHAKE256(z || c). ***/
@@ -275,11 +275,11 @@ _kem_dec_sk_ok:
   /* Send z. */
   la      x5, dptr_h
   lw      x5, 0(x5)
-  bn.lid  x0, 32(x5)
+  bn.ld   w0, 32(x5)
   bn.wsrw kmac_msg, w0
 #ifdef HARDENED
   bn.xor  w0, w0, w0 /* Whitening. */
-  bn.lid  x0, 64(x5)
+  bn.ld   w0, 64(x5)
   bn.wsrw kmac_msg1, w0
 #endif
 
@@ -291,7 +291,7 @@ _kem_dec_sk_ok:
   srli x5, x5, 5
 #ifdef HARDENED
   loop x5, 3
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.wsrw kmac_msg, w0
     bn.wsrw kmac_msg1, w31
   endloop
@@ -299,19 +299,19 @@ _kem_dec_sk_ok:
   la      x5, ss_false
   bn.xor  w0, w0, w0 /* Whitening. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   bn.xor  w0, w0, w0 /* Whitening. */
   bn.wsrr w0, kmac_digest1
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 #else
   loop x5, 2
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.wsrw kmac_msg, w0
   endloop
   /* Retrieve K_false. */
   la      x5, ss_false
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 #endif
 
   /*** Step 5: w0 <- indcpa_enc_cmp(m', ek_pke, r', c). ***/
@@ -333,16 +333,17 @@ _kem_dec_sk_ok:
 #ifndef HARDENED
   la      x5, kr
   addi    x4, x0, 1
-  bn.lid  x4++, 0(x5) /* Load true key. */
+  bn.ld   w1, 0(x5)   /* Load true key. */
+  addi x4, x4, 1  /* restore the wide-register index */
   la      x5, ss_false
-  bn.lid  x4, 0(x5)   /* Load false key. */
+  bn.ld   w2, 0(x5)   /* Load false key. */
   bn.xor  w3, w1, w2
   /* w0 is the comparison result: 0 if equal, all ones otherwise. */
   bn.and  w3, w3, w0
   bn.xor  w0, w1, w3
   la      x5, dptr_ss
   lw      x5, 0(x5)
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
   ret
 #else
   la      x5, kr
@@ -356,16 +357,16 @@ _kem_dec_sk_ok:
   csrrw   x28, fg0, x0
   srli    x28, x28, 3 /* Extract z flag. */
   beq     x28, x0, _fail
-  bn.lid  x0, 0(x5)
-  bn.lid  x4, 32(x5)
+  bn.ld   w0, 0(x5)
+  bn.ld   w1, 32(x5)
   beq     x0, x0, _end
 _fail:
-  bn.lid  x0, 0(x7)
-  bn.lid  x4, 32(x7)
+  bn.ld   w0, 0(x7)
+  bn.ld   w1, 32(x7)
   beq     x0, x0, _end
 _end:
-  bn.sid  x0, 0(x6)
-  bn.sid  x4, 32(x6)
+  bn.sd   w0, 0(x6)
+  bn.sd   w1, 32(x6)
   ret
 #endif
 
@@ -399,14 +400,13 @@ check_sk:
 
   srli  x11, x11, 5
   loop  x11, 2
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.wsrw kmac_msg, w0
   endloop
   bn.wsrr w8, kmac_digest
 
   /* Compare against the stored hash. */
-  add     x5, x0, x0
-  bn.lid  x5, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.cmp  w8, w0
   csrrs   x5, fg0, x0
 
