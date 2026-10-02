@@ -195,6 +195,9 @@ p256_check_public_key:
  * This routine sets `ok` to false if the check fails.
  *
  * @param[out] dmem[ok] Set to HARDENED_BOOL_FALSE.
+ *
+ * clobbered registers: x2 to x3
+ * clobbered flag groups: none
  */
 .type p256_invalid_input, @function
 p256_invalid_input:

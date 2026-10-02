@@ -25,8 +25,8 @@
  * @param[in] w31: all-zero.
  * @param[out] [w20:w18]: c, result, max. length 768 bit.
  *
- * Clobbered registers: w18 to w20
- * Clobbered flag groups: FG0
+ * clobbered registers: w18 to w20
+ * clobbered flag groups: FG0
  */
 .globl mul384
 .type mul384, @function
@@ -87,8 +87,8 @@ mul384:
  * @param[in] w31: all-zero.
  * @param[out] [w20:w18]: c, result, max. length 572 bit.
  *
- * Clobbered registers: w18 to w20
- * Clobbered flag groups: FG0
+ * clobbered registers: w18 to w20
+ * clobbered flag groups: FG0
  */
 .type mul448x128, @function
 mul448x128:
@@ -141,8 +141,8 @@ mul448x128:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * Clobbered registers: w16 to w24
- * Clobbered flag groups: FG0
+ * clobbered registers: w16 to w24
+ * clobbered flag groups: FG0
  */
 .globl p384_reduce_p
 .type p384_reduce_p, @function
@@ -267,8 +267,8 @@ p384_reduce_p:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * Clobbered registers: w16 to w24
- * Clobbered flag groups: FG0
+ * clobbered registers: w16 to w24
+ * clobbered flag groups: FG0
  */
 .globl p384_reduce_n
 .type p384_reduce_n, @function
@@ -401,8 +401,8 @@ p384_reduce_n:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * Clobbered registers: w16 to w24
- * Clobbered flag groups: FG0
+ * clobbered registers: w16 to w24
+ * clobbered flag groups: FG0
  */
 .globl p384_mulmod_p
 .type p384_mulmod_p, @function
@@ -435,8 +435,8 @@ p384_mulmod_p:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * Clobbered registers: w16 to w24
- * Clobbered flag groups: FG0
+ * clobbered registers: w16 to w24
+ * clobbered flag groups: FG0
  */
 .globl p384_mulmod_n
 .type p384_mulmod_n, @function
@@ -469,8 +469,8 @@ p384_mulmod_n:
  * @param[in] w31: all-zero.
  * @param[out] [w17, w16]: c, result, max. length 384 bit.
  *
- * Clobbered registers: w16 to w24
- * Clobbered flag groups: FG0
+ * clobbered registers: w16 to w24
+ * clobbered flag groups: FG0
  */
 .globl p384_mulmod448x128_n
 .type p384_mulmod448x128_n, @function

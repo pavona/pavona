@@ -1130,6 +1130,13 @@ _bitslice_butterfly:
 bitslice:
   li  x5, 23
   jal x0, _bitslice_core
+
+/**
+ * bitslice with kbits = 32; see bitslice.
+ *
+ * clobbered registers: x2, x5, x10, x13, x28 to x30, w0 to w27
+ * clobbered flag groups: FG0
+ */
 .globl bitslice_k32
 .type bitslice_k32, @function
 bitslice_k32:
@@ -2320,6 +2327,13 @@ _secdecompose_epilogue:
 .type masked_poly_uniform_eta, @function
 masked_poly_uniform_eta:
   addi x16, x0, 0 /* no export */
+
+/**
+ * masked_poly_uniform_eta with export to x16; see masked_poly_uniform_eta.
+ *
+ * clobbered registers: x2, x4 to x18, x27 to x31, w0 to w27, w30
+ * clobbered flag groups: FG0
+ */
 .globl masked_poly_uniform_eta_export
 .type masked_poly_uniform_eta_export, @function
 masked_poly_uniform_eta_export:

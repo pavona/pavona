@@ -112,7 +112,7 @@ m0inv:
  *
  * clobbered registers: x2, x3, x8, x10 to x13
  *                      w2, w3, w4 to w(4+N-1), w24, w29, w30
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type double_and_reduce, @function
 double_and_reduce:
@@ -355,7 +355,7 @@ mul256_w30xw2:
  * @param[in]  FG0.C: needs to be set to 0
  *
  * clobbered registers: x8, x12, x13, x16, w24, w29, w30, w[x8] to w[x8+N-1]
- * clobbered Flag Groups: FG0
+ * clobbered flag groups: FG0
  */
 .type cond_sub_to_reg, @function
 cond_sub_to_reg:
@@ -417,7 +417,7 @@ cond_sub_to_reg:
  *
  * clobbered registers: x8, x10, x12, x13, x16, x19, x22
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w[4+N-1]
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type mont_loop, @function
 mont_loop:
@@ -579,7 +579,7 @@ mont_loop:
  *
  * clobbered registers: x5 to x9, x12, x13, x20, x22
  *                      w2, w3, w4 to w[4+N-1], w24 to w30
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type montmul, @function
 montmul:
@@ -640,6 +640,10 @@ montmul:
  * @param[in]  w31: all-zero
  * @param[out] [dmem[dptr_m0d+31]:dmem[dptr_m0d]] computed m0'
  * @param[out] [dmem[dptr_RR+N*32-1]:dmem[dptr_RR]] computed RR
+ *
+ * clobbered registers: x2 to x3, x5 to x13, x16, x19 to x22, x31,
+ *                      w0 to w3, w4 to w[4+N-1], w24 to w31, acc
+ * clobbered flag groups: FG0, FG1
  */
 .type modload, @function
 modload:

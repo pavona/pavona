@@ -113,7 +113,7 @@ mul256_w30xw2:
  *
  * clobbered registers: x2, x8, x10, x12, x13, x16, x19, x22
  *                      w24, w25, w26, w27, w28, w29, w30, w4 to w15
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .type mont_loop, @function
 mont_loop:
@@ -280,7 +280,7 @@ mont_loop:
  *
  * clobbered registers: x2, x6 to x13, x22
  *                      w2, w4 to w15, w24 to w30
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
 .globl montmul
 .type montmul, @function
@@ -341,7 +341,7 @@ montmul:
  *
  * clobbered registers: x2, x6 to x13, x16, x17, x19 to x24, x26,
                         w2 to w31
- * clobbered Flag Groups: FG0, FG1
+ * clobbered flag groups: FG0, FG1
  */
  .globl modexp_var_3072_f4
 .type modexp_var_3072_f4, @function
