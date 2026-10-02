@@ -58,44 +58,6 @@ def check_str_dict(obj: object, what: str) -> Dict[str, object]:
     return cast(Dict[str, object], obj)
 
 
-def check_keys(obj: object, what: str, required_keys: List[str],
-               optional_keys: List[str]) -> Dict[str, object]:
-    '''Check that obj is a dict object with the expected keys
-
-    If not, raise a ValueError; the what argument names the object.
-    '''
-    od = check_str_dict(obj, what)
-
-    allowed = set()
-    missing = []
-    for key in required_keys:
-        assert key not in allowed
-        allowed.add(key)
-        if key not in od:
-            missing.append(key)
-
-    for key in optional_keys:
-        assert key not in allowed
-        allowed.add(key)
-
-    unexpected = []
-    for key in od:
-        if key not in allowed:
-            unexpected.append(key)
-
-    if missing or unexpected:
-        if isinstance(obj, dict) and 'name' in obj:
-            what += f" '{obj['name']}'"
-        mstr = ('The following required fields were missing: '
-                f'{", ".join(missing)}.') if missing else ''
-        ustr = ('The following unexpected fields were found: '
-                f'{", ".join(unexpected)}.') if unexpected else ''
-        raise ValueError(f"{what} doesn't have the right keys. "
-                         f"{mstr}{' ' if mstr and ustr else ''}{ustr}")
-
-    return od
-
-
 def check_str(obj: object, what: str) -> str:
     '''Check that the given object is a string
 
