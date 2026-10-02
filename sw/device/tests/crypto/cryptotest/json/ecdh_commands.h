@@ -24,20 +24,20 @@ extern "C" {
 UJSON_SERDE_ENUM(CryptotestEcdhCurve, cryptotest_ecdh_curve_t, ECDH_CURVE);
 
 #define ECDH_PRIVATE_KEY(field, string, bytes) \
-    field(d0, uint8_t, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    bytes(d0, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES, d0_len) \
     field(d0_len, size_t) \
-    field(d1, uint8_t, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    bytes(d1, ECDH_CMD_MAX_PRIVATE_KEY_SHARE_BYTES, d1_len) \
     field(d1_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhPrivateKey, cryptotest_ecdh_private_key_t, ECDH_PRIVATE_KEY);
 
 #define ECDH_COORDINATE(field, string, bytes) \
-    field(coordinate, uint8_t, ECDH_CMD_MAX_COORDINATE_BYTES) \
+    bytes(coordinate, ECDH_CMD_MAX_COORDINATE_BYTES, coordinate_len) \
     field(coordinate_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhCoordinate, cryptotest_ecdh_coordinate_t, ECDH_COORDINATE);
 
 #define ECDH_DERIVE_OUTPUT(field, string, bytes) \
     field(ok, uint8_t) \
-    field(shared_secret, uint8_t, ECDH_CMD_MAX_SHARED_SECRET_BYTES) \
+    bytes(shared_secret, ECDH_CMD_MAX_SHARED_SECRET_BYTES, shared_secret_len) \
     field(shared_secret_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdhDeriveOutput, cryptotest_ecdh_derive_output_t, ECDH_DERIVE_OUTPUT);
 

@@ -40,9 +40,9 @@ UJSON_SERDE_ENUM(CryptotestAesGcmOperation, cryptotest_aes_gcm_operation_t, AES_
 UJSON_SERDE_STRUCT(CryptotestAesGcmData, cryptotest_aes_gcm_data_t, AES_GCM_DATA);
 
 #define AES_GCM_OUTPUT(field, string, bytes) \
-    field(output, uint8_t, AES_GCM_CMD_MAX_MSG_BYTES) \
+    bytes(output, AES_GCM_CMD_MAX_MSG_BYTES, output_len) \
     field(output_len, size_t) \
-    field(tag, uint8_t, AES_GCM_CMD_MAX_TAG_BYTES) \
+    bytes(tag, AES_GCM_CMD_MAX_TAG_BYTES, tag_len) \
     field(tag_len, size_t) \
     field(tag_valid, bool)
 UJSON_SERDE_STRUCT(CryptotestAesGcmOutput, cryptotest_aes_gcm_output_t, AES_GCM_OUTPUT);

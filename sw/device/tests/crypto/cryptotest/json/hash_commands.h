@@ -36,9 +36,9 @@ UJSON_SERDE_ENUM(CryptotestHashAlgorithm, cryptotest_hash_algorithm_t, HASH_ALGO
 UJSON_SERDE_STRUCT(CryptotestHashShakeDigestLength, cryptotest_hash_shake_digest_length_t, SHAKE_DIGEST_LENGTH);
 
 #define HASH_MESSAGE(field, string, bytes) \
-    field(message, uint8_t, HASH_CMD_MAX_MESSAGE_BYTES) \
+    bytes(message, HASH_CMD_MAX_MESSAGE_BYTES, message_len) \
     field(message_len, size_t) \
-    field(customization_string, uint8_t, HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES) \
+    bytes(customization_string, HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES, customization_string_len) \
     field(customization_string_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHashMessage, cryptotest_hash_message_t, HASH_MESSAGE);
 

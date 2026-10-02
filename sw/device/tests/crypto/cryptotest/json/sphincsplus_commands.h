@@ -27,17 +27,17 @@ UJSON_SERDE_ENUM(CryptotestSphincsPlusOperation, cryptotest_sphincsplus_operatio
 UJSON_SERDE_ENUM(CryptotestSphincsPlusHashAlg, cryptotest_sphincsplus_hash_alg_t, SPHINCSPLUS_HASH_ALG);
 
 #define SPHINCSPLUS_MESSAGE(field, string, bytes) \
-    field(message, uint8_t, SPHINCSPLUS_CMD_MAX_MESSAGE_BYTES) \
+    bytes(message, SPHINCSPLUS_CMD_MAX_MESSAGE_BYTES, message_len) \
     field(message_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestSphincsPlusMessage, cryptotest_sphincsplus_message_t, SPHINCSPLUS_MESSAGE);
 
 #define SPHINCSPLUS_SIGNATURE(field, string, bytes) \
-    field(signature, uint8_t, SPHINCSPLUS_CMD_MAX_SIGNATURE_BYTES) \
+    bytes(signature, SPHINCSPLUS_CMD_MAX_SIGNATURE_BYTES, signature_len) \
     field(signature_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestSphincsPlusSignature, cryptotest_sphincsplus_signature_t, SPHINCSPLUS_SIGNATURE);
 
 #define SPHINCSPLUS_PUBLIC_KEY(field, string, bytes) \
-    field(public, uint8_t, SPHINCSPLUS_CMD_MAX_PUBLIC_KEY_BYTES) \
+    bytes(public, SPHINCSPLUS_CMD_MAX_PUBLIC_KEY_BYTES, public_len) \
     field(public_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestSphincsPlusPublicKey, cryptotest_sphincsplus_public_key_t, SPHINCSPLUS_PUBLIC_KEY);
 

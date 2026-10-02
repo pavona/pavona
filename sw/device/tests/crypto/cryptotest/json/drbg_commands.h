@@ -17,24 +17,24 @@ extern "C" {
 // clang-format off
 
 #define DRBG_INPUT(field, string, bytes) \
-    field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
+    bytes(entropy, DRBG_CMD_MAX_ENTROPY_BYTES, entropy_len) \
     field(entropy_len, size_t) \
-    field(personalization_string, uint8_t, DRBG_CMD_MAX_PERSONALIZATION_STRING_BYTES) \
+    bytes(personalization_string, DRBG_CMD_MAX_PERSONALIZATION_STRING_BYTES, personalization_string_len) \
     field(personalization_string_len, size_t) \
     field(reseed, uint8_t) \
-    field(reseed_entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
+    bytes(reseed_entropy, DRBG_CMD_MAX_ENTROPY_BYTES, reseed_entropy_len) \
     field(reseed_entropy_len, size_t) \
-    field(reseed_additional_input, uint8_t, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES) \
+    bytes(reseed_additional_input, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES, reseed_additional_input_len) \
     field(reseed_additional_input_len, size_t) \
-    field(additional_input_1, uint8_t, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES) \
+    bytes(additional_input_1, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES, additional_input_1_len) \
     field(additional_input_1_len, size_t) \
-    field(additional_input_2, uint8_t, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES) \
+    bytes(additional_input_2, DRBG_CMD_MAX_ADDITIONAL_INPUT_BYTES, additional_input_2_len) \
     field(additional_input_2_len, size_t) \
     field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestDrbgInput, cryptotest_drbg_input_t, DRBG_INPUT);
 
 #define DRBG_OUTPUT(field, string, bytes) \
-    field(output, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
+    bytes(output, DRBG_CMD_MAX_OUTPUT_BYTES, output_len) \
     field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestDrbgOutput, cryptotest_drbg_output_t, DRBG_OUTPUT);
 

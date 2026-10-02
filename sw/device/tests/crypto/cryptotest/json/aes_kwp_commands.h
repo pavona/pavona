@@ -33,7 +33,7 @@ UJSON_SERDE_ENUM(CryptotestAesKwpOperation, cryptotest_aes_kwp_operation_t, AES_
 UJSON_SERDE_STRUCT(CryptotestAesKwpData, cryptotest_aes_kwp_data_t, AES_KWP_DATA);
 
 #define AES_KWP_OUTPUT(field, string, bytes) \
-    field(output, uint8_t, AES_KWP_CMD_MAX_MSG_BYTES) \
+    bytes(output, AES_KWP_CMD_MAX_MSG_BYTES, output_len) \
     field(output_len, size_t) \
     field(success, bool)
 UJSON_SERDE_STRUCT(CryptotestAesKwpOutput, cryptotest_aes_kwp_output_t, AES_KWP_OUTPUT);
