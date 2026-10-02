@@ -6,6 +6,7 @@ load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
+load("//rules:acc.bzl", "acc_clobbered_regs_test")
 load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
 
 package(default_visibility = ["//visibility:public"])
@@ -34,6 +35,7 @@ test_suite(
     name = "acc_lint",
     tests = [
         ":acc_asm_lint",
+        ":acc_clobbered_regs",
     ],
 )
 
@@ -44,6 +46,58 @@ py_test(
     data = ["//sw/acc/crypto:asm_srcs"],
     main = "//ci/scripts:check-acc-asm.py",
     deps = ["//hw/ip/acc/util/shared:docstring"],
+)
+
+acc_clobbered_regs_test(
+    name = "acc_clobbered_regs",
+    skip = [
+        # TODO: Support separate UNPROTECTED and HARDENED annotations.
+        "crypto_kem_dec",
+        "crypto_kem_keypair",
+        "indcpa_dec",
+        "indcpa_enc_cmp",
+        "indcpa_keypair",
+        # TODO: Support WDR indices the analysis cannot resolve.
+        "check_p",
+        "check_q",
+        "miller_rabin",
+        "modexp",
+        "modexp_65537",
+        "modexp_crt",
+        "modinv",
+        "modinv_f4",
+        "modload",
+        "mont_loop",
+        "montmul",
+        "proj_add_p384",
+        "rsa_keygen",
+        "sign_attempt",
+        "sign_h_check",
+        "sign_w",
+        "sign_z_check",
+        "sign_z_pack",
+        "test_witness",
+    ],
+    deps = [
+        "//sw/acc/crypto:boot",
+        "//sw/acc/crypto:p256_ecdsa_sca",
+        "//sw/acc/crypto:p256_key_from_seed_sca",
+        "//sw/acc/crypto:p256_mod_inv_sca",
+        "//sw/acc/crypto:p384_ecdsa_sca",
+        "//sw/acc/crypto:rsa",
+        "//sw/acc/crypto:run_ed25519",
+        "//sw/acc/crypto:run_mldsa",
+        "//sw/acc/crypto:run_mldsa_hardened",
+        "//sw/acc/crypto:run_mlkem",
+        "//sw/acc/crypto:run_mlkem_hardened",
+        "//sw/acc/crypto:run_p256",
+        "//sw/acc/crypto:run_p384",
+        "//sw/acc/crypto:run_rsa_keygen",
+        "//sw/acc/crypto:run_rsa_modexp",
+        "//sw/acc/crypto:run_sha256",
+        "//sw/acc/crypto:run_sha512",
+        "//sw/acc/crypto:x25519_sideload",
+    ],
 )
 
 alias(
