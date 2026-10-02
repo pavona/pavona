@@ -76,6 +76,12 @@ py_library(
 )
 
 py_library(
+    name = "docstring",
+    srcs = ["docstring.py"],
+    imports = [".."],
+)
+
+py_library(
     name = "elf",
     srcs = ["elf.py"],
     imports = [".."],

@@ -29,6 +29,23 @@ py_test(
     ],
 )
 
+# Run all ACC assembly lint checks.
+test_suite(
+    name = "acc_lint",
+    tests = [
+        ":acc_asm_lint",
+    ],
+)
+
+py_test(
+    name = "acc_asm_lint",
+    srcs = ["//ci/scripts:check-acc-asm.py"],
+    args = ["$(rootpaths //sw/acc/crypto:asm_srcs)"],
+    data = ["//sw/acc/crypto:asm_srcs"],
+    main = "//ci/scripts:check-acc-asm.py",
+    deps = ["//hw/ip/acc/util/shared:docstring"],
+)
+
 alias(
     name = "clang-format",
     actual = "@llvm_toolchain_llvm//:bin/clang-format",

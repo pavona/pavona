@@ -8,3 +8,5 @@ sh_binary(
     name = "run_test",
     srcs = ["run_test.sh"],
 )
+
+exports_files(["check-acc-asm.py"])
