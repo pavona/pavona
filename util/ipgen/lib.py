@@ -6,9 +6,15 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import hjson  # type: ignore
-from reggen.lib import (check_bool, check_int, check_keys, check_list,
+from reggen.lib import (check_bool, check_int, check_list,
                         check_name, check_str)
 from reggen.params import BaseParam, Params
+
+from basegen.validate import create_validator, all_validation_errors
+
+
+TPL_PARAM_VALIDATOR = create_validator("urn:ipgen:template_parameter")
+IP_CONFIG_VALIDATOR = create_validator("urn:ipgen:ip_config")
 
 
 class TemplateParseError(Exception):
@@ -65,24 +71,28 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     the required type. For 'object' types we just check the value can be
     de-serialized by hjson. Perhaps this could perform a type-check instead.
     """
-    rd = check_keys(raw, where, ['name', 'desc', 'type'], ['default', 'dtgen'])
+    if not isinstance(raw, dict):
+        raise TypeError(f"Template parameter of {where} should be instantiated from dict")
+    validation_errors = all_validation_errors(raw, TPL_PARAM_VALIDATOR, "template_parameter")
+    if validation_errors:
+        raise ValueError(f"Template parameter of {where} did not correctly conform to schema")
 
-    name = check_str(rd['name'], 'name field of ' + where)
+    name = check_str(raw['name'], 'name field of ' + where)
 
-    r_desc = rd.get('desc')
+    r_desc = raw.get('desc')
     if r_desc is None:
         desc = None
     else:
         desc = check_str(r_desc, 'desc field of ' + where)
 
-    r_type = rd.get('type')
+    r_type = raw.get('type')
     param_type = check_str(r_type, 'type field of ' + where)
     if param_type not in TemplateParameter.VALID_PARAM_TYPES:
         raise ValueError(f'At {where}, the {name} param has an invalid type '
                          f'field {param_type!r}. Allowed values are: '
                          f'{", ".join(TemplateParameter.VALID_PARAM_TYPES)}.')
 
-    r_default = rd.get('default')
+    r_default = raw.get('default')
     param_type: Union[bool, int, str, Dict[str, Any]]
     if param_type == 'bool':
         default = check_bool(
@@ -100,7 +110,7 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
 
     # DT generator dictionary is not checked here, it is only forwarded to dtgen
     # but we at least check that it is a dictionary!
-    dtgen = rd.get('dtgen', None)
+    dtgen = raw.get('dtgen', None)
     assert dtgen is None or isinstance(dtgen, dict), \
         f"At {where}, the 'dtgen' field must be a dictionary."
     # We add a 'doc' field if not present.
@@ -301,19 +311,18 @@ class IpConfig:
     def from_raw(cls, template_params: TemplateParams, raw: object,
                  where: str) -> 'IpConfig':
         """ Load an IpConfig from a raw object """
-
-        rd = check_keys(raw, 'configuration file ' + where, ['instance_name'],
-                        ['param_values', 'dtgen'])
-        instance_name = check_name(rd.get('instance_name'),
-                                   "the key 'instance_name' of " + where)
-
         if not isinstance(raw, dict):
             raise ValueError(
                 "The IP configuration is expected to be a dict, but was "
                 "actually a " + type(raw).__name__)
+        validation_errors = all_validation_errors(raw, IP_CONFIG_VALIDATOR, "ip_config")
+        if validation_errors:
+            raise ValueError(f"IP config file {where} did not correctly conform to schema")
 
+        instance_name = check_name(raw.get('instance_name'),
+                                   "the key 'instance_name' of " + where)
         param_values = IpConfig._check_param_values(template_params,
-                                                    rd['param_values'])
+                                                    raw['param_values'])
         # The dtgen part of the configuration only depends on the template
         # and not on the values, so it is re-derived in the constructor anyway.
         # Therefore we just ignore it.

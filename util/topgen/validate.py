@@ -13,7 +13,7 @@ from reggen.ip_block import IpBlock
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
-from basegen.validate import create_validator
+from basegen.validate import create_validator, all_validation_errors
 
 
 TOPCFG_VALIDATOR = create_validator("urn:topgen:topcfg")
@@ -722,12 +722,7 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
     if find_module(top["module"], "lc_ctrl") and "lc_ctrl_seed" not in seed_cfg:
         raise KeyError("presence of lc_ctrl requires LC controller seed")
 
-    validation_errors = list(SEEDCFG_VALIDATOR.iter_errors(seed_cfg))
-    for err in validation_errors:
-        validation_path = err.absolute_path
-        validation_path.appendleft("seedcfg")
-        log.error(f"(validation error, {'.'.join(validation_path)})"
-                  f" {err.message}")
+    validation_errors = all_validation_errors(seed_cfg, SEEDCFG_VALIDATOR, "seedcfg")
 
     return int(len(validation_errors) > 0)
 
@@ -735,14 +730,7 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
 def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
                  xbar_name_to_block: IpBlocksT, raw_top_data: dict) -> int:
     # return as it is for now
-    validation_errors = list(TOPCFG_VALIDATOR.iter_errors(raw_top_data))
-    for err in validation_errors:
-        validation_path = err.absolute_path
-        validation_path.appendleft("topcfg")
-        log.error(f"(validation error, {'.'.join(validation_path)})"
-                  f" {err.message}")
-
-    error = len(validation_errors)
+    error = len(all_validation_errors(raw_top_data, TOPCFG_VALIDATOR, "topcfg"))
     if error != 0:
         log.error("Top HJSON has top level errors. Aborting")
         return top, error

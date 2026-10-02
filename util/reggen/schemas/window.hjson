@@ -1,0 +1,44 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:window",
+  title: "Window",
+  description: "Reserved window of memory/address space",
+  type: "object",
+  required: ["name", "desc", "items", "swaccess"]
+  properties: {
+    name: { type: "string", description: "name of the window" },
+    items: { type: ["number", "string"], description: "size in fieldaccess width words of the window" },
+    validbits: {
+      type: "number",
+      description: '''Number of valid data bits within regwidth sized word.
+                   Defaults to regwidth. If smaller than the regwidth then in each
+                   word of the window bits {regwidth-1:validbits} are unused and
+                   bits {validbits-1:0} are valid.
+                   '''
+    },
+    unusual: {
+      type: "boolean",
+      description: '''True if window has unusual parameters
+                   (set to prevent Unusual: errors).
+                   Defaults to false if not present.
+                   '''
+    },
+    swaccess: { type: "string", description: "software access permitted" },
+    data-intg-passthru: {
+      type: "boolean",
+      description: '''True if the window has data integrity pass through.
+                   Defaults to false if not present.
+                   '''
+    },
+    byte-write: {
+      type: "boolean",
+      description: '''True if byte writes are supported.
+                   Defaults to false if not present.
+                   '''
+    },
+    desc: { type: "string", description: "description of the window" },
+  }
+}
