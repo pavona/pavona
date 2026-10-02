@@ -797,6 +797,7 @@
 
 - [Overview](./doc/security/README.md)
 - [Threat Model](./doc/security/threat_model/README.md)
+  - [ACC SCA Threat Model](./doc/security/threat_model/acc_sca_threat_model.md)
 - [Logical Security Model](./doc/security/logical_security_model/README.md)
 - [Specifications](./doc/security/specs/README.md)
   - [Device Life Cycle](./doc/security/specs/device_life_cycle/README.md)

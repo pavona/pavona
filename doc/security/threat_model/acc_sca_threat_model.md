@@ -22,7 +22,7 @@ At its core, the ACC consists of a highly customized lightweight processor conta
 By reusing these wide registers as vector registers, a vectorized ISA is implemented without introducing an additional bank, allowing for performant and area-efficient implementation of various post-quantum cryptographic algorithms, especially ML-KEM and ML-DSA.
 
 ACC programs are loaded by the primary RoT core into an instruction memory (IMEM), and inputs and outputs are passed to/from the primary RoT core via the data memory (DMEM).
-A small section of DMEM is reserved as scratchpad memory for the DMEM, such that the primary RoT core cannot access anything placed in that section.
+A small section of DMEM is reserved as scratchpad memory for the ACC, such that the primary RoT core cannot access anything placed in that section.
 
 To allow for hardware-backed keys which are never exposed to the primary RoT core, a sideloading datapath from the key manager to the ACC can be used.
 Moreover, to support fast ML-KEM and ML-DSA implementations with hardware-backed keys, a direct interface from the ACC to the fixed KMAC/SHA-3/SHAKE engine is provided.
@@ -31,11 +31,11 @@ Note that, while the sideloading mechanism does prevent the primary RoT core fro
 In this sense, the kernel present on the primary RoT core is trusted with respect to the ACC threat model, and must validate ACC programs prior to loading them into ACC IMEM.
 At the same time, by keeping ACC key material outside the primary RoT core, threats from attackers with _incomplete_ or _coarse-grained_ control of the primary RoT core (e.g. with the ability to leak limited memory, but without the ability to write arbitrary programs into ACC IMEM) can still be successfully mitigated.
 
-ACC and cryptolib: In general, the cryptolib implementations for ACC-backed operations (including all ML-KEM and ML-DSA operations) load the appropriate program into ACC IMEM, load provided inputs into the ACC DMEM, start the ACC via a designated CSR, and on ACC completion fetch the results from ACC DMEM.
+ACC and cryptolib: In general, the cryptolib implementations for ACC-backed operations (including all ML-KEM and ML-DSA operations) load the appropriate program into ACC IMEM, load provided inputs into the ACC DMEM, start the ACC by writing the execute command to its `CMD` register, and on ACC completion fetch the results from ACC DMEM.
 There are some small additional steps taken on the primary processor for defense-in-depth, but the cryptolib implementations for ACC-backed operations still lie almost entirely in the ACC programs used; this is correspondingly where virtually all SCA mitigations take place.
 
 ACC PQC performance: Careful attention has been paid in particular to the vectorized ISA extensions used in the ACC ML-KEM and ML-DSA implementations.
-For a detailed analysis of how the ISA extensions have been designed in a performant and area-conscious way, see the initial *Towards ML-KEM & ML-DSA on Opentitan* ([https://eprint.iacr.org/2024/1192](https://eprint.iacr.org/2024/1192)) and subsequent *Improving ML-KEM and ML-DSA on OpenTitan* ([https://eprint.iacr.org/2025/2028](https://eprint.iacr.org/2025/2028)) papers.
+For a detailed analysis of how the ISA extensions have been designed in a performant and area-conscious way, see the initial[^aop25] and subsequent[^np26] papers.
 
 ## Scope: Attack Methods
 
@@ -48,7 +48,7 @@ More defense-in-depth approaches are discussed below.
 
 Operations considered: All security assets used or generated in the course of key generation, encryption/decryption, signing/verification, or key encapsulation/decapsulation are considered within scope for these attacks.
 
-Profiled vs. non-profiled attacks: In the following, we implicitly combine discussion of profiled (e.g. CPA) and non-profiled (e.g. SPA) side-channel attacks, as e.g. for operations like keygen, we may want to assume that an attacker has some limited ability to, say, replay entropy through an operation.
+Single-trace vs. multi-trace attacks: In the following, we implicitly combine discussion of single-trace (e.g. SPA) and multi-trace (e.g. DPA or CPA) side-channel attacks, as e.g. for operations like keygen, we may want to assume that an attacker has some limited ability to, say, replay entropy through an operation.
 Moreover, the protections at the hardware level against both types of attacks are the same, and generally speaking the same primitive operations are usually involved in other repeatable operations as in keygen.
 
 ## Scope: Security Assets
@@ -62,12 +62,13 @@ Intermediate results: Additionally, any intermediate value computed by the ACC w
 ## Mitigations: Overall
 
 Timing side-channel mitigations: To address timing side-channels, ACC programs can be statically analyzed using a purpose-built tool to construct their control flow graph and ensure that no branches (aside from e.g. signature rejection loopback in ML-DSA) depend on secret values.
-These checks as currently performed are done as recurring tests in CI, preventing accidental introduction of timing side-channels after changes to an ACC program.
+These checks are run as recurring tests in CI, preventing accidental introduction of timing side-channels after changes to an ACC program.
 
-Additionally, all ACC instructions take the same number of cycles regardless of ACC state.
+Additionally, the number of cycles an ACC instruction takes does not depend on the data it processes.
+Only `RND` reads and KMAC interface accesses can stall, depending on entropy availability and on the program's KMAC accesses (e.g. message lengths).
 In particular, ACC branch instructions are implemented to take the same number of cycles regardless of whether the branch is taken or not; this fact is also used to prevent Spectre-style speculative execution attacks on the ACC.
 To allow fast conditionals, a single-cycle WDR ‘select’ instruction is used.
-See [*From Artifact to Production: Integrating and Refining Lattice Cryptography Acceleration*](https://www.zerorisc.com/blog/from-artifact-to-production-integrating-and-refining-lattice-cryptography-acceleration) for an in-depth example of optimizing ML-KEM rejection sampling using this approach.
+See the corresponding blog post[^afp26] for an in-depth example of optimizing ML-KEM rejection sampling using this approach.
 
 Passive side-channel mitigations: Standard mitigations such as first-order masking and blinding have been used extensively throughout e.g. the P-256 and P-384 implementations.
 Prior analysis using CocoAlma on SCA traces from FPGA builds has been used to determine the set of cases where shares may interact in the ACC datapath, including motifs which cause transient leakage, and in turn care has been taken to avoid and eliminate these constructions in the code.
@@ -75,7 +76,25 @@ Prior analysis using CocoAlma on SCA traces from FPGA builds has been used to de
 Active side-channel mitigations: As noted above, a dual-core lockstep ACC implementation is the primary recommended approach for mitigating active attacks.
 This said, there are several defense-in-depth mechanisms also employed, including PRINCE scrambling for ACC memories, running hardware checksums for DMEM writes, and hardened runtime comparisons of ACC instruction counts to statically-determined runtime bounds.
 
+## Mitigations: ML-KEM and ML-DSA
+
+The ML-KEM and ML-DSA implementations are hardened against first-order side-channel attacks using masking.
+For ML-KEM, key generation and decapsulation are masked; encapsulation is currently not masked.
+For ML-DSA, key generation and signing are masked; verification only processes public data.
+The initial masked designs are described in blog posts for ML-KEM[^pha26] and ML-DSA[^kan26].
+Cryptolib selects the hardened backends with the `acc_has_pqc` and `acc_pqc_hardened` Bazel configuration settings; see the [cryptolib API documentation](../cryptolib/cryptolib_api.md) for details.
+
 ## Proposed Empirical SCA Methodology
 
 Planned methodology: for initial assessment and ongoing evaluation of side-channel leakage, standard TVLA methodology (fixed vs. random Welch’s t-test) will be used with a ChipWhisperer CW340 FPGA board as target, testing isolated routines (e.g. for ML-KEM, this would include pointwise multiplication, NTT/INTT, message decoding, etc.) as well as full instantiations of algorithms, e.g. a plaintext-checking oracle.
 More extensive follow-up analyses will be performed using detailed manual inspection of traces, including evaluation of state-of-the-art techniques from the literature.
+
+[^aop25]: Amin Abdulrahman, Felix Oberhansl, Hoang Nguyen Hien Pham, Jade Philipoom, Peter Schwabe, Tobias Stelzer, and Andreas Zankl. *Towards ML-KEM & ML-DSA on OpenTitan*. IEEE Symposium on Security and Privacy (S&P) 2025, pp. 4044-4062. [https://eprint.iacr.org/2024/1192](https://eprint.iacr.org/2024/1192)
+
+[^np26]: Ruben Niederhagen and Hoang Nguyen Hien Pham. *Improving ML-KEM and ML-DSA on OpenTitan: Efficient Multiplication Vector Instructions for OTBN*. IACR Transactions on Cryptographic Hardware and Embedded Systems, 2026(2), pp. 495-519. [https://eprint.iacr.org/2025/2028](https://eprint.iacr.org/2025/2028)
+
+[^afp26]: Evan Apinis, Kat Fox, and Jade Philipoom. *From Artifact to Production: Integrating and Refining Lattice Cryptography Acceleration*. ZeroRISC blog, February 2026. [https://www.zerorisc.com/blog/from-artifact-to-production-integrating-and-refining-lattice-cryptography-acceleration](https://www.zerorisc.com/blog/from-artifact-to-production-integrating-and-refining-lattice-cryptography-acceleration)
+
+[^pha26]: Hoang Nguyen Hien Pham. *Hardened PQC on Pavona – Masking ML-KEM*. ZeroRISC blog, June 2026. [https://www.zerorisc.com/blog/hardened-pqc-on-pavona-masking-ml-kem](https://www.zerorisc.com/blog/hardened-pqc-on-pavona-masking-ml-kem)
+
+[^kan26]: Matthias J. Kannwischer. *Hardened PQC on Pavona – Part II: Masking ML-DSA*. ZeroRISC blog, June 2026. [https://www.zerorisc.com/blog/hardened-pqc-on-pavona-part-ii-masking-ml-dsa](https://www.zerorisc.com/blog/hardened-pqc-on-pavona-part-ii-masking-ml-dsa)
