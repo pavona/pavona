@@ -16,6 +16,7 @@ from reggen import (
     gen_rust, gen_sec_cm_testplan, gen_selfdoc, systemrdl_exporter, gen_tock, version,
 )
 from reggen.ip_block import IpBlock
+from topgen.lib import load_cfg, find_modules
 
 import version_file
 
@@ -127,6 +128,10 @@ def main():
 
                                   Format: ParamA=ValA;ParamB=ValB
                                   ''')
+    parser.add_argument("--top-override",
+                        type=Path,
+                        default=None,
+                        help="Override param values from a top level config.")
     parser.add_argument('--version',
                         '-V',
                         action='store_true',
@@ -191,15 +196,36 @@ def main():
 
     infile = args.input
 
+    params = []
+
+    # Override parameter defaults from a top level file
+    if args.top_override is not None:
+        block_name = load_cfg(Path(infile.name))["name"]
+        modules = find_modules(load_cfg(args.top_override)["module"],
+                               block_name)
+        if len(modules) == 0:
+            log.error(f'Unable to find any {block_name} blocks in'
+                      f' top config at {args.top_override}.')
+        elif len(modules) > 1:
+            log.error(f'Multiple {block_name} modules found in top level'
+                      ' override, unable to apply parameter values from top'
+                      ' config. Please manually pass in parameters with the'
+                      ' `-p` flag instead.')
+        else:
+            for param_name, value in modules[0]['param_decl'].items():
+                params.append((param_name, value))
+
     # Split parameters into key=value pairs.
     raw_params = args.param.split(';') if args.param else []
-    params = []
     for idx, raw_param in enumerate(raw_params):
         tokens = raw_param.split('=')
         if len(tokens) != 2:
             raise ValueError('Entry {} in list of parameter defaults to '
                              'apply is {!r}, which is not of the form '
                              'param=value.'.format(idx, raw_param))
+        elif tokens[0] in [pair[0] for pair in params]:
+            log.warning(f'Using manual input value {tokens[1]} for parameter'
+                        f' {tokens[0]} instead of top-level value.')
         params.append((tokens[0], tokens[1]))
 
     # Define either outfile or outdir (but not both), depending on the output

@@ -48,7 +48,8 @@ class Window:
 
     def __init__(self, name: str, desc: str, unusual: bool, byte_write: bool,
                  data_intg_passthru: bool, validbits: int, items: int,
-                 size_in_bytes: int, offset: int, swaccess: SWAccess):
+                 size_in_bytes: int, offset: int, swaccess: SWAccess,
+                 size_txt: str | None = None):
         assert 0 < validbits
         assert 0 < items <= size_in_bytes
 
@@ -62,6 +63,7 @@ class Window:
         self.size_in_bytes = size_in_bytes
         self.offset = offset
         self.swaccess = swaccess
+        self.size_txt = size_txt
 
         # Check that offset has been adjusted so that the first item in the
         # window has all zeros in the low bits.
@@ -106,6 +108,8 @@ class Window:
 
         assert reg_width % 8 == 0
         size_in_bytes = items * (reg_width // 8)
+        size_str = (None if r_items == str(items)
+                    else f'{r_items} * {reg_width // 8}')
 
         # Round size_in_bytes up to the next power of 2. The calculation is
         # like clog2 calculations in SystemVerilog, where we start with the
@@ -137,7 +141,8 @@ class Window:
                 'set the "unusual" flag.')
 
         return Window(name, desc, unusual, byte_write, data_intg_passthru,
-                      validbits, items, size_in_bytes, offset, swaccess)
+                      validbits, items, size_in_bytes, offset, swaccess,
+                      size_str)
 
     def next_offset(self, addrsep: int) -> int:
         return self.offset + self.size_in_bytes

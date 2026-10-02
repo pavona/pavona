@@ -788,7 +788,7 @@ package otp_ctrl_reg_pkg;
 
   // Window parameters for core interface
   parameter logic [CoreAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 12'h 800;
-  parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_SIZE   = 'h 800;
+  parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_SIZE   = NumSwCfgWindowWords * 4;
   parameter int unsigned       OTP_CTRL_SW_CFG_WINDOW_IDX    = 0;
 
   // Register index for core interface

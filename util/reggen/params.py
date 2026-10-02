@@ -62,6 +62,10 @@ class LocalParam(BaseParam):
         super().__init__(name, desc, param_type, unpacked_dimensions)
         self.value = value
 
+    def apply_default(self, value: str) -> None:
+        super().apply_default(value)
+        self.value = value  # value of local param is always its default
+
     def expand_value(self, when: str) -> int:
         try:
             return int(self.value, 0)
