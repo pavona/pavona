@@ -457,8 +457,8 @@ modexp_crt:
   bn.sub    w31, w31, w31, FG0
   bn.sub    w31, w31, w31, FG1
 
-  /* subtract C_p from C_q, conditionally adding the modulus if C_p > C_q
-       dmem[dptr_e_q..dptr_e_q+(N/2)*32] <= C_q - C_p mod p */
+  /* subtract C_p from C_q, conditionally adding the modulus if C_q > C_p
+       dmem[dptr_e_q..dptr_e_q+(N/2)*32] <= C_p - C_q mod p */
   addi       x11, x25, 0
   addi       x12, x26, 0
   addi       x13, x27, 0
