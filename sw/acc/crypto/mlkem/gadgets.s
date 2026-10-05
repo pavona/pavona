@@ -67,7 +67,7 @@
  * @param[in]  x16: share stride of r
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, w0 to w3, w5 to w8
+ * clobbered registers: x4 to x5, w0 to w7
  * clobbered flag groups: FG0
  */
 
@@ -2629,7 +2629,7 @@ _getnoise_common:
  * @param[in]     w17 to w22: the six digest words to bitslice
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: w0 to w15, w17 to w22, w28 to w29
+ * clobbered registers: x4, x10 to x11, w0 to w15, w17 to w22, w28 to w29
  * clobbered flag groups: FG0
  */
 
@@ -3670,7 +3670,7 @@ _skip_bit_10:
  * @param[in]     w31: all-zero register
  *
  * clobbered registers: x2, x4 to x6, x11 to x13, x15 to x16,
- *                      w0 to w3, w5 to w8
+ *                      w0 to w7
  * clobbered flag groups: FG0
  */
 

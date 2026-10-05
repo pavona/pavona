@@ -15,7 +15,7 @@
  * @param[in]     w0 to w15, w17 to w25: registers to be whitened
  * @param[in]     w31: all-zero register
  *
- * clobbered registers: w0 to w15, w17 to w25
+ * clobbered registers: w0 to w15, w17 to w25, acch, acc
  * clobbered flag groups: FG0
  */
 
