@@ -145,8 +145,8 @@ The basic structure of a register definition file is thus:
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the register.
 - <a id="properties/alias_target"></a>**`alias_target`** *(string)*: name of the register to apply the alias definition to.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the register. This field supports the markdown syntax.
-- <a id="properties/swaccess"></a>**`swaccess`** *(string)*: software access permission to use for fields that don't specify swaccess.
-- <a id="properties/hwaccess"></a>**`hwaccess`** *(string)*: hardware access permission to use for fields that don't specify hwaccess.
+- <a id="properties/swaccess"></a>**`swaccess`**: software access permission to use for fields that don't specify swaccess. Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
+- <a id="properties/hwaccess"></a>**`hwaccess`**: hardware access permission to use for fields that don't specify hwaccess. Refer to *[urn:reggen:hwaccess](#n%3Areggen%3Ahwaccess)*.
 - <a id="properties/regwen"></a>**`regwen`** *(string)*: if register is write-protected by another register, that
 register name should be given here. empty-string for no register
 write protection.
@@ -209,12 +209,12 @@ is wo. Must match if both are provided.
 should be automatically separated into 1-bit sub-fields.
 This flag is used as a hint for automatically generated
 software headers with register description.
-- <a id="properties/swaccess"></a>**`swaccess`** *(string)*: software access permission, copied from
+- <a id="properties/swaccess"></a>**`swaccess`**: software access permission, copied from
 register if not provided in field.
-(Tool adds if not provided.).
-- <a id="properties/hwaccess"></a>**`hwaccess`** *(string)*: hardware access permission, copied from
+(Tool adds if not provided.). Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
+- <a id="properties/hwaccess"></a>**`hwaccess`**: hardware access permission, copied from
 register if not provided in field.
-(Tool adds if not provided.).
+(Tool adds if not provided.). Refer to *[urn:reggen:hwaccess](#n%3Areggen%3Ahwaccess)*.
 - <a id="properties/hwqe"></a>**`hwqe`** *(boolean)*: "true" if hardware uses "q" enable signal,
 which is latched signal of software write pulse.
 Copied from register if not provided in field.
@@ -335,7 +335,7 @@ word of the window bits {regwidth-1:validbits} are unused and
 bits {validbits-1:0} are valid.
 - <a id="properties/unusual"></a>**`unusual`** *(boolean)*: True if window has unusual parameters
 (set to prevent Unusual: errors). Default: `false`.
-- <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: software access permitted.
+- <a id="properties/swaccess"></a>**`swaccess`**: software access permitted. Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
 - <a id="properties/data-intg-passthru"></a>**`data-intg-passthru`** *(boolean)*: True if the window has data integrity pass through. Default: `false`.
 - <a id="properties/byte-write"></a>**`byte-write`** *(boolean)*: True if byte writes are supported. Default: `false`.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the window.

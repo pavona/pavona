@@ -17,6 +17,7 @@ filegroup(
         "enum_entry.hjson",
         "feature.hjson",
         "field.hjson",
+        "hwaccess.hjson",
         "inter_signal.hjson",
         "interrupt.hjson",
         "ip_block.hjson",
@@ -25,6 +26,7 @@ filegroup(
         "register.hjson",
         "revision.hjson",
         "signal.hjson",
+        "swaccess.hjson",
         "window.hjson",
     ],
 )

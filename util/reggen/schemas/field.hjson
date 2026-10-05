@@ -42,14 +42,14 @@
 
     // field access
     swaccess: {
-      type: "string",
+      $ref: "urn:reggen:swaccess",
       description: '''software access permission, copied from
                    register if not provided in field.
                    (Tool adds if not provided.)
                    '''
     },
     hwaccess: {
-      type: "string",
+      $ref: "urn:reggen:hwaccess",
       description: '''hardware access permission, copied from
                    register if not provided in field.
                    (Tool adds if not provided.)

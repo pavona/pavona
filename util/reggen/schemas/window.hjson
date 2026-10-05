@@ -26,7 +26,7 @@
                    '''
       default: false
     },
-    swaccess: { type: "string", description: "software access permitted" },
+    swaccess: { $ref: "urn:reggen:swaccess", description: "software access permitted" },
     data-intg-passthru: {
       type: "boolean",
       description: "True if the window has data integrity pass through.",

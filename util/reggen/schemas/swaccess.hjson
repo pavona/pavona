@@ -1,0 +1,12 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:swaccess",
+  title: "SW Access",
+  description: "Software access permissions",
+  type: "string",
+  enum: ["none", "ro", "rc", "rw", "wo",
+         "r0w1c", "rw1s", "rw1c", "rw0c"]
+}

@@ -19,11 +19,11 @@
 
     // register access
     swaccess: {
-      type: "string",
+      $ref: "urn:reggen:swaccess",
       description: "software access permission to use for fields that don't specify swaccess"
     },
     hwaccess: {
-      type: "string",
+      $ref: "urn:reggen:hwaccess",
       description: "hardware access permission to use for fields that don't specify hwaccess"
     },
     regwen: {
