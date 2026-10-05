@@ -805,8 +805,8 @@ _continue:
   /* The first share of r is (1 << N) - 1. The other shares are 0. */
   bn.subi w0, w31, 1
   bn.sid  x0, 0(x2)
-  bn.xor  w0, w31, w31
-  bn.sid  x0, 32(x2)
+  addi    x4, x0, 31
+  bn.sid  x4, 32(x2)
 
   /*** Step 1: kpoly = masked_poly_frommsg(m). ***/
   /* x10 already points to m. */
@@ -837,8 +837,8 @@ _continue_compute_v:
   /* Prepare for initial `poly_getnoise_eta_1` call: generate sp. */
   add    x10, x18, x0
   la     x11, nonce
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x11)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x11)
   jal    x1, masked_poly_getnoise_eta_init
 
   /* Unpack ek_pke[0]. */
@@ -1088,8 +1088,8 @@ _handle_k2_compute_v:
   /* Prepare for generating at[0][0]. */
   add    x10, x9, x0
   la     x11, seed_ij
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x11)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Compare v and c[k * cu :]. Output to r. */

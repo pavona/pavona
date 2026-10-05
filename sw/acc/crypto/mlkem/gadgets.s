@@ -289,9 +289,9 @@ secadd:
   sw   x8, 64(x2)
 
   /* Initialize c = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x2)
-  bn.sid x0, 32(x2)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x2)
+  bn.sid x4, 32(x2)
 
   /* Ripple-carry adder. */
   addi x8, x17, -1
@@ -985,7 +985,7 @@ seca2b:
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x6++)
   endloop
-  bn.xor w0, w31, w31
+  bn.xor w0, w31, w31 /* Whitening. */
   loop x11, 1
     bn.sid x0, 0(x6++)
   endloop
@@ -1144,7 +1144,7 @@ seca2bmodq:
     bn.lid x0, 0(x10++)
     bn.sid x0, 0(x5++)
   endloop
-  bn.xor w0, w31, w31
+  bn.xor w0, w31, w31 /* Whitening. */
   bn.sid x0, 0(x5++)
 
   /********** Start inline u = secadd(s, s', k + 1). **********/
@@ -1195,9 +1195,9 @@ seca2bmodq:
 
   /********** Start inline r = secadd(a, u, k). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 832(x2)
-  bn.sid x0, 864(x2)
+  addi   x4, x0, 31
+  bn.sid x4, 832(x2)
+  bn.sid x4, 864(x2)
 
   add  x10, x2, x0
   addi x11, x0, 384
@@ -1282,7 +1282,7 @@ seconebitb2amodq:
     bn.sid x0, 0(x5++)
   endloop
 
-  bn.xor w0, w31, w31
+  bn.xor w0, w31, w31 /* Whitening. */
   loopi 16, 1
     bn.sid x0, 0(x5++)
   endloop
@@ -1428,9 +1428,9 @@ secb2amodq:
   add    x11, x8, x0  /* zp (bitsliced) */
   jal    x1, poly_to_bitsliced
   addi   x11, x11, 384
-  bn.xor w0, w31, w31
+  addi   x4, x0, 31
   loopi 12, 1
-    bn.sid x0, 0(x11++)
+    bn.sid x4, 0(x11++)
   endloop
 
   /* Compute a = seca2bmodq(zp). */
@@ -1442,9 +1442,9 @@ secb2amodq:
   /********** Start inline b = secaddmodq(a, x). **********/
   /********** Start inline s = secadd(a, x, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 384(x9)
-  bn.sid x0, 800(x9)
+  addi   x4, x0, 31
+  bn.sid x4, 384(x9)
+  bn.sid x4, 800(x9)
 
   add  x10, x8, x0
   addi x11, x0, 384
@@ -1468,11 +1468,11 @@ secb2amodq:
 
   /********** Start inline s = secadd(s, p = 2^(k + 1) - q, k + 1). **********/
   /* Initialize c = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 32(x2)
-  bn.sid x0, 64(x2)
+  addi   x4, x0, 31
+  bn.sid x4, 32(x2)
+  bn.sid x4, 64(x2)
 
-  bn.sid  x0, 128(x2)
+  bn.sid  x4, 128(x2)
   bn.subi w0, w31, 1
   bn.sid  x0, 96(x2)
 
@@ -1494,8 +1494,8 @@ secb2amodq:
     addi x15, x15, 32
   endloop
   /* Bit 8: p[i] = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x10)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x10)
   jal    x1, secfulladder
   addi   x12, x12, 32
   addi   x15, x15, 32
@@ -1506,8 +1506,8 @@ secb2amodq:
   addi    x12, x12, 32
   addi    x15, x15, 32
   /* Bits 10..11: p[i] = 0. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x10)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x10)
   jal    x1, secfulladder
   addi   x12, x12, 32
   addi   x15, x15, 32
@@ -2171,9 +2171,9 @@ masked_cbd:
    */
   /********** Iteration i = 0, ell = 2 * eta. **********/
   /* Since ell mod 2 = 0, we clear a. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x9)
-  bn.sid x0, 32(x9)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x9)
+  bn.sid x4, 32(x9)
 
   /* Loop j = 0..eta - 1. */
   /* Compute (a, s[j]) = secfulladder(s[2 * j], s[2 * j + 1], a). */
@@ -2223,9 +2223,9 @@ masked_cbd:
 
 _cbd_eta_2:
   /* Since ell mod 2 = 0 if eta = 2, we clear a. */
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x9)
-  bn.sid x0, 32(x9)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x9)
+  bn.sid x4, 32(x9)
 
 _continue_1:
   /* Loop j = 0. */
@@ -2268,11 +2268,11 @@ _continue_1:
   endloop
 
   /* Clear bits b[3..k - 1]. */
-  bn.xor w0, w31, w31
+  addi   x4, x0, 31
   addi   x5, x2, 96
   loopi 2, 3
     loopi 9, 1
-      bn.sid x0, 0(x5++)
+      bn.sid x4, 0(x5++)
     endloop
     addi x5, x5, 96
   endloop

@@ -459,13 +459,12 @@ _continue:
   addi    x5, x0, 1
   csrrw   x0, kmac_partial_write, x5
   la      x5, buf
-  bn.xor  w0, w31, w31
-  bn.sid  x0, 0(x5)
+  addi    x4, x0, 31
+  bn.sid  x4, 0(x5)
   sw      x13, 0(x5)
   bn.lid  x0, 0(x5)
   bn.wsrw kmac_msg, w0
-  bn.xor  w0, w31, w31
-  bn.wsrw kmac_msg1, w0
+  bn.wsrw kmac_msg1, w31
   /* Retrieve publicseed. */
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
@@ -487,8 +486,8 @@ _continue:
   /**************************************************************************/
   la     x8, buf
   la     x21, nonce
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x21)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x21)
   /* Prepare for generating sk[0]. */
   addi   x10, x8, 32
   add    x11, x21, x0
@@ -559,8 +558,8 @@ _continue:
   /* Prepare for generating a[0][0]. */
   add    x10, x8, x0
   la     x11, seed_ij
-  bn.xor w0, w31, w31
-  bn.sid x0, 0(x11)
+  addi   x4, x0, 31
+  bn.sid x4, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Pack dk_pke[k - 1] <- sk[k - 1]. */
