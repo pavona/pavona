@@ -24,11 +24,11 @@ module xbar_main_bind;
     .h2d    (tl_rv_dm__sba_i),
     .d2h    (tl_rv_dm__sba_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_dma__host (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_dma__host32_0 (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_dma__host_i),
-    .d2h    (tl_dma__host_o)
+    .h2d    (tl_dma__host32_0_i),
+    .d2h    (tl_dma__host32_0_o)
   );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_mbx0__sram (
     .clk_i  (clk_main_i),

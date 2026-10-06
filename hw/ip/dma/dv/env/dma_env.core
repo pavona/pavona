@@ -10,15 +10,28 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:cryptoc_dpi:0.1
+      - lowrisc:dv:aes_model_dpi
+      # The wide host64 transactor references `dma_tlul_pkg` from the DMA RTL.
+      - lowrisc:ip:dma_pkg:0.1
     files:
       - dma_env_pkg.sv
       - dma_if.sv
-      - dma_sys_tl_if.sv
+      # Wide (64-bit) TileLink interface for the host64 SoC System port (compiled at TB level).
+      - dma_tl_if.sv
       - dma_handshake_mode_fifo.sv: {is_include_file: true}
+      - dma_tl_seq_item.sv: {is_include_file: true}
+      - dma_tl_agent_cfg.sv: {is_include_file: true}
+      - dma_tl_monitor.sv: {is_include_file: true}
+      - dma_tl_device_driver.sv: {is_include_file: true}
+      - dma_tl_sequencer.sv: {is_include_file: true}
+      - dma_tl_agent.sv: {is_include_file: true}
+      - dma_tl_device_seq.sv: {is_include_file: true}
       - dma_env_cfg.sv: {is_include_file: true}
       - dma_env_cov.sv: {is_include_file: true}
       - dma_virtual_sequencer.sv: {is_include_file: true}
       - dma_pull_seq.sv: {is_include_file: true}
+      - dma_aes_kat.svh: {is_include_file: true}
+      - dma_aes_pred.svh: {is_include_file: true}
       - dma_seq_item.sv: {is_include_file: true}
       - dma_scoreboard.sv: {is_include_file: true}
       - dma_env.sv: {is_include_file: true}
@@ -37,6 +50,20 @@ filesets:
       - seq_lib/dma_longer_transfer_vseq.sv: {is_include_file: true}
       - seq_lib/dma_config_lock_vseq.sv: {is_include_file: true}
       - seq_lib/dma_mem_enabled_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_hashing_partial_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_overlap_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_memset_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_partial_size_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_range_partial_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_verify_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_fifo_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_error_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_abort_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_clear_mid_commit_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_abort_drain_vseq.sv: {is_include_file: true}
+      - seq_lib/dma_aes_bus_err_vseq.sv: {is_include_file: true}
       - seq_lib/dma_generic_stress_vseq.sv: {is_include_file: true}
       - seq_lib/dma_memory_stress_vseq.sv: {is_include_file: true}
       - seq_lib/dma_handshake_stress_vseq.sv: {is_include_file: true}

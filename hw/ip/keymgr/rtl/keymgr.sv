@@ -608,6 +608,7 @@ module keymgr
     .prng_en_o(sideload_lfsr_en),
     .aes_key_o,
     .acc_key_o,
+    .dma_key_o(),  // keymgr (non-DPE) has no DMA sideload destination
     .kmac_key_o,
     .sideload_sel_err_o(sideload_sel_err),
     .fsm_err_o(sideload_fsm_err)

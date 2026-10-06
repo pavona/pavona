@@ -59,6 +59,12 @@
       act:     "req",
       package: "keymgr_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "hw_key_req",  // dma_key_req_t
+      type:    "uni",
+      name:    "dma_key",     // dma_key_o (req)
+      act:     "req",
+      package: "keymgr_pkg",  // Origin package (only needs for the requester)
+    },
     { struct:  "hw_key_req",  // kmac_key_req_t
       type:    "uni",
       name:    "kmac_key",    // kmac_key_o (req)
@@ -181,6 +187,13 @@
 
     { name:      "RndCnstAccSeed",
       desc:      "Compile-time random bits for generation seed when acc destination selected",
+      type:      "keymgr_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
+    { name:      "RndCnstDmaSeed",
+      desc:      "Compile-time random bits for generation seed when dma destination selected",
       type:      "keymgr_pkg::seed_t"
       randcount: "256",
       randtype:  "data",
@@ -474,7 +487,7 @@ countermeasures: [
           ],
         },
 
-        { bits: "13:12",
+        { bits: "14:12",
           name: "DEST_SEL",
           desc: '''
             When the OPERATION field is programmed to generate output, this field selects
@@ -512,10 +525,16 @@ countermeasures: [
                 When generating for software, this is not a concern.
                 '''
             },
+            { value: "4",
+              name: "DMA",
+              desc: '''
+                DMA selected
+                '''
+            },
           ]
         },
 
-        { bits: "16:14",
+        { bits: "17:15",
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
@@ -523,7 +542,7 @@ countermeasures: [
           '''
         },
 
-        { bits: "20:18",
+        { bits: "21:19",
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
@@ -531,7 +550,7 @@ countermeasures: [
           '''
         },
         {
-          bits: "22"
+          bits: "23"
           name: "SW_BINDING_ONLY"
           resval: "0"
           desc: '''
@@ -579,6 +598,12 @@ countermeasures: [
               name: "ACC",
               desc: '''
                 The ACC sideload key is continuously cleared with entropy.
+                '''
+            },
+            { value: "4",
+              name: "DMA",
+              desc: '''
+                The DMA sideload key is continuously cleared with entropy.
                 '''
             },
           ]

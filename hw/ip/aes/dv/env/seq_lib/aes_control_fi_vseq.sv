@@ -85,10 +85,16 @@ class aes_control_fi_vseq extends aes_base_vseq;
                             fi_walk_id, if_num, target, await_state.name()),
                   UVM_LOW)
             end
-            if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+            if (await_state inside {aes_pkg::CTRL_GHASH_READY, aes_pkg::CTRL_CLEAR_I,
                                           aes_pkg::CTRL_CLEAR_CO}) begin
-              // The PRNG Update and Clear states are entered for ~1 cycle by clear_regs() during
-              // the multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at
+              // The GHASH Ready state and the Clear states are difficult to hit with a random
+              // delay.  This writes the clear register to bring the FSM to the GHASH Ready and then
+              // the Clear states, and it waits until the FSM has reached the required state.
+              clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
+              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+            end else if (await_state == aes_pkg::CTRL_PRNG_UPDATE) begin
+              // The PRNG Update state is entered for ~1 cycle by clear_regs() during the
+              // multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at
               // state entry.
               sample_fi_cg_at_state(AesFiCgControl, await_state, target, AesFiCgClearRegs,
                                      if_num,

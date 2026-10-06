@@ -1,0 +1,19 @@
+// Copyright Pavona contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Sequencer for the wide (64-bit) DMA host64 TileLink agent. Carries the A-channel
+// request FIFO that the device response sequence drains. Items are `tl_seq_item`.
+class dma_tl_sequencer extends dv_base_sequencer#(tl_seq_item, dma_tl_agent_cfg);
+  `uvm_component_utils(dma_tl_sequencer)
+
+  uvm_tlm_analysis_fifo#(tl_seq_item) a_chan_req_fifo;
+
+  `uvm_component_new
+
+  function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    a_chan_req_fifo = new("a_chan_req_fifo", this);
+  endfunction : build_phase
+
+endclass : dma_tl_sequencer

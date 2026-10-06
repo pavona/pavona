@@ -289,29 +289,64 @@ TEST_F(HandshakeTest, DisableBadArg) {
 }
 
 // DMA start tests
-class StartTest
-    : public DmaTestInitialized,
-      public testing::WithParamInterface<dif_dma_transaction_opcode_t> {};
+//
+// Each operation selector decodes into the orthogonal CONTROL fields
+// (read_en, write_en, digest); the test asserts the exact CONTROL write.
+typedef struct start_op {
+  dif_dma_transaction_opcode_t opcode;
+  bool read_en;
+  bool write_en;
+  uint32_t digest;
+  // Inline-AES CONTROL fields; default to Off/CTR for the non-AES selectors.
+  uint32_t aes_op;
+  bool aes_gcm;
+} start_op_t;
+
+class StartTest : public DmaTestInitialized,
+                  public testing::WithParamInterface<start_op_t> {};
 
 TEST_P(StartTest, Success) {
-  dif_dma_transaction_opcode_t opcode = GetParam();
+  start_op_t op = GetParam();
   EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
                 {{DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true}});
   EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
                  {
-                     {DMA_CONTROL_OPCODE_OFFSET, opcode},
+                     {DMA_CONTROL_READ_EN_BIT, op.read_en},
+                     {DMA_CONTROL_WRITE_EN_BIT, op.write_en},
+                     {DMA_CONTROL_DIGEST_OFFSET, op.digest},
+                     {DMA_CONTROL_AES_OP_OFFSET, op.aes_op},
+                     {DMA_CONTROL_AES_MODE_BIT, op.aes_gcm},
                      {DMA_CONTROL_INITIAL_TRANSFER_BIT, true},
                      {DMA_CONTROL_GO_BIT, true},
                      {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
                  });
 
-  EXPECT_DIF_OK(dif_dma_start(&dma_, opcode));
+  EXPECT_DIF_OK(dif_dma_start(&dma_, op.opcode));
 }
 
 INSTANTIATE_TEST_SUITE_P(
     StartTest, StartTest,
-    testing::ValuesIn(std::vector<dif_dma_transaction_opcode_t>{{
-        kDifDmaCopyOpcode,
+    testing::ValuesIn(std::vector<start_op_t>{{
+        // Legacy copy/hash selectors map to (read_en=1, write_en=1, digest).
+        {kDifDmaCopyOpcode, true, true, DMA_CONTROL_DIGEST_VALUE_NONE},
+        {kDifDmaSha256Opcode, true, true, DMA_CONTROL_DIGEST_VALUE_SHA256},
+        {kDifDmaSha384Opcode, true, true, DMA_CONTROL_DIGEST_VALUE_SHA384},
+        {kDifDmaSha512Opcode, true, true, DMA_CONTROL_DIGEST_VALUE_SHA512},
+        // Memset: write only, fill pattern from SRC_ADDR_LO.
+        {kDifDmaMemsetOpcode, false, true, DMA_CONTROL_DIGEST_VALUE_NONE},
+        // Verify: read only, digest over source data.
+        {kDifDmaVerifySha256Opcode, true, false, DMA_CONTROL_DIGEST_VALUE_SHA256},
+        {kDifDmaVerifySha384Opcode, true, false, DMA_CONTROL_DIGEST_VALUE_SHA384},
+        {kDifDmaVerifySha512Opcode, true, false, DMA_CONTROL_DIGEST_VALUE_SHA512},
+        // Inline AES: copy with CONTROL.aes_op/aes_mode set.
+        {kDifDmaAesCtrEncOpcode, true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+         DMA_CONTROL_AES_OP_VALUE_ENC, false},
+        {kDifDmaAesCtrDecOpcode, true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+         DMA_CONTROL_AES_OP_VALUE_DEC, false},
+        {kDifDmaAesGcmEncOpcode, true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+         DMA_CONTROL_AES_OP_VALUE_ENC, true},
+        {kDifDmaAesGcmDecOpcode, true, true, DMA_CONTROL_DIGEST_VALUE_NONE,
+         DMA_CONTROL_AES_OP_VALUE_DEC, true},
     }}));
 
 TEST_F(StartTest, BadArg) {
@@ -463,7 +498,8 @@ class StatusClearTest : public DmaTestInitialized {};
 TEST_F(StatusClearTest, SetSuccess) {
   EXPECT_WRITE32(DMA_STATUS_REG_OFFSET,
                  1 << DMA_STATUS_DONE_BIT | 1 << DMA_STATUS_ABORTED_BIT |
-                     1 << DMA_STATUS_ERROR_BIT | 1 << DMA_STATUS_ERROR_BIT);
+                     1 << DMA_STATUS_ERROR_BIT |
+                     1 << DMA_STATUS_CHUNK_DONE_BIT);
 
   EXPECT_DIF_OK(dif_dma_status_clear(&dma_));
 }
@@ -555,12 +591,27 @@ TEST_F(GetDigestLenTest, Success) {
 
   EXPECT_DIF_OK(dif_dma_get_digest_length(kDifDmaSha512Opcode, &digest_len));
   EXPECT_EQ(digest_len, 16);
+
+  // Verify operations carry the same digest as their hash counterparts.
+  EXPECT_DIF_OK(
+      dif_dma_get_digest_length(kDifDmaVerifySha256Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 8);
+
+  EXPECT_DIF_OK(
+      dif_dma_get_digest_length(kDifDmaVerifySha384Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 12);
+
+  EXPECT_DIF_OK(
+      dif_dma_get_digest_length(kDifDmaVerifySha512Opcode, &digest_len));
+  EXPECT_EQ(digest_len, 16);
 }
 
 TEST_F(GetDigestLenTest, BadArg) {
   uint32_t digest_len;
   EXPECT_DIF_BADARG(dif_dma_get_digest_length(kDifDmaSha256Opcode, nullptr));
+  // Operations without a digest report no length.
   EXPECT_DIF_BADARG(dif_dma_get_digest_length(kDifDmaCopyOpcode, &digest_len));
+  EXPECT_DIF_BADARG(dif_dma_get_digest_length(kDifDmaMemsetOpcode, &digest_len));
 }
 
 typedef struct digest_reg {
@@ -638,13 +689,39 @@ TEST_F(HandshakeClearIrqTest, BadArg) {
 class HandshakeClearBusTest : public DmaTestInitialized {};
 
 TEST_F(HandshakeClearBusTest, Success) {
-  EXPECT_WRITE32(DMA_CLEAR_INTR_BUS_REG_OFFSET, 0x2);
-
-  EXPECT_DIF_OK(dif_dma_handshake_clear_irq_bus(&dma_, 0x2));
+  EXPECT_WRITE32(DMA_CLEAR_INTR_ASID_0_REG_OFFSET + 8, kDifDmaAsid15);
+  EXPECT_DIF_OK(dif_dma_handshake_clear_irq_asid(&dma_, 2, kDifDmaAsid15));
 }
 
 TEST_F(HandshakeClearBusTest, BadArg) {
-  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_bus(nullptr, 0x2));
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_asid(nullptr, 2, kDifDmaAsid0));
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_asid(
+      &dma_, DMA_PARAM_NUM_INT_CLEAR_SOURCES, kDifDmaAsid0));
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_asid(
+      &dma_, 0, static_cast<dif_dma_address_space_id_t>(0)));
+  EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_asid(
+      &dma_, 0, static_cast<dif_dma_address_space_id_t>(0xff)));
+}
+
+TEST_F(HandshakeClearBusTest, AllEncodingsAndSources) {
+  constexpr dif_dma_address_space_id_t ids[] = {
+      kDifDmaAsid0, kDifDmaAsid1, kDifDmaAsid2, kDifDmaAsid3,
+      kDifDmaAsid4, kDifDmaAsid5, kDifDmaAsid6, kDifDmaAsid7,
+      kDifDmaAsid8, kDifDmaAsid9, kDifDmaAsid10, kDifDmaAsid11,
+      kDifDmaAsid12, kDifDmaAsid13, kDifDmaAsid14, kDifDmaAsid15};
+  for (uint32_t source = 0; source < DMA_PARAM_NUM_INT_CLEAR_SOURCES; ++source) {
+    for (uint32_t value = 0; value < 256; ++value) {
+      bool valid = false;
+      for (auto id : ids) valid |= value == static_cast<uint32_t>(id);
+      auto asid = static_cast<dif_dma_address_space_id_t>(value);
+      if (valid) {
+        EXPECT_WRITE32(DMA_CLEAR_INTR_ASID_0_REG_OFFSET + 4 * source, value);
+        EXPECT_DIF_OK(dif_dma_handshake_clear_irq_asid(&dma_, source, asid));
+      } else {
+        EXPECT_DIF_BADARG(dif_dma_handshake_clear_irq_asid(&dma_, source, asid));
+      }
+    }
+  }
 }
 
 typedef struct dma_clear_irq_reg {
@@ -716,6 +793,164 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(HandshakeClearValueTest, BadArg) {
   EXPECT_DIF_BADARG(
       dif_dma_intr_write_value(nullptr, kDifDmaIntrClearIdx0, 0x4567));
+}
+
+// DMA inline-AES tests
+
+class AesConfigureTest : public DmaTestInitialized {};
+
+TEST_F(AesConfigureTest, Success) {
+  dif_dma_aes_config_t config = {kDifDmaAesKey192, true, kDifDmaAesReseedPer64,
+                                 3};
+  EXPECT_WRITE32(
+      DMA_AES_CTRL_REG_OFFSET,
+      {
+          {DMA_AES_CTRL_KEY_LEN_OFFSET, DMA_AES_CTRL_KEY_LEN_VALUE_AES_192},
+          {DMA_AES_CTRL_SIDELOAD_BIT, true},
+          {DMA_AES_CTRL_PRNG_RESEED_RATE_OFFSET,
+           DMA_AES_CTRL_PRNG_RESEED_RATE_VALUE_PER_64},
+          {DMA_AES_CTRL_AAD_BLOCKS_OFFSET, 3},
+      });
+  EXPECT_DIF_OK(dif_dma_aes_configure(&dma_, config));
+}
+
+TEST_F(AesConfigureTest, BadArg) {
+  dif_dma_aes_config_t config = {kDifDmaAesKey128, false, kDifDmaAesReseedPer1,
+                                 0};
+  EXPECT_DIF_BADARG(dif_dma_aes_configure(nullptr, config));
+}
+
+class AesKeyTest : public DmaTestInitialized {};
+
+TEST_F(AesKeyTest, Success) {
+  uint32_t share0[8];
+  uint32_t share1[8];
+  for (uint32_t i = 0; i < 8; ++i) {
+    share0[i] = 0xa0000000 + i;
+    share1[i] = 0xb0000000 + i;
+  }
+  // The DIF writes the two shares interleaved per index (share0[i], share1[i]).
+  for (uint32_t i = 0; i < DMA_KEY_SHARE0_MULTIREG_COUNT; ++i) {
+    EXPECT_WRITE32(DMA_KEY_SHARE0_0_REG_OFFSET +
+                       (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+                   share0[i]);
+    EXPECT_WRITE32(DMA_KEY_SHARE1_0_REG_OFFSET +
+                       (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+                   share1[i]);
+  }
+  EXPECT_DIF_OK(dif_dma_aes_key_set(&dma_, share0, share1));
+}
+
+TEST_F(AesKeyTest, BadArg) {
+  uint32_t key[8] = {0};
+  EXPECT_DIF_BADARG(dif_dma_aes_key_set(nullptr, key, key));
+  EXPECT_DIF_BADARG(dif_dma_aes_key_set(&dma_, nullptr, key));
+  EXPECT_DIF_BADARG(dif_dma_aes_key_set(&dma_, key, nullptr));
+}
+
+class AesIvTest : public DmaTestInitialized {};
+
+TEST_F(AesIvTest, Success) {
+  uint32_t iv[4] = {0x11111111, 0x22222222, 0x33333333, 0x44444444};
+  for (uint32_t i = 0; i < DMA_IV_MULTIREG_COUNT; ++i) {
+    EXPECT_WRITE32(
+        DMA_IV_0_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+        iv[i]);
+  }
+  EXPECT_DIF_OK(dif_dma_aes_iv_set(&dma_, iv));
+}
+
+TEST_F(AesIvTest, BadArg) {
+  uint32_t iv[4] = {0};
+  EXPECT_DIF_BADARG(dif_dma_aes_iv_set(nullptr, iv));
+  EXPECT_DIF_BADARG(dif_dma_aes_iv_set(&dma_, nullptr));
+}
+
+class AesAadTest : public DmaTestInitialized {};
+
+TEST_F(AesAadTest, Success) {
+  uint32_t aad[4] = {0xaaaa0000, 0xaaaa0001, 0xaaaa0002, 0xaaaa0003};
+  for (uint32_t i = 0; i < 4; ++i) {
+    EXPECT_WRITE32(
+        DMA_AAD_0_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+        aad[i]);
+  }
+  EXPECT_DIF_OK(dif_dma_aes_aad_set(&dma_, aad, 4));
+}
+
+TEST_F(AesAadTest, BadArg) {
+  uint32_t aad[4] = {0};
+  EXPECT_DIF_BADARG(dif_dma_aes_aad_set(nullptr, aad, 4));
+  EXPECT_DIF_BADARG(dif_dma_aes_aad_set(&dma_, nullptr, 4));
+  EXPECT_DIF_BADARG(
+      dif_dma_aes_aad_set(&dma_, aad, DMA_AAD_MULTIREG_COUNT + 1));
+}
+
+class AesTagInTest : public DmaTestInitialized {};
+
+TEST_F(AesTagInTest, Success) {
+  uint32_t tag[4] = {0x7a900000, 0x7a900001, 0x7a900002, 0x7a900003};
+  for (uint32_t i = 0; i < DMA_TAG_IN_MULTIREG_COUNT; ++i) {
+    EXPECT_WRITE32(
+        DMA_TAG_IN_0_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+        tag[i]);
+  }
+  EXPECT_DIF_OK(dif_dma_aes_tag_in_set(&dma_, tag));
+}
+
+TEST_F(AesTagInTest, BadArg) {
+  uint32_t tag[4] = {0};
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_in_set(nullptr, tag));
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_in_set(&dma_, nullptr));
+}
+
+class AesTagOutTest : public DmaTestInitialized {};
+
+TEST_F(AesTagOutTest, Success) {
+  uint32_t tag[4] = {0};
+  for (uint32_t i = 0; i < DMA_TAG_OUT_MULTIREG_COUNT; ++i) {
+    EXPECT_READ32(
+        DMA_TAG_OUT_0_REG_OFFSET + (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+        0xc0de0000 + i);
+  }
+  EXPECT_DIF_OK(dif_dma_aes_tag_out_get(&dma_, tag));
+  for (uint32_t i = 0; i < 4; ++i) {
+    EXPECT_EQ(tag[i], 0xc0de0000 + i);
+  }
+}
+
+TEST_F(AesTagOutTest, BadArg) {
+  uint32_t tag[4];
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_out_get(nullptr, tag));
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_out_get(&dma_, nullptr));
+}
+
+class AesTagStatusTest : public DmaTestInitialized {};
+
+TEST_F(AesTagStatusTest, ValidSet) {
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, {{DMA_STATUS_TAG_VALID_BIT, true}});
+  bool valid = false;
+  bool failed = true;
+  EXPECT_DIF_OK(dif_dma_aes_tag_status_get(&dma_, &valid, &failed));
+  EXPECT_TRUE(valid);
+  EXPECT_FALSE(failed);
+}
+
+TEST_F(AesTagStatusTest, FailedSet) {
+  EXPECT_READ32(DMA_STATUS_REG_OFFSET, {{DMA_STATUS_TAG_FAILED_BIT, true}});
+  bool valid = true;
+  bool failed = false;
+  EXPECT_DIF_OK(dif_dma_aes_tag_status_get(&dma_, &valid, &failed));
+  EXPECT_FALSE(valid);
+  EXPECT_TRUE(failed);
+}
+
+TEST_F(AesTagStatusTest, BadArg) {
+  bool valid;
+  bool failed;
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_status_get(nullptr, &valid, &failed));
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_status_get(&dma_, nullptr, &failed));
+  EXPECT_DIF_BADARG(dif_dma_aes_tag_status_get(&dma_, &valid, nullptr));
 }
 
 }  // namespace dif_dma_test

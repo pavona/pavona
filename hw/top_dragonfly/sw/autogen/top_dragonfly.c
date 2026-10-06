@@ -15,7 +15,7 @@
  * `top_dragonfly_alert_peripheral_t`.
  */
 const top_dragonfly_alert_peripheral_t
-    top_dragonfly_alert_for_peripheral[77] = {
+    top_dragonfly_alert_for_peripheral[78] = {
   [kTopDragonflyAlertIdUart0FatalFault] = kTopDragonflyAlertPeripheralUart0,
   [kTopDragonflyAlertIdGpioFatalFault] = kTopDragonflyAlertPeripheralGpio,
   [kTopDragonflyAlertIdSpiDeviceFatalFault] = kTopDragonflyAlertPeripheralSpiDevice,
@@ -63,6 +63,7 @@ const top_dragonfly_alert_peripheral_t
   [kTopDragonflyAlertIdRomCtrl0Fatal] = kTopDragonflyAlertPeripheralRomCtrl0,
   [kTopDragonflyAlertIdRomCtrl1Fatal] = kTopDragonflyAlertPeripheralRomCtrl1,
   [kTopDragonflyAlertIdDmaFatalFault] = kTopDragonflyAlertPeripheralDma,
+  [kTopDragonflyAlertIdDmaRecovFault] = kTopDragonflyAlertPeripheralDma,
   [kTopDragonflyAlertIdMbx0FatalFault] = kTopDragonflyAlertPeripheralMbx0,
   [kTopDragonflyAlertIdMbx0RecovFault] = kTopDragonflyAlertPeripheralMbx0,
   [kTopDragonflyAlertIdMbx1FatalFault] = kTopDragonflyAlertPeripheralMbx1,

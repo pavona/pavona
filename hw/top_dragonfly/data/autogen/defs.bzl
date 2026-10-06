@@ -128,6 +128,7 @@ DRAGONFLY_ALERTS = [
     "rom_ctrl0_fatal",
     "rom_ctrl1_fatal",
     "dma_fatal_fault",
+    "dma_recov_fault",
     "mbx0_fatal_fault",
     "mbx0_recov_fault",
     "mbx1_fatal_fault",

@@ -177,24 +177,24 @@ Other values are reserved.
 Key manager operation controls
 - Offset: `0x18`
 - Reset default: `0x10`
-- Reset mask: `0x5df070`
+- Reset mask: `0xbbf070`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "DEST_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SW_BINDING_ONLY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"bits": 4}, {"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "DEST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "SLOT_SRC_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SLOT_DST_SEL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "SW_BINDING_ONLY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                  |
 |:------:|:------:|:-------:|:------------------------------------------------------|
-| 31:23  |        |         | Reserved                                              |
-|   22   |   rw   |   0x0   | [SW_BINDING_ONLY](#control_shadowed--sw_binding_only) |
-|   21   |        |         | Reserved                                              |
-| 20:18  |   rw   |   0x0   | [SLOT_DST_SEL](#control_shadowed--slot_dst_sel)       |
-|   17   |        |         | Reserved                                              |
-| 16:14  |   rw   |   0x0   | [SLOT_SRC_SEL](#control_shadowed--slot_src_sel)       |
-| 13:12  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)               |
+| 31:24  |        |         | Reserved                                              |
+|   23   |   rw   |   0x0   | [SW_BINDING_ONLY](#control_shadowed--sw_binding_only) |
+|   22   |        |         | Reserved                                              |
+| 21:19  |   rw   |   0x0   | [SLOT_DST_SEL](#control_shadowed--slot_dst_sel)       |
+|   18   |        |         | Reserved                                              |
+| 17:15  |   rw   |   0x0   | [SLOT_SRC_SEL](#control_shadowed--slot_src_sel)       |
+| 14:12  |   rw   |   0x0   | [DEST_SEL](#control_shadowed--dest_sel)               |
 |  11:7  |        |         | Reserved                                              |
 |  6:4   |   rw   |   0x1   | [OPERATION](#control_shadowed--operation)             |
 |  3:0   |        |         | Reserved                                              |
@@ -220,7 +220,9 @@ This field should be programmed for both HW / SW generation, as this helps diver
 | 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                             |
 | 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                            |
 | 0x3     | ACC    | ACC selected.  Note for ACC hardware operations, the generated output is 384-bits, while for all other operations (including ACC software), it is 256-bits. Generating a hardware 384-bit seed directly for ACC sideload reduces some of the ACC code burden for entropy expansion. When generating for software, this is not a concern. |
+| 0x4     | DMA    | DMA selected                                                                                                                                                                                                                                                                                                                             |
 
+Other values are reserved.
 
 ### CONTROL_SHADOWED . OPERATION
 Key manager DPE operation selection
@@ -266,6 +268,7 @@ toggle the clear bit again (i.e. disable continuous clearing).
 | 0x1     | AES    | The AES sideload key is continuously cleared with entropy.  |
 | 0x2     | KMAC   | The KMAC sideload key is continuously cleared with entropy. |
 | 0x3     | ACC    | The ACC sideload key is continuously cleared with entropy.  |
+| 0x4     | DMA    | The DMA sideload key is continuously cleared with entropy.  |
 
 Other values are reserved.
 

@@ -289,10 +289,7 @@ module top_${top["name"]} #(
 ## Partial inter-module definition tie-off
   // define partial inter-module tie-off
 % for sig in unused_im_defs:
-<%
-  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
-%>\
-  % for idx in range(sig['end_idx'], width):
+  % for idx in lib.dangling_im_indices(sig):
   ${lib.im_defname(sig)} unused_${sig["signame"]}${idx};
   % endfor
 % endfor
@@ -300,18 +297,12 @@ module top_${top["name"]} #(
   // assign partial inter-module tie-off
 
 % for sig in unused_im_defs:
-<%
-  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
-%>\
-  % for idx in range(sig['end_idx'], width):
+  % for idx in lib.dangling_im_indices(sig):
   assign unused_${sig["signame"]}${idx} = ${sig["signame"]}[${idx}];
   % endfor
 % endfor
 % for sig in undriven_im_defs:
-<%
-  width = sig['width'].default if isinstance(sig['width'], Parameter) else sig['width']
-%>\
-  % for idx in range(sig['end_idx'], width):
+  % for idx in lib.dangling_im_indices(sig):
   assign ${sig["signame"]}[${idx}] = ${sig["default"]};
   % endfor
 % endfor

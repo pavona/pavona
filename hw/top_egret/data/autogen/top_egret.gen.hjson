@@ -7504,10 +7504,19 @@
           name_top: AesAES192Enable
         }
         {
+          name: AESGCMEnable
+          desc: Disable (0) or enable (1) support for Galois/Counter Mode (GCM) in hardware.
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: AesAESGCMEnable
+        }
+        {
           name: SecMasking
           desc:
             '''
-            Disable (0) or enable (1) first-order masking of the AES cipher core.
+            Disable (0) or enable (1) first-order masking of the AES cipher core and the GHASH operation of GCM.
             Masking requires the use of a masked S-Box, see SecSBoxImpl parameter.
             '''
           type: bit
@@ -7580,6 +7589,24 @@
           default: ""
           top_signame: clkmgr_aon_idle
           index: 1
+        }
+        {
+          name: output_valid
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: aes
+          index: -1
+        }
+        {
+          name: input_ready
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: aes
+          index: -1
         }
         {
           name: lc_escalate_en
@@ -23699,6 +23726,24 @@
         default: ""
         top_signame: clkmgr_aon_idle
         index: 1
+      }
+      {
+        name: output_valid
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: aes
+        index: -1
+      }
+      {
+        name: input_ready
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: aes
+        index: -1
       }
       {
         name: lc_escalate_en

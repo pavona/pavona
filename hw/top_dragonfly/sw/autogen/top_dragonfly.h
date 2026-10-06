@@ -657,7 +657,7 @@ extern "C" {
  * address between #TOP_DRAGONFLY_DMA_BASE_ADDR and
  * `TOP_DRAGONFLY_DMA_BASE_ADDR + TOP_DRAGONFLY_DMA_SIZE_BYTES`.
  */
-#define TOP_DRAGONFLY_DMA_SIZE_BYTES 0x200u
+#define TOP_DRAGONFLY_DMA_SIZE_BYTES 0x400u
 
 /**
  * Peripheral base address for core device on mbx0 in top dragonfly.
@@ -1262,37 +1262,38 @@ typedef enum top_dragonfly_alert_id {
   kTopDragonflyAlertIdRomCtrl0Fatal = 44, /**< rom_ctrl0_fatal */
   kTopDragonflyAlertIdRomCtrl1Fatal = 45, /**< rom_ctrl1_fatal */
   kTopDragonflyAlertIdDmaFatalFault = 46, /**< dma_fatal_fault */
-  kTopDragonflyAlertIdMbx0FatalFault = 47, /**< mbx0_fatal_fault */
-  kTopDragonflyAlertIdMbx0RecovFault = 48, /**< mbx0_recov_fault */
-  kTopDragonflyAlertIdMbx1FatalFault = 49, /**< mbx1_fatal_fault */
-  kTopDragonflyAlertIdMbx1RecovFault = 50, /**< mbx1_recov_fault */
-  kTopDragonflyAlertIdMbx2FatalFault = 51, /**< mbx2_fatal_fault */
-  kTopDragonflyAlertIdMbx2RecovFault = 52, /**< mbx2_recov_fault */
-  kTopDragonflyAlertIdMbx3FatalFault = 53, /**< mbx3_fatal_fault */
-  kTopDragonflyAlertIdMbx3RecovFault = 54, /**< mbx3_recov_fault */
-  kTopDragonflyAlertIdMbx4FatalFault = 55, /**< mbx4_fatal_fault */
-  kTopDragonflyAlertIdMbx4RecovFault = 56, /**< mbx4_recov_fault */
-  kTopDragonflyAlertIdMbx5FatalFault = 57, /**< mbx5_fatal_fault */
-  kTopDragonflyAlertIdMbx5RecovFault = 58, /**< mbx5_recov_fault */
-  kTopDragonflyAlertIdMbx6FatalFault = 59, /**< mbx6_fatal_fault */
-  kTopDragonflyAlertIdMbx6RecovFault = 60, /**< mbx6_recov_fault */
-  kTopDragonflyAlertIdMbxJtagFatalFault = 61, /**< mbx_jtag_fatal_fault */
-  kTopDragonflyAlertIdMbxJtagRecovFault = 62, /**< mbx_jtag_recov_fault */
-  kTopDragonflyAlertIdMbxPcie0FatalFault = 63, /**< mbx_pcie0_fatal_fault */
-  kTopDragonflyAlertIdMbxPcie0RecovFault = 64, /**< mbx_pcie0_recov_fault */
-  kTopDragonflyAlertIdMbxPcie1FatalFault = 65, /**< mbx_pcie1_fatal_fault */
-  kTopDragonflyAlertIdMbxPcie1RecovFault = 66, /**< mbx_pcie1_recov_fault */
-  kTopDragonflyAlertIdSocDbgCtrlFatalFault = 67, /**< soc_dbg_ctrl_fatal_fault */
-  kTopDragonflyAlertIdSocDbgCtrlRecovCtrlUpdateErr = 68, /**< soc_dbg_ctrl_recov_ctrl_update_err */
-  kTopDragonflyAlertIdRaclCtrlFatalFault = 69, /**< racl_ctrl_fatal_fault */
-  kTopDragonflyAlertIdRaclCtrlRecovCtrlUpdateErr = 70, /**< racl_ctrl_recov_ctrl_update_err */
-  kTopDragonflyAlertIdAcRangeCheckRecovCtrlUpdateErr = 71, /**< ac_range_check_recov_ctrl_update_err */
-  kTopDragonflyAlertIdAcRangeCheckFatalFault = 72, /**< ac_range_check_fatal_fault */
-  kTopDragonflyAlertIdRvCoreIbexFatalSwErr = 73, /**< rv_core_ibex_fatal_sw_err */
-  kTopDragonflyAlertIdRvCoreIbexRecovSwErr = 74, /**< rv_core_ibex_recov_sw_err */
-  kTopDragonflyAlertIdRvCoreIbexFatalHwErr = 75, /**< rv_core_ibex_fatal_hw_err */
-  kTopDragonflyAlertIdRvCoreIbexRecovHwErr = 76, /**< rv_core_ibex_recov_hw_err */
-  kTopDragonflyAlertIdLast = 76, /**< \internal The Last Valid Alert ID. */
+  kTopDragonflyAlertIdDmaRecovFault = 47, /**< dma_recov_fault */
+  kTopDragonflyAlertIdMbx0FatalFault = 48, /**< mbx0_fatal_fault */
+  kTopDragonflyAlertIdMbx0RecovFault = 49, /**< mbx0_recov_fault */
+  kTopDragonflyAlertIdMbx1FatalFault = 50, /**< mbx1_fatal_fault */
+  kTopDragonflyAlertIdMbx1RecovFault = 51, /**< mbx1_recov_fault */
+  kTopDragonflyAlertIdMbx2FatalFault = 52, /**< mbx2_fatal_fault */
+  kTopDragonflyAlertIdMbx2RecovFault = 53, /**< mbx2_recov_fault */
+  kTopDragonflyAlertIdMbx3FatalFault = 54, /**< mbx3_fatal_fault */
+  kTopDragonflyAlertIdMbx3RecovFault = 55, /**< mbx3_recov_fault */
+  kTopDragonflyAlertIdMbx4FatalFault = 56, /**< mbx4_fatal_fault */
+  kTopDragonflyAlertIdMbx4RecovFault = 57, /**< mbx4_recov_fault */
+  kTopDragonflyAlertIdMbx5FatalFault = 58, /**< mbx5_fatal_fault */
+  kTopDragonflyAlertIdMbx5RecovFault = 59, /**< mbx5_recov_fault */
+  kTopDragonflyAlertIdMbx6FatalFault = 60, /**< mbx6_fatal_fault */
+  kTopDragonflyAlertIdMbx6RecovFault = 61, /**< mbx6_recov_fault */
+  kTopDragonflyAlertIdMbxJtagFatalFault = 62, /**< mbx_jtag_fatal_fault */
+  kTopDragonflyAlertIdMbxJtagRecovFault = 63, /**< mbx_jtag_recov_fault */
+  kTopDragonflyAlertIdMbxPcie0FatalFault = 64, /**< mbx_pcie0_fatal_fault */
+  kTopDragonflyAlertIdMbxPcie0RecovFault = 65, /**< mbx_pcie0_recov_fault */
+  kTopDragonflyAlertIdMbxPcie1FatalFault = 66, /**< mbx_pcie1_fatal_fault */
+  kTopDragonflyAlertIdMbxPcie1RecovFault = 67, /**< mbx_pcie1_recov_fault */
+  kTopDragonflyAlertIdSocDbgCtrlFatalFault = 68, /**< soc_dbg_ctrl_fatal_fault */
+  kTopDragonflyAlertIdSocDbgCtrlRecovCtrlUpdateErr = 69, /**< soc_dbg_ctrl_recov_ctrl_update_err */
+  kTopDragonflyAlertIdRaclCtrlFatalFault = 70, /**< racl_ctrl_fatal_fault */
+  kTopDragonflyAlertIdRaclCtrlRecovCtrlUpdateErr = 71, /**< racl_ctrl_recov_ctrl_update_err */
+  kTopDragonflyAlertIdAcRangeCheckRecovCtrlUpdateErr = 72, /**< ac_range_check_recov_ctrl_update_err */
+  kTopDragonflyAlertIdAcRangeCheckFatalFault = 73, /**< ac_range_check_fatal_fault */
+  kTopDragonflyAlertIdRvCoreIbexFatalSwErr = 74, /**< rv_core_ibex_fatal_sw_err */
+  kTopDragonflyAlertIdRvCoreIbexRecovSwErr = 75, /**< rv_core_ibex_recov_sw_err */
+  kTopDragonflyAlertIdRvCoreIbexFatalHwErr = 76, /**< rv_core_ibex_fatal_hw_err */
+  kTopDragonflyAlertIdRvCoreIbexRecovHwErr = 77, /**< rv_core_ibex_recov_hw_err */
+  kTopDragonflyAlertIdLast = 77, /**< \internal The Last Valid Alert ID. */
 } top_dragonfly_alert_id_t;
 
 /**
@@ -1302,7 +1303,7 @@ typedef enum top_dragonfly_alert_id {
  * `top_dragonfly_alert_peripheral_t`.
  */
 extern const top_dragonfly_alert_peripheral_t
-    top_dragonfly_alert_for_peripheral[77];
+    top_dragonfly_alert_for_peripheral[78];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

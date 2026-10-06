@@ -20,7 +20,7 @@ initial force dut.rst_fixed_ni = rst_n;
 `CONNECT_TL_HOST_IF(rv_core_ibex__corei, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(rv_core_ibex__cored, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(rv_dm__sba, dut, clk_main_i, rst_n)
-`CONNECT_TL_HOST_IF(dma__host, dut, clk_main_i, rst_n)
+`CONNECT_TL_HOST_IF(dma__host32_0, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx0__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx1__sram, dut, clk_main_i, rst_n)
 `CONNECT_TL_HOST_IF(mbx2__sram, dut, clk_main_i, rst_n)

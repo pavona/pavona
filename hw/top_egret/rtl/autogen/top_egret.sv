@@ -84,6 +84,7 @@ module top_egret #(
   parameter bit SecAccSkipUrndReseedAtStart = 0,
   parameter bit AccAccPQCEn = 0,
   // parameters for aes
+  parameter bit AesAESGCMEnable = 1'b1,
   parameter bit SecAesMasking = 1,
   parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
@@ -2494,6 +2495,7 @@ module top_egret #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[45:44]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(AesAESGCMEnable),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
@@ -2512,6 +2514,8 @@ module top_egret #(
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[1]),
+      .output_valid_o(),
+      .input_ready_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[5]),
       .edn_i(edn0_edn_rsp[5]),
