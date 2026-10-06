@@ -199,18 +199,29 @@ attestation_endorse:
        dmem[r], dmem[s] <= signature */
   jal      x1, p256_sign
 
-  /* Clear the saved key by overwriting with random data.
-       dmem[d0], dmem[d1] <= RND */
+  /* Clear the saved key and random scalar k by overwriting with random data.
+       dmem[d0], dmem[d1] <= URND
+       dmem[k0], dmem[k1] <= URND */
   li        x20, 20
   la        x2, d0
-  bn.wsrr   w20, RND
+  bn.wsrr   w20, URND
   bn.sid    x20, 0(x2++)
-  bn.wsrr   w20, RND
+  bn.wsrr   w20, URND
   bn.sid    x20, 0(x2)
   la        x2, d1
-  bn.wsrr   w20, RND
+  bn.wsrr   w20, URND
   bn.sid    x20, 0(x2++)
-  bn.wsrr   w20, RND
+  bn.wsrr   w20, URND
+  bn.sid    x20, 0(x2)
+  la        x2, k0
+  bn.wsrr   w20, URND
+  bn.sid    x20, 0(x2++)
+  bn.wsrr   w20, URND
+  bn.sid    x20, 0(x2)
+  la        x2, k1
+  bn.wsrr   w20, URND
+  bn.sid    x20, 0(x2++)
+  bn.wsrr   w20, URND
   bn.sid    x20, 0(x2)
 
   ecall
