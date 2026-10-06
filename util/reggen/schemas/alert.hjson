@@ -8,6 +8,7 @@
   description: "Alert description",
   type: "object",
   required: ["name", "desc"],
+  additionalProperties: false,
   properties: {
     name: { type: "string" },
     desc: { type: "string" },

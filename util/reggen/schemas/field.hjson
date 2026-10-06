@@ -8,6 +8,7 @@
   description: "Register field",
   type: "object",
   required: ["bits"]
+  additionalProperties: false,
   properties: {
     // basic properties
     name: { type: "string", description: "name of the field" },

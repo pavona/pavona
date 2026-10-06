@@ -8,6 +8,7 @@
   description: "Register aliasing configuration",
   type: "object",
   required: ["alias_impl", "alias_target", "registers", "bus_interfaces"]
+  additionalProperties: false,
   properties: {
     alias_impl: { type: "string", description: "identifier for this alias implementation" },
     alias_target: { type: "string", description: "name of the component to apply the alias file to" },

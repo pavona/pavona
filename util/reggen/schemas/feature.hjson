@@ -8,6 +8,7 @@
   description: "A feature of a given IP block",
   type: "object",
   required: ["name", "desc"]
+  additionalProperties: false,
   properties: {
     name: { type: "string" }
     desc: { type: "string" }

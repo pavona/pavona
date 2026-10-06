@@ -8,6 +8,7 @@
   description: "Reserved window of memory/address space",
   type: "object",
   required: ["name", "desc", "items", "swaccess"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "name of the window" },
     items: { type: ["integer", "string"], description: "size in fieldaccess width words of the window" },

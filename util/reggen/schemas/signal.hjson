@@ -8,6 +8,7 @@
   description: "Generic signal description for an IP block",
   type: "object",
   required: ["name", "desc"]
+  additionalProperties: false,
   properties: {
     name: { type: "string" },
     desc: { type: "string" },

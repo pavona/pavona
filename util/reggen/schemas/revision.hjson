@@ -8,6 +8,7 @@
   description: "IP block revision metadata",
   type: "object",
   required: ["design_stage", "verification_stage", "version", "life_stage"]
+  additionalProperties: false,
   properties: {
     version: { type: "string", description: "semantic module version in the format x.y.z[+res#]"},
     life_stage: { type: "string", description: "life stage of module" },

@@ -8,6 +8,7 @@
   description: "Communication bus interfaces for an IP block",
   type: "object",
   required: ["protocol", "direction"]
+  additionalProperties: false,
   properties: {
     protocol: { type: "string", enum: ["tlul"] }
     direction: { type: "string", enum: ["host", "device"] }

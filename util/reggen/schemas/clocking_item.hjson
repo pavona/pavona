@@ -7,6 +7,7 @@
   title: "Clocking Item",
   description: "Component of an IP block's clocks and resets",
   type: "object",
+  additionalProperties: false,
   properties: {
     clock: { type: "string" },
     reset: { type: "string" },

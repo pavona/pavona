@@ -8,6 +8,7 @@
   description: "Description for standalone IP block",
   type: "object",
   required: ["name", "cip_id", "clocking", "bus_interfaces"]
+  additionalProperties: false,
   properties: {
     // basic information
     name: { type: "string", description: "name of the component" },

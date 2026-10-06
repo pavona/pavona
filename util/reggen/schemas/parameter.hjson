@@ -8,6 +8,7 @@
   description: "Parameter configuration",
   type: "object",
   required: ["name"]
+  additionalProperties: false,
   properties: {
     // basic information
     name: { type: "string", description: "name of the item" },

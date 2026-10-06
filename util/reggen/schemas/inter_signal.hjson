@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:reggen:inter_signal",
-  "title": "Inter-Module Signal",
-  "description": "Configuration of direct signal between IP blocks",
-  "type": "object",
-  "required": ["name", "struct", "type", "act"],
-  "properties": {
+  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $id: "urn:reggen:inter_signal",
+  title: "Inter-Module Signal",
+  description: "Configuration of direct signal between IP blocks",
+  type: "object",
+  required: ["name", "struct", "type", "act"],
+  additionalProperties: false,
+  properties: {
     // required
     name: { type: "string" },
     struct: { type: "string" },
