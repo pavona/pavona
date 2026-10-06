@@ -764,7 +764,7 @@ module kmac_app
 
   // Encoded output length
   assign encoded_outlen      = EncodedOutLen[SelDigSize];
-  assign encoded_outlen_mask = EncodedOutLenMask[SelKeySize];
+  assign encoded_outlen_mask = EncodedOutLenMask[SelDigSize];
 
   // Data mux
   // This is the main part of the KeyMgr interface logic.
