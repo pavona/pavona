@@ -4,15 +4,13 @@
 import logging as log
 from typing import Any, Dict, List, Optional, Tuple
 
-from basegen.validate import create_validator, all_validation_errors
+from basegen.validate import XBAR_VALIDATOR, all_validation_errors
 from basegen.lib import cast_hjson_values
 
 from .item import Node, Host, Device, AsyncFifo, Socket1N, SocketM1
 from .lib import simplify_addr
 from .xbar import Xbar
 
-
-XBAR_VALIDATOR = create_validator("urn:tlgen:xbar")
 
 # Minimum device spacing that is checked during validation
 # by inspecting the base addresses. Note that the validation

@@ -13,10 +13,10 @@ from reggen.ip_block import IpBlock
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
-from basegen.validate import create_validator, all_validation_errors
+from basegen.validate import (create_validator, all_validation_errors,
+                              TOPCFG_VALIDATOR)
 
 
-TOPCFG_VALIDATOR = create_validator("urn:topgen:topcfg")
 SEEDCFG_VALIDATOR = create_validator("urn:topgen:seedcfg")
 
 
