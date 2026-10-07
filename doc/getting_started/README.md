@@ -112,7 +112,7 @@ Updating files: 100% (13468/13468), done.
 
 Git clones the `main` branch by default; use `git switch` or `git checkout` to change to a release tag if desired.
 Release tags are named `release/[YYYY].[MM].p[#]`.
-See the available releases at [https://github.com/pavona/pavona/releases](the Pavona releases page).
+See the available releases at [the Pavona releases page](https://github.com/pavona/pavona/releases).
 
 Whether you used a Pavona release or cloned the Pavona repository, the following instructions assume the directory is named "pavona".
 
@@ -126,16 +126,18 @@ ls
 ```
 which prints something like:
 ```
-BLOCKFILE          apt-requirements.txt  python-requirements.txt
-BUILD.bazel        bazelisk.sh           quality
-CLA                bench                 release
-CONTRIBUTING.md    book.toml             rules
-LICENSE            ci                    signing
-MODULE.bazel       compile_flags.txt     sw
-MODULE.bazel.lock  doc                   third_party
-NOTICE             hw                    toolchain
-README.md          mypy.ini              util
-SUMMARY.md         pyproject.toml        yum-requirements.txt
+BUILD.bazel        SUMMARY.md               quality
+Brewfile           apt-requirements.txt     release
+CLA-Corporate      bazelisk.sh              rfc
+CLA-Individual     bench                    rules
+CONTRIBUTING.md    book.toml                signing
+CONTRIBUTORS       ci                       sw
+LICENSE            compile_flags.txt        third_party
+MODULE.bazel       doc                      toolchain
+MODULE.bazel.lock  hw                       util
+NOTICE             mypy.ini                 yum-requirements.txt
+README.md          pyproject.toml
+SECURITY.md        python-requirements.txt
 ```
 
 The additional packages you'll need in order to work with Pavona are listed in a file per platform.
@@ -219,7 +221,7 @@ You can examine the RISC-V (dis)assembly in the `bazel-bin/sw/device/examples/he
 > ```
 > common --//hw:verilator_options=--threads,8
 > ```
-> The above example would appropriate be for a machine with 8 cores (you can determine the number of cores in your CPU by running the `nproc` command, or `sysctl -n hw.ncpu` on macOS).
+> The above example would be appropriate for a machine with 8 cores (you can determine the number of cores in your CPU by running the `nproc` command, or `sysctl -n hw.ncpu` on macOS).
 
 ### Run a test on Verilator
 
