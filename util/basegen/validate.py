@@ -28,6 +28,10 @@ BUILTIN_SCHEMAS_REGISTRY = SchemaRegistry().with_resources(
     for s in BUILTIN_SCHEMAS).crawl()
 
 
+###############################
+# Schema validation functions #
+###############################
+
 def _resolve_schema(schema: dict[str, Any] | str | SchemaResource,
                     registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY) -> dict[str, Any]:
     """Flexibly get the correct schema from a dict, URN string, or SchemaResource. If the schema
@@ -94,3 +98,12 @@ def document_schema(outfile: TextIO | None,
     else:
         outfile.write(doc_text)
     return None
+
+
+##############
+# Validators #
+##############
+
+TOPCFG_VALIDATOR = create_validator("urn:topgen:topcfg")
+IP_BLOCK_VALIDATOR = create_validator("urn:reggen:ip_block")
+XBAR_VALIDATOR = create_validator("urn:tlgen:xbar")
