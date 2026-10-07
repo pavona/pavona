@@ -258,7 +258,7 @@ SECTIONS {
    * and therefore don't end up being covered by the signature.
    */
    _non_volatile_scratch_size = DEFINED(no_ottf_nv_scratch) ? 0 : 20480;
-   _non_volatile_scratch_end = ORIGIN(ottf_flash) + _ottf_size;
+   _non_volatile_scratch_end = _ottf_start_address + _ottf_size;
    _non_volatile_scratch_start = _non_volatile_scratch_end - _non_volatile_scratch_size;
 
    _non_volatile_counter_size = DEFINED(no_ottf_nv_counter) ? 0 : 2048;
