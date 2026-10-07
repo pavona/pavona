@@ -118,6 +118,7 @@ jobs:
         image:
           - debian:12
           - debian:13
+          - ubuntu:26.10
         runner:
           - ubuntu-24.04
           - ubuntu-24.04-arm
