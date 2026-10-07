@@ -1470,6 +1470,21 @@ acc_sim_test(
 )
 
 acc_sim_test(
+    name = "rsa_1024_dec_crt_q_gt_p_test",
+    timeout = "long",
+    srcs = [
+        "rsa_1024_dec_crt_q_gt_p_test.s",
+    ],
+    exp = "rsa_1024_dec_crt_q_gt_p_test.exp",
+    deps = [
+        "//sw/acc/crypto:div",
+        "//sw/acc/crypto:modexp",
+        "//sw/acc/crypto:montmul",
+        "//sw/acc/crypto:mul",
+    ],
+)
+
+acc_sim_test(
     name = "rsa_1024_enc_test",
     srcs = [
         "rsa_1024_enc_test.s",

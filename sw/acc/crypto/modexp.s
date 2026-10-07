@@ -197,7 +197,7 @@ modexp:
  * The base bignum A is expected in the input buffer, the primes in the p and q
  * buffers, the CRT components of the exponent E in the exp_p and exp_q buffers,
  * and the CRT reconstruction coefficient in the q_p buffer. The result C is
- * written to the output buffer.
+ * written to the output buffer. The cofactors p and q may be in either order.
  *
  * Note that the content of the exp_p and exp_q buffers will be modified during
  * computation.
@@ -433,13 +433,33 @@ modexp_crt:
     bn.lid    x20, 0(x11++)
     bn.sid    x20, 0(x12++)
 
+  /* dmem[dptr_c:dptr_c+(N/2)*32] <= C_q mod p, since C_q may exceed p */
+  addi      x11, x26, 0
+  addi      x12, x2, 0
+  loop      x30, 2
+    bn.lid    x20, 0(x11++)
+    bn.sid    x20, 0(x12++)
+  addi      x6, x23, 0
+  addi      x7, x25, 0
+  addi      x9, x26, 0
+  addi      x12, x4, 0
+  addi      x10, x2, 0
+  addi      x11, x3, 0
+  jal       x1, mod
+  addi      x23, x6, 0
+  addi      x25, x7, 0
+  addi      x26, x9, 0
+  addi      x4, x12, 0
+  addi      x3, x11, 0
+  addi      x2, x10, 0
+
   /* clear any flags in FG0 */
   bn.sub    w31, w31, w31, FG0
 
   /* compare C_p and C_q
        FG0.C <= C_p > C_q */
   addi       x11, x25, 0
-  addi       x12, x26, 0
+  addi       x12, x2, 0
   li         x21, 21
   loop       x30, 3
     /* w20 <= C_p[i] */
@@ -460,7 +480,7 @@ modexp_crt:
   /* subtract C_p from C_q, conditionally adding the modulus if C_q > C_p
        dmem[dptr_e_q..dptr_e_q+(N/2)*32] <= C_p - C_q mod p */
   addi       x11, x25, 0
-  addi       x12, x26, 0
+  addi       x12, x2, 0
   addi       x13, x27, 0
   loop       x30, 7
     /* w20 <= C_p[i] */
