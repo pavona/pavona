@@ -8,6 +8,7 @@ filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
         "//hw/top_dragonfly/ip/soc_proxy/data:all_files",
+        "//hw/top_dragonfly/ip/soc_proxy/rtl:all_files",
     ],
 )
 
@@ -20,7 +21,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_dragonfly/ip/soc_proxy/rtl:all_files"],
 )
 
 filegroup(

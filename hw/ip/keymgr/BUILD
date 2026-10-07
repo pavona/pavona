@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/keymgr/data:all_files",
+        "//hw/ip/keymgr/rtl:all_files",
     ],
 )
 
