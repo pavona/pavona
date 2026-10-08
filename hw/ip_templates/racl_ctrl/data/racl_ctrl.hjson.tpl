@@ -207,7 +207,8 @@
     { name: "ERROR_LOG"
       desc: "Error logging registers"
       swaccess: "ro"
-      hwaccess: "hwo"
+      hwaccess: "hrw"
+      hwext: "true"
       hwqe: "true"
       fields: [
         { bits: "0"
@@ -265,7 +266,8 @@
                This register gets cleared when SW writes `1` to the `valid` field of the !!ERROR_LOG register.
             '''
       swaccess: "ro"
-      hwaccess: "hwo"
+      hwaccess: "hrw"
+      hwext: "true"
       fields: [
         { bits: "29:0"
           name: "address"

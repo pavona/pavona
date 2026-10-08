@@ -172,6 +172,7 @@ module racl_ctrl_reg_top
   logic alert_test_we;
   logic alert_test_fatal_fault_wd;
   logic alert_test_recov_ctrl_update_err_wd;
+  logic error_log_re;
   logic error_log_we;
   logic error_log_valid_qs;
   logic error_log_valid_wd;
@@ -179,6 +180,7 @@ module racl_ctrl_reg_top
   logic error_log_read_access_qs;
   logic [3:0] error_log_role_qs;
   logic [4:0] error_log_ctn_uid_qs;
+  logic error_log_address_re;
   logic [29:0] error_log_address_qs;
 
   // Register instances
@@ -517,179 +519,106 @@ module racl_ctrl_reg_top
   assign reg2hw.alert_test.recov_ctrl_update_err.qe = alert_test_qe;
 
 
-  // R[error_log]: V(False)
+  // R[error_log]: V(True)
   logic error_log_qe;
   logic [4:0] error_log_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_error_log0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&(error_log_flds_we | 5'h1e)),
-    .q_o(error_log_qe)
-  );
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_error_log_flds_we;
+  assign unused_error_log_flds_we = ^(error_log_flds_we & 5'h1e);
+  assign error_log_qe = &(error_log_flds_we | 5'h1e);
   //   F[valid]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_error_log_valid (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_re),
     .we     (error_log_we),
     .wd     (error_log_valid_wd),
-
-    // from internal hardware
-    .de     (hw2reg.error_log.valid.de),
     .d      (hw2reg.error_log.valid.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (error_log_flds_we[0]),
     .q      (reg2hw.error_log.valid.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_valid_qs)
   );
   assign reg2hw.error_log.valid.qe = error_log_qe;
 
   //   F[overflow]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_error_log_overflow (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.error_log.overflow.de),
     .d      (hw2reg.error_log.overflow.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (error_log_flds_we[1]),
-    .q      (),
+    .q      (reg2hw.error_log.overflow.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_overflow_qs)
   );
+  assign reg2hw.error_log.overflow.qe = error_log_qe;
 
   //   F[read_access]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_error_log_read_access (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.error_log.read_access.de),
     .d      (hw2reg.error_log.read_access.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (error_log_flds_we[2]),
-    .q      (),
+    .q      (reg2hw.error_log.read_access.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_read_access_qs)
   );
+  assign reg2hw.error_log.read_access.qe = error_log_qe;
 
   //   F[role]: 6:3
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_error_log_role (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.error_log.role.de),
     .d      (hw2reg.error_log.role.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (error_log_flds_we[3]),
-    .q      (),
+    .q      (reg2hw.error_log.role.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_role_qs)
   );
+  assign reg2hw.error_log.role.qe = error_log_qe;
 
   //   F[ctn_uid]: 11:7
-  prim_subreg #(
-    .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (5)
   ) u_error_log_ctn_uid (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.error_log.ctn_uid.de),
     .d      (hw2reg.error_log.ctn_uid.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (error_log_flds_we[4]),
-    .q      (),
+    .q      (reg2hw.error_log.ctn_uid.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_ctn_uid_qs)
   );
+  assign reg2hw.error_log.ctn_uid.qe = error_log_qe;
 
 
-  // R[error_log_address]: V(False)
-  prim_subreg #(
-    .DW      (30),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (30'h0),
-    .Mubi    (1'b0)
+  // R[error_log_address]: V(True)
+  prim_subreg_ext #(
+    .DW    (30)
   ) u_error_log_address (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (error_log_address_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.error_log_address.de),
     .d      (hw2reg.error_log_address.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
-    .q      (),
+    .q      (reg2hw.error_log_address.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (error_log_address_qs)
   );
 
@@ -809,9 +738,11 @@ module racl_ctrl_reg_top
   assign alert_test_fatal_fault_wd = reg_wdata[0];
 
   assign alert_test_recov_ctrl_update_err_wd = reg_wdata[1];
+  assign error_log_re = racl_addr_hit_read[7] & reg_re & !reg_error;
   assign error_log_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign error_log_valid_wd = reg_wdata[0];
+  assign error_log_address_re = racl_addr_hit_read[8] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
