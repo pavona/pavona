@@ -168,6 +168,8 @@ RUN BAZELISK_PATH="/usr/local/bin/bazelisk"; \
     chmod +x ${BAZELISK_PATH} && \
     ln -s ${BAZELISK_PATH} /usr/local/bin/bazel
 
-RUN runuser dev -c "bazel > /dev/null"
+COPY .bazelversion /tmp/.bazelversion
+RUN runuser dev -c "USE_BAZEL_VERSION=$(cat /tmp/.bazelversion) bazel --version" \
+    && rm /tmp/.bazelversion
 
 ENTRYPOINT [ "/start.sh" ]
