@@ -9,6 +9,10 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
   `uvm_component_utils(rv_timer_rst_safe_scoreboard)
   `uvm_component_new
 
+  // A compare write's registered qe clears INTR_STATE on the next reference edge. The comparator
+  // can set it again one edge later; the interrupt output then has its existing one-clock delay.
+  localparam int unsigned CompareReassertDelayClks = 2;
+
   // local variables
   local uint64 prescale[NUM_HARTS];
   local uint64 step[NUM_HARTS];
@@ -20,6 +24,9 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
   local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] en_interrupt;
   local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] ignore_period;
   local bit [NUM_HARTS-1:0] num_clk_update_due;
+  // Compare writes move the expiry threshold without restarting the running timer's timebase.
+  local bit [NUM_HARTS-1:0][NUM_TIMERS-1:0] compare_update_due;
+  local longint unsigned compare_reassert_edge[NUM_HARTS][NUM_TIMERS];
   local bit ctimecmp_update_on_fly;
   local bit skip_intr_state_read_check[bit [SourceWidth-1:0]];
 
@@ -109,15 +116,14 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
               string compare_lower_str = $sformatf("compare_lower%0d_%0d", i, j);
               if (csr_name == compare_lower_str) begin
                 compare_val[i][j][31:0] = csr.get_mirrored_value();
-                if (en_timers[i][j] == 0) begin
-                  // Reset the interrupt when mtimecmp is updated and timer is not active
-                  intr_status_exp[i][j] = 0;
-                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
-                end else begin
-                  // intr stays sticky if timer is active
-                  ctimecmp_update_on_fly = 1;
-                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, intr_status_exp[i][j]);
-                end
+                // Either compare half clears the pending interrupt, including while active.
+                // The running predictor must then evaluate expiry against the new compare value.
+                intr_status_exp[i][j] = 0;
+                compare_reassert_edge[i][j] =
+                    item.a_channel_ref_edge + CompareReassertDelayClks;
+                compare_update_due[i][j] = 1'b1;
+                if (en_timers[i][j]) ctimecmp_update_on_fly = 1;
+                if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
                 break;
               end
             end
@@ -130,15 +136,14 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
               string compare_upper_str = $sformatf("compare_upper%0d_%0d", i, j);
               if (csr_name == compare_upper_str) begin
                 compare_val[i][j][63:32] = csr.get_mirrored_value();
-                if (en_timers[i][j] == 0) begin
-                  // Reset the interrupt when mtimecmp is updated and timer is not active
-                  intr_status_exp[i][j] = 0;
-                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
-                end else begin
-                  // intr stays sticky if timer is active
-                  ctimecmp_update_on_fly = 1;
-                  if (cfg.en_cov) cov.sample_intr_pin(timer_idx, intr_status_exp[i][j]);
-                end
+                // Clearing does not depend on CTRL.ACTIVE. If the new threshold is already met,
+                // the comparator can reassert the interrupt after this clear.
+                intr_status_exp[i][j] = 0;
+                compare_reassert_edge[i][j] =
+                    item.a_channel_ref_edge + CompareReassertDelayClks;
+                compare_update_due[i][j] = 1'b1;
+                if (en_timers[i][j]) ctimecmp_update_on_fly = 1;
+                if (cfg.en_cov) cov.sample_intr_pin(timer_idx, 0);
                 break;
               end
             end
@@ -198,9 +203,9 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
         skip_intr_state_read_check.delete(item.a_source);
       end
 
-      // Check all interrupts in DataChannel of every Read/Write except when ctimecmp updated
-      // during timer active. This scenario is checked in base sequence by reading the intr_state.
-      // Ignored checking here because sticky intr_pin update has one cycle delay.
+      // An active compare write can clear and then reassert the interrupt through the registered
+      // pin path. Skip that write's intermediate pin sample; subsequent accesses and expiry still
+      // check the pin, and INTR_STATE reads continue to check the modeled interrupt state.
       if (!ctimecmp_update_on_fly) check_interrupt_pin();
       ctimecmp_update_on_fly = 0;
 
@@ -249,18 +254,26 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
       begin
         forever begin : compute_num_clks
           // calculate number of clocks required to have interrupt
-          @(en_timers or num_clk_update_due);
+          @(en_timers or num_clk_update_due or compare_update_due);
           wait(under_reset == 0);
           foreach (en_timers[i, j]) begin
-            uint64 mtime_diff = compare_val[i][j] - timer_val[i];
-            num_clks[i][j] = ((mtime_diff / step[i]) +
-                              ((mtime_diff % step[i]) != 0)) * (prescale[i] + 1) + 1;
+            // A compare below the saved timer value is already due, not an unsigned subtraction
+            // wrapping into a distant expiry. A zero step never reaches a higher compare value.
+            num_clks[i][j] = 1;
+            if (compare_val[i][j] > timer_val[i] && step[i] != 0) begin
+              uint64 mtime_diff = compare_val[i][j] - timer_val[i];
+              num_clks[i][j] = ((mtime_diff / step[i]) +
+                                ((mtime_diff % step[i]) != 0)) * (prescale[i] + 1) + 1;
+            end
           end
-          // reset count if timer is enabled and num_clks got updated
+          // Timer writes/readback establish a new value snapshot and elapsed-count origin.
+          // Compare-only updates retain elapsed time; they must not postpone expiry by restarting
+          // the count from the old timer snapshot.
           for (int i = 0; i < NUM_HARTS; i++) begin
             if (num_clk_update_due[i]) reset_count[i] = en_timers[i];
           end
           num_clk_update_due = '0;
+          compare_update_due = '0;
         end // compute_num_clks
       end
     join_none
@@ -280,22 +293,27 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
                 en_timers_prev[a_i][a_j] = 1'b1;
                 forever begin
                   @cfg.clk_rst_vif.cb;
+                  ignore_period[a_i][a_j] = 1'b0;
                   count = count + 1;
                   if (reset_count[a_i][a_j] == 1'b1) begin
                     count = 0;
                     reset_count[a_i][a_j] = 1'b0;
                   end
-                  if (count >= num_clks[a_i][a_j]) break;
-                end
-                // enabling one clock cycle of ignore period
-                ignore_period[a_i][a_j] = 1'b1;
+                  // Keep the same worker and elapsed count after expiry. A compare write can
+                  // clear the interrupt and schedule another expiry without disabling the timer.
+                  if (intr_status_exp[a_i][a_j] || count < num_clks[a_i][a_j]) continue;
+                  if (step[a_i] == 0 && compare_val[a_i][a_j] > timer_val[a_i]) continue;
+                  // Even an already-expired timer must pass through the compare-write clear.
+                  // Use the accepted TL edge, not response arrival, so backpressure cannot change
+                  // the predicted timing. Each half-write establishes its own clear boundary.
+                  if (cfg.clk_rst_vif.posedge_count < compare_reassert_edge[a_i][a_j]) continue;
 
-                // If the step is set to 0, it means the counter is not incremented since the
-                // counter evaluates as: count = count + step.
-                // Also, if the count is not greater than the comparison value, skip the iteration
-                // and wait until the step and/or timecmp/mtime are re-configured
-                if ( !(step[a_i] == 0 && (compare_val[a_i][a_j] - timer_val[a_i]) > 0)) begin
-                  `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
+                  // Preserve the one-clock allowance at the interrupt-state update boundary.
+                  ignore_period[a_i][a_j] = 1'b1;
+                  `uvm_info(`gfn, $sformatf({"Timer expired check for interrupt: ref_edge=%0d, ",
+                                           "reassert_not_before=%0d"},
+                                          cfg.clk_rst_vif.posedge_count,
+                                          compare_reassert_edge[a_i][a_j]), UVM_MEDIUM)
                   // Update exp val and predict it in read address_channel
                   intr_status_exp[a_i][a_j] = 1'b1;
                   `uvm_info(`gfn,
@@ -315,9 +333,7 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
                       cov.rv_timer_prescale_values_cov_obj[a_i][i].sample(prescale[a_i][i]);
                     end
                   end
-                  @cfg.clk_rst_vif.cb;
-                  ignore_period[a_i][a_j] = 1'b0;
-                  end // if ( !(step[a_i] == 0 && (compare_val[a_i][a_j] - timer_val[a_i]) > 0))
+                end
               end // if (en_timers[a_i][a_j] & !en_timers_prev[a_i][a_j])
               begin
                 forever begin
@@ -327,7 +343,8 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
               end
             join_any
             en_timers_prev[a_i][a_j] = 1'b0;
-            // kill forked threads if timer disabled or interrupt occurred or under reset
+            ignore_period[a_i][a_j] = 1'b0;
+            // End this timer worker only when the timer is disabled or reset is asserted.
             disable fork;
           end
         join_none
@@ -383,6 +400,8 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
     en_timers_prev  = '{default:0};
     num_clks           = '{default:0};
     num_clk_update_due = '{default:0};
+    compare_update_due = '0;
+    foreach (compare_reassert_edge[i, j]) compare_reassert_edge[i][j] = 0;
     ctimecmp_update_on_fly = 0;
   endfunction
 
