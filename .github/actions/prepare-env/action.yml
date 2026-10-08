@@ -162,6 +162,9 @@ runs:
       if: inputs.configure-bazel == 'true'
       run: |
         echo "common --remote_cache=https://storage.googleapis.com/pavona-bazel-cache" >> ~/.bazelrc
+        # Keep retrying external downloads through a few minutes of HTTP 5xx errors.
+        echo "common --http_connector_attempts=20" >> ~/.bazelrc
+        echo "common --http_connector_retry_max_timeout=30s" >> ~/.bazelrc
         # Inject the OS version into a parameter used in the action key computation to
         # avoid collisions between different operating systems in the caches.
         # See #14695 for more information.
