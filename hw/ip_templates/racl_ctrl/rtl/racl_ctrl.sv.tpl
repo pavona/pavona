@@ -87,8 +87,8 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 % else:
   assign alert[AlertFatalFaultIdx] = reg_intg_error;
 
-  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
-                                          reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.q &
+                                          reg2hw.alert_test.qe;
 % endif
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
