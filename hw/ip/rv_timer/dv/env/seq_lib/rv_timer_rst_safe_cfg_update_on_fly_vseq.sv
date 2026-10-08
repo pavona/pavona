@@ -292,6 +292,7 @@ endtask : wait_delay_clks
 task rv_timer_rst_safe_cfg_update_on_fly_vseq::status_read_for_clks(
     int hart, int clks, int unsigned poll_delay_ns);
   bit          stop_reading;
+  bit          poll_due;
   int unsigned poll_delay_clks;
 
   if (clks <= 0) return;
@@ -299,17 +300,35 @@ task rv_timer_rst_safe_cfg_update_on_fly_vseq::status_read_for_clks(
                     cfg.clk_rst_vif.clk_period_ps;
   if (poll_delay_clks == 0) poll_delay_clks = 1;
 
+  `uvm_info(`gfn, $sformatf("Polling interrupt status for %0d clocks, interval %0d clocks",
+                            clks, poll_delay_clks), UVM_HIGH)
   fork
     begin
-      wait_delay_clks(.clks(clks), .name("status_read_window"));
+      int unsigned remaining_clks = clks;
+
+      // One stream of completed delay transactions owns both the polling cadence and the window.
+      // Shorten the final interval so a polling delay cannot extend the requested window.
+      // No delay sequence is killed with a response still outstanding.
+      while (remaining_clks > 0) begin
+        int unsigned interval_clks;
+
+        interval_clks = (poll_delay_clks < remaining_clks) ? poll_delay_clks : remaining_clks;
+        wait_delay_clks(.clks(interval_clks), .name("status_read_poll_delay"));
+        remaining_clks -= interval_clks;
+        poll_due = 1'b1;
+      end
       stop_reading = 1'b1;
+      `uvm_info(`gfn, "Interrupt-status polling window completed", UVM_HIGH)
     end
     begin
       while (!stop_reading) begin
         uint read_data;
 
+        // A slow CSR access may span several intervals. Coalesce those polling opportunities and
+        // always complete the accepted access, even if the window ends while it is in flight.
+        poll_due = 1'b0;
         read_intr_status_reg(.hart(hart), .status_val(read_data));
-        wait_delay_clks(.clks(poll_delay_clks), .name("status_read_poll_delay"));
+        wait(poll_due || stop_reading);
       end
     end
   join
