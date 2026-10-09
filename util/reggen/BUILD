@@ -11,7 +11,10 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "reggen",
     srcs = glob(["**/*.py"]),
-    data = [":tpl_files"],
+    data = [
+        ":tpl_files",
+        "//util/reggen/schemas",
+    ],
     imports = [".."],
     deps = [
         "//util/basegen",
