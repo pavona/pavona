@@ -6,12 +6,9 @@ from typing import Dict
 
 from reggen.access import SWAccess
 from reggen.lib import check_str, check_bool, check_int
-from basegen.validate import create_validator
+from basegen.validate import WINDOW_VALIDATOR
 from basegen.lib import cast_hjson_values
 from reggen.params import ReggenParams
-
-
-WINDOW_VALIDATOR = create_validator('urn:reggen:window')
 
 
 class Window:

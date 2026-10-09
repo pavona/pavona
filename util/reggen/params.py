@@ -7,11 +7,8 @@ from collections.abc import MutableMapping
 from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from reggen.lib import check_str, check_int, check_bool, check_list
-from basegen.validate import create_validator
+from basegen.validate import PARAM_VALIDATOR
 from basegen.lib import cast_hjson_values
-
-
-PARAM_VALIDATOR = create_validator('urn:reggen:parameter')
 
 
 class BaseParam:
