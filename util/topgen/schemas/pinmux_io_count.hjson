@@ -8,6 +8,7 @@
   description: "Number of pinmux I/Os of each type",
   type: "object",
   required: ["inouts", "inputs", "outputs", "pads"]
+  additionalProperties: false,
   properties: {
     inouts: { type: "integer", description: "the count of inout ios of the io type" },
     inputs: { type: "integer", description: "the count of input ios of the io type" },

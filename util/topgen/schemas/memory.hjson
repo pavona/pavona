@@ -8,6 +8,7 @@
   description: "Module memory mapping",
   type: "object",
   required: ["label", "swaccess", "exec", "byte_write"]
+  additionalProperties: false,
   properties: {
     label: {
       type: "string",

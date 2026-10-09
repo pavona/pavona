@@ -8,6 +8,7 @@
   description: "Parameter configuration passed down from top level to module",
   type: "object",
   required: ["name", "desc", "type", "default"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "the parameter name" },
     desc: { type: "string", description: "the parameter description" },

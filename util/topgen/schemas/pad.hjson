@@ -8,6 +8,7 @@
   description: "I/O pad configuration",
   type: "object",
   required: ["name", "type", "bank", "connection"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "Pad name" },
     type: { type: "string", description: "Pad type" },

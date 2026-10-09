@@ -9,6 +9,7 @@
   type: "object",
   required: ["name", "type", "clocks", "resets", "addr_spaces", "module",
              "xbar", "pinout", "targets", "pinmux", "unmanaged_clocks"]
+  additionalProperties: false,
   properties: {
     // basic information
     name: {

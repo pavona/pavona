@@ -8,6 +8,7 @@
   description: "Alert description",
   type: "object",
   required: ["name", "width", "async", "module_name", "handler"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "name of the alert signal" },
     width: { type: "integer", description: "the number of alerts in this signal, typically 1" },

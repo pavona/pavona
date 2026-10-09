@@ -8,6 +8,7 @@
   description: "Top level target's pinout configuration",
   type: "object",
   required: ["remove_ports", "remove_pads", "add_pads"]
+  additionalProperties: false,
   properties: {
     remove_ports: { type: "array", description: "List of port names to remove from the port list" },
     remove_pads: { type: "array", description: "List of pad names to remove and stub out" },

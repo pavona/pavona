@@ -243,7 +243,7 @@ The top configuration partially specifies its list of modules.
 - <a id="properties/reset_connections"></a>**`reset_connections`** *(object, required)*: dict with reset sources.
 - <a id="properties/clock_connections"></a>**`clock_connections`** *(object)*: generated clock connections; added property.
 - <a id="properties/domain"></a>**`domain`** *(array)*: optional list of power domains, defaults to the top config's default power domain.
-  - <a id="properties/domain/items"></a>**Items** *(string or number)*
+  - <a id="properties/domain/items"></a>**Items** *(string or integer)*
 - <a id="properties/clock_reset_export"></a>**`clock_reset_export`** *(array)*: optional list with prefixes for exported clocks and resets at the chip level.
 - <a id="properties/base_addr"></a>**`base_addr`** *(object)*: dict of address space mapped to the corresponding hex start
 address of the peripheral (if the IP has only a single TL-UL interface).

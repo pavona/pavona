@@ -8,6 +8,7 @@
   description: "Wakeup request description",
   type: "object",
   required: ["name", "width", "module"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "the wakeup name" },
     width: { type: "integer", description: "the width of the signal" },

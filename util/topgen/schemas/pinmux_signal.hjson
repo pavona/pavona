@@ -8,6 +8,7 @@
   description: "Signal configurations for pinmux",
   type: "object",
   required: ["instance", "connection"]
+  additionalProperties: false,
   properties: {
     instance: { type: "string", description: "Module instance name" },
     port: { type: "string", description: "Port name of module" },

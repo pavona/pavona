@@ -8,6 +8,7 @@
   description: "Configuration options for random seeds",
   type: "object",
   required: ["name", "topgen_seed"]
+  additionalProperties: false,
   properties: {
     // main info
     name: {

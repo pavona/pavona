@@ -8,6 +8,7 @@
   description: "Configuration of direct signal between IP blocks",
   type: "object",
   required: ["name", "struct", "type", "act", "width"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "the name of the signal" },
     desc: { type: "string", description: "the inter signal description" },

@@ -12,6 +12,7 @@
   description: "Configuration for straps",
   type: "object",
   required: ["tap0", "tap1", "dft0", "dft1"]
+  additionalProperties: false,
   properties: {
     tap0: { type: "string", description: "Name of tap0 pad" },
     tap1: { type: "string", description: "Name of tap1 pad" },
