@@ -75,11 +75,9 @@ fn asn1bignum_to_bn(bn: &BigNumRef) -> Value<BigUint> {
 }
 
 fn asn1str_to_str(field: &str, s: &Asn1StringRef) -> Result<Value<String>> {
-    Ok(Value::literal(
-        s.as_utf8()
-            .with_context(|| format!("could not extract {} from certificate", field))?
-            .to_string(),
-    ))
+    Ok(Value::literal(s.to_string().with_context(|| {
+        format!("could not extract {} from certificate", field)
+    })?))
 }
 
 fn asn1time_to_string(time: &Asn1TimeRef) -> Result<Value<String>> {
