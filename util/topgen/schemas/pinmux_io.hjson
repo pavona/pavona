@@ -8,6 +8,7 @@
   description: "Top level I/O listing for pinmux",
   type: "object",
   required: ["name", "width", "connection", "type"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "the name of the io" },
     width: { type: "integer", description: "the bit width of the io" },

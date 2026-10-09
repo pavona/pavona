@@ -8,6 +8,7 @@
   description: "Hardware target for a top level design, such as an FPGA or ASIC",
   type: "object",
   required: ["name", "pinout", "pinmux"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "Name of target" },
     pinout: {

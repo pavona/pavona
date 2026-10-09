@@ -8,6 +8,7 @@
   description: "Reset request item",
   type: "object",
   required: ["name", "desc", "module"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "the reset request name" },
     width: { type: "integer", description: "the reset request signal width" },

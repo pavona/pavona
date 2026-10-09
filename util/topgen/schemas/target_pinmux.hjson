@@ -8,6 +8,7 @@
   description: "Top level target's pinmux configuration",
   type: "object",
   required: ["special_signals"]
+  additionalProperties: false,
   properties: {
     special_signals: {
       type: "array",

@@ -8,6 +8,7 @@
   description: "Special signal for pinmux",
   type: "object",
   required: ["name", "pad"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "DIO name" },
     pad: { type: "string", description: "Pad name" },

@@ -8,6 +8,7 @@
   description: "Top level pinout",
   type: "object",
   required: ["banks", "pads"]
+  additionalProperties: false,
   properties: {
     banks: { type: "array", description: "List of IO power banks" },
     pads: {

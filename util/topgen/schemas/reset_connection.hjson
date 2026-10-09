@@ -8,6 +8,7 @@
   description: "Module reset connection",
   type: "object",
   required: ["name", "domain"]
+  additionalProperties: false,
   properties: {
     name: { type: "string", description: "name of the connecting reset" }
     domain: { type: "string", description: "connected domain" }

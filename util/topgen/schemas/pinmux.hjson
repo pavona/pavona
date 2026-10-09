@@ -8,6 +8,7 @@
   description: "Top level pin multiplexing configuration",
   type: "object",
   required: ["enable_usb_wakeup", "enable_strap_sampling"]
+  additionalProperties: false,
   properties: {
     signals: {
       type: "array",

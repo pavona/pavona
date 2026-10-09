@@ -18,6 +18,7 @@
     "program_resolution",
     "words_per_page"
   ]
+  additionalProperties: false,
   properties: {
     type: {
       type: "string",
