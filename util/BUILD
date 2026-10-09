@@ -76,6 +76,7 @@ py_binary(
         "//util/reggen:lib",
         "//util/reggen:systemrdl_exporter",
         "//util/reggen:version",
+        "//util/topgen",
         requirement("tabulate"),
     ],
 )

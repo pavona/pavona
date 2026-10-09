@@ -763,10 +763,10 @@ package spi_device_reg_pkg;
 
   // Window parameters
   parameter logic [BlockAw-1:0] SPI_DEVICE_EGRESS_BUFFER_OFFSET = 13'h 1000;
-  parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_SIZE   = 'h d40;
+  parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_SIZE   = SramEgressDepth * 4;
   parameter int unsigned        SPI_DEVICE_EGRESS_BUFFER_IDX    = 0;
   parameter logic [BlockAw-1:0] SPI_DEVICE_INGRESS_BUFFER_OFFSET = 13'h 1e00;
-  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_SIZE   = 'h 1c0;
+  parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_SIZE   = SramIngressDepth * 4;
   parameter int unsigned        SPI_DEVICE_INGRESS_BUFFER_IDX    = 1;
 
   // Register index

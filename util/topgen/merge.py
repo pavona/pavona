@@ -187,8 +187,8 @@ def elaborate_instance(instance, block: IpBlock):
     # for each module declaration, check to see that the parameter actually
     # exists and can be set
     for decl in param_decl_accounting:
-        log.error("{} is not a valid parameter of {} that can be "
-                  "set from top level".format(decl, block.name))
+        log.warning("{} is not a valid parameter of {} that can be "
+                    "set from top level".format(decl, block.name))
 
     # These objects get added-to in place by code in intermodule.py, so we have
     # to convert and copy them here.
@@ -1209,14 +1209,14 @@ def get_alert_connections(top: ConfigT,
             if outgoing:
                 outgoing_group = module["outgoing_alert"]
                 lo = outgoing_alert_idx[outgoing_group]
-                slice = f"{lo+w-1}:{lo}"
+                slice = f"{lo + w - 1}:{lo}"
                 async_expr = f"AsyncOnOutgoingAlert{outgoing_group.capitalize()}[{slice}]"
                 alert_tx_expr = f"outgoing_alert_{outgoing_group}_tx_o[{slice}]"
                 alert_rx_expr = f"outgoing_alert_{outgoing_group}_rx_i[{slice}]"
             else:
                 alert_tx, alert_rx = alert_handler_signals(handler)
                 lo = alert_idx[handler]
-                slice = f"{lo+w-1}:{lo}"
+                slice = f"{lo + w - 1}:{lo}"
                 async_expr = f"{handler}_reg_pkg::AsyncOn[{slice}]"
                 alert_tx_expr = f"{alert_tx}[{slice}]"
                 alert_rx_expr = f"{alert_rx}[{slice}]"
@@ -1249,7 +1249,7 @@ def get_alert_connections(top: ConfigT,
         w = len(alerts)
         alert_tx, alert_rx = alert_handler_signals(handler)
         lo = alert_idx[handler]
-        slice = f"{lo+w-1}:{lo}"
+        slice = f"{lo + w - 1}:{lo}"
         alert_tx_expr = f"{alert_tx}[{slice}]"
         alert_rx_expr = f"{alert_rx}[{slice}]"
 
