@@ -15,6 +15,13 @@ py_library(
         "typing.py",
         "validate.py",
     ],
+    data = [
+        "//util/basegen/schemas",
+        "//util/ipgen/schemas",
+        "//util/reggen/schemas",
+        "//util/tlgen/schemas",
+        "//util/topgen/schemas",
+    ],
     imports = [".."],
     deps = [
         requirement("jsonschema"),
