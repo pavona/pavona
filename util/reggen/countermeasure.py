@@ -7,7 +7,8 @@ import logging as log
 from typing import Dict, List, Sequence, Tuple
 
 from reggen.lib import check_str, check_list
-from basegen.validate import create_validator
+from basegen.validate import CM_VALIDATOR
+
 
 # The documentation of assets and cm_types can be found here
 # doc/contributing/hw/comportability/README.md#security-countermeasures
@@ -73,9 +74,6 @@ CM_TYPES = [
 
 # Tag to look for when extracting RTL annotations.
 CM_RTL_TAG = 'SEC_CM:'
-
-
-CM_VALIDATOR = create_validator('urn:reggen:countermeasure')
 
 
 class CounterMeasure:

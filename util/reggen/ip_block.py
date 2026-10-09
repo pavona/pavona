@@ -23,7 +23,7 @@ from reggen.reg_block import RegBlock
 from reggen.reggen_signal import Signal
 from semantic_version import Version
 from basegen.lib import cast_hjson_values
-from basegen.validate import create_validator, IP_BLOCK_VALIDATOR
+from basegen.validate import IP_BLOCK_VALIDATOR, ALIAS_VALIDATOR
 
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
@@ -72,9 +72,6 @@ KNOWN_CIP_IDS = {
     43: 'racl_ctrl',
     44: 'otp_macro',
 }
-
-
-ALIAS_VALIDATOR = create_validator('urn:reggen:alias')
 
 
 @dataclass

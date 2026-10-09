@@ -7,14 +7,11 @@ from typing import Dict, List, Optional
 from reggen.clocking import Clocking
 from reggen.field import Field
 from reggen.lib import check_str, check_name, check_bool
-from basegen.validate import create_validator
+from basegen.validate import MULTIREG_VALIDATOR
 from basegen.lib import REPO_TOP, import_hjson, cast_hjson_values
 from reggen.params import ReggenParams
 from reggen.reg_base import RegBase
 from reggen.register import Register
-
-
-MULTIREG_VALIDATOR = create_validator('urn:reggen:multiregister')
 
 
 class EmptyMultiRegException(Exception):

@@ -5,11 +5,8 @@
 from typing import Dict
 
 from reggen.lib import check_str, check_int
-from basegen.validate import create_validator
+from basegen.validate import ENUM_ENTRY_VALIDATOR
 from basegen.lib import cast_hjson_values
-
-
-ENUM_ENTRY_VALIDATOR = create_validator('urn:reggen:enum_entry')
 
 
 class EnumEntry:

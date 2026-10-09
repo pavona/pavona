@@ -13,11 +13,8 @@ from reggen.ip_block import IpBlock
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
 from topgen.lib import find_module, find_modules
-from basegen.validate import (create_validator, all_validation_errors,
-                              TOPCFG_VALIDATOR)
-
-
-SEEDCFG_VALIDATOR = create_validator("urn:topgen:seedcfg")
+from basegen.validate import (TOPCFG_VALIDATOR, SEEDCFG_VALIDATOR,
+                              all_validation_errors)
 
 
 # Supported PAD types.

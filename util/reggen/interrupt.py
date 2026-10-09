@@ -7,7 +7,7 @@ from typing import Sequence
 from reggen.access import JsonEnum
 from reggen.bits import Bits
 from reggen.lib import check_name, check_str, check_int, check_bool, check_list
-from basegen.validate import create_validator
+from basegen.validate import INTERRUPT_VALIDATOR
 from basegen.lib import cast_hjson_values
 from reggen.reggen_signal import Signal
 
@@ -18,9 +18,6 @@ class IntrType(JsonEnum):
 
 
 _intr_type_map = {'event': IntrType.Event, 'status': IntrType.Status}
-
-
-INTERRUPT_VALIDATOR = create_validator('urn:reggen:interrupt')
 
 
 class Interrupt(Signal):

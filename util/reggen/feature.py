@@ -5,10 +5,7 @@
 from typing import Dict, List
 
 from reggen.lib import check_str, check_list, check_name
-from basegen.validate import create_validator
-
-
-FEATURE_VALIDATOR = create_validator('urn:reggen:feature')
+from basegen.validate import FEATURE_VALIDATOR
 
 
 class Feature:

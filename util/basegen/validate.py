@@ -159,8 +159,24 @@ def correct_doc_links(
 ##############
 
 TOPCFG_VALIDATOR = create_validator("urn:topgen:topcfg")
+SEEDCFG_VALIDATOR = create_validator("urn:topgen:seedcfg")
 
 IP_BLOCK_VALIDATOR = create_validator("urn:reggen:ip_block")
+ALIAS_VALIDATOR = create_validator('urn:reggen:alias')
+ALERT_VALIDATOR = create_validator('urn:reggen:alert')
+BUS_INTF_VALIDATOR = create_validator('urn:reggen:bus_interface')
+CLOCKING_ITEM_VALIDATOR = create_validator('urn:reggen:clocking_item')
+CM_VALIDATOR = create_validator('urn:reggen:countermeasure')
+ENUM_ENTRY_VALIDATOR = create_validator('urn:reggen:enum_entry')
+FEATURE_VALIDATOR = create_validator('urn:reggen:feature')
+FIELD_VALIDATOR = create_validator("urn:reggen:field")
+INTERRUPT_VALIDATOR = create_validator('urn:reggen:interrupt')
+INTERSIG_VALIDATOR = create_validator('urn:reggen:inter_signal')
+MULTIREG_VALIDATOR = create_validator('urn:reggen:multiregister')
+PARAM_VALIDATOR = create_validator('urn:reggen:parameter')
+REG_VALIDATOR = create_validator('urn:reggen:register')
+SIGNAL_VALIDATOR = create_validator('urn:reggen:signal')
+WINDOW_VALIDATOR = create_validator('urn:reggen:window')
 
 XBAR_VALIDATOR = create_validator("urn:tlgen:xbar")
 
