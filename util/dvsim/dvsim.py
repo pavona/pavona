@@ -899,8 +899,13 @@ def main():
         # Generate results.
         cfg.gen_results(results)
 
-        # Publish results
-        if args.publish is not None:
+        # A partial regression shows on the dashboard as a complete one with
+        # most tests missing
+        if args.publish is not None and cfg.interrupted:
+            log.warning("The run did not complete, so its results are not "
+                        "published. --publish-prev publishes them if they are "
+                        "wanted anyway.")
+        elif args.publish is not None:
             cfg.publish_results(args.publish, args.items[0], mode=args.publish_mode)
 
     else:

@@ -119,6 +119,9 @@ class Scheduler:
         self.target_runtime = {}
         self.total_runtime = ""
 
+        # Whether a signal stopped the run before every job had finished.
+        self.interrupted = False
+
         # Create the launcher instance for all items.
         for item in self.items:
             item.create_launcher()
@@ -195,6 +198,7 @@ class Scheduler:
 
         finally:
             signal(SIGINT, old_handler)
+            self.interrupted = stop_now.is_set()
 
         # Cleanup the status printer.
         self.status_printer.exit()
