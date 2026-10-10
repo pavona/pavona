@@ -5,3 +5,7 @@
 `include "keymgr_dpe_base_vseq.sv"
 `include "keymgr_dpe_common_vseq.sv"
 `include "keymgr_dpe_smoke_vseq.sv"
+`include "keymgr_dpe_random_vseq.sv"
+`include "keymgr_dpe_sync_async_fault_cross_vseq.sv"
+`include "keymgr_dpe_sideload_vseq.sv"
+`include "keymgr_dpe_hwsw_invalid_input_vseq.sv"
