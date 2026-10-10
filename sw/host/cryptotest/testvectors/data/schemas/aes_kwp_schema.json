@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/aes_kw_schema.json",
+  "$id": "https://raw.githubusercontent.com/pavona/pavona/main/sw/host/cryptotest/testvectors/data/schemas/aes_kwp_schema.json",
   "title": "Cryptotest AES-KWP Testvector",
   "description": "A list of testvectors for AES-KWP testing",
   "$defs": {
@@ -27,9 +27,25 @@
         "type": "string"
       },
       "algorithm": {
-        "description": "AES (Advanced Encryption Standard) or TDEA (Triple Data Encryption Algorithm)",
+        "description": "AES (Advanced Encryption Standard) or TDEA (Triple Data Encryption Algorithm), or the ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["aes", "tdea"]
+        "enum": ["aes", "tdea", "ACVP-AES-KWP"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
       },
       "operation": {
         "description": "Operation type",

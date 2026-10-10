@@ -15,8 +15,8 @@ filegroup(
 )
 
 exports_files([
-    "aes_kw_schema.json",
     "aes_gcm_schema.json",
+    "aes_kwp_schema.json",
     "drbg_schema.json",
     "ecdh_schema.json",
     "ed25519_schema.json",

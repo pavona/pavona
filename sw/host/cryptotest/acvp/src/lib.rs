@@ -136,7 +136,12 @@ impl ResponseBuilder {
             fs::create_dir_all(&dir)
                 .with_context(|| format!("creating response directory {}", dir.display()))?;
             for (set, groups) in &self.sets {
-                let path = dir.join(format!("{}-{}-{}.json", set.algorithm, set.mode, set.vs_id));
+                let name = if set.mode.is_empty() {
+                    format!("{}-{}.json", set.algorithm, set.vs_id)
+                } else {
+                    format!("{}-{}-{}.json", set.algorithm, set.mode, set.vs_id)
+                };
+                let path = dir.join(name);
                 fs::write(&path, self.document(set, groups)?)
                     .with_context(|| format!("writing {}", path.display()))?;
                 log::info!("Wrote ACVP response {}", path.display());
@@ -166,17 +171,19 @@ impl ResponseBuilder {
                 json!({"tgId": tg_id, "tests": tests})
             })
             .collect();
-        let response = json!([
-            {"acvVersion": ACV_VERSION},
-            {
-                "vsId": set.vs_id,
-                "algorithm": set.algorithm,
-                "mode": set.mode,
-                "revision": set.revision,
-                "isSample": set.is_sample,
-                "testGroups": test_groups,
-            },
-        ]);
+        let mut header = json!({
+            "vsId": set.vs_id,
+            "algorithm": set.algorithm,
+            "mode": set.mode,
+            "revision": set.revision,
+            "isSample": set.is_sample,
+            "testGroups": test_groups,
+        });
+        // Algorithms such as the AES modes have no mode.
+        if set.mode.is_empty() {
+            header.as_object_mut().unwrap().remove("mode");
+        }
+        let response = json!([{"acvVersion": ACV_VERSION}, header]);
         Ok(serde_json::to_string_pretty(&response)?)
     }
 }

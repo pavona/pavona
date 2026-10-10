@@ -54,10 +54,7 @@ cryptotest(
 )
 
 AES_KWP_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kwp_{}_{}_json".format(operation, key_len)
-    for operation in ("ae", "ad")
-    for key_len in ("128", "192", "256")
-] + [
+    "//sw/host/cryptotest/testvectors/data:acvp_aes_kwp_json",
     "//sw/host/cryptotest/testvectors/data:wycheproof_aes_kwp_json",
 ]
 
@@ -68,6 +65,9 @@ AES_KWP_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "aes_kwp_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = AES_KWP_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/aes_kwp_kat:harness",

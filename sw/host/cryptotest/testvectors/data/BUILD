@@ -466,64 +466,34 @@ run_binary(
     ]
 ]
 
-[
-    run_binary(
-        name = "nist_cavp_aes_{}_{}_json".format(
-            function_name.lower(),
-            keylen_with_tmode,
-        ),
-        srcs = [
-            "@nist_cavp_aes_kw_sp_800_38f//:{}_{}.txt".format(
-                function_name,
-                keylen_with_tmode,
-            ),
-            "//sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json",
-        ],
-        outs = [":nist_cavp_aes_{}_{}.json".format(
-            function_name.lower(),
-            keylen_with_tmode,
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_aes_kw_sp_800_38f//:{}_{}.txt)".format(function_name, keylen_with_tmode),
-            "--dst",
-            "$(location :nist_cavp_aes_{}_{}.json)".format(
-                function_name.lower(),
-                keylen_with_tmode,
-            ),
-            "--operation",
-            "{}".format(operation),
-            "--key_len",
-            "{}".format(key_len),
-            "--padding",
-            "{}".format(padding),
-            "--transformation_mode",
-            "{}".format(transformation_mode),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json)",
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_aes_kw_parser",
-    )
-    for function_name, operation, padding in [
-        ("KW_AD", "decrypt", False),
-        ("KW_AE", "encrypt", False),
-        ("KWP_AD", "decrypt", True),
-        ("KWP_AE", "encrypt", True),
-    ]
-    for keylen_with_tmode, key_len, transformation_mode in [
-        ("128_inv", "128", "inverse"),
-        ("128", "128", "null"),
-        ("192_inv", "192", "inverse"),
-        ("192", "192", "null"),
-        ("256_inv", "256", "inverse"),
-        ("256", "256", "null"),
-    ]
-]
+run_binary(
+    name = "acvp_aes_kwp_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_kwp_schema.json",
+        "@acvp_testvectors//ACVP-AES-KWP-1.0:expectedResults.json",
+        "@acvp_testvectors//ACVP-AES-KWP-1.0:prompt.json",
+    ],
+    outs = [":acvp_aes_kwp.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//ACVP-AES-KWP-1.0:prompt.json)",
+        "--dst",
+        "$(location :acvp_aes_kwp.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kwp_schema.json)",
+        "--expected",
+        "$(location @acvp_testvectors//ACVP-AES-KWP-1.0:expectedResults.json)",
+        "--test-type",
+        "kwp",
+        "--skip-unsupported",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_kwp_parser",
+)
 
 run_binary(
     name = "wycheproof_aes_kwp_json",
     srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json",
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_kwp_schema.json",
         "@wycheproof//testvectors_v1:aes_kwp_test.json",
     ],
     outs = [":wycheproof_aes_kwp.json"],
@@ -533,7 +503,7 @@ run_binary(
         "--dst",
         "$(location :wycheproof_aes_kwp.json)",
         "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json)",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kwp_schema.json)",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_aes_kwp_parser",
 )
@@ -673,51 +643,6 @@ run_binary(
         ("87", "verify", "mldsa_87_verify_test.json"),
         ("87", "sign_seed", "mldsa_87_sign_seed_test.json"),
         ("87", "sign_noseed", "mldsa_87_sign_noseed_test.json"),
-    ]
-]
-
-[
-    run_binary(
-        name = "nist_cavp_aes_{}_{}_json".format(
-            function_name.lower(),
-            key_len,
-        ),
-        srcs = [
-            "@nist_cavp_aes_kw_sp_800_38f//:{}.txt".format(
-                function_name,
-            ),
-            "//sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json",
-        ],
-        outs = [":nist_cavp_aes_{}_{}.json".format(
-            function_name.lower(),
-            key_len,
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_aes_kw_sp_800_38f//:{}.txt)".format(function_name),
-            "--dst",
-            "$(location :nist_cavp_aes_{}_{}.json)".format(
-                function_name.lower(),
-                key_len,
-            ),
-            "--operation",
-            "{}".format(operation),
-            "--key_len",
-            "{}".format(key_len),
-            "--padding",
-            "{}".format(padding),
-            "--transformation_mode",
-            "{}".format(transformation_mode),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_kw_schema.json)",
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_aes_kw_parser",
-    )
-    for function_name, key_len, operation, padding, transformation_mode in [
-        ("TKW_AD", "192", "decrypt", False, "null"),
-        ("TKW_AE", "192", "encrypt", False, "null"),
-        ("TKW_AD_inv", "192", "decrypt", False, "inverse"),
-        ("TKW_AE_inv", "192", "encrypt", False, "inverse"),
     ]
 ]
 

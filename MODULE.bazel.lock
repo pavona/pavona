@@ -710,7 +710,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "GLGyX+V4ytAPNjkpiCPJtREcGeaex2TPvgpvWb1p7Zo=",
+        "bzlTransitiveDigest": "dSvgxdof2QWguciesfCPj1Aur877TmVpKdv8Rx5Bub0=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -781,18 +781,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/KAT_AES.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/KAT_AES.zip"
-              ]
-            }
-          },
-          "nist_cavp_aes_kw_sp_800_38f": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "strip_prefix": "kwtestvectors",
-              "sha256": "04a4a82e4de65bca505125295003f9c75a5a815afda046dc83661b8b580dfdf3",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/kwtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/kwtestvectors.zip"
               ]
             }
           },
