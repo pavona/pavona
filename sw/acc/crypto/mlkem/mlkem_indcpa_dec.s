@@ -289,9 +289,9 @@ indcpa_dec:
   /* poly_sub only subtracted m from share 0 of v, so negate the remaining
    * shares 1..d - 1 to make the shared value equal v - m. */
   loopi 16, 3
-    bn.lid       x0, 0(x11)
+    bn.ld        w0, 0(x11)
     bn.subvm.16h w0, w31, w0
-    bn.sid       x0, 0(x11++)
+    bn.sd        w0, 0(x11++)
   endloop
   /* Whitening. */
   bn.xor w0, w31, w31

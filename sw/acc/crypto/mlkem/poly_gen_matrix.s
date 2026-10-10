@@ -39,11 +39,11 @@ poly_gen_matrix_init:
   csrrw x0, kmac_cfg, x5
 
   /* Send the message to the Keccak core. */
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
   li      x5, 2
   csrrw   x0, kmac_partial_write, x5
-  bn.lid  x0, 0(x11)
+  bn.ld   w0, 0(x11)
   bn.wsrw kmac_msg, w0
   ret
 
@@ -61,7 +61,7 @@ poly_gen_matrix_init:
  * @param[in]  kmac_digest: SHAKE-128 squeeze set up by poly_gen_matrix_init
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x7, x11, x28, w0 to w6
+ * clobbered registers: x5 to x7, x11, x28, w0 to w6
  * clobbered flag groups: FG0
  */
 
@@ -87,9 +87,8 @@ poly_gen_matrix:
   bn.subi coeff_mask, coeff_mask, 1
 
   /* Load modulus. */
-  li      x4, 3
   la      x6, const_q
-  bn.lid  x4, 0(x6)
+  bn.ld   w3, 0(x6)
   bn.rshi mod, w31, mod >> 240 /* Only keep mod in lowest word */
 
   /* Counts number of remaining accumulator slots. */
@@ -131,7 +130,7 @@ _rej_sample_loop:
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
   sub        accumulator_count, accumulator_count, x28 /* Move to next slot iff not rejected. */
   bne        accumulator_count, x0, _skip_store2a
-  bn.sid     x0, 0(x11++)
+  bn.sd      w0, 0(x11++)
   li         accumulator_count, 16 /* Set all slots to available. */
   beq        x11, x5, _end_rej_sample_loop
 
@@ -145,7 +144,7 @@ _skip_store2a:
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
   sub        accumulator_count, accumulator_count, x28
   bne        accumulator_count, x0, _skip_store2
-  bn.sid     x0, 0(x11++)
+  bn.sd      w0, 0(x11++)
   li         accumulator_count, 16
   beq        x11, x5, _end_rej_sample_loop
 
@@ -167,7 +166,7 @@ _skip_store2:
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
   sub        accumulator_count, accumulator_count, x28
   bne        accumulator_count, x0, _skip_store4a
-  bn.sid     x0, 0(x11++)
+  bn.sd      w0, 0(x11++)
   li         accumulator_count, 16
   beq        x11, x5, _end_rej_sample_loop
 
@@ -181,7 +180,7 @@ _skip_store4a:
   bn.sel     accumulator, accumulator_new, accumulator, FG0.C
   sub        accumulator_count, accumulator_count, x28
   bne        accumulator_count, x0, _skip_store4
-  bn.sid     x0, 0(x11++)
+  bn.sd      w0, 0(x11++)
   li         accumulator_count, 16
   beq        x11, x5, _end_rej_sample_loop
 
@@ -211,7 +210,7 @@ _poly_uniform_inner_loop:
     bn.sel   accumulator, accumulator_new, accumulator, FG0.C
     sub      accumulator_count, accumulator_count, x28
     bne      accumulator_count, x0, _skip_store1
-    bn.sid   x0, 0(x11++)
+    bn.sd    w0, 0(x11++)
     li       accumulator_count, 16
   _skip_store1:
     bn.rshi  shake_reg, w31, shake_reg >> 12 /* Shift out used 12 bits. */
@@ -235,7 +234,7 @@ _fast_inner_loop:
 
   /* Possibly flush accumulator if we filled it (~3% of time). */
   bne    accumulator_count, x0, _handle_rest
-  bn.sid x0, 0(x11++)
+  bn.sd  w0, 0(x11++)
   li     accumulator_count, 16
 
 _handle_rest:
@@ -248,7 +247,7 @@ _handle_rest:
     bn.sel     accumulator, accumulator_new, accumulator, FG0.C
     sub        accumulator_count, accumulator_count, x28
     bne        accumulator_count, x0, _skip_store1_fast
-    bn.sid     x0, 0(x11++)
+    bn.sd      w0, 0(x11++)
     li         accumulator_count, 16
   _skip_store1_fast:
     bn.rshi    shake_reg, w31, shake_reg >> 12

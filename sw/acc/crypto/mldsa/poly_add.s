@@ -22,19 +22,16 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4, x10 to x12, w0 to w1
+ * clobbered registers: x10 to x12, w0 to w1
  * clobbered flag groups: none
  */
 .globl poly_add
 .type poly_add, @function
 poly_add:
-  /* Set up constants for input/state */
-  li x4, 1
-
   loopi 32, 4
-    bn.lid      x0, 0(x10++)
-    bn.lid      x4, 0(x11++)
+    bn.ld       w0, 0(x10++)
+    bn.ld       w1, 0(x11++)
     bn.addvm.8s w0, w0, w1
-    bn.sid      x0, 0(x12++)
+    bn.sd       w0, 0(x12++)
   endloop
   ret

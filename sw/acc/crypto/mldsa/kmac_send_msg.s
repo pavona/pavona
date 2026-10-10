@@ -41,7 +41,7 @@ keccak_send_message:
   loop x5, 2
     /* w0 <= dmem[x10..x10+32] = msg[32*i..32*i-1]
        x10 <= x10 + 32 */
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     /* Write to the KECCAK_MSG wide special register (index 9).
        KECCAK_MSG <= w0 */
     bn.wsrw kmac_msg, w0
@@ -57,7 +57,7 @@ _no_full_wdr:
 
   /* Send a partial-word write. */
   csrrw   x0, kmac_partial_write, x5
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
 
   /* Increment the source pointer to reflect the partial write. */

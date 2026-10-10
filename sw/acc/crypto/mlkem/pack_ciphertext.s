@@ -36,11 +36,9 @@
 poly_compress:
   /* Load constants. */
   la        x5, const_qp1_half
-  addi      x4, x0, 2
-  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  bn.ld     w2, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv
-  addi      x4, x0, 17
-  bn.lid    x4, 0(x5)
+  bn.ld     w17, 0(x5)
   bn.shv.8s w17, w17 >> 8 /* 1290167 */
 
   /* The compression of a is done as follows:
@@ -60,7 +58,7 @@ poly_compress:
 
   loopi 4, 16
     loopi 4, 14
-      bn.lid               x0, 0(x10++)
+      bn.ld                w0, 0(x10++)
       bn.shv.16h           w0, w0 << 4   /* <= 4 */
       bn.addv.16h          w0, w0, w2    /* += 1665 */
       bn.trn1.16h          w1, w0, w31   /* Put even coeffs to 32-bit slots. */
@@ -76,7 +74,7 @@ poly_compress:
       endloop
       nop
     endloop
-    bn.sid x4, 0(x11++)
+    bn.sd  w4, 0(x11++)
   endloop
 
   ret
@@ -88,7 +86,7 @@ _handle_k4_poly_compress:
 
   /* 1 */
   loopi 3, 6
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_compress_16
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 5
@@ -96,14 +94,14 @@ _handle_k4_poly_compress:
     endloop
     nop
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_compress_16
   loopi 3, 2
     bn.rshi w4, w1, w4 >> 5
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 1
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 2 */
   loopi 13, 2
@@ -111,7 +109,7 @@ _handle_k4_poly_compress:
     bn.rshi w1, w31, w1 >> 16
   endloop
   loopi 2, 6
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_compress_16
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 5
@@ -119,14 +117,14 @@ _handle_k4_poly_compress:
     endloop
     nop
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_compress_16
   loopi 6, 2
     bn.rshi w4, w1, w4 >> 5
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 2
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 3 */
   loopi 10, 2
@@ -134,7 +132,7 @@ _handle_k4_poly_compress:
     bn.rshi w1, w31, w1 >> 16
   endloop
   loopi 2, 6
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_compress_16
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 5
@@ -142,14 +140,14 @@ _handle_k4_poly_compress:
     endloop
     nop
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_compress_16
   loopi 9, 2
     bn.rshi w4, w1, w4 >> 5
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 3
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 4 */
   loopi 7, 2
@@ -157,7 +155,7 @@ _handle_k4_poly_compress:
     bn.rshi w1, w31, w1 >> 16
   endloop
   loopi 2, 6
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_compress_16
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 5
@@ -165,14 +163,14 @@ _handle_k4_poly_compress:
     endloop
     nop
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_compress_16
   loopi 12, 2
     bn.rshi w4, w1, w4 >> 5
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 4
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 5 */
   loopi 4, 2
@@ -180,7 +178,7 @@ _handle_k4_poly_compress:
     bn.rshi w1, w31, w1 >> 16
   endloop
   loopi 3, 6
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_compress_16
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 5
@@ -188,7 +186,7 @@ _handle_k4_poly_compress:
     endloop
     nop
   endloop
-  bn.sid x4, 0(x11++)
+  bn.sd  w4, 0(x11++)
 
   ret
 
@@ -250,11 +248,9 @@ _poly_compress_16:
 poly_polyvec_compress:
   /* Load constants. */
   la        x5, const_qp1_half
-  addi      x4, x0, 2
-  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  bn.ld     w2, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv
-  addi      x4, x0, 17
-  bn.lid    x4, 0(x5)
+  bn.ld     w17, 0(x5)
   bn.shv.8s w17, w17 >> 8 /* 1290167 */
 
   addi      x4, x0, 4
@@ -263,87 +259,87 @@ poly_polyvec_compress:
 
   loopi 2, 61
     /* 1 */
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 9, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
     bn.rshi w4, w1, w4 >> 6
-    bn.sid  x4, 0(x11++)
+    bn.sd   w4, 0(x11++)
 
     /* 2 */
     loopi 7, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 3, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
     bn.rshi w4, w1, w4 >> 2
-    bn.sid  x4, 0(x11++)
+    bn.sd   w4, 0(x11++)
 
     /* 3 */
     loopi 13, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 12, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
     bn.rshi w4, w1, w4 >> 8
-    bn.sid  x4, 0(x11++)
+    bn.sd   w4, 0(x11++)
 
     /* 4 */
     loopi 4, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 6, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
     bn.rshi w4, w1, w4 >> 4
-    bn.sid  x4, 0(x11++)
+    bn.sd   w4, 0(x11++)
 
     /* 5 */
     loopi 10, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     jal    x1, _poly_polyvec_compress_16_kn4
     loopi 16, 2
       bn.rshi w4, w1, w4 >> 10
       bn.rshi w1, w31, w1 >> 16
     endloop
-    bn.sid  x4, 0(x11++)
+    bn.sd   w4, 0(x11++)
   endloop
 
   ret
@@ -362,181 +358,181 @@ _handle_k4_poly_polyvec_compress:
   bn.addi w17, w17, 1 /* w17 = 1290168 */
 
   /* 1 */
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 7, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 3
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 2 */
   loopi 9, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 14, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 6
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 3 */
   loopi 2, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 5, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 9
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 4 */
   loopi 11, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 13, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 1
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 5 */
   loopi 3, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 4, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 4
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 6 */
   loopi 12, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 11, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 7
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 7 */
   loopi 5, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 2, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 10
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 8 */
   loopi 14, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 10, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 2
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 9 */
   loopi 6, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   bn.rshi w4, w1, w4 >> 11
   bn.rshi w1, w31, w1 >> 16
   bn.rshi w4, w1, w4 >> 5
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 10 */
   loopi 15, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 8, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
   bn.rshi w4, w1, w4 >> 8
-  bn.sid  x4, 0(x11++)
+  bn.sd   w4, 0(x11++)
 
   /* 11 */
   loopi 8, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   jal    x1, _poly_polyvec_compress_16_k4
   loopi 16, 2
     bn.rshi w4, w1, w4 >> 11
     bn.rshi w1, w31, w1 >> 16
   endloop
-  bn.sid x4, 0(x11++)
+  bn.sd  w4, 0(x11++)
 
   ret
 

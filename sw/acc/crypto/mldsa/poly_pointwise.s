@@ -22,18 +22,15 @@
  * @param[in]  w31: all-zero
  * @param[out] x12: dmem pointer to result
  *
- * clobbered registers: x4, x10 to x12, w0 to w1, acch, acc
+ * clobbered registers: x10 to x12, w0 to w1, acc, acch
  * clobbered flag groups: none
  */
 .globl poly_pointwise
 .type poly_pointwise, @function
 poly_pointwise:
-  /* Set up constants for input/state */
-  li x4, 1
-
   loopi 32, 9
-    bn.lid x0, 0(x10++)
-    bn.lid x4, 0(x11++)
+    bn.ld  w0, 0(x10++)
+    bn.ld  w1, 0(x11++)
 
     bn.mulv.8s.even.acc.z.lo w0, w0, w1
     bn.mulv.l.8s.even.lo     w0, w0, sw0.1
@@ -42,7 +39,7 @@ poly_pointwise:
     bn.mulv.l.8s.odd.lo      w0, w0, sw0.1
     bn.mulv.l.8s.odd.acc.hi  w0, w0, sw0.0
 
-    bn.sid x0, 0(x12++)
+    bn.sd  w0, 0(x12++)
   endloop
 
   ret
@@ -61,18 +58,15 @@ poly_pointwise:
  * @param[in]    w16: sw0, where sw0.0 = Q and sw0.1 = Q^-1 mod 2^32
  * @param[inout] x12: dmem pointer to result
  *
- * clobbered registers: x4, x10 to x12, w0 to w1, acch, acc
+ * clobbered registers: x10 to x12, w0 to w1, acc, acch
  * clobbered flag groups: none
  */
 .globl poly_pointwise_acc
 .type poly_pointwise_acc, @function
 poly_pointwise_acc:
-  /* Set up constants for input/state */
-  li x4, 1
-
   loopi 32, 11
-    bn.lid x0, 0(x10++)
-    bn.lid x4, 0(x11++)
+    bn.ld  w0, 0(x10++)
+    bn.ld  w1, 0(x11++)
 
     bn.mulv.8s.even.acc.z.lo w0, w0, w1
     bn.mulv.l.8s.even.lo     w0, w0, sw0.1
@@ -82,10 +76,10 @@ poly_pointwise_acc:
     bn.mulv.l.8s.odd.acc.hi  w0, w0, sw0.0
 
     /* Accumulate onto output polynomial */
-    bn.lid      x4, 0(x12)
+    bn.ld       w1, 0(x12)
     bn.addvm.8s w0, w0, w1
 
-    bn.sid x0, 0(x12++)
+    bn.sd  w0, 0(x12++)
   endloop
 
   ret

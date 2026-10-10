@@ -42,7 +42,7 @@
  * @param[in]  x11: pointer to input byte array with POLYT1_PACKEDBYTES bytes
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x6 to x7, x10 to x11, x28 to x31, w1 to w2, w5 to w6
+ * clobbered registers: x10 to x11, x31, w1 to w2, w5 to w6
  * clobbered flag groups: FG0
  */
 
@@ -50,25 +50,17 @@
 .type polyt1_unpack, @function
 polyt1_unpack:
 
-  /* Setup WDR */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-  li x29, 4
-  li x30, 5
-
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
   la     x31, polyt1_unpack_mask
-  bn.lid x30, 0(x31)
-  li     x31, 6
+  bn.ld  w5, 0(x31)
 
   loopi 2, 23
     /* Start unpacking */
-    bn.lid x6, 0(x11++)
+    bn.ld  w1, 0(x11++)
     jal    x1, _inner_polyt1_unpack
 
     /* Current state: w1 = 0|w1[160:256] */
-    bn.lid x31, 0(x11++)    /* Load new WLEN word to w6 */
+    bn.ld  w6, 0(x11++)     /* Load new WLEN word to w6 */
     bn.or  w1, w1, w6 << 96 /* w1 = w6[0:160]|w1[160:256] */
     jal    x1, _inner_polyt1_unpack
 
@@ -78,13 +70,13 @@ polyt1_unpack:
     jal     x1, _inner_polyt1_unpack
 
     /* Current state: w1 = 0|w6[224:256] */
-    bn.lid x31, 0(x11++)    /* Load new WLEN word to w6 */
+    bn.ld  w6, 0(x11++)     /* Load new WLEN word to w6 */
     bn.or  w1, w1, w6 << 32 /* w1 = w6[0:224]|w6_prev[224:256] */
     jal    x1, _inner_polyt1_unpack
 
     /* Current state: w1 = 0|w6[128:224] */
     bn.or  w1, w31, w6 >> 128
-    bn.lid x31, 0(x11++)     /* Load new WLEN word to w6 */
+    bn.ld  w6, 0(x11++)      /* Load new WLEN word to w6 */
     bn.or  w1, w1, w6 << 128 /* w1 = w6[0:128]|w6_prev[128:256] */
     jal    x1, _inner_polyt1_unpack
 
@@ -93,7 +85,7 @@ polyt1_unpack:
     jal   x1, _inner_polyt1_unpack
 
     /* Current state: w1 = 0|w6[192:256] */
-    bn.lid x31, 0(x11++)    /* Load new WLEN word to w6 */
+    bn.ld  w6, 0(x11++)     /* Load new WLEN word to w6 */
     bn.or  w1, w1, w6 << 64 /* w1 = w6[0:192]|w6_prev[192:256] */
     jal    x1, _inner_polyt1_unpack
 
@@ -131,7 +123,7 @@ _inner_polyt1_unpack:
 
     bn.and w2, w2, w5 /* Mask unpacked coeffs to 10 bit */
 
-    bn.sid x7, 0(x10++)
+    bn.sd  w2, 0(x10++)
   endloop
   ret
 
@@ -145,7 +137,7 @@ _inner_polyt1_unpack:
  * @param[in]  x14: K (used by polyz_unpack dispatcher only)
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x5, x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered registers: x5, x10 to x11, x28, w1 to w6
  * clobbered flag groups: FG0
  */
 .globl polyz_unpack
@@ -161,79 +153,72 @@ polyz_unpack:
  *
  * Parameters as for polyz_unpack, which dispatches here.
  *
- * clobbered registers: x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered registers: x10 to x11, x28, w1 to w6
  * clobbered flag groups: FG0
  */
 .globl polyz_unpack_17
 .type polyz_unpack_17, @function
 polyz_unpack_17:
   /* Load gamma1 as a vector into w4 */
-  li     x7, 4
   la     x28, gamma1_vec_const_17
-  bn.lid x7, 0(x28)
+  bn.ld  w4, 0(x28)
 
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-  li     x30, 5
   la     x28, polyz_unpack_mask_17
-  bn.lid x30, 0(x28)
-
-  /* Setup WDR */
-  li x7, 2
-  li x28, 3
-  li x31, 6
+  bn.ld  w5, 0(x28)
 
   loopi 2, 42
-    bn.lid x31, 0(x11++)
+    bn.ld  w6, 0(x11++)
     bn.mov w1, w6
     jal    x1, _inner_polyz_unpack_17
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 144
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w3 >> 32
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 176
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w6 >> 64
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 208
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w3 >> 96
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 240
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 128
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w3 >> 16
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 160
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w6 >> 48
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 192
     jal     x1, _inner_polyz_unpack_17
 
     bn.rshi w1, w31, w3 >> 80
     jal     x1, _inner_polyz_unpack_17
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 224
     jal     x1, _inner_polyz_unpack_17
 
@@ -257,7 +242,7 @@ _inner_polyz_unpack_17:
 
   bn.and      w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
-  bn.sid      x7, 0(x10++)
+  bn.sd       w2, 0(x10++)
   ret
 
 /**
@@ -265,51 +250,44 @@ _inner_polyz_unpack_17:
  *
  * Parameters as for polyz_unpack, which dispatches here.
  *
- * clobbered registers: x7, x10 to x11, x28, x30 to x31, w1 to w6
+ * clobbered registers: x10 to x11, x28, w1 to w6
  * clobbered flag groups: FG0
  */
 .globl polyz_unpack_19
 .type polyz_unpack_19, @function
 polyz_unpack_19:
   /* Load gamma1 as a vector into w4 */
-  li     x7, 4
   la     x28, gamma1_vec_const_19
-  bn.lid x7, 0(x28)
+  bn.ld  w4, 0(x28)
 
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-  li     x30, 5
   la     x28, polyz_unpack_mask_19
-  bn.lid x30, 0(x28)
-
-  /* Setup WDR */
-  li x7, 2
-  li x28, 3
-  li x31, 6
+  bn.ld  w5, 0(x28)
 
   loopi 4, 22
-    bn.lid x31, 0(x11++)
+    bn.ld  w6, 0(x11++)
     bn.mov w1, w6
     jal    x1, _inner_polyz_unpack_19
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 160
     jal     x1, _inner_polyz_unpack_19
 
     bn.rshi w1, w31, w3 >> 64
     jal     x1, _inner_polyz_unpack_19
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 224
     jal     x1, _inner_polyz_unpack_19
 
-    bn.lid  x28, 0(x11++)
+    bn.ld   w3, 0(x11++)
     bn.rshi w1, w3, w6 >> 128
     jal     x1, _inner_polyz_unpack_19
 
     bn.rshi w1, w31, w3 >> 32
     jal     x1, _inner_polyz_unpack_19
 
-    bn.lid  x31, 0(x11++)
+    bn.ld   w6, 0(x11++)
     bn.rshi w1, w6, w3 >> 192
     jal     x1, _inner_polyz_unpack_19
 
@@ -333,7 +311,7 @@ _inner_polyz_unpack_19:
 
   bn.and      w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_vec_const - w2 */
-  bn.sid      x7, 0(x10++)
+  bn.sd       w2, 0(x10++)
   ret
 
 /**
@@ -353,7 +331,7 @@ _inner_polyz_unpack_19:
  * @param[inout] x10: pointer to polynomial
  * @param[out]   x12: 0 on success, 1 on failure
  *
- * clobbered registers: x5 to x7, x10, x12, w0 to w4
+ * clobbered registers: x5, x7, x10, x12, w0 to w4
  * clobbered flag groups: FG0
  */
 .globl poly_chknorm
@@ -362,7 +340,7 @@ poly_chknorm:
   /* Load the bound into a wide register. */
   la      x7, poly_wdr2gpr
   sw      x11, 0(x7)
-  bn.lid  x0, 0(x7)
+  bn.ld   w0, 0(x7)
   bn.rshi w0, w0, w0 >> 32
   bn.rshi w0, w31, w0 >> 224
 
@@ -380,10 +358,8 @@ poly_chknorm:
   /* Initialize success flag (0 = failure, 8 = success). */
   li x5, 8
 
-  /* Setup WDRs */
-  li x6, 1
   loopi  32, 11
-    bn.lid     x6, 0(x10++)
+    bn.ld      w1, 0(x10++)
     /* constant time absolute value
        t = a->coeffs[i] >> 31;
        t = a->coeffs[i] - (t & 2*a->coeffs[i]);
@@ -425,7 +401,7 @@ poly_chknorm:
  * @param[in]  x12: CTILDEBYTES
  * @param[in]  x13: TAU
  *
- * clobbered registers: x5 to x7, x10 to x16, x28 to x29, w0 to w3
+ * clobbered registers: x5 to x7, x10 to x15, x28 to x29, w0 to w3
  * clobbered flag groups: FG0
  */
 .globl poly_challenge
@@ -458,14 +434,9 @@ poly_challenge:
   add x6, x0, x10
 
   /* w31 contains all zeros by convention */
-  li x5, 31
   loopi 32, 1
-    bn.sid x5, 0(x6++)
+    bn.sd  w31, 0(x6++)
   endloop
-
-  /* Setup WDR */
-  li x5, 0
-  li x16, 3
 
   /* Set up pointer to tmp buffer. */
   la x29, poly_wdr2gpr
@@ -510,7 +481,7 @@ _loop_inner_poly_challenge:
     li      x12, 256 /* reset the remaining bits counter */
 _loop_inner_skip_load_poly_challenge:
     /* Store w0 to memory in order to read one word into a GPR */
-    bn.sid  x5, 0(x29)
+    bn.sd   w0, 0(x29)
     bn.rshi w0, w31, w0 >> 8 /* shift out used bits */
     addi    x12, x12, -8     /* decrease number of remaining bits */
     /* NOTE: optimize this to use all bytes from this load */
@@ -539,7 +510,7 @@ _loop_inner_skip_load_poly_challenge:
     bn.and  w3, w1, w2  /* signs & 1 */
     bn.add  w3, w3, w3  /* 2 * (signs & 1) */
     bn.subm w3, w2, w3  /* 1 - 2 * (signs & 1) */
-    bn.sid  x16, 0(x29) /* Store w3 to memory to move value to GPR */
+    bn.sd   w3, 0(x29)  /* Store w3 to memory to move value to GPR */
     lw      x7, 0(x29)
     sw      x7, 0(x6)   /* c->coeffs[b] = 1 - 2*(signs & 1); */
 
@@ -563,7 +534,7 @@ _loop_inner_skip_load_poly_challenge:
  * @param[in]  x11: dmem pointer to polynomial
  * @param[out] dmem[x11]: freshly sampled polynomial
  *
- * clobbered registers: x5 to x7, x11, x13, x28 to x29, x31, w0, w8, w10 to w15, w21
+ * clobbered registers: x5 to x7, x11, x13, x28 to x29, w0, w8, w10 to w15, w21
  * clobbered flag groups: FG0
  */
 .globl poly_uniform
@@ -581,9 +552,8 @@ poly_uniform:
   bn.or   w11, w11, w11 << 32
 
   /* Load the vectorized modulus for later. */
-  li     x5, 12
   la     x6, modulus
-  bn.lid x5, 0(x6)
+  bn.ld  w12, 0(x6)
 
   /* Set up a mask to select the most significant byte of each 32 bits. */
   bn.shv.8s w13, w11 << 24
@@ -598,9 +568,6 @@ poly_uniform:
   /* Initialize a register to increment the vector index. When we reach the
      first bad vector, we set this to zero to stop incrementing. */
   bn.addi w15, w31, 1
-
-  /* Initialize a temp register pointer. */
-  li x31, 21
 
   /* Speculatively store 256 candidate coefficients.
 
@@ -646,7 +613,7 @@ poly_uniform:
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
     .endr
     /* Store 8 coefficient candidates. */
-    bn.sid x0, 0(x11++)
+    bn.sd  w0, 0(x11++)
     /* Load 2 23-bit coefficient candidates into vector register. */
     .rept 2
       bn.rshi w0, shake_reg, w0 >> 32
@@ -665,7 +632,7 @@ poly_uniform:
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
     .endr
     /* Store 8 coefficient candidates. */
-    bn.sid x0, 0(x11++)
+    bn.sd  w0, 0(x11++)
     /* Load 5 23-bit coefficient candidates into vector register. */
     .rept 5
       bn.rshi w0, shake_reg, w0 >> 32
@@ -684,12 +651,12 @@ poly_uniform:
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
     .endr
     /* Store 8 coefficient candidates. */
-    bn.sid x0, 0(x11++)
+    bn.sd  w0, 0(x11++)
     /* Mask and check the three vectors stored so far in this iteration. */
     loopi  3, 8
-      bn.lid     x31, 0(x28)
+      bn.ld      w21, 0(x28)
       bn.and     w21, w21, w11
-      bn.sid     x31, 0(x28++)
+      bn.sd      w21, 0(x28++)
       bn.subv.8s w10, w21, w12
       bn.and     w10, w10, w13
       bn.cmp     w10, w13
@@ -702,11 +669,11 @@ poly_uniform:
       bn.rshi shake_reg, shake_reg, shake_reg >> 24
     .endr
     /* Store 8 coefficient candidates. */
-    bn.sid x0, 0(x11++)
+    bn.sd  w0, 0(x11++)
     /* Mask and check the fourth vector (a jump cannot end the loop body). */
-    bn.lid     x31, 0(x28)
+    bn.ld      w21, 0(x28)
     bn.and     w21, w21, w11
-    bn.sid     x31, 0(x28++)
+    bn.sd      w21, 0(x28++)
     bn.subv.8s w10, w21, w12
     bn.and     w10, w10, w13
     bn.cmp     w10, w13
@@ -737,8 +704,7 @@ _poly_uniform_discard_coeff_done:
 
   /* Copy the index of the first bad coefficient into a GPR. */
   la     x5, poly_wdr2gpr
-  li     x6, 14
-  bn.sid x6, 0(x5)
+  bn.sd  w14, 0(x5)
   lw     x13, 0(x5)
 
   /* If the index is 32, there are no bad coefficients and we can return. */
@@ -749,7 +715,7 @@ _poly_uniform_discard_coeff_done:
   /* Load the bad vector. */
   slli   x5, x13, 5
   add    x5, x5, x11
-  bn.lid x0, 0(x5)
+  bn.ld  w0, 0(x5)
 
   /* Subtract the modulus from each coefficient. */
   bn.subv.8s w10, w0, w12
@@ -802,14 +768,14 @@ _poly_uniform_discard_coeff_skip_shift:
   /* Load the last vector of coefficients. */
   srli    x5, x5, 5
   slli    x5, x5, 5
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   /* Rotate so the last coefficient is in the least significant position. */
   bn.rshi w0, w0, w0 >> 224
   /* Speculatively copy 3 bytes of digest (some bytes may be invalid). */
   bn.rshi w0, shake_reg, w0 >> 32
   bn.rshi shake_reg, shake_reg, shake_reg >> 24
   /* Speculatively store. */
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
   /* Update number of bytes available and check for underflow. If the bytes
      were all valid, we're done. */
   addi    x7, x7, -3
@@ -835,7 +801,7 @@ _poly_uniform_discard_coeff_skip_shift:
   /* Update the number of bytes available in the digest. */
   addi    x7, x7, 32
   /* Store again. */
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 _poly_uniform_recompute_first_bad_index:
   /* Calculate the number of vectors remaining (includes the just-corrected
      one; we may have shifted in a bad coefficient). */
@@ -873,22 +839,21 @@ _poly_uniform_recompute_first_bad_index:
  * @param[in]    w12: vectorized modulus
  * @param[in]    w13: mask that selects upper 8 bits of each 32b word
  * @param[in]    x6: number of vectors to check
- * @param[in]    x31: constant 21 (wide register pointer)
  * @param[inout] x28: pointer to first input vector (updated in-place)
  * @param[inout] w14: index, either current index or first bad index if found
  * @param[inout] w15: incrementer, 1 if bad index not found yet otherwise 0
  *
- * clobbered registers: x28, w10, w14 to w15, w21, wref-x31
+ * clobbered registers: x28, w10, w14 to w15, w21
  * clobbered flag groups: FG0
  */
 .type poly_uniform_mask_and_check_vectors, @function
 poly_uniform_mask_and_check_vectors:
   loop  x6, 8
     /* Load the next vector. */
-    bn.lid     x31, 0(x28)
+    bn.ld      w21, 0(x28)
     /* Mask and store the data. */
     bn.and     w21, w21, w11
-    bn.sid     x31, 0(x28++)
+    bn.sd      w21, 0(x28++)
     /* Check for underflow in all coefficients. */
     bn.subv.8s w10, w21, w12
     bn.and     w10, w10, w13
@@ -907,7 +872,8 @@ poly_uniform_mask_and_check_vectors:
  * @param[in]  x11: dmem pointer to polynomial
  * @param[in]  x14: K (used by poly_uniform_eta dispatcher only)
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1, w8 to w9, w12 to w14, w20 to w21
+ * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ *                      w12 to w14, w20 to w21
  * clobbered flag groups: FG0
  */
 #ifndef HARDENED
@@ -924,8 +890,8 @@ poly_uniform_eta:
  *
  * Parameters as for poly_uniform_eta, which dispatches here.
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1,
- *                      w8 to w9, w12 to w14, w20 to w21
+ * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ *                      w12 to w14, w20 to w21
  * clobbered flag groups: FG0
  */
 .globl poly_uniform_eta_eta_2
@@ -955,11 +921,6 @@ poly_uniform_eta_eta_2:
   /* x5 = 1024, stop address */
   addi x5, x11, 1024
 
-  /* Initialize constants for WDR index */
-  li x30, 9
-  li x31, 10
-  li x28, 15
-
   /* Initialize constants */
   bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 15
@@ -967,16 +928,13 @@ poly_uniform_eta_eta_2:
   li      x16, 2
 
   la     x31, poly_uniform_eta_205
-  li     x29, 12
-  bn.lid x29, 0(x31)
+  bn.ld  w12, 0(x31)
 
   la     x31, poly_uniform_eta_5 /* Merge into one const for lane use */
-  li     x29, 0
-  bn.lid x29, 0(x31)
+  bn.ld  w0, 0(x31)
 
   la     x31, eta_2
-  li     x29, 1
-  bn.lid x29, 0(x31)
+  bn.ld  w1, 0(x31)
 
   li x31, 8 /* coeffs to be collected in register */
 
@@ -1012,7 +970,7 @@ _rej_eta_sample_loop_eta_2:
     jal x1, _poly_uniform_eta_arithmetic_eta_2
 
     /* Store coefficient value from WDR into target polynomial */
-    bn.sid x30, 0(x11++)
+    bn.sd  w9, 0(x11++)
     li     x31, 8
 _rej_eta_sample_loop_continue_eta_2:
     bn.rshi shake_reg, w31, shake_reg >> 4 /* shift out the used nibble */
@@ -1030,8 +988,8 @@ _rej_eta_sample_loop_continue_eta_2:
  *
  * Parameters as for poly_uniform_eta, which dispatches here.
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x28 to x31, w0 to w1,
- *                      w8 to w9, w12, w14, w20 to w21
+ * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ *                      w12, w14, w20 to w21
  * clobbered flag groups: FG0
  */
 .globl poly_uniform_eta_eta_4
@@ -1061,11 +1019,6 @@ poly_uniform_eta_eta_4:
   /* x5 = 1024, stop address */
   addi x5, x11, 1024
 
-  /* Initialize constants for WDR index */
-  li x30, 9
-  li x31, 10
-  li x28, 15
-
   /* Initialize constants */
   bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 9
@@ -1073,16 +1026,13 @@ poly_uniform_eta_eta_4:
   li      x16, 2
 
   la     x31, poly_uniform_eta_205
-  li     x29, 12
-  bn.lid x29, 0(x31)
+  bn.ld  w12, 0(x31)
 
   la     x31, poly_uniform_eta_5 /* Merge into one const for lane use */
-  li     x29, 0
-  bn.lid x29, 0(x31)
+  bn.ld  w0, 0(x31)
 
   la     x31, eta_4
-  li     x29, 1
-  bn.lid x29, 0(x31)
+  bn.ld  w1, 0(x31)
 
   li x31, 8 /* coeffs to be collected in register */
 
@@ -1115,7 +1065,7 @@ _rej_eta_sample_loop_eta_4:
     jal x1, _poly_uniform_eta_arithmetic_eta_4
 
     /* Store coefficient value from WDR into target polynomial */
-    bn.sid x30, 0(x11++)
+    bn.sd  w9, 0(x11++)
     li     x31, 8
 _rej_eta_sample_loop_continue_eta_4:
     bn.rshi shake_reg, w31, shake_reg >> 4 /* shift out the used nibble */
@@ -1169,7 +1119,7 @@ _poly_uniform_eta_arithmetic_eta_4:
  * @param[out] x12: input hint poly pointer
  * @param[in]  x14: K (used by poly_use_hint dispatcher only)
  *
- * clobbered registers: x5 to x6, x10 to x12, w0 to w13, w15, w30, mod
+ * clobbered registers: x5, x10 to x12, w0 to w13, w15, w30, mod
  * clobbered flag groups: FG0
  */
 #endif
@@ -1186,33 +1136,32 @@ poly_use_hint:
  *
  * Parameters as for poly_use_hint, which dispatches here.
  *
- * clobbered registers: x5 to x6, x10 to x12, w0 to w13, w15, w30, mod
+ * clobbered registers: x5, x10 to x12, w0 to w13, w15, w30, mod
  * clobbered flag groups: FG0
  */
 .globl poly_use_hint_88
 .type poly_use_hint_88, @function
 poly_use_hint_88:
   la     x5, decompose_127_const
-  li     x6, 5
-  bn.lid x6++, 0(x5)
+  bn.ld  w5, 0(x5)
 
   la     x5, decompose_const_88
-  bn.lid x6++, 0(x5)
+  bn.ld  w6, 0(x5)
 
   la     x5, reduce32_const
-  bn.lid x6++, 0(x5)
+  bn.ld  w7, 0(x5)
 
   la     x5, decompose_43_const_88
-  bn.lid x6++, 0(x5)
+  bn.ld  w8, 0(x5)
 
   la     x5, gamma2_vec_const_88
-  bn.lid x6++, 0(x5)
+  bn.ld  w9, 0(x5)
 
   la     x5, qm1half_const
-  bn.lid x6++, 0(x5)
+  bn.ld  w10, 0(x5)
 
   la     x5, modulus
-  bn.lid x6++, 0(x5)
+  bn.ld  w11, 0(x5)
 
   bn.wsrr w15, MOD
 
@@ -1221,10 +1170,10 @@ poly_use_hint_88:
   bn.wsrw    MOD, w12
 
   loopi 32, 11
-    bn.lid x0, 0(x11++)
+    bn.ld  w0, 0(x11++)
     jal    x1, decompose_88
 
-    bn.lid x0, 0(x12++)
+    bn.ld  w0, 0(x12++)
 
     bn.subv.8s w1, w1, w0
     bn.shv.8s  w12, w1 >> 31
@@ -1236,7 +1185,7 @@ poly_use_hint_88:
 
     bn.addvm.8s w0, w2, w12
     bn.subvm.8s w0, w0, w13
-    bn.sid      x0, 0(x10++)
+    bn.sd       w0, 0(x10++)
   endloop
 
   bn.wsrw MOD, w15
@@ -1248,33 +1197,32 @@ poly_use_hint_88:
  *
  * Parameters as for poly_use_hint, which dispatches here.
  *
- * clobbered registers: x5 to x6, x10 to x12, w0 to w2, w4 to w13, w15, w30, mod
+ * clobbered registers: x5, x10 to x12, w0 to w2, w4 to w13, w15, w30, mod
  * clobbered flag groups: FG0
  */
 .globl poly_use_hint_32
 .type poly_use_hint_32, @function
 poly_use_hint_32:
   la     x5, decompose_127_const
-  li     x6, 5
-  bn.lid x6++, 0(x5)
+  bn.ld  w5, 0(x5)
 
   la     x5, decompose_const_32
-  bn.lid x6++, 0(x5)
+  bn.ld  w6, 0(x5)
 
   la     x5, reduce32_const
-  bn.lid x6++, 0(x5)
+  bn.ld  w7, 0(x5)
 
   la     x5, decompose_43_const_32
-  bn.lid x6++, 0(x5)
+  bn.ld  w8, 0(x5)
 
   la     x5, gamma2_vec_const_32
-  bn.lid x6++, 0(x5)
+  bn.ld  w9, 0(x5)
 
   la     x5, qm1half_const
-  bn.lid x6++, 0(x5)
+  bn.ld  w10, 0(x5)
 
   la     x5, modulus
-  bn.lid x6++, 0(x5)
+  bn.ld  w11, 0(x5)
 
   bn.wsrr w15, MOD
 
@@ -1283,10 +1231,10 @@ poly_use_hint_32:
   bn.wsrw    MOD, w12
 
   loopi 32, 11
-    bn.lid x0, 0(x11++)
+    bn.ld  w0, 0(x11++)
     jal    x1, decompose_32
 
-    bn.lid x0, 0(x12++)
+    bn.ld  w0, 0(x12++)
 
     bn.subv.8s w1, w1, w0
     bn.shv.8s  w12, w1 >> 31
@@ -1298,7 +1246,7 @@ poly_use_hint_32:
 
     bn.addvm.8s w0, w2, w12
     bn.subvm.8s w0, w0, w13
-    bn.sid      x0, 0(x10++)
+    bn.sd       w0, 0(x10++)
   endloop
 
   bn.wsrw MOD, w15
@@ -1315,21 +1263,19 @@ poly_use_hint_32:
                    POLYT1_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x6, x10 to x11, x29, w1 to w2, w4
+ * clobbered registers: x10 to x11, w1 to w2, w4
  * clobbered flag groups: none
  */
 .globl polyt1_pack
 .type polyt1_pack, @function
 polyt1_pack:
-  li x6, 1
-  li x29, 4
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 160
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 96
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
@@ -1337,12 +1283,12 @@ polyt1_pack:
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 32
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 128
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
@@ -1350,12 +1296,12 @@ polyt1_pack:
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 64
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 160
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 0
 
   jal     x1, _inner_polyt1_pack
@@ -1363,7 +1309,7 @@ polyt1_pack:
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 96
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
@@ -1371,12 +1317,12 @@ polyt1_pack:
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 32
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 128
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
@@ -1384,18 +1330,18 @@ polyt1_pack:
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 64
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 160
 
   jal     x1, _inner_polyt1_pack
   bn.rshi w4, w2, w4 >> 160
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
 
   ret
 
 _inner_polyt1_pack:
   loopi 2, 5
-    bn.lid x6, 0(x11++)
+    bn.ld  w1, 0(x11++)
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 10  /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1416,7 +1362,7 @@ _inner_polyt1_pack:
  * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyeta_pack dispatcher only)
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered registers: x5, x10 to x11, w1 to w3
  * clobbered flag groups: none
  */
 #ifndef HARDENED
@@ -1433,26 +1379,21 @@ polyeta_pack:
  *
  * Parameters as for polyeta_pack, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered registers: x5, x10 to x11, w1 to w3
  * clobbered flag groups: none
  */
 .globl polyeta_pack_eta_2
 .type polyeta_pack_eta_2, @function
 polyeta_pack_eta_2:
   /* Compute ETA - coeff */
-  /* Setup WDRs */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-
   /* Load precomputed, vectorized eta */
   la     x5, eta_2
-  bn.lid x28, 0(x5)
+  bn.ld  w3, 0(x5)
 
   /* 1 */
   jal x1, _inner_polyeta_pack_eta_2
 
-  bn.lid      x6, 0(x11++)
+  bn.ld       w1, 0(x11++)
   /* w1 <= eta - w1 */
   bn.subvm.8s w1, w3, w1
   loopi 5, 2
@@ -1461,7 +1402,7 @@ polyeta_pack_eta_2:
   endloop
   /* Handle split coefficient */
   bn.rshi w2, w1, w2 >> 1   /* Get one more bit to fill w2 */
-  bn.sid  x7, 0(x10++)
+  bn.sd   w2, 0(x10++)
   bn.rshi w2, w1, w2 >> 3   /* Use up two remaining bits */
   bn.rshi w1, w31, w1 >> 32 /* Coeff done, goto next */
   /* Do the rest of the register */
@@ -1473,7 +1414,7 @@ polyeta_pack_eta_2:
   /* 2 */
   jal x1, _inner_polyeta_pack_eta_2
 
-  bn.lid      x6, 0(x11++)
+  bn.ld       w1, 0(x11++)
   /* w1 <= eta - w1 */
   bn.subvm.8s w1, w3, w1
   loopi 2, 2
@@ -1482,7 +1423,7 @@ polyeta_pack_eta_2:
   endloop
   /* Handle split coefficient */
   bn.rshi w2, w1, w2 >> 2   /* Get two more bits to fill w2 */
-  bn.sid  x7, 0(x10++)
+  bn.sd   w2, 0(x10++)
   bn.rshi w2, w1, w2 >> 3   /* Use up one remaining bits */
   bn.rshi w1, w31, w1 >> 32 /* Coeff done, goto next */
   /* Do the rest of the register */
@@ -1493,7 +1434,7 @@ polyeta_pack_eta_2:
 
   /* 3 */
   jal    x1, _inner_polyeta_pack_eta_2
-  bn.sid x7, 0(x10++)
+  bn.sd  w2, 0(x10++)
   ret
 
 /**
@@ -1503,12 +1444,12 @@ polyeta_pack_eta_2:
  * Do not call from anywhere but polyeta_pack_eta_2.
  * Does not adhere to calling convention.
  *
- * clobbered registers: x11, w1 to w2, wref-x6
+ * clobbered registers: x11, w1 to w2
  * clobbered flag groups: none
  */
 _inner_polyeta_pack_eta_2:
   loopi 10, 18
-    bn.lid      x6, 0(x11++)
+    bn.ld       w1, 0(x11++)
     /* w1 <= eta - w1 */
     bn.subvm.8s w1, w3, w1
     .rept 8
@@ -1523,31 +1464,26 @@ _inner_polyeta_pack_eta_2:
  *
  * Parameters as for polyeta_pack, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w1 to w3
+ * clobbered registers: x5, x10 to x11, w1 to w3
  * clobbered flag groups: none
  */
 .globl polyeta_pack_eta_4
 .type polyeta_pack_eta_4, @function
 polyeta_pack_eta_4:
   /* Compute ETA - coeff */
-  /* Setup WDRs */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-
   /* Load precomputed, vectorized eta */
   la     x5, eta_4
-  bn.lid x28, 0(x5)
+  bn.ld  w3, 0(x5)
 
   /* Each WDR can hold 256/4 coefficients. So do this 4x */
   jal    x1, _inner_polyeta_pack_eta_4
-  bn.sid x7, 0(x10++)
+  bn.sd  w2, 0(x10++)
   jal    x1, _inner_polyeta_pack_eta_4
-  bn.sid x7, 0(x10++)
+  bn.sd  w2, 0(x10++)
   jal    x1, _inner_polyeta_pack_eta_4
-  bn.sid x7, 0(x10++)
+  bn.sd  w2, 0(x10++)
   jal    x1, _inner_polyeta_pack_eta_4
-  bn.sid x7, 0(x10++)
+  bn.sd  w2, 0(x10++)
   ret
 
 /**
@@ -1557,12 +1493,12 @@ polyeta_pack_eta_4:
  * Do not call from anywhere but polyeta_pack_eta_4.
  * Does not adhere to calling convention.
  *
- * clobbered registers: x11, w1 to w2, wref-x6
+ * clobbered registers: x11, w1 to w2
  * clobbered flag groups: none
  */
 _inner_polyeta_pack_eta_4:
   loopi 8, 18
-    bn.lid      x6, 0(x11++)
+    bn.ld       w1, 0(x11++)
     /* w1 <= eta - w1 */
     bn.subvm.8s w1, w3, w1
     .rept 8
@@ -1580,7 +1516,7 @@ _inner_polyeta_pack_eta_4:
                    POLYETA_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x5 to x7, x10 to x11, x28 to x29, w1 to w4
+ * clobbered registers: x5, x10 to x11, w1 to w4
  * clobbered flag groups: none
  */
 #endif
@@ -1588,15 +1524,9 @@ _inner_polyeta_pack_eta_4:
 .type polyt0_pack, @function
 polyt0_pack:
   /* Compute (1 << (D-1)) - coeff */
-  /* Setup WDRs */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-  li x29, 4
-
   /* Load precomputed (1 << (D-1)) */
   la     x5, polyt0_pack_const
-  bn.lid x28, 0(x5)
+  bn.ld  w3, 0(x5)
 
   /* Start packing */
   jal     x1, _inner_polyt0_pack
@@ -1605,7 +1535,7 @@ polyt0_pack:
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 48   /* Fill up accumulator register to be 256 bits */
   /*bn.rshi w2, bn0, w2 >> 48*/ /* Remove used up bits */
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208 /* Initialize the accumulator register again,
                                 shifting 48 bits more than the rest in the
                                 register actually is to discard the bits used
@@ -1613,17 +1543,17 @@ polyt0_pack:
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 96
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 144
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 192
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
@@ -1631,22 +1561,22 @@ polyt0_pack:
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 32
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 80
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 128
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 176
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
@@ -1654,33 +1584,33 @@ polyt0_pack:
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 16
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 64
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 112
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 160
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 208
 
   jal     x1, _inner_polyt0_pack
   bn.rshi w4, w2, w4 >> 208
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
 
   ret
 
 _inner_polyt0_pack:
   loopi 2, 6
-    bn.lid     x6, 0(x11++)
+    bn.ld      w1, 0(x11++)
     /* w1 <= eta - w1 */
     bn.subv.8s w1, w3, w1
     loopi 8, 2
@@ -1709,7 +1639,7 @@ _inner_polyt0_pack:
  * @param[in]  x10: pointer to input polynomial
  * @param[out] w0: Representative of nonzero coefficients.
  *
- * clobbered registers: x5, x10, w0 to w4
+ * clobbered registers: x10, w0 to w4
  * clobbered flag groups: FG0
  */
 .globl poly_nonzero_encode
@@ -1723,11 +1653,10 @@ poly_nonzero_encode:
   bn.rshi w2, w31, w2 >> 224
 
   /* Set up WDR pointer. */
-  li x5, 1
 
   /* Loop through the coefficients. */
   loopi 32, 8
-    bn.lid x5, 0(x10++)
+    bn.ld  w1, 0(x10++)
     loopi 8, 5
       bn.add  w0, w0, w0
       bn.addi w3, w0, 1
@@ -1754,7 +1683,7 @@ poly_nonzero_encode:
  * @param[in]  x11: pointer to input polynomial
  * @param[in]  x14: K (used by polyw1_pack dispatcher only)
  *
- * clobbered registers: x5 to x7, x10 to x11, x29, w1 to w2, w4
+ * clobbered registers: x5, x10 to x11, w1 to w2, w4
  * clobbered flag groups: none
  */
 .globl polyw1_pack
@@ -1770,17 +1699,12 @@ polyw1_pack:
  *
  * Parameters as for polyw1_pack, which dispatches here.
  *
- * clobbered registers: x6 to x7, x10 to x11, x29, w1 to w2, w4
+ * clobbered registers: x10 to x11, w1 to w2, w4
  * clobbered flag groups: none
  */
 .globl polyw1_pack_88
 .type polyw1_pack_88, @function
 polyw1_pack_88:
-
-  /* Setup WDRs */
-  li x6, 1
-  li x7, 2
-  li x29, 4
 
   loopi 2, 13
     jal     x1, _inner_polyw1_pack_88
@@ -1788,24 +1712,24 @@ polyw1_pack_88:
 
     jal     x1, _inner_polyw1_pack_88
     bn.rshi w4, w2, w4 >> 64
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 192
 
     jal     x1, _inner_polyw1_pack_88
     bn.rshi w4, w2, w4 >> 128
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 192
 
     jal     x1, _inner_polyw1_pack_88
     bn.rshi w4, w2, w4 >> 192
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
   endloop
 
   ret
 
 _inner_polyw1_pack_88:
   loopi 4, 5
-    bn.lid x6, 0(x11++)
+    bn.ld  w1, 0(x11++)
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 6   /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1821,27 +1745,22 @@ _inner_polyw1_pack_88:
  *
  * Parameters as for polyw1_pack, which dispatches here.
  *
- * clobbered registers: x6 to x7, x10 to x11, x29, w1 to w2
+ * clobbered registers: x10 to x11, w1 to w2
  * clobbered flag groups: none
  */
 .globl polyw1_pack_32
 .type polyw1_pack_32, @function
 polyw1_pack_32:
 
-  /* Setup WDRs */
-  li x6, 1
-  li x7, 2
-  li x29, 4
-
   loopi 4, 2
     jal    x1, _inner_polyw1_pack_32
-    bn.sid x7, 0(x10++)
+    bn.sd  w2, 0(x10++)
   endloop
   ret
 
 _inner_polyw1_pack_32:
   loopi 8, 5
-    bn.lid x6, 0(x11++)
+    bn.ld  w1, 0(x11++)
     loopi 8, 2
       bn.rshi w2, w1, w2 >> 4   /* Write one coefficient into the output WDR */
       bn.rshi w1, w31, w1 >> 32 /* Shift out used coefficient */
@@ -1858,7 +1777,7 @@ _inner_polyw1_pack_32:
  * @param[in]  x14: K (used by polyeta_unpack dispatcher only)
  * @param[out] x10: pointer to output polynomial
  *
- * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w6
+ * clobbered registers: x5, x10 to x11, x31, w1 to w6
  * clobbered flag groups: FG0
  */
 #ifndef HARDENED
@@ -1875,38 +1794,30 @@ polyeta_unpack:
  *
  * Parameters as for polyeta_unpack, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w6
+ * clobbered registers: x5, x10 to x11, x31, w1 to w6
  * clobbered flag groups: FG0
  */
 .globl polyeta_unpack_eta_2
 .type polyeta_unpack_eta_2, @function
 polyeta_unpack_eta_2:
-  /* Setup WDR */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-  li x29, 4
-  li x30, 5
-
   /* Load precomputed, vectorized eta */
   la     x5, eta_2
-  bn.lid x29, 0(x5)
+  bn.ld  w4, 0(x5)
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
   la     x31, polyeta_unpack_mask_eta_2
-  bn.lid x30, 0(x31)
-  li     x31, 6
+  bn.ld  w5, 0(x31)
 
   /* Start unpacking */
-  bn.lid x6, 0(x11++)
+  bn.ld  w1, 0(x11++)
   jal    x1, _inner_polyeta_unpack_eta_2
 
   /* Current state: w1 = |0|0|0|w1.3 */
-  bn.lid x31, 0(x11++)                   /* Load new WLEN word to w2 */
+  bn.ld  w6, 0(x11++)                    /* Load new WLEN word to w2 */
   bn.or  w1, w1, w6 << 64                /* w1 = |w6.2|w6.1|w6.0|w1.3| */
   jal    x1, _inner_polyeta_unpack_eta_2 /* 64-bit rest in w0.0 */
 
   /* Current state: w1 = |0|0|0|w6.2 */
-  bn.lid  x28, 0(x11++)     /* Load new WLEN word to w3 */
+  bn.ld   w3, 0(x11++)      /* Load new WLEN word to w3 */
   bn.rshi w1, w3, w6 >> 128 /* w1 = |w3.1|w3.0|w6.3|w6.2 */
   jal     x1, _inner_polyeta_unpack_eta_2
 
@@ -1943,7 +1854,7 @@ _inner_polyeta_unpack_eta_2:
     bn.and      w2, w2, w5 /* Mask unpacked coeffs to 3 bit */
     bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
-    bn.sid x7, 0(x10++)
+    bn.sd  w2, 0(x10++)
   endloop
   ret
 
@@ -1952,38 +1863,30 @@ _inner_polyeta_unpack_eta_2:
  *
  * Parameters as for polyeta_unpack, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28 to x31, w1 to w2, w4 to w5
+ * clobbered registers: x5, x10 to x11, x31, w1 to w2, w4 to w5
  * clobbered flag groups: FG0
  */
 .globl polyeta_unpack_eta_4
 .type polyeta_unpack_eta_4, @function
 polyeta_unpack_eta_4:
-  /* Setup WDR */
-  li x6, 1
-  li x7, 2
-  li x28, 3
-  li x29, 4
-  li x30, 5
-
   /* Load precomputed, vectorized eta */
   la     x5, eta_4
-  bn.lid x29, 0(x5)
+  bn.ld  w4, 0(x5)
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
   la     x31, polyeta_unpack_mask_eta_4
-  bn.lid x30, 0(x31)
-  li     x31, 6
+  bn.ld  w5, 0(x31)
 
   /* Start unpacking */
-  bn.lid x6, 0(x11++)
+  bn.ld  w1, 0(x11++)
   jal    x1, _inner_polyeta_unpack_eta_4
 
-  bn.lid x6, 0(x11++)
+  bn.ld  w1, 0(x11++)
   jal    x1, _inner_polyeta_unpack_eta_4
 
-  bn.lid x6, 0(x11++)
+  bn.ld  w1, 0(x11++)
   jal    x1, _inner_polyeta_unpack_eta_4
 
-  bn.lid x6, 0(x11++)
+  bn.ld  w1, 0(x11++)
   jal    x1, _inner_polyeta_unpack_eta_4
 
   ret
@@ -2015,7 +1918,7 @@ _inner_polyeta_unpack_eta_4:
     bn.and      w2, w2, w5 /* Mask unpacked coeffs to 4 bit */
     bn.subvm.8s w2, w4, w2 /* Subtract coeffs from eta: w2 <= eta - w2 */
 
-    bn.sid x7, 0(x10++)
+    bn.sd  w2, 0(x10++)
   endloop
   ret
 
@@ -2036,7 +1939,7 @@ _inner_polyeta_unpack_eta_4:
  * @param[in]  x15: K, number of polynomials in h
  * @param[in]  x29: OMEGA
  *
- * clobbered registers: x5 to x7, x12 to x17, x28, x30 to x31
+ * clobbered registers: x6 to x7, x12 to x17, x28, x30 to x31
  * clobbered flag groups: none
  */
 #endif
@@ -2045,9 +1948,8 @@ _inner_polyeta_unpack_eta_4:
 poly_decode_h:
   /* Initialize h[i] to zero */
   add x6, x0, x10
-  li  x5, 31
   loopi 32, 1
-    bn.sid x5, 0(x6++)
+    bn.sd  w31, 0(x6++)
   endloop
 
   /* Initialize constants */
@@ -2177,82 +2079,75 @@ _ret1_decode_h:
                    POLYETA_PACKEDBYTES bytes
  * @param[in]  x11: pointer to input polynomial
  *
- * clobbered registers: x7, x10 to x11, x28, x31, w1 to w6
+ * clobbered registers: x10 to x11, x28, w1 to w6
  * clobbered flag groups: FG0
  */
 .globl polyt0_unpack
 .type polyt0_unpack, @function
 polyt0_unpack:
   /* Load (1 << (D-1)) as a vector into w4 */
-  li     x7, 4
   la     x28, polyt0_pack_const
-  bn.lid x7, 0(x28)
+  bn.ld  w4, 0(x28)
 
   /* Load mask for zeroing the upper bits of the unpacked coefficients. */
-  li     x7, 5
   la     x28, polyt0_unpack_mask
-  bn.lid x7, 0(x28)
+  bn.ld  w5, 0(x28)
 
-  /* Setup WDR */
-  li x7, 2
-  li x28, 3
-  li x31, 6
-
-  bn.lid x31, 0(x11++)
+  bn.ld  w6, 0(x11++)
   bn.mov w1, w6
   jal    x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 208
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 160
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 112
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 64
   jal     x1, _inner_polyt0_unpack
 
   bn.rshi w1, w31, w6 >> 16
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 224
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 176
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 128
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 80
   jal     x1, _inner_polyt0_unpack
 
   bn.rshi w1, w31, w6 >> 32
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 240
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 192
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x28, 0(x11++)
+  bn.ld   w3, 0(x11++)
   bn.rshi w1, w3, w6 >> 144
   jal     x1, _inner_polyt0_unpack
 
-  bn.lid  x31, 0(x11++)
+  bn.ld   w6, 0(x11++)
   bn.rshi w1, w6, w3 >> 96
   jal     x1, _inner_polyt0_unpack
 
@@ -2287,7 +2182,7 @@ _inner_polyt0_unpack:
 
     bn.and      w2, w2, w5 /* Mask unpacked coeffs to 13 bit */
     bn.subvm.8s w2, w4, w2 /* w2 <= (1 << (D-1)) - coeffs */
-    bn.sid      x7, 0(x10++)
+    bn.sd       w2, 0(x10++)
   endloop
   ret
 
@@ -2307,7 +2202,7 @@ _inner_polyt0_unpack:
  * @param[in]  x13: pointer to gamma1_vec_const
  * @param[in]  x14: K (used by poly_uniform_gamma_1 dispatcher only)
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered registers: x5 to x6, x10 to x11, x28, w0 to w6
  * clobbered flag groups: FG0
  */
 #ifndef HARDENED
@@ -2324,7 +2219,7 @@ poly_uniform_gamma_1:
  *
  * Parameters as for poly_uniform_gamma_1, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered registers: x5 to x6, x10 to x11, x28, w0 to w6
  * clobbered flag groups: FG0
  */
 .globl poly_uniform_gamma_1_17
@@ -2357,17 +2252,13 @@ poly_uniform_gamma_1_17:
   addi x10, x6, 0
 
   /* Load gamma1 as a vector into w4 */
-  li     x7, 4
   la     x28, gamma1_vec_const_17
-  bn.lid x7, 0(x28)
+  bn.ld  w4, 0(x28)
 
   /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
-  li     x7, 5
   la     x28, polyz_unpack_mask_17
-  bn.lid x7, 0(x28)
+  bn.ld  w5, 0(x28)
 
-  /* Setup WDR */
-  li x7, 2
   loopi 2, 42
     bn.wsrr w6, 0xa /* KECCAK_DIGEST */
     bn.mov  w1, w6
@@ -2445,9 +2336,9 @@ _inner_poly_uniform_gamma_1_17:
 
   bn.and      w2, w2, w5 /* Mask unpacked coeffs to 18 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
-  bn.lid      x0, 0(x6)
+  bn.ld       w0, 0(x6)
   bn.addvm.8s w2, w0, w2
-  bn.sid      x7, 0(x6++)
+  bn.sd       w2, 0(x6++)
   ret
 
 /**
@@ -2455,7 +2346,7 @@ _inner_poly_uniform_gamma_1_17:
  *
  * Parameters as for poly_uniform_gamma_1, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w0 to w6
+ * clobbered registers: x5 to x6, x10 to x11, x28, w0 to w6
  * clobbered flag groups: FG0
  */
 .globl poly_uniform_gamma_1_19
@@ -2488,17 +2379,12 @@ poly_uniform_gamma_1_19:
   addi x10, x6, 0
 
   /* Load gamma1 as a vector into w4 */
-  li     x7, 4
   la     x28, gamma1_vec_const_19
-  bn.lid x7, 0(x28)
+  bn.ld  w4, 0(x28)
 
   /* Load mask for zeroing the upper bits of the unpacked coefficients to w5 */
-  li     x7, 5
   la     x28, polyz_unpack_mask_19
-  bn.lid x7, 0(x28)
-
-  /* Setup WDR */
-  li x7, 2
+  bn.ld  w5, 0(x28)
 
   loopi 4, 22
     bn.wsrr w6, 0xa /* KECCAK_DIGEST */
@@ -2549,9 +2435,9 @@ _inner_poly_uniform_gamma_1_19:
 
   bn.and      w2, w2, w5 /* Mask unpacked coeffs to 20 bit */
   bn.subvm.8s w2, w4, w2 /* w2 <= gamma1_eta_const - w2 */
-  bn.lid      x0, 0(x6)
+  bn.ld       w0, 0(x6)
   bn.addvm.8s w2, w0, w2
-  bn.sid      x7, 0(x6++)
+  bn.sd       w2, 0(x6++)
   ret
 /**
  * poly_decompose_88 / poly_decompose_32
@@ -2566,7 +2452,7 @@ _inner_poly_uniform_gamma_1_19:
  * @param[in]  x12: *a, pointer to input polynomial
  * @param[in]  x14: K (used by poly_decompose dispatcher only)
  *
- * clobbered registers: x5 to x7, x10 to x12, w0 to w11, w30
+ * clobbered registers: x5, x10 to x12, w0 to w11, w30
  * clobbered flag groups: FG0
  */
 .globl poly_decompose
@@ -2582,49 +2468,39 @@ poly_decompose:
  *
  * Parameters as for poly_decompose, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x12, w0 to w11, w30
+ * clobbered registers: x5, x10 to x12, w0 to w11, w30
  * clobbered flag groups: FG0
  */
 .globl poly_decompose_88
 .type poly_decompose_88, @function
 poly_decompose_88:
   la     x5, decompose_127_const
-  li     x6, 5
-  bn.lid x6, 0(x5)
+  bn.ld  w5, 0(x5)
 
   la     x5, decompose_const_88
-  li     x6, 6
-  bn.lid x6, 0(x5)
+  bn.ld  w6, 0(x5)
 
   la     x5, reduce32_const
-  li     x6, 7
-  bn.lid x6, 0(x5)
+  bn.ld  w7, 0(x5)
 
   la     x5, decompose_43_const_88
-  li     x6, 8
-  bn.lid x6, 0(x5)
+  bn.ld  w8, 0(x5)
 
   la     x5, gamma2_vec_const_88
-  li     x6, 9
-  bn.lid x6, 0(x5)
+  bn.ld  w9, 0(x5)
 
   la     x5, qm1half_const
-  li     x6, 10
-  bn.lid x6, 0(x5)
+  bn.ld  w10, 0(x5)
 
   la     x5, modulus
-  li     x6, 11
-  bn.lid x6, 0(x5)
+  bn.ld  w11, 0(x5)
 
-  li x5, 0
-  li x6, 1
-  li x7, 2
 
   loopi 32, 4
-    bn.lid x5, 0(x12++)
+    bn.ld  w0, 0(x12++)
     jal    x1, decompose_88
-    bn.sid x6, 0(x10++)
-    bn.sid x7, 0(x11++)
+    bn.sd  w1, 0(x10++)
+    bn.sd  w2, 0(x11++)
   endloop
 
   ret
@@ -2634,49 +2510,39 @@ poly_decompose_88:
  *
  * Parameters as for poly_decompose, which dispatches here.
  *
- * clobbered registers: x5 to x7, x10 to x12, w0 to w2, w4 to w11, w30
+ * clobbered registers: x5, x10 to x12, w0 to w2, w4 to w11, w30
  * clobbered flag groups: FG0
  */
 .globl poly_decompose_32
 .type poly_decompose_32, @function
 poly_decompose_32:
   la     x5, decompose_127_const
-  li     x6, 5
-  bn.lid x6, 0(x5)
+  bn.ld  w5, 0(x5)
 
   la     x5, decompose_const_32
-  li     x6, 6
-  bn.lid x6, 0(x5)
+  bn.ld  w6, 0(x5)
 
   la     x5, reduce32_const
-  li     x6, 7
-  bn.lid x6, 0(x5)
+  bn.ld  w7, 0(x5)
 
   la     x5, decompose_43_const_32
-  li     x6, 8
-  bn.lid x6, 0(x5)
+  bn.ld  w8, 0(x5)
 
   la     x5, gamma2_vec_const_32
-  li     x6, 9
-  bn.lid x6, 0(x5)
+  bn.ld  w9, 0(x5)
 
   la     x5, qm1half_const
-  li     x6, 10
-  bn.lid x6, 0(x5)
+  bn.ld  w10, 0(x5)
 
   la     x5, modulus
-  li     x6, 11
-  bn.lid x6, 0(x5)
+  bn.ld  w11, 0(x5)
 
-  li x5, 0
-  li x6, 1
-  li x7, 2
 
   loopi 32, 4
-    bn.lid x5, 0(x12++)
+    bn.ld  w0, 0(x12++)
     jal    x1, decompose_32
-    bn.sid x6, 0(x10++)
-    bn.sid x7, 0(x11++)
+    bn.sd  w1, 0(x10++)
+    bn.sd  w2, 0(x11++)
   endloop
 
   ret
@@ -2768,7 +2634,7 @@ _loop_end_poly_make_hint:
  * @param[out] x10: pointer to output byte array with at least
  *                  POLYZ_PACKEDBYTES bytes
  *
- * clobbered registers: x5 to x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered registers: x5 to x6, x10 to x11, w1 to w4
  * clobbered flag groups: none
  */
 .globl polyz_pack
@@ -2784,19 +2650,14 @@ polyz_pack:
  *
  * Parameters as for polyz_pack, which dispatches here.
  *
- * clobbered registers: x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered registers: x6, x10 to x11, w1 to w4
  * clobbered flag groups: none
  */
 .globl polyz_pack_17
 .type polyz_pack_17, @function
 polyz_pack_17:
   la     x6, gamma1_vec_const_17
-  li     x28, 3
-  bn.lid x28, 0(x6)
-
-  /* Setup WDRs */
-  li x6, 1
-  li x29, 4
+  bn.ld  w3, 0(x6)
 
   /* Start packing */
   jal     x1, _inner_polyz_pack_17
@@ -2804,7 +2665,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 112
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2812,7 +2673,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 80
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2820,7 +2681,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 48
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2828,12 +2689,12 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 16
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 128
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2841,7 +2702,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 96
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2849,7 +2710,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 64
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2857,12 +2718,12 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 32
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 144
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2870,7 +2731,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 112
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2878,7 +2739,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 80
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2886,7 +2747,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 48
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2894,12 +2755,12 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 16
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 128
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2907,7 +2768,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 96
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2915,7 +2776,7 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 64
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
@@ -2923,17 +2784,17 @@ polyz_pack_17:
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 32
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
   bn.rshi w4, w2, w31 >> 144
 
   jal     x1, _inner_polyz_pack_17
   bn.rshi w4, w2, w4 >> 144
-  bn.sid  x29, 0(x10++)
+  bn.sd   w4, 0(x10++)
 
   ret
 
 _inner_polyz_pack_17:
-  bn.lid     x6, 0(x11++)
+  bn.ld      w1, 0(x11++)
   /* w1 <= eta - w1 */
   bn.subv.8s w1, w3, w1
   loopi 8, 2
@@ -2949,26 +2810,22 @@ _inner_polyz_pack_17:
  *
  * Parameters as for polyz_pack, which dispatches here.
  *
- * clobbered registers: x6, x10 to x11, x28 to x29, w1 to w4
+ * clobbered registers: x6, x10 to x11, w1 to w4
  * clobbered flag groups: none
  */
 .globl polyz_pack_19
 .type polyz_pack_19, @function
 polyz_pack_19:
   la     x6, gamma1_vec_const_19
-  li     x28, 3
-  bn.lid x28, 0(x6)
+  bn.ld  w3, 0(x6)
 
-  /* Setup WDRs */
-  li x6, 1
-  li x29, 4
   loopi 4, 25
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 160
 
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 96
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 160
 
     jal     x1, _inner_polyz_pack_19
@@ -2976,12 +2833,12 @@ polyz_pack_19:
 
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 32
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 160
 
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 128
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 160
 
     jal     x1, _inner_polyz_pack_19
@@ -2989,17 +2846,17 @@ polyz_pack_19:
 
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 64
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
     bn.rshi w4, w2, w31 >> 160
 
     jal     x1, _inner_polyz_pack_19
     bn.rshi w4, w2, w4 >> 160
-    bn.sid  x29, 0(x10++)
+    bn.sd   w4, 0(x10++)
   endloop
 
   ret
 _inner_polyz_pack_19:
-  bn.lid     x6, 0(x11++)
+  bn.ld      w1, 0(x11++)
   /* w1 <= eta - w1 */
   bn.subv.8s w1, w3, w1
   loopi 8, 2
@@ -3076,31 +2933,23 @@ _skip_store_poly_encode_h:
  * @param[in]  w31: all-zero
  * @param[out] x11: dmem pointer to result
  *
- * clobbered registers: x5 to x7, x10 to x11, x28, w2, w4 to w6
+ * clobbered registers: x6, x10 to x11, x28, w2, w4 to w6
  * clobbered flag groups: none
  */
 .globl poly_reduce32
 .type poly_reduce32, @function
 poly_reduce32:
-  /* Set up constants for input/state */
-  li x6, 3
-  li x5, 4
-  li x7, 6
-
   /* Setup constant 1 << 22 */
   la        x6, reduce32_const
-  bn.lid    x5, 0(x6)
+  bn.ld     w4, 0(x6)
   bn.shv.8s w4, w4 << 22
 
   /* Load q */
   la     x28, modulus
-  bn.lid x7, 0(x28)
-
-  /* Set up constants for input/state */
-  li x28, 2
+  bn.ld  w6, 0(x28)
 
   loopi 32, 7
-    bn.lid x28, 0(x10++)
+    bn.ld  w2, 0(x10++)
 
     /* t = a + (1 << 22) */
     bn.addv.8s         w5, w2, w4
@@ -3113,7 +2962,7 @@ poly_reduce32:
     /* a - t */
     bn.subv.8s         w2, w2, w5
 
-    bn.sid x28, 0(x11++)
+    bn.sd  w2, 0(x11++)
   endloop
 
   ret
@@ -3130,27 +2979,21 @@ poly_reduce32:
  * @param[in]  x12: a1, dmem pointer to output polynomial with coefficients c1
  * @param[in]  w31: all-zero
  *
- * clobbered registers: x5 to x7, x10 to x12, x28, w4 to w7
+ * clobbered registers: x6, x10 to x12, w4 to w7
  * clobbered flag groups: none
  */
 .globl poly_power2round
 .type poly_power2round, @function
 poly_power2round:
   #define D 13
-  /* Set up constants for input/state */
-  li x5, 4
-  li x7, 6
-  li x28, 7
-
   /* Load (1 << (D-1)) - 1 as vector */
   la     x6, power2round_D_preprocessed
-  bn.lid x5, 0(x6)
+  bn.ld  w4, 0(x6)
 
-  li x6, 5
 
   loopi 32, 7
     /* Load input */
-    bn.lid x6, 0(x10++)
+    bn.ld  w5, 0(x10++)
 
     /* Compute */
     /* (a + (1 << (D-1)) - 1) */
@@ -3163,8 +3006,8 @@ poly_power2round:
     bn.subv.8s w7, w5, w7
 
     /* Store */
-    bn.sid x7, 0(x12++)
-    bn.sid x28, 0(x11++)
+    bn.sd  w6, 0(x12++)
+    bn.sd  w7, 0(x11++)
   endloop
 
   ret

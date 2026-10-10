@@ -29,16 +29,15 @@
  * @param[in]  w31: all-zero register
  * @param[in]  mod: q = 3329
  *
- * clobbered registers: x4, x10 to x11, w0 to w1
+ * clobbered registers: x10 to x11, w0 to w1
  * clobbered flag groups: none
  */
 
 .globl poly_tobytes
 .type poly_tobytes, @function
 poly_tobytes:
-  addi x4, x0, 1
   loopi 4, 37
-    bn.lid       x0, 0(x10++)
+    bn.ld        w0, 0(x10++)
     /* Reduce inputs to [0,q) because outputs of NTT without final conditional
      * subtraction in Montgomery multiplication are in [0,2q). */
     bn.addvm.16h w0, w0, w31
@@ -46,7 +45,7 @@ poly_tobytes:
       bn.rshi w1, w0, w1 >> 12
       bn.rshi w0, w31, w0 >> 16
     endloop
-    bn.lid       x0, 0(x10++)
+    bn.ld        w0, 0(x10++)
     bn.addvm.16h w0, w0, w31
     loopi 5, 2
       bn.rshi w1, w0, w1 >> 12
@@ -54,7 +53,7 @@ poly_tobytes:
     endloop
     bn.rshi w1, w0, w1 >> 4
     bn.rshi w0, w31, w0 >> 4
-    bn.sid  x4, 0(x11++)
+    bn.sd   w1, 0(x11++)
 
     bn.rshi w1, w0, w1 >> 8
     bn.rshi w0, w31, w0  >> 12
@@ -62,7 +61,7 @@ poly_tobytes:
       bn.rshi w1, w0, w1 >> 12
       bn.rshi w0, w31, w0 >> 16
     endloop
-    bn.lid       x0, 0(x10++)
+    bn.ld        w0, 0(x10++)
     bn.addvm.16h w0, w0, w31
     loopi 10, 2
       bn.rshi w1, w0, w1 >> 12
@@ -70,7 +69,7 @@ poly_tobytes:
     endloop
     bn.rshi w1, w0, w1 >> 8
     bn.rshi w0, w31, w0 >> 8
-    bn.sid  x4, 0(x11++)
+    bn.sd   w1, 0(x11++)
 
     bn.rshi w1, w0, w1 >> 4
     bn.rshi w0, w31, w0 >> 8
@@ -78,13 +77,13 @@ poly_tobytes:
       bn.rshi w1, w0, w1 >> 12
       bn.rshi w0, w31, w0 >> 16
     endloop
-    bn.lid       x0, 0(x10++)
+    bn.ld        w0, 0(x10++)
     bn.addvm.16h w0, w0, w31
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 12
       bn.rshi w0, w31, w0 >> 16
     endloop
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
   ret
 
@@ -103,7 +102,7 @@ poly_tobytes:
  * @param[out] x11: dmem pointer to the output polynomial
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4, x10 to x11, w0 to w2
+ * clobbered registers: x10 to x11, w0 to w2
  * clobbered flag groups: FG0
  */
 
@@ -113,23 +112,22 @@ poly_frombytes:
   bn.subi    w2, w31, 1
   bn.shv.16h w2, w2 >> 4
 
-  addi x4, x0, 1
   loopi 4, 35
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 5, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.rshi w1, w0, w1 >> 4
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 12
     bn.rshi w0, w31, w0 >> 8
     loopi 10, 2
@@ -137,14 +135,14 @@ poly_frombytes:
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 10, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.rshi w1, w0, w1 >> 8
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 8
     bn.rshi w0, w31, w0 >> 4
     loopi 5, 2
@@ -152,14 +150,14 @@ poly_frombytes:
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 12
     endloop
     bn.and w1, w1, w2
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
   ret
 
@@ -177,7 +175,7 @@ poly_frombytes:
  * @param[out] x10 (a0): HARDENED_BOOL_TRUE if all coefficients are < q,
  *                       HARDENED_BOOL_FALSE otherwise
  *
- * clobbered registers: x5 to x7, x10, x12, x28, w0 to w2, w4
+ * clobbered registers: x5, x7, x10, x12, x28, w0 to w2, w4
  * clobbered flag groups: FG0
  */
 .globl check_pk
@@ -185,7 +183,7 @@ poly_frombytes:
 check_pk:
   /* Load q into all 16 lanes. */
   la      x5, const_q
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
 
   /* Load a vectorized 1 for comparison. */
   bn.addi w4, w31, 1
@@ -197,10 +195,9 @@ check_pk:
   /* Initialize success flag (0 = failure, 8 = success). */
   li      x7, 8
 
-  li      x6, 1
   slli    x5, x14, 4
   loop    x5, 6
-    bn.lid      x6, 0(x12++)
+    bn.ld       w1, 0(x12++)
     bn.subv.16h w2, w1, w0    /* coeff - q per lane */
     bn.shv.16h  w2, w2 >> 15  /* 1 iff coeff < q */
     bn.cmp      w2, w4        /* set FG0.Z iff every lane < q */

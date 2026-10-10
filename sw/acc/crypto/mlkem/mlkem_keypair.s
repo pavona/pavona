@@ -109,26 +109,26 @@ _continue:
   lw      x6, 0(x6)
   srli    x8, x8, 5
   loop x8, 3
-    bn.lid  x0, 0(x10++)
-    bn.sid  x0, 0(x6++)  /* Copy ek to dk_pke. */
+    bn.ld   w0, 0(x10++)
+    bn.sd   w0, 0(x6++)  /* Copy ek to dk_pke. */
     bn.wsrw kmac_msg, w0 /* Send ek. */
   endloop
   /* Retrieve h = SHA3-256(ek). */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x6++)
+  bn.sd   w0, 0(x6++)
 
   /*** Step 3: Append z to (dk_pke || ek || h). ***/
   la     x5, dptr_coins
   lw     x5, 0(x5)
 #ifdef HARDENED
-  bn.lid x0, 64(x5)
-  bn.sid x0, 0(x6)
+  bn.ld  w0, 64(x5)
+  bn.sd  w0, 0(x6)
   bn.xor w0, w31, w31 /* Whitening. */
-  bn.lid x0, 96(x5)
-  bn.sid x0, 32(x6)
+  bn.ld  w0, 96(x5)
+  bn.sd  w0, 32(x6)
   bn.xor w0, w31, w31 /* Whitening. */
 #else
-  bn.lid x0, 32(x5)
-  bn.sid x0, 0(x6)
+  bn.ld  w0, 32(x5)
+  bn.sd  w0, 0(x6)
 #endif
   ret

@@ -35,11 +35,11 @@ poly_getnoise_eta_init:
   csrrw x0, kmac_cfg, x5
 
   /* Send the message to the Keccak core. */
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
   li      x5, 1
   csrrw   x0, kmac_partial_write, x5
-  bn.lid  x0, 0(x11)
+  bn.ld   w0, 0(x11)
   bn.wsrw kmac_msg, w0
   ret
 
@@ -92,7 +92,7 @@ _handle_cbd3:
  *
  * @param[out] x11: dmem pointer to the output polynomial
  *
- * clobbered registers: x4 to x5, x11, w0 to w4, w6 to w8
+ * clobbered registers: x5, x11, w0 to w4, w6 to w8
  * clobbered flag groups: FG0
  */
 
@@ -118,7 +118,7 @@ poly_getnoise_eta_2:
  * @param[in]  mod: q = 3329
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x11, w0 to w4, w6 to w8
+ * clobbered registers: x5, x11, w0 to w4, w6 to w8
  * clobbered flag groups: FG0
  */
 
@@ -126,15 +126,13 @@ poly_getnoise_eta_2:
 .type cbd2, @function
 cbd2:
   la     x5, const_cbd2
-  addi   x4, x0, 3
-  bn.lid x4++, 0(x5)
-  bn.lid x4, 32(x5)
+  bn.ld  w3, 0(x5)
+  bn.ld  w4, 32(x5)
 
   /* Create mask 0xf. */
   bn.subi    w8, w31, 1
   bn.shv.16h w8, w8 >> 12
 
-  addi x4, x0, 2
   loopi 4, 19
     bn.wsrr w0, kmac_digest
     bn.and  w1, w0, w3        /* Extract even bits. */
@@ -155,7 +153,7 @@ cbd2:
       bn.and       w6, w6, w8
       bn.and       w7, w7, w8
       bn.subvm.16h w2, w6, w7
-      bn.sid       x4, 0(x11++)
+      bn.sd        w2, 0(x11++)
     endloop
     nop
   endloop
@@ -178,7 +176,7 @@ cbd2:
  * @param[in]  mod: q = 3329
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x11, w0 to w11, w20 to w21
+ * clobbered registers: x5, x11, w0 to w11, w20 to w21
  * clobbered flag groups: FG0
  */
 
@@ -186,15 +184,13 @@ cbd2:
 .type cbd3, @function
 cbd3:
   la     x5, const_cbd3
-  addi   x4, x0, 20
-  bn.lid x4++, 0(x5)
-  bn.lid x4, 32(x5)
+  bn.ld  w20, 0(x5)
+  bn.ld  w21, 32(x5)
 
   /* Create mask 0x7. */
   bn.subi    w10, w31, 1
   bn.shv.16h w10, w10 >> 13
 
-  addi x5, x0, 11
   loopi 2, 114
     bn.wsrr w0, kmac_digest
     bn.wsrr w1, kmac_digest
@@ -257,7 +253,7 @@ cbd3:
       bn.and       w8, w8, w10
       bn.and       w9, w9, w10
       bn.subvm.16h w11, w8, w9
-      bn.sid       x5, 0(x11++)
+      bn.sd        w11, 0(x11++)
     endloop
     loopi 10, 4
       bn.rshi w8, w0, w8 >> 16
@@ -277,7 +273,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
 
     loopi 2, 9
       loopi 16, 4
@@ -289,7 +285,7 @@ cbd3:
       bn.and       w8, w8, w10
       bn.and       w9, w9, w10
       bn.subvm.16h w11, w8, w9
-      bn.sid       x5, 0(x11++)
+      bn.sd        w11, 0(x11++)
     endloop
     loopi 5, 4
       bn.rshi w8, w4, w8 >> 16
@@ -306,7 +302,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
 
     loopi 16, 4
       bn.rshi w8, w2, w8 >> 16
@@ -317,7 +313,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
     loopi 15, 4
       bn.rshi w8, w2, w8 >> 16
       bn.rshi w9, w5, w9 >> 16
@@ -329,6 +325,6 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
   endloop
   ret
