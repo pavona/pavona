@@ -51,7 +51,7 @@ _handle_kn4_poly_decompress:
   addi       x4, x0, 1
 
   loopi 4, 11
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     loopi 4, 8
       loopi 16, 2
         bn.rshi w1, w0, w1 >> 16
@@ -61,7 +61,7 @@ _handle_kn4_poly_decompress:
       bn.mulv.l.16h.lo w1, w1, sw0.0
       bn.addv.16h      w1, w1, w2
       bn.shv.16h       w1, w1 >> 4
-      bn.sid           x4, 0(x11++)
+      bn.sd            w1, 0(x11++)
     endloop
     nop
   endloop
@@ -88,14 +88,14 @@ _handle_k4_poly_decompress:
   bn.shv.8s w2, w2 << 15 /* w2 = (0x00008000)^8 */
 
   addi   x4, x0, 1
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   loopi 3, 5
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 5
     endloop
     jal    x1, poly_decompress_k4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
 
   loopi 3, 2
@@ -103,7 +103,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   bn.rshi w1, w0, w1 >> 1
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 15
   bn.rshi w0, w31, w0 >> 4
   loopi 12, 2
@@ -111,7 +111,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   jal    x1, poly_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 2, 5
     loopi 16, 2
@@ -119,7 +119,7 @@ _handle_k4_poly_decompress:
       bn.rshi w0, w31, w0 >> 5
     endloop
     jal    x1, poly_decompress_k4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
 
   loopi 6, 2
@@ -127,7 +127,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   bn.rshi w1, w0, w1 >> 2
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 14
   bn.rshi w0, w31, w0 >> 3
   loopi 9, 2
@@ -135,7 +135,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   jal    x1, poly_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 2, 5
     loopi 16, 2
@@ -143,7 +143,7 @@ _handle_k4_poly_decompress:
       bn.rshi w0, w31, w0 >> 5
     endloop
     jal    x1, poly_decompress_k4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
 
   loopi 9, 2
@@ -151,7 +151,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   bn.rshi w1, w0, w1 >> 3
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 13
   bn.rshi w0, w31, w0 >> 2
   loopi 6, 2
@@ -159,7 +159,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   jal    x1, poly_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 2, 5
     loopi 16, 2
@@ -167,7 +167,7 @@ _handle_k4_poly_decompress:
       bn.rshi w0, w31, w0 >> 5
     endloop
     jal    x1, poly_decompress_k4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
 
   loopi 12, 2
@@ -175,7 +175,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   bn.rshi w1, w0, w1 >> 4
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 12
   bn.rshi w0, w31, w0 >> 1
   loopi 3, 2
@@ -183,7 +183,7 @@ _handle_k4_poly_decompress:
     bn.rshi w0, w31, w0 >> 5
   endloop
   jal    x1, poly_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 3, 5
     loopi 16, 2
@@ -191,7 +191,7 @@ _handle_k4_poly_decompress:
       bn.rshi w0, w31, w0 >> 5
     endloop
     jal    x1, poly_decompress_k4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
   ret
 
@@ -274,20 +274,20 @@ poly_polyvec_decompress:
 _handle_kn4_polyvec_decompress:
   addi x4, x0, 1
   loopi 2, 69
-    bn.lid x0, 0(x10++)
+    bn.ld  w0, 0(x10++)
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 9, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     bn.rshi w1, w0, w1 >> 6
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 10
     bn.rshi w0, w31, w0 >> 4
     loopi 6, 2
@@ -295,21 +295,21 @@ _handle_kn4_polyvec_decompress:
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 3, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     bn.rshi w1, w0, w1 >> 2
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 14
     bn.rshi w0, w31, w0 >> 8
     loopi 12, 2
@@ -317,14 +317,14 @@ _handle_kn4_polyvec_decompress:
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 12, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     bn.rshi w1, w0, w1 >> 8
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 8
     bn.rshi w0, w31, w0 >> 2
     loopi 3, 2
@@ -332,21 +332,21 @@ _handle_kn4_polyvec_decompress:
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 6, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     bn.rshi w1, w0, w1 >> 4
-    bn.lid  x0, 0(x10++)
+    bn.ld   w0, 0(x10++)
     bn.rshi w1, w0, w1 >> 12
     bn.rshi w0, w31, w0 >> 6
     loopi 9, 2
@@ -354,33 +354,33 @@ _handle_kn4_polyvec_decompress:
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
 
     loopi 16, 2
       bn.rshi w1, w0, w1 >> 16
       bn.rshi w0, w31, w0 >> 10
     endloop
     jal    x1, polyvec_decompress_kn4
-    bn.sid x4, 0(x11++)
+    bn.sd  w1, 0(x11++)
   endloop
   ret
 
 _handle_k4_polyvec_decompress:
   addi   x4, x0, 1
-  bn.lid x0, 0(x10++)
+  bn.ld  w0, 0(x10++)
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 7, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 3
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 13
   bn.rshi w0, w31, w0 >> 8
   loopi 8, 2
@@ -388,34 +388,34 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 14, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi              w1, w0, w1 >> 6
-  bn.lid               x0, 0(x10++)
+  bn.ld                w0, 0(x10++)
   bn.rshi              w1, w0, w1 >> 10
   bn.rshi              w0, w31, w0 >> 5
   bn.rshi              w1, w0, w1 >> 16
   bn.rshi              w0, w31, w0 >> 11
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 5, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 9
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 7
   bn.rshi w0, w31, w0 >> 2
   loopi 10, 2
@@ -423,14 +423,14 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 13, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 1
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 15
   bn.rshi w0, w31, w0 >> 10
   loopi 2, 2
@@ -438,21 +438,21 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 4, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 4
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 12
   bn.rshi w0, w31, w0 >> 7
   loopi 11, 2
@@ -460,14 +460,14 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 11, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 7
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 9
   bn.rshi w0, w31, w0 >> 4
   loopi 4, 2
@@ -475,21 +475,21 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 2, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 10
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 6
   bn.rshi w0, w31, w0 >> 1
   loopi 13, 2
@@ -497,14 +497,14 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 10, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 2
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 14
   bn.rshi w0, w31, w0 >> 9
   loopi 5, 2
@@ -512,19 +512,19 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   bn.rshi w1, w0, w1 >> 16
   bn.rshi w0, w31, w0 >> 11
   bn.rshi w1, w0, w1 >> 5
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 11
   bn.rshi w0, w31, w0 >> 6
   loopi 14, 2
@@ -532,14 +532,14 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 8, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   bn.rshi w1, w0, w1 >> 8
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.rshi w1, w0, w1 >> 8
   bn.rshi w0, w31, w0 >> 3
   loopi 7, 2
@@ -547,14 +547,14 @@ _handle_k4_polyvec_decompress:
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
 
   loopi 16, 2
     bn.rshi w1, w0, w1 >> 16
     bn.rshi w0, w31, w0 >> 11
   endloop
   jal    x1, polyvec_decompress_k4
-  bn.sid x4, 0(x11++)
+  bn.sd  w1, 0(x11++)
   ret
 
 /**

@@ -88,15 +88,15 @@ crypto_sign_verify_internal:
   li     x28, 6
   beq    x7, x28, _ctilde_unpack_65
   /* ML-DSA-87 (K=8, CTILDEBYTES=64): two 32B copies. */
-  bn.lid x0, 0(x5++)
-  bn.sid x0, 0(x6++)
-  bn.lid x0, 0(x5++)
-  bn.sid x0, 0(x6++)
+  bn.ld  w0, 0(x5++)
+  bn.sd  w0, 0(x6++)
+  bn.ld  w0, 0(x5++)
+  bn.sd  w0, 0(x6++)
   jal    x0, _ctilde_unpack_done
 _ctilde_unpack_44:
   /* ML-DSA-44 (K=4, CTILDEBYTES=32): one 32B copy. */
-  bn.lid x0, 0(x5++)
-  bn.sid x0, 0(x6++)
+  bn.ld  w0, 0(x5++)
+  bn.sd  w0, 0(x6++)
   jal    x0, _ctilde_unpack_done
 _ctilde_unpack_65:
   /* ML-DSA-65 (K=6, CTILDEBYTES=48): the signature is not 32-byte aligned,
@@ -213,7 +213,7 @@ _ctilde_unpack_done:
   /* Start the SHAKE computation for A[0][0] ahead of NTT for performance. */
   csrrw   x0, kmac_cfg, x20
   la      x10, pk
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
   addi    x5, x0, 2
   csrrw   x0, kmac_partial_write, x5
@@ -253,7 +253,7 @@ _ctilde_unpack_done:
     bn.addi w23, w23, 1
     /* Start the SHAKE128 operation for poly_uniform for A[i][1]. */
     csrrw   x0, kmac_cfg, x20
-    bn.lid  x0, 0(x21)
+    bn.ld   w0, 0(x21)
     bn.wsrw kmac_msg, w0
     addi    x5, x0, 2
     csrrw   x0, kmac_partial_write, x5
@@ -274,7 +274,7 @@ _ctilde_unpack_done:
       bn.addi w23, w23, 1
       /* Start the SHAKE128 operation for poly_uniform for A[i][j+1]. */
       csrrw   x0, kmac_cfg, x20
-      bn.lid  x0, 0(x21)
+      bn.ld   w0, 0(x21)
       bn.wsrw kmac_msg, w0
       addi    x5, x0, 2
       csrrw   x0, kmac_partial_write, x5
@@ -297,7 +297,7 @@ _ctilde_unpack_done:
     endloop
     /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
     csrrw   x0, kmac_cfg, x20
-    bn.lid  x0, 0(x21)
+    bn.ld   w0, 0(x21)
     bn.wsrw kmac_msg, w0
     addi    x5, x0, 2
     csrrw   x0, kmac_partial_write, x5
@@ -346,8 +346,8 @@ _ctilde_unpack_done:
   la x6, z_polyvec
   li x7, 0
   loopi 32, 2
-    bn.lid x7, 0(x5++)
-    bn.sid x7, 0(x6++)
+    bn.ld  w0, 0(x5++)
+    bn.sd  w0, 0(x6++)
   endloop
   jal x1, _inv_transform
 #endif
@@ -365,9 +365,9 @@ _ctilde_unpack_done:
     /* Shift-left of t1 polynomial. */
     addi x6, x19, 0
     loopi 32, 3
-      bn.lid    x0, 0(x6)
+      bn.ld     w0, 0(x6)
       bn.shv.8s w0, w0 << D
-      bn.sid    x0, 0(x6++)
+      bn.sd     w0, 0(x6++)
     endloop
     /* Compute ntt(t1) in place. */
     addi x10, x19, 0
@@ -436,7 +436,7 @@ _ctilde_unpack_done:
   li x7, 9
 
   la     x5, ctilde
-  bn.lid x7, 0(x5++)
+  bn.ld  w9, 0(x5++)
 
   /* Check if c == c2 */
   bn.cmp w8, w9
@@ -461,7 +461,7 @@ _ctilde_unpack_done:
   bn.rshi w8, w8, w31 >> 128
   bn.rshi w8, w31, w8 >> 128
 _skip_mask_ctilde:
-  bn.lid x7, 0(x5++)
+  bn.ld  w9, 0(x5++)
 
   /* Check if c == c2 */
   bn.cmp w8, w9

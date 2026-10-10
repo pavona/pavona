@@ -67,11 +67,11 @@ crypto_sign_keypair:
   la      x6, zeta_shares
   bn.wsrr w2, URND
   bn.xor  w0, w0, w0 /* Whitening */
-  bn.lid  x0, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.xor  w0, w0, w2
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0 /* Whitening */
-  bn.lid  x0, 32(x6)
+  bn.ld   w0, 32(x6)
   bn.xor  w0, w0, w2
   bn.wsrw kmac_msg1, w0
 
@@ -81,14 +81,14 @@ crypto_sign_keypair:
   csrrw   x0, kmac_partial_write, x5
   lw      x7, MLDSA_PARAM_K_OFFSET(x27)
   sw      x7, 0(x6)
-  bn.lid  x0, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0
   bn.wsrw kmac_msg1, w0
   csrrw   x0, kmac_partial_write, x5
   lw      x7, MLDSA_PARAM_L_OFFSET(x27)
   sw      x7, 0(x6)
-  bn.lid  x0, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w0, w0
   bn.wsrw kmac_msg1, w0
@@ -101,24 +101,23 @@ crypto_sign_keypair:
   bn.xor  w0, w0, w2
   bn.xor  w1, w1, w2
   bn.xor  w0, w0, w1
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
   /* rho': masked output to rho_prime_shares (share-major). */
   la      x6, rho_prime_shares
-  li      x7, 1
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
-  bn.sid  x0, 0(x6)
-  bn.sid  x7, 64(x6)
+  bn.sd   w0, 0(x6)
+  bn.sd   w1, 64(x6)
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
-  bn.sid  x0, 32(x6)
-  bn.sid  x7, 96(x6)
+  bn.sd   w0, 32(x6)
+  bn.sd   w1, 96(x6)
   /* K: masked output to K_shares (K is unused by keygen). */
   la      x6, K_shares
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
-  bn.sid  x0, 0(x6)
-  bn.sid  x7, 32(x6)
+  bn.sd   w0, 0(x6)
+  bn.sd   w1, 32(x6)
 
   /* Finish the SHAKE-256 operation. */
 
@@ -137,18 +136,17 @@ crypto_sign_keypair:
   la   x9, keygen_tmp
 
   /* Zero the destination buffer (2*K share polynomials). */
-  li   x5, 31
   addi x6, x18, 0
   lw   x7, MLDSA_PARAM_K_OFFSET(x27)
   loop x7, 3
     loopi 32, 1
-      bn.sid x5, 0(x6++)
+      bn.sd  w31, 0(x6++)
     endloop
     nop
   endloop
   loop x7, 3
     loopi 32, 1
-      bn.sid x5, 0(x6++)
+      bn.sd  w31, 0(x6++)
     endloop
     nop
   endloop
@@ -193,9 +191,8 @@ crypto_sign_keypair:
 _matmul_col_loop:
     bn.wsrw MOD, w16 /* MOD = R | Q for the gadget */
     /* The gadget clobbers w0-w27; stash the matrix nonce. */
-    li      x5, 23
     la      x6, matmul_nonce
-    bn.sid  x5, 0(x6)
+    bn.sd   w23, 0(x6)
     /* Masked ExpandS: s1[j] as arithmetic shares in eta_out. */
     addi    x10, x21, 0
     la      x11, rho_prime_shares
@@ -223,14 +220,13 @@ _kg1_done:
     add       x16, x16, x5
     jal       x1, masked_poly_uniform_eta_export
     addi      x22, x22, 1
-    li        x5, 23
     la        x6, matmul_nonce
-    bn.lid    x5, 0(x6)
+    bn.ld     w23, 0(x6)
     bn.wsrr   w16, MOD      /* gadget left MOD = R | Q */
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
     csrrw     x0, kmac_cfg, x20
     addi      x10, x24, 0
-    bn.lid    x0, 0(x10)
+    bn.ld     w0, 0(x10)
     bn.wsrw   kmac_msg, w0
     addi      x5, x0, 2
     csrrw     x0, kmac_partial_write, x5
@@ -288,7 +284,7 @@ _kg1_done:
       /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
       csrrw   x0, kmac_cfg, x20
       addi    x10, x24, 0
-      bn.lid  x0, 0(x10)
+      bn.ld   w0, 0(x10)
       bn.wsrw kmac_msg, w0
       addi    x5, x0, 2
       csrrw   x0, kmac_partial_write, x5
@@ -499,8 +495,8 @@ _t_unmask_loop:
 
   /* Copy rho from secret key. */
   la     x6, sk
-  bn.lid x0, 0(x6)
-  bn.sid x0, 0(x10++)
+  bn.ld  w0, 0(x6)
+  bn.sd  w0, 0(x10++)
 
   /* Load pointer to t1 */
   la x11, t_polyvec
@@ -528,9 +524,9 @@ _t_unmask_loop:
      dmem[sk+64] <= SHAKE256(pk, 64) */
   la      x5, sk
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 64(x5)
+  bn.sd   w0, 64(x5)
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 96(x5)
+  bn.sd   w0, 96(x5)
 
   /* Finish the SHAKE-256 operation. */
 
@@ -556,25 +552,25 @@ _t_unmask_loop:
   li      x5, 1
   csrrw   x0, kmac_partial_write, x5
   sw      x26, 0(x6)
-  bn.lid  x0, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.wsrw kmac_msg, w0
   csrrw   x0, kmac_partial_write, x5
   lw      x7, MLDSA_PARAM_L_OFFSET(x27)
   sw      x7, 0(x6)
-  bn.lid  x0, 0(x6)
+  bn.ld   w0, 0(x6)
   bn.wsrw kmac_msg, w0
 
   /* Squeeze into output buffers. Store rho and the key in sk. */
   la      x5, sk
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   la      x6, rhoprime
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x6++)
+  bn.sd   w0, 0(x6++)
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x6)
+  bn.sd   w0, 0(x6)
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 
   /* Finish the SHAKE-256 operation. */
 
@@ -590,11 +586,10 @@ _t_unmask_loop:
   la x18, t_polyvec
 
   /* Zero the destination buffer. */
-  li   x5, 31
   addi x6, x18, 0
   loop x26, 3
     loopi 32, 1
-      bn.sid x5, 0(x6++)
+      bn.sd  w31, 0(x6++)
     endloop
     nop
   endloop
@@ -646,7 +641,7 @@ _t_unmask_loop:
     /* Start the SHAKE128 operation for poly_uniform for A[0][j]. */
     csrrw   x0, kmac_cfg, x20
     addi    x10, x24, 0
-    bn.lid  x0, 0(x10)
+    bn.ld   w0, 0(x10)
     bn.wsrw kmac_msg, w0
     addi    x5, x0, 2
     csrrw   x0, kmac_partial_write, x5
@@ -671,7 +666,7 @@ _t_unmask_loop:
       /* Start the SHAKE128 operation for poly_uniform for A[i+1][j]. */
       csrrw   x0, kmac_cfg, x20
       addi    x10, x24, 0
-      bn.lid  x0, 0(x10)
+      bn.ld   w0, 0(x10)
       bn.wsrw kmac_msg, w0
       addi    x5, x0, 2
       csrrw   x0, kmac_partial_write, x5
@@ -758,8 +753,8 @@ _t_unmask_loop:
 
   /* Copy rho from secret key. */
   la     x6, sk
-  bn.lid x0, 0(x6)
-  bn.sid x0, 0(x10++)
+  bn.ld  w0, 0(x6)
+  bn.sd  w0, 0(x10++)
 
   /* Load pointer to t1 */
   la x11, t_polyvec
@@ -786,9 +781,9 @@ _t_unmask_loop:
      dmem[sk+64] <= SHAKE256(pk, 64) */
   la      x5, sk
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 64(x5)
+  bn.sd   w0, 64(x5)
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 96(x5)
+  bn.sd   w0, 96(x5)
 
   /* Finish the SHAKE-256 operation. */
 

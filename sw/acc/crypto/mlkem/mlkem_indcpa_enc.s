@@ -101,7 +101,7 @@ _continue_compute_v:
   add    x10, x18, x0
   la     x11, nonce
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_getnoise_eta_init
 
   /* Unpack ek_pke[0]. */
@@ -341,7 +341,7 @@ _pk_check4_ok:
   add    x10, x9, x0
   la     x11, seed_ij
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Compress v. */

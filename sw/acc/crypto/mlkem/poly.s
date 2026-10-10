@@ -24,7 +24,7 @@
  * @param[out] x11: dmem pointer to the output polynomial
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x5, x11, w0 to w1, w3
+ * clobbered registers: x5, x11, w0 to w1, w3
  * clobbered flag groups: FG0
  */
 
@@ -32,11 +32,9 @@
 .type poly_frommsg, @function
 poly_frommsg:
   la     x5, const_qp1_half
-  addi   x4, x0, 3
-  bn.lid x4, 0(x5)
+  bn.ld  w3, 0(x5)
 
-  addi   x4, x0, 1
-  bn.lid x0, 0(x10)
+  bn.ld  w0, 0(x10)
   loopi 16, 7
     loopi 16, 3
       bn.rshi w1, w0, w1 >> 1
@@ -45,7 +43,7 @@ poly_frommsg:
     endloop
     bn.subv.16h w1, w31, w1
     bn.and      w1, w1, w3
-    bn.sid      x4, 0(x11++)
+    bn.sd       w1, 0(x11++)
   endloop
   ret
 
@@ -73,16 +71,14 @@ poly_frommsg:
 poly_tomsg:
   /* Load constants. */
   la        x5, const_qp1_half
-  addi      x4, x0, 2
-  bn.lid    x4, 0(x5) /* w2 = (0x681)^16 */
+  bn.ld     w2, 0(x5) /* w2 = (0x681)^16 */
   la        x5, const_m_dv
-  addi      x4, x0, 17
-  bn.lid    x4, 0(x5)
+  bn.ld     w17, 0(x5)
   bn.shv.8s w17, w17 >> 8 /* 1290167 */
   bn.subi   w17, w17, 7   /* w17 = 1290160 = 80635 << 4 */
 
   loopi 16, 14
-    bn.lid               x0, 0(x10++)
+    bn.ld                w0, 0(x10++)
     bn.shv.16h           w0, w0 << 1   /* <= 1 */
     bn.addv.16h          w0, w0, w2    /* += 1665 */
     bn.trn1.16h          w1, w0, w31   /* Put even coeffs in 32-bit slots. */
@@ -99,7 +95,7 @@ poly_tomsg:
     nop
   endloop
   addi   x4, x0, 3
-  bn.sid x4, 0(x11)
+  bn.sd  w3, 0(x11)
 
   ret
 
@@ -128,10 +124,10 @@ poly_tomsg:
 poly_add:
   addi x4, x0, 1
   loopi 16, 4
-    bn.lid       x0, 0(x10++)
-    bn.lid       x4, 0(x11++)
+    bn.ld        w0, 0(x10++)
+    bn.ld        w1, 0(x11++)
     bn.addvm.16h w0, w0, w1
-    bn.sid       x0, 0(x12++)
+    bn.sd        w0, 0(x12++)
   endloop
   ret
 
@@ -160,10 +156,10 @@ poly_add:
 poly_sub:
   addi x4, x0, 1
   loopi 16, 4
-    bn.lid       x0, 0(x10++)
-    bn.lid       x4, 0(x11++)
+    bn.ld        w0, 0(x10++)
+    bn.ld        w1, 0(x11++)
     bn.subvm.16h w0, w0, w1
-    bn.sid       x0, 0(x12++)
+    bn.sd        w0, 0(x12++)
   endloop
   ret
 
@@ -194,14 +190,15 @@ poly_sub:
 poly_tomont:
   la     x5, const_2_32_modq
   add    x4, x0, x0
-  bn.lid x4++, 0(x5)
+  bn.ld  w0, 0(x5)
+  addi x4, x4, 1  /* restore the wide-register index */
 
   loopi 16, 6
-    bn.lid               x4, 0(x10)
+    bn.ld                w1, 0(x10)
     bn.mulv.16h.acc.z.lo w1, w0, w1
     bn.mulv.l.16h.lo     w1, w1, sw0.2
     bn.mulv.l.16h.acc.hi w1, w1, sw0.0
     bn.addvm.16h         w1, w1, w31
-    bn.sid               x4, 0(x10++)
+    bn.sd                w1, 0(x10++)
   endloop
   ret

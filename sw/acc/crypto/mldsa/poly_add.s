@@ -32,9 +32,9 @@ poly_add:
   li x4, 1
 
   loopi 32, 4
-    bn.lid      x0, 0(x10++)
-    bn.lid      x4, 0(x11++)
+    bn.ld       w0, 0(x10++)
+    bn.ld       w1, 0(x11++)
     bn.addvm.8s w0, w0, w1
-    bn.sid      x0, 0(x12++)
+    bn.sd       w0, 0(x12++)
   endloop
   ret

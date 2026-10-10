@@ -35,11 +35,11 @@ poly_getnoise_eta_init:
   csrrw x0, kmac_cfg, x5
 
   /* Send the message to the Keccak core. */
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
   li      x5, 1
   csrrw   x0, kmac_partial_write, x5
-  bn.lid  x0, 0(x11)
+  bn.ld   w0, 0(x11)
   bn.wsrw kmac_msg, w0
   ret
 
@@ -126,9 +126,8 @@ poly_getnoise_eta_2:
 .type cbd2, @function
 cbd2:
   la     x5, const_cbd2
-  addi   x4, x0, 3
-  bn.lid x4++, 0(x5)
-  bn.lid x4, 32(x5)
+  bn.ld  w3, 0(x5)
+  bn.ld  w4, 32(x5)
 
   /* Create mask 0xf. */
   bn.subi    w8, w31, 1
@@ -155,7 +154,7 @@ cbd2:
       bn.and       w6, w6, w8
       bn.and       w7, w7, w8
       bn.subvm.16h w2, w6, w7
-      bn.sid       x4, 0(x11++)
+      bn.sd        w2, 0(x11++)
     endloop
     nop
   endloop
@@ -187,8 +186,9 @@ cbd2:
 cbd3:
   la     x5, const_cbd3
   addi   x4, x0, 20
-  bn.lid x4++, 0(x5)
-  bn.lid x4, 32(x5)
+  bn.ld  w20, 0(x5)
+  addi x4, x4, 1  /* restore the wide-register index */
+  bn.ld  w21, 32(x5)
 
   /* Create mask 0x7. */
   bn.subi    w10, w31, 1
@@ -257,7 +257,7 @@ cbd3:
       bn.and       w8, w8, w10
       bn.and       w9, w9, w10
       bn.subvm.16h w11, w8, w9
-      bn.sid       x5, 0(x11++)
+      bn.sd        w11, 0(x11++)
     endloop
     loopi 10, 4
       bn.rshi w8, w0, w8 >> 16
@@ -277,7 +277,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
 
     loopi 2, 9
       loopi 16, 4
@@ -289,7 +289,7 @@ cbd3:
       bn.and       w8, w8, w10
       bn.and       w9, w9, w10
       bn.subvm.16h w11, w8, w9
-      bn.sid       x5, 0(x11++)
+      bn.sd        w11, 0(x11++)
     endloop
     loopi 5, 4
       bn.rshi w8, w4, w8 >> 16
@@ -306,7 +306,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
 
     loopi 16, 4
       bn.rshi w8, w2, w8 >> 16
@@ -317,7 +317,7 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
     loopi 15, 4
       bn.rshi w8, w2, w8 >> 16
       bn.rshi w9, w5, w9 >> 16
@@ -329,6 +329,6 @@ cbd3:
     bn.and       w8, w8, w10
     bn.and       w9, w9, w10
     bn.subvm.16h w11, w8, w9
-    bn.sid       x5, 0(x11++)
+    bn.sd        w11, 0(x11++)
   endloop
   ret

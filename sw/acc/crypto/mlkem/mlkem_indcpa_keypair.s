@@ -87,23 +87,23 @@ _continue:
   addi    x5, x5, SHA3_512_CFG
   csrrw   x0, kmac_cfg, x5
   /* Send seed. */
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg, w0
   /* Send k. */
   addi    x5, x0, 1
   csrrw   x0, kmac_partial_write, x5
   la      x5, buf
   bn.xor  w0, w0, w0
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
   sw      x13, 0(x5)
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg, w0
   /* Retrieve publicseed. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   /* Retrieve noiseseed. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5)
+  bn.sd   w0, 0(x5)
 
   /*** Step 2: Generate dk_pke. ***/
   /* The following block will:
@@ -114,7 +114,7 @@ _continue:
   la     x8, buf
   la     x21, nonce
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x21)
+  bn.sd  w0, 0(x21)
   /* Prepare for generating sk[0]. */
   addi   x10, x8, 32
   add    x11, x21, x0
@@ -172,7 +172,7 @@ _continue:
   add    x10, x8, x0
   la     x11, seed_ij
   bn.xor w0, w0, w0
-  bn.sid x0, 0(x11)
+  bn.sd  w0, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Pack dk_pke[k - 1] <- sk[k - 1]. */
@@ -421,8 +421,8 @@ _continue:
 _handle_common:
   /*** Step 4: append publicseed to ek_pke. ***/
   la     x5, buf
-  bn.lid x0, 0(x5)
-  bn.sid x0, 0(x11)
+  bn.ld  w0, 0(x5)
+  bn.sd  w0, 0(x11)
   ret
 
 #else
@@ -449,33 +449,32 @@ _continue:
   add     x5, x5, x6
   csrrw   x0, kmac_cfg, x5
   /* Send seed. */
-  bn.lid  x0, 0(x10++)
+  bn.ld   w0, 0(x10++)
   bn.wsrw kmac_msg, w0
   bn.xor  w0, w31, w31 /* Whitening. */
-  bn.lid  x0, 0(x10)
+  bn.ld   w0, 0(x10)
   bn.wsrw kmac_msg1, w0
   bn.xor  w0, w31, w31 /* Whitening. */
   /* Send k. */
   addi    x5, x0, 1
   csrrw   x0, kmac_partial_write, x5
   la      x5, buf
-  addi    x4, x0, 31
-  bn.sid  x4, 0(x5)
+  bn.sd   w31, 0(x5)
   sw      x13, 0(x5)
-  bn.lid  x0, 0(x5)
+  bn.ld   w0, 0(x5)
   bn.wsrw kmac_msg, w0
   bn.wsrw kmac_msg1, w31
   /* Retrieve publicseed. */
   bn.wsrr w0, kmac_digest
   bn.wsrr w1, kmac_digest1
   bn.xor  w0, w0, w1
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   /* Retrieve noiseseed. */
   bn.wsrr w0, kmac_digest
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   bn.xor  w0, w31, w31 /* Whitening. */
   bn.wsrr w0, kmac_digest1
-  bn.sid  x0, 0(x5++)
+  bn.sd   w0, 0(x5++)
   bn.xor  w0, w31, w31 /* Whitening. */
 
   /*** Step 2: Generate dk_pke. ***/
@@ -487,7 +486,7 @@ _continue:
   la     x8, buf
   la     x21, nonce
   addi   x4, x0, 31
-  bn.sid x4, 0(x21)
+  bn.sd  w31, 0(x21)
   /* Prepare for generating sk[0]. */
   addi   x10, x8, 32
   add    x11, x21, x0
@@ -559,7 +558,7 @@ _continue:
   add    x10, x8, x0
   la     x11, seed_ij
   addi   x4, x0, 31
-  bn.sid x4, 0(x11)
+  bn.sd  w31, 0(x11)
   jal    x1, poly_gen_matrix_init
 
   /* Pack dk_pke[k - 1] <- sk[k - 1]. */
@@ -737,10 +736,10 @@ _continue:
     add  x5, x26, x0
     addi x6, x5, 512
     loopi 16, 4
-      bn.lid       x0, 0(x5)
-      bn.lid       x4, 0(x6++)
+      bn.ld        w0, 0(x5)
+      bn.ld        w1, 0(x6++)
       bn.addvm.16h w0, w0, w1
-      bn.sid       x0, 0(x5++)
+      bn.sd        w0, 0(x5++)
     endloop
 
     bn.wsrw mod, w16
@@ -878,10 +877,10 @@ _continue:
   add  x5, x26, x0
   addi x6, x5, 512
   loopi 16, 4
-    bn.lid       x0, 0(x5)
-    bn.lid       x4, 0(x6++)
+    bn.ld        w0, 0(x5)
+    bn.ld        w1, 0(x6++)
     bn.addvm.16h w0, w0, w1
-    bn.sid       x0, 0(x5++)
+    bn.sd        w0, 0(x5++)
   endloop
 
   bn.wsrw mod, w16
@@ -895,7 +894,7 @@ _continue:
 _handle_common:
   /*** Step 4: append publicseed to ek_pke. ***/
   la     x5, buf
-  bn.lid x0, 0(x5)
-  bn.sid x0, 0(x11)
+  bn.ld  w0, 0(x5)
+  bn.sd  w0, 0(x11)
   ret
 #endif

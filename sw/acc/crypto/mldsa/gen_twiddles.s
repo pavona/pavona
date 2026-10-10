@@ -58,11 +58,9 @@
 gen_twiddles_fwd:
   la                         x7, scratch /* output base */
   la                         x6, gen_seed_lv0
-  li                         x5, 24
-  bn.lid                     x5, 0(x6)
+  bn.ld                      w24, 0(x6)
   la                         x6, gen_seed_lv3
-  li                         x5, 27
-  bn.lid                     x5, 0(x6)
+  bn.ld                      w27, 0(x6)
   li                         x5, 17
   /* LV2=LV3^2 ; LV1=LV2^2 */
   bn.mulv.8s.even.acc.z.lo   w26, w27, w27
@@ -78,7 +76,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w25, w25, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w25, w25, sw0.0
   la                         x6, gen_seed_scalars+0
-  bn.lid                     x5, 0(x6)   /* w17 = scalars[0..7] */
+  bn.ld                      w17, 0(x6)  /* w17 = scalars[0..7] */
   bn.mulv.l.8s.even.acc.z.lo w30, w24, sw1.0
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -86,7 +84,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.1
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -94,7 +92,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w25, sw1.2
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -102,7 +100,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.3
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -110,7 +108,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.4
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -118,7 +116,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w26, sw1.5
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -126,7 +124,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.6
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -134,7 +132,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.7
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -142,9 +140,9 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   la                         x6, gen_seed_scalars+32
-  bn.lid                     x5, 0(x6)   /* w17 = scalars[8..15] */
+  bn.ld                      w17, 0(x6)  /* w17 = scalars[8..15] */
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.0
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -152,7 +150,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w27, sw1.1
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -160,7 +158,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.2
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -168,7 +166,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.3
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -176,7 +174,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.4
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -184,7 +182,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.5
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -192,7 +190,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.6
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -200,7 +198,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.7
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -208,9 +206,9 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   la                         x6, gen_seed_scalars+64
-  bn.lid                     x5, 0(x6)   /* w17 = scalars[16..23] */
+  bn.ld                      w17, 0(x6)  /* w17 = scalars[16..23] */
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.0
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -218,7 +216,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w25, sw1.1
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -226,7 +224,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.2
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -234,7 +232,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.3
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -242,7 +240,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w26, sw1.4
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -250,7 +248,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.5
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -258,7 +256,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.6
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -266,7 +264,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.7
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -274,9 +272,9 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   la                         x6, gen_seed_scalars+96
-  bn.lid                     x5, 0(x6)   /* w17 = scalars[24..31] */
+  bn.ld                      w17, 0(x6)  /* w17 = scalars[24..31] */
   bn.mulv.l.8s.even.acc.z.lo w30, w27, sw1.0
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -284,7 +282,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.1
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -292,7 +290,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.2
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -300,7 +298,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.3
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -308,7 +306,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.4
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -316,7 +314,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.5
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -324,7 +322,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.6
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -332,7 +330,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   bn.mulv.l.8s.even.acc.z.lo w30, w0, sw1.7
   bn.mulv.l.8s.even.lo       w30, w30, sw0.1
   bn.mulv.l.8s.even.acc.hi   w30, w30, sw0.0
@@ -340,7 +338,7 @@ gen_twiddles_fwd:
   bn.mulv.l.8s.odd.lo        w30, w30, sw0.1
   bn.mulv.l.8s.odd.acc.hi    w30, w30, sw0.0
   bn.mov                     w0, w30
-  bn.sid                     x0, 0(x7++)
+  bn.sd                      w0, 0(x7++)
   la                         x6, scratch
   sw                         x0, 60(x6)
   ret
@@ -367,36 +365,30 @@ _inv_transform:
   bn.xor  w23, w23, w23 /* minuend 0 */
   la      x11, scratch
   /* save fwd[240..255] (overwritten by the tail / inv[0..15] steps) */
-  li      x5, 28
   addi    x6, x11, 960
-  bn.lid  x5, 0(x6)
-  li      x5, 29
+  bn.ld   w28, 0(x6)
   addi    x6, x11, 992
-  bn.lid  x5, 0(x6)
+  bn.ld   w29, 0(x6)
   /* pair-swap reverse-negate WDR2..WDR29: inv[i]=q-fwd[255-i], i=16..239 */
   addi    x6, x11, 64
   addi    x7, x11, 928
-  loopi 14, 22
-    li          x5, 20
-    bn.lid      x5, 0(x6)
-    li          x5, 19
-    bn.lid      x5, 0(x7)
+  loopi 14, 18
+    bn.ld       w20, 0(x6)
+    bn.ld       w19, 0(x7)
     bn.rshi     w21, w20, w20 >> 32
     bn.trn1.8s  w21, w21, w20
     bn.rshi     w22, w21, w21 >> 64
     bn.trn1.4d  w22, w22, w21
     bn.rshi     w20, w22, w22 >> 128
     bn.subvm.8s w20, w23, w20
-    li          x5, 20
-    bn.sid      x5, 0(x7)
+    bn.sd       w20, 0(x7)
     bn.rshi     w21, w19, w19 >> 32
     bn.trn1.8s  w21, w21, w19
     bn.rshi     w22, w21, w21 >> 64
     bn.trn1.4d  w22, w22, w21
     bn.rshi     w19, w22, w22 >> 128
     bn.subvm.8s w19, w23, w19
-    li          x5, 19
-    bn.sid      x5, 0(x6)
+    bn.sd       w19, 0(x6)
     addi        x6, x6, 32
     addi        x7, x7, -32
   endloop
@@ -423,8 +415,7 @@ _inv_transform:
   bn.trn1.4d  w22, w22, w21
   bn.rshi     w29, w22, w22 >> 128
   bn.subvm.8s w29, w23, w29
-  li          x5, 29
-  bn.sid      x5, 0(x11)
+  bn.sd       w29, 0(x11)
   bn.rshi     w21, w28, w28 >> 32
   bn.trn1.8s  w21, w21, w28
   bn.rshi     w22, w21, w21 >> 64
@@ -432,7 +423,7 @@ _inv_transform:
   bn.rshi     w28, w22, w22 >> 128
   bn.subvm.8s w28, w23, w28
   li          x5, 28
-  bn.sid      x5, 32(x11)
+  bn.sd       w28, 32(x11)
   /* restore MOD = 2R|2Q for the intt butterflies */
   bn.shv.8s   w19, w16 << 1
   bn.wsrw     0x0, w19
