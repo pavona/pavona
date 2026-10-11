@@ -261,7 +261,7 @@
               - Check that all outstanding transactions on secure internal TLUL interface are complete
               '''
         stage: V2
-        tests: ["dma_abort"]
+        tests: ["dma_abort", "dma_abort_outstanding"]
       }
       {
         name: dma_stress_all
