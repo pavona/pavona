@@ -83,6 +83,9 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandHash:
         RESP_ERR(uj, handle_hash(uj, &cryptotest_scratch.hash));
         break;
+      case kCryptotestCommandHashMct:
+        RESP_ERR(uj, handle_hash_mct(uj, &cryptotest_scratch.hash));
+        break;
       case kCryptotestCommandHmac:
         RESP_ERR(uj, handle_hmac(uj));
         break;

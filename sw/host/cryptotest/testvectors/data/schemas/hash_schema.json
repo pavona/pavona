@@ -32,6 +32,34 @@
         "type": "string",
           "enum": ["SHA2-256", "SHA2-384", "SHA2-512", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512", "SHAKE-128", "SHAKE-256", "cSHAKE-128", "cSHAKE-256"]
       },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "operation": {
+        "description": "hash for a single digest, or mct for an ACVP Monte Carlo test seeded with `message`",
+        "type": "string",
+        "enum": ["hash", "mct"]
+      },
+      "mct_digests": {
+        "description": "Expected digest after each outer Monte Carlo iteration",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/byte_array"
+        }
+      },
       "message": {
         "description": "Message to be hashed",
         "$ref": "#/$defs/byte_array"

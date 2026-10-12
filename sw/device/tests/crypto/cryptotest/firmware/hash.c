@@ -181,3 +181,78 @@ status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
   RESP_OK(ujson_serialize_cryptotest_hash_output_t, uj, &uj_output);
   return OK_STATUS(0);
 }
+
+enum {
+  kHashMctOuterIterations = 100,
+  kHashMctInnerIterations = 1000,
+  kHashMctMaxDigestWords = 512 / 32,
+};
+
+status_t handle_hash_mct(ujson_t *uj, hash_test_scratch_t *s) {
+  cryptotest_hash_algorithm_t uj_algorithm;
+  cryptotest_hash_message_t *uj_message = &s->message;
+  TRY(ujson_deserialize_cryptotest_hash_algorithm_t(uj, &uj_algorithm));
+  TRY(ujson_deserialize_cryptotest_hash_message_t(uj, uj_message));
+
+  otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t,
+                                    otcrypto_hash_digest_t *);
+  size_t digest_len;
+  switch (uj_algorithm) {
+    case kCryptotestHashAlgorithmSha3_224:
+      digest_len = 224 / 32;
+      hash_oneshot = otcrypto_sha3_224;
+      break;
+    case kCryptotestHashAlgorithmSha3_256:
+      digest_len = 256 / 32;
+      hash_oneshot = otcrypto_sha3_256;
+      break;
+    case kCryptotestHashAlgorithmSha3_384:
+      digest_len = 384 / 32;
+      hash_oneshot = otcrypto_sha3_384;
+      break;
+    case kCryptotestHashAlgorithmSha3_512:
+      digest_len = 512 / 32;
+      hash_oneshot = otcrypto_sha3_512;
+      break;
+    default:
+      LOG_ERROR("Unsupported hash algorithm for MCT: %d", uj_algorithm);
+      return INVALID_ARGUMENT();
+  }
+
+  cryptotest_hash_mct_output_t *uj_output = &s->mct_output;
+  memset(uj_output, 0, sizeof(*uj_output));
+  size_t digest_bytes = digest_len * sizeof(uint32_t);
+
+  uint32_t md[kHashMctMaxDigestWords];
+  uint32_t msg[kHashMctMaxDigestWords];
+  otcrypto_hash_digest_t digest = {
+      .data = md,
+      .len = digest_len,
+  };
+  for (size_t j = 0; j < kHashMctOuterIterations; j++) {
+    for (size_t i = 0; i < kHashMctInnerIterations; i++) {
+      const uint8_t *data = uj_message->message;
+      size_t len = uj_message->message_len;
+      if (j > 0 || i > 0) {
+        memcpy(msg, md, digest_bytes);
+        data = (const uint8_t *)msg;
+        len = digest_bytes;
+      }
+      otcrypto_const_byte_buf_t input = {
+          .len = len,
+          .data = data,
+      };
+      otcrypto_status_t status = hash_oneshot(input, &digest);
+      if (status.value != kOtcryptoStatusValueOk) {
+        LOG_ERROR("Bad status value: 0x%x", status.value);
+        return INTERNAL(status.value);
+      }
+    }
+    memcpy(&uj_output->digests[j * digest_bytes], md, digest_bytes);
+  }
+
+  uj_output->digests_len = kHashMctOuterIterations * digest_bytes;
+  uj_output->digest_len = digest_bytes;
+  RESP_OK(ujson_serialize_cryptotest_hash_mct_output_t, uj, uj_output);
+  return OK_STATUS(0);
+}

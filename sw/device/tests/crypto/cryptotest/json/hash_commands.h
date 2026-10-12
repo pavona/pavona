@@ -14,6 +14,7 @@ extern "C" {
 #define HASH_CMD_MAX_MESSAGE_BYTES 17068
 #define HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES 16
 #define HASH_CMD_MAX_DIGEST_BYTES 256
+#define HASH_CMD_MAX_MCT_DIGESTS_BYTES 6400  // 100 * 512 / 8
 
 // clang-format off
 
@@ -47,6 +48,12 @@ UJSON_SERDE_STRUCT(CryptotestHashMessage, cryptotest_hash_message_t, HASH_MESSAG
     field(stepwise_digest, uint8_t, HASH_CMD_MAX_DIGEST_BYTES) \
     field(digest_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHashOutput, cryptotest_hash_output_t, HASH_OUTPUT);
+
+#define HASH_MCT_OUTPUT(field, string, bytes) \
+    bytes(digests, HASH_CMD_MAX_MCT_DIGESTS_BYTES, digests_len) \
+    field(digests_len, size_t) \
+    field(digest_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestHashMctOutput, cryptotest_hash_mct_output_t, HASH_MCT_OUTPUT);
 
 #undef MODULE_ID
 

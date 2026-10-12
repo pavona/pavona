@@ -298,6 +298,8 @@ cryptotest(
 )
 
 SHA3_224_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_sha3_224_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_224_{}_json".format(
         msg_type.lower(),
     )
@@ -314,6 +316,9 @@ SHA3_224_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_224_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHA3_224_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
@@ -321,6 +326,8 @@ cryptotest(
 )
 
 SHA3_256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_sha3_256_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_256_{}_json".format(
         msg_type.lower(),
     )
@@ -337,6 +344,9 @@ SHA3_256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_256_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHA3_256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
@@ -344,6 +354,8 @@ cryptotest(
 )
 
 SHA3_384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_sha3_384_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_384_{}_json".format(
         msg_type.lower(),
     )
@@ -360,6 +372,9 @@ SHA3_384_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_384_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHA3_384_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
@@ -367,6 +382,8 @@ cryptotest(
 )
 
 SHA3_512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_sha3_512_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_512_{}_json".format(
         msg_type.lower(),
     )
@@ -383,6 +400,9 @@ SHA3_512_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_512_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHA3_512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
