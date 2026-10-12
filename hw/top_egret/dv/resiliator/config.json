@@ -1,0 +1,17 @@
+{
+  "top": "egret",
+  "build": {
+    "jobs": 8,
+    "targets": [
+      "//hw/top_egret/dv/resiliator:verilator_resiliator_ibex",
+      "//hw/top_egret/dv/resiliator/fw:auth_check_hex"
+    ]
+  },
+  "simulation": {
+    "simulator_target": "//hw/top_egret/dv/resiliator:sim_binary",
+    "firmware_target": "//hw/top_egret/dv/resiliator/fw:auth_check_hex",
+    "timeout": 80000000,
+    "output_directory": "resiliator_out",
+    "results_file": "sim_results"
+  }
+}

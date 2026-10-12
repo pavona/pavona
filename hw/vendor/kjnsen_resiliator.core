@@ -1,0 +1,14 @@
+CAPI=2:
+name: "kjnsen:dv:resiliator:0.1"
+description: "Resiliator fault-injection simulation driver"
+
+filesets:
+  files_cpp:
+    files:
+      - kjnsen_resiliator/sim_main.cpp: { file_type: cppSource }
+      - kjnsen_resiliator/xxhash.h: { file_type: cppSource, is_include_file: true }
+
+targets:
+  default:
+    filesets:
+      - files_cpp
