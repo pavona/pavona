@@ -720,6 +720,8 @@ def validate_seed_cfg(top: ConfigT, seed_cfg: ConfigT):
         raise KeyError("presence of lc_ctrl requires LC controller seed")
 
     validation_errors = all_validation_errors(seed_cfg, SEEDCFG_VALIDATOR, "seedcfg")
+    if validation_errors:
+        log.error("Seed configuration Hjson has errors.")
 
     return int(len(validation_errors) > 0)
 
