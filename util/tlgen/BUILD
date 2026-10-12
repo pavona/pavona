@@ -22,6 +22,7 @@ py_library(
     ],
     data = ["//util/tlgen/schemas"],
     deps = [
+        "//util/basegen",
         "//util/reggen:validate",
         requirement("mako"),
     ],
