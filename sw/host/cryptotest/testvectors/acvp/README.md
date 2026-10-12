@@ -22,6 +22,7 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
 - [SHA3-224, SHA3-256, SHA3-384, SHA3-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, MCT.
+- [SHAKE-128, SHAKE-256](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, revision FIPS202.
 
 ## Unsupported capabilities
 
@@ -57,12 +58,19 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 
 The device runs the whole Monte Carlo test, all 100 outer and 1000 inner iterations.
 
+### SHAKE
+
+- Revision 1.0, with its bit-oriented messages, Monte Carlo and variable output tests.
+- Messages that are not a whole number of bytes.
+- Output lengths that are not a whole number of 32-bit words.
+  The cryptolib returns whole words.
+
 ## Running sample vector sets
 
 A vector set is answered the same way whether it comes from a certification session or from the pinned test data: the prompt goes in, and a response comes out.
 The parsers turn a prompt into the inputs the harness sends to the device, and the harness assembles the device's outputs into a response.
 
-The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM and SHA3 known-answer tests:
+The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM, SHA3 and SHAKE known-answer tests:
 
 ```sh
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:aes_kwp_kat_fpga_cw340_test_rom
@@ -71,7 +79,7 @@ The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM and SHA3 known
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:sha3_256_kat_fpga_cw340_test_rom
 ```
 
-The `sha3_224_kat`, `sha3_384_kat` and `sha3_512_kat` targets cover the other SHA3 digest lengths.
+The `sha3_224_kat`, `sha3_384_kat`, `sha3_512_kat`, `shake128_kat` and `shake256_kat` targets cover the other SHA3 and SHAKE variants.
 
 These compare the assembled response against the expected results NIST publishes alongside each prompt.
 For ML-DSA and ML-KEM, `--define=acc_has_pqc=true` selects the ACC backends; without it, the same targets test the software backends instead.

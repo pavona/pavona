@@ -53,6 +53,10 @@
         "type": "string",
         "enum": ["hash", "mct"]
       },
+      "output_len": {
+        "description": "SHAKE output length in bytes",
+        "type": "integer"
+      },
       "mct_digests": {
         "description": "Expected digest after each outer Monte Carlo iteration",
         "type": "array",

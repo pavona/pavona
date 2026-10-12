@@ -378,6 +378,8 @@ cryptotest(
 )
 
 SHAKE128_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_shake_128_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake128_{}_json".format(
         msg_type.lower(),
     )
@@ -395,6 +397,9 @@ SHAKE128_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "shake128_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHAKE128_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
@@ -402,6 +407,8 @@ cryptotest(
 )
 
 SHAKE256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_shake_256_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake256_{}_json".format(
         msg_type.lower(),
     )
@@ -419,6 +426,9 @@ SHAKE256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "shake256_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = SHAKE256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",

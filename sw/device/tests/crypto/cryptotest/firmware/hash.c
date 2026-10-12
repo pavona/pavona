@@ -4,6 +4,7 @@
 
 #include "hash.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -113,7 +114,11 @@ status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
   }
 
   // Create digest skeleton
-  uint32_t digest_buf[digest_len];
+  if (digest_len > ARRAYSIZE(s->digest)) {
+    LOG_ERROR("Digest too long");
+    return INVALID_ARGUMENT();
+  }
+  uint32_t *digest_buf = s->digest;
   memset(digest_buf, 0, digest_len * sizeof(uint32_t));
   otcrypto_hash_digest_t digest = {
       .data = digest_buf,
@@ -137,10 +142,11 @@ status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
     LOG_ERROR("Bad status value: 0x%x", status.value);
     return INTERNAL(status.value);
   }
-  cryptotest_hash_output_t uj_output;
-  uj_output.digest_len = digest_len * sizeof(uint32_t);
+  cryptotest_hash_output_t *uj_output = &s->output;
+  memset(uj_output, 0, sizeof(*uj_output));
+  uj_output->digest_len = digest_len * sizeof(uint32_t);
   // Copy oneshot digest to uJSON type
-  memcpy(uj_output.oneshot_digest, digest_buf, digest_len * sizeof(uint32_t));
+  memcpy(uj_output->oneshot_digest, digest_buf, digest_len * sizeof(uint32_t));
   // Zero out digest_buf to mitigate chance of a false positive in the
   // stepwise test
   memset(digest_buf, 0, digest_len * sizeof(uint32_t));
@@ -174,11 +180,11 @@ status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
       return INTERNAL(status.value);
     }
     // Copy stepwise result to uJSON type
-    memcpy(uj_output.stepwise_digest, digest_buf,
+    memcpy(uj_output->stepwise_digest, digest_buf,
            digest_len * sizeof(uint32_t));
   }
   // Send digest to host via UART
-  RESP_OK(ujson_serialize_cryptotest_hash_output_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptotest_hash_output_t, uj, uj_output);
   return OK_STATUS(0);
 }
 

@@ -59,6 +59,8 @@ struct HashTestCase {
     #[serde(default)]
     digest: Vec<u8>,
     #[serde(default)]
+    output_len: usize,
+    #[serde(default)]
     mct_digests: Vec<Vec<u8>>,
     /// Absent where the outcome is the answer, as in an ACVP prompt.
     #[serde(default)]
@@ -160,7 +162,11 @@ fn run_hash_testcase(
     // Send required digest size for SHAKE tests (this value is
     // ignored for SHA2/3)
     CryptotestHashShakeDigestLength {
-        length: test_case.digest.len(),
+        length: if test_case.output_len > 0 {
+            test_case.output_len
+        } else {
+            test_case.digest.len()
+        },
     }
     .send(spi_console)?;
 

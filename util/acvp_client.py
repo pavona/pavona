@@ -40,6 +40,8 @@ VECTOR_SETS = {
     ("SHA3-256", ""): ("sha3_256", "sha3"),
     ("SHA3-384", ""): ("sha3_384", "sha3"),
     ("SHA3-512", ""): ("sha3_512", "sha3"),
+    ("SHAKE-128", ""): ("shake128", "shake"),
+    ("SHAKE-256", ""): ("shake256", "shake"),
 }
 
 # Harnesses whose parser and schema are named differently.
@@ -48,6 +50,8 @@ PARSER_NAMES = {
     "sha3_256": "hash",
     "sha3_384": "hash",
     "sha3_512": "hash",
+    "shake128": "hash",
+    "shake256": "hash",
 }
 
 

@@ -348,6 +348,36 @@ HMAC_RANDOM_COUNT = 64
     ]
 ]
 
+[
+    run_binary(
+        name = "acvp_shake_{}_json".format(security),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json".format(security),
+            "@acvp_testvectors//SHAKE-{}-FIPS202:prompt.json".format(security),
+        ],
+        outs = [":acvp_shake_{}.json".format(security)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:prompt.json)".format(security),
+            "--dst",
+            "$(location :acvp_shake_{}.json)".format(security),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json)".format(security),
+            "--test-type",
+            "shake",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
+    )
+    for security in [
+        "128",
+        "256",
+    ]
+]
+
 ################################################################################
 # CSHAKE - NIST Example Values
 ################################################################################

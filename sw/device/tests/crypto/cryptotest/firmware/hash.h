@@ -12,6 +12,8 @@
 // Scratch memory for hash tests.
 typedef struct hash_test_scratch {
   cryptotest_hash_message_t message;
+  uint32_t digest[HASH_CMD_MAX_DIGEST_BYTES / sizeof(uint32_t)];
+  cryptotest_hash_output_t output;
   cryptotest_hash_mct_output_t mct_output;
 } hash_test_scratch_t;
 

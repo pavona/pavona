@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parser for converting ACVP SHA3 prompts to JSON."""
+"""Parser for converting ACVP SHA3 and SHAKE prompts to JSON."""
 
 import argparse
 import json
@@ -65,6 +65,36 @@ def parse_sha3(data, skip_unsupported):
     return test_vectors
 
 
+def parse_shake(data, skip_unsupported):
+    """Parse a SHAKE prompt."""
+    if data["revision"] != "FIPS202":
+        raise SystemExit("parse_shake: only the FIPS202 revision is implemented")
+    test_vectors = []
+    skipped_bits = 0
+    skipped_output = 0
+    for group in data["testGroups"]:
+        for test in group["tests"]:
+            if test["len"] % 8 != 0:
+                skipped_bits += 1
+                continue
+            if test["outLen"] % 32 != 0:
+                skipped_output += 1
+                continue
+            test_vectors.append({
+                **acvp_common(data, group),
+                "test_case_id": test["tcId"],
+                "operation": "hash",
+                "message": message(test),
+                "output_len": test["outLen"] // 8,
+            })
+    report_skipped("parse_shake", {
+        "bit-length messages are not implemented": skipped_bits,
+        "outputs that are not whole words are not implemented":
+            skipped_output,
+    }, skip_unsupported)
+    return test_vectors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Parsing utility for ACVP hash prompts.")
@@ -92,7 +122,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-type",
-        choices=["sha3"],
+        choices=["sha3", "shake"],
         required=True,
         help="Type of test vectors to parse.",
     )
@@ -105,7 +135,10 @@ def main() -> int:
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    test_vectors = parse_sha3(raw_data, args.skip_unsupported)
+    if args.test_type == "sha3":
+        test_vectors = parse_sha3(raw_data, args.skip_unsupported)
+    else:
+        test_vectors = parse_shake(raw_data, args.skip_unsupported)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:
