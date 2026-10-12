@@ -79,7 +79,7 @@ def validate(regs, is_comportable_spec):
             error += check_keys(regs, field_required, field_optional, component)
 
         if (error > 0):
-            log.error("Component has top level errors. Aborting.")
+            log.error(f"Component {component} has top level errors. Aborting.")
         return error
 
     # Assumes `revisions` field exists in the Hjson object.
@@ -101,6 +101,6 @@ def validate(regs, is_comportable_spec):
             error += check_keys(rev, entry_required, entry_optional, component)
 
     if (error > 0):
-        log.error("Component has errors in revision field. Aborting.")
+        log.error(f"Component {component} has errors in revision field. Aborting.")
 
     return error
