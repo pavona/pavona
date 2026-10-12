@@ -299,10 +299,6 @@ HMAC_RANDOM_COUNT = 64
         ("SHA256", "sha2_fips_180_4", []),
         ("SHA384", "sha2_fips_180_4", []),
         ("SHA512", "sha2_fips_180_4", []),
-        ("SHA3_224", "sha3_fips_202", []),
-        ("SHA3_256", "sha3_fips_202", []),
-        ("SHA3_384", "sha3_fips_202", []),
-        ("SHA3_512", "sha3_fips_202", []),
         (
             "SHAKE128",
             "shake_fips_202",

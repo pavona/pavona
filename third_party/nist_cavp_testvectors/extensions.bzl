@@ -48,15 +48,6 @@ def _nist_cavp_repos():
         ],
     )
     http_archive(
-        name = "nist_cavp_sha3_fips_202",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "cd07701af2e47f5cc889d642528b4bf11f8b6eb55797c7307a96828ed8d8fc8c",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/sha-3bytetestvectors.zip",
-        ],
-    )
-    http_archive(
         name = "nist_cavp_shake_fips_202",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "debfebc3157b3ceea002b84ca38476420389a3bf7e97dc5f53ea4689a16de4c7",
