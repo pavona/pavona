@@ -157,6 +157,12 @@ class Register(RegBase):
         if not isinstance(raw, dict):
             raise TypeError('must instantiate register from dict')
         REG_VALIDATOR.validate(cast_hjson_values(raw))
+        extra_keys = (set(raw.keys())
+                      - set(REG_VALIDATOR.schema['properties'].keys())
+                      if isinstance(REG_VALIDATOR.schema, dict) else {})
+        if extra_keys:
+            raise ValueError('there are extra fields specified for the'
+                             f' register: {extra_keys}')
 
         name = check_name(raw['name'], 'name of register')
 

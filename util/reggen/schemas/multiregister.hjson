@@ -11,6 +11,7 @@
   type: "object",
   $ref: "urn:reggen:register"  // inherit properties of register
   required: ["name", "desc", "count", "cname", "fields"]
+  unevaluatedProperties: false,
   properties: {
     name: { type: "string", description: "base name of the registers" },
     desc: { type: "string", description: "description of the registers" },
