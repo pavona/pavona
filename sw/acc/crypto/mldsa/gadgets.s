@@ -506,17 +506,23 @@ secadd_constant_bmsk:
   bn.and  w12, w6, w10
   bn.and  w13, w7, w11
   bn.wsrr w14, URND
-  bn.and  w15, w6, w11
-  bn.xor  w15, w15, w14
-  bn.and  w16, w7, w10
-  bn.xor  w16, w16, w14
+  bn.xor  w15, w11, w14
+  bn.and  w15, w15, w6
+  bn.not  w16, w6
+  bn.and  w16, w16, w14
+  bn.xor  w15, w15, w16
   bn.xor  w12, w12, w15
-  bn.xor  w13, w13, w16
+  bn.xor  w8, w10, w14
+  bn.and  w8, w8, w7
+  bn.not  w9, w7
+  bn.and  w9, w9, w14
+  bn.xor  w8, w8, w9
+  bn.xor  w13, w13, w8
   bn.xor  w22, w4, w12
   bn.xor  w23, w5, w13
 
   /* bits 1..12 (q=0) */
-  loopi 12, 15
+  loopi 12, 21
     bn.ld   w4, 0(x10)
     bn.ld   w5, 0(x11)
     bn.xor  w8, w22, w4 /* z = c ^ sp */
@@ -527,16 +533,22 @@ secadd_constant_bmsk:
     bn.and  w12, w22, w4
     bn.and  w13, w23, w5
     bn.wsrr w14, URND
-    bn.and  w15, w22, w5
-    bn.xor  w15, w15, w14
-    bn.and  w16, w23, w4
-    bn.xor  w16, w16, w14
+    bn.xor  w15, w5, w14
+    bn.and  w15, w15, w22
+    bn.not  w16, w22
+    bn.and  w16, w16, w14
+    bn.xor  w15, w15, w16
+    bn.xor  w8, w4, w14
+    bn.and  w8, w8, w23
+    bn.not  w9, w23
+    bn.and  w9, w9, w14
+    bn.xor  w8, w8, w9
     bn.xor  w22, w12, w15
-    bn.xor  w23, w13, w16
+    bn.xor  w23, w13, w8
   endloop
 
   /* bits 13..22 (q=1) */
-  loopi 10, 21
+  loopi 10, 27
     bn.ld   w4, 0(x10)
     bn.ld   w5, 0(x11)
     bn.xor  w6, w4, w20  /* xpy = sp ^ b */
@@ -551,12 +563,18 @@ secadd_constant_bmsk:
     bn.and  w12, w6, w10
     bn.and  w13, w7, w11
     bn.wsrr w14, URND
-    bn.and  w15, w6, w11
-    bn.xor  w15, w15, w14
-    bn.and  w16, w7, w10
-    bn.xor  w16, w16, w14
+    bn.xor  w15, w11, w14
+    bn.and  w15, w15, w6
+    bn.not  w16, w6
+    bn.and  w16, w16, w14
+    bn.xor  w15, w15, w16
     bn.xor  w12, w12, w15
-    bn.xor  w13, w13, w16
+    bn.xor  w8, w10, w14
+    bn.and  w8, w8, w7
+    bn.not  w9, w7
+    bn.and  w9, w9, w14
+    bn.xor  w8, w8, w9
+    bn.xor  w13, w13, w8
     bn.xor  w22, w4, w12
     bn.xor  w23, w5, w13
   endloop
