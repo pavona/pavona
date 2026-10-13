@@ -2114,7 +2114,6 @@ _secdecompose_l35:
   /* b' <- seca2bmodq(b'). */
   addi x10, x24, 0
   addi x11, x24, 0
-  li   x12, 2
   lw   x13, 44(x2)
   jal  x1, seca2bmodq
 

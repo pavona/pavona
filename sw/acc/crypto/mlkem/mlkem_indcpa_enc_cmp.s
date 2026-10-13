@@ -1539,7 +1539,6 @@ _handle_k2_compute_b:
   /*** Step 4: w0 = acc, reduced by finalize_cmp and unmasked. ***/
 _finalize_compare:
   add x10, x2, x0
-  add x11, x0, NSHARES
   jal x1, finalize_cmp
 
   /* Unmask comparison result. */

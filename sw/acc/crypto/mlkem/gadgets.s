@@ -1477,7 +1477,6 @@ secb2amodq:
   addi   x15, x15, 32
   jal    x1, secfulladder
   addi   x12, x12, 32
-  addi   x15, x15, 32
   /* Bit 12: p[i] = 1. */
   /* s[12] = p[12] ^ s[12] ^ c = ~(s[12] ^ c) since p[12] = 1. */
   /* s_0 */

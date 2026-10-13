@@ -47,7 +47,7 @@
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * clobbered registers: x4 to x14, x18 to x19, x21 to x24, x26 to x28,
+ * clobbered registers: x4 to x14, x18 to x19, x21 to x24, x27 to x28,
  *                      w0 to w15, w17 to w26, mod, acch, acc
  * clobbered flag groups: FG0
  */
@@ -62,12 +62,10 @@ indcpa_enc:
 
   addi x4, x0, 4
   beq  x21, x4, _compute_k4_consts
-  addi x26, x0, 128 /* dv * 32 = 4 * 32 */
   addi x27, x0, 320 /* du * 32 = 10 * 32 */
   beq  x0, x0, _continue
 
 _compute_k4_consts:
-  addi x26, x0, 160 /* dv * 32 = 5 * 32 */
   addi x27, x0, 352 /* du * 32 = 11 * 32 */
 
 _continue:
@@ -156,7 +154,7 @@ _pk_check1_ok:
    *  - x21 is the security level k.
    *  - x22 is ETA1.
    *  - x24 points to sp[1].
-   *  - x26 = cv = 32 * dv and x27 = cu = 32 * du. */
+   *  - x27 = cu = 32 * du. */
 
   addi x4, x0, 3
   beq  x21, x4, _handle_k3_compute_v
@@ -375,7 +373,7 @@ _pk_check4_ok:
    *  - x22 is free.
    *  - x23 is free.
    *  - x24 is free.
-   *  - x26 = cv = 32 * dv and x27 = cu = 32 * du. */
+   *  - x27 = cu = 32 * du. */
 
   addi x4, x0, 2
   beq  x21, x4, _handle_k2_compute_b

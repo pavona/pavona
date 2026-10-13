@@ -101,7 +101,6 @@ _continue:
   add  x6, x0, x7
   sw   x6, 0(x5)
   /* The public key pk_pke for indcpa_enc_cmp. */
-  add  x6, x11, x0
   add  x5, x0, x8
   slli x5, x5, NSHARESm1
   add  x6, x11, x5
@@ -324,7 +323,6 @@ _kem_dec_sk_ok:
   addi x12, x12, RP_BYTES
   la   x5, dptr_ct
   lw   x13, 0(x5)
-  addi x14, x0, NSHARES
   la   x5, k
   lw   x15, 0(x5)
   jal  x1, indcpa_enc_cmp

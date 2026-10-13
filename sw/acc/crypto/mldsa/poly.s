@@ -872,7 +872,7 @@ poly_uniform_mask_and_check_vectors:
  * @param[in]  x11: dmem pointer to polynomial
  * @param[in]  x14: K (used by poly_uniform_eta dispatcher only)
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ * clobbered registers: x5, x10 to x11, x14, x16, x31, w0 to w1, w8 to w9,
  *                      w12 to w14, w20 to w21
  * clobbered flag groups: FG0
  */
@@ -890,7 +890,7 @@ poly_uniform_eta:
  *
  * Parameters as for poly_uniform_eta, which dispatches here.
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ * clobbered registers: x5, x10 to x11, x14, x16, x31, w0 to w1, w8 to w9,
  *                      w12 to w14, w20 to w21
  * clobbered flag groups: FG0
  */
@@ -924,7 +924,6 @@ poly_uniform_eta_eta_2:
   /* Initialize constants */
   bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 15
-  li      x15, 8
   li      x16, 2
 
   la     x31, poly_uniform_eta_205
@@ -988,7 +987,7 @@ _rej_eta_sample_loop_continue_eta_2:
  *
  * Parameters as for poly_uniform_eta, which dispatches here.
  *
- * clobbered registers: x5, x10 to x11, x14 to x16, x31, w0 to w1, w8 to w9,
+ * clobbered registers: x5, x10 to x11, x14, x16, x31, w0 to w1, w8 to w9,
  *                      w12, w14, w20 to w21
  * clobbered flag groups: FG0
  */
@@ -1022,7 +1021,6 @@ poly_uniform_eta_eta_4:
   /* Initialize constants */
   bn.addi w14, w31, 0x0f
   bn.addi w21, w31, 9
-  li      x15, 8
   li      x16, 2
 
   la     x31, poly_uniform_eta_205
