@@ -8,7 +8,8 @@ from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 from basegen.validate import (validate_schema, all_validation_errors,
                               TOPCFG_VALIDATOR, IP_BLOCK_VALIDATOR,
                               XBAR_VALIDATOR,
-                              TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR)
+                              TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR,
+                              RACL_VALIDATOR, RACL_MAPPING_VALIDATOR)
 
 
 # test_topcfg_validation
@@ -48,6 +49,20 @@ KNOWN_GOOD_IPCFGS = tuple(
     for ipcfg in REPO_TOP.glob("hw/top_*/ip_autogen/*/data/*.ipconfig.hjson")
 )
 KNOWN_BAD_IPCFGS = ({},)
+
+# test_racl_validation
+KNOWN_GOOD_RACLS = tuple(
+    import_hjson(racl)
+    for racl in REPO_TOP.glob("hw/top_*/data/racl/racl.hjson")
+)
+KNOWN_BAD_RACLS = ({},)
+
+# test_mapping_validation
+KNOWN_GOOD_MAPPINGS = tuple(
+    import_hjson(racl)
+    for racl in REPO_TOP.glob("hw/top_*/data/racl/*_mapping.hjson")
+)
+KNOWN_BAD_MAPPINGS = ({}, {"null": 1})
 
 # test_nested_schemas
 NESTED_SCHEMAS = (
@@ -130,6 +145,38 @@ def test_ipcfg_validation():
             continue
         raise Exception("IP template config validation incorrectly approved"
                         f" bad IP config!\n\t{bad}")
+
+
+def test_racl_validation():
+    assert len(KNOWN_GOOD_RACLS) > 0 and len(KNOWN_BAD_RACLS) > 0
+    for good in KNOWN_GOOD_RACLS:
+        RACL_VALIDATOR.validate(good)
+    for bad in KNOWN_BAD_RACLS:
+        try:
+            RACL_VALIDATOR.validate(bad)
+        except ValidationError:
+            continue
+        raise Exception("RACL configuration validation incorrectly approved"
+                        f" bad config!\n\t{bad}")
+
+
+def test_mapping_validation():
+    assert len(KNOWN_GOOD_MAPPINGS) > 0 and len(KNOWN_BAD_MAPPINGS) > 0
+    for good in KNOWN_GOOD_MAPPINGS:
+        # raclgen requires only one key, mapping is value
+        # see: raclgen.lib.parse_racl_mapping
+        assert len(good.keys()) == 1
+        good_mapping = list(good.values())[0]
+        RACL_MAPPING_VALIDATOR.validate(good_mapping)
+    for bad in KNOWN_BAD_MAPPINGS:
+        if len(bad.keys()) != 1:
+            continue  # raclgen checks for only one key
+        try:
+            RACL_MAPPING_VALIDATOR.validate(list(bad.values())[0])
+        except ValidationError:
+            continue
+        raise Exception("RACL mapping validation incorrectly approved bad"
+                        f" mapping input!\n\t{bad}")
 
 
 def test_nested_schemas():
