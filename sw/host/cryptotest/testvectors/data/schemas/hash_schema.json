@@ -57,6 +57,11 @@
         "description": "SHAKE output length in bytes",
         "type": "integer"
       },
+      "mct_version": {
+        "description": "Monte Carlo test version; the alternate version fits every message to the seed length",
+        "type": "string",
+        "enum": ["standard", "alternate"]
+      },
       "mct_digests": {
         "description": "Expected digest after each outer Monte Carlo iteration",
         "type": "array",

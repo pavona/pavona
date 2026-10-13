@@ -21,6 +21,7 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
+- [SHA2-256, SHA2-384, SHA2-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha.html): AFT, MCT.
 - [SHA3-224, SHA3-256, SHA3-384, SHA3-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, MCT.
 - [SHAKE-128, SHAKE-256](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, revision FIPS202.
 
@@ -49,12 +50,14 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
   The pinned vector sets still run these groups as regression tests, mapped onto encapsulation and decapsulation, whose internal checks reject invalid keys.
 - The `FIPS203-tr1` revision of encapDecap, which adds a `keyFormats` capability.
 
-### SHA3
+### SHA2 and SHA3
 
+- SHA2-224, SHA2-512/224 and SHA2-512/256.
+  The cryptolib does not implement them.
 - Messages that are not a whole number of bytes.
   The cryptolib hashes bytes.
 - The large data test (`performLargeDataTest`).
-  The cryptolib has no streaming SHA3 API.
+  The cryptolib has no streaming SHA3 API, and the cryptotest does not stream SHA2 messages.
 
 The device runs the whole Monte Carlo test, all 100 outer and 1000 inner iterations.
 
@@ -70,7 +73,7 @@ The device runs the whole Monte Carlo test, all 100 outer and 1000 inner iterati
 A vector set is answered the same way whether it comes from a certification session or from the pinned test data: the prompt goes in, and a response comes out.
 The parsers turn a prompt into the inputs the harness sends to the device, and the harness assembles the device's outputs into a response.
 
-The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM, SHA3 and SHAKE known-answer tests:
+The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM, SHA2, SHA3 and SHAKE known-answer tests:
 
 ```sh
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:aes_kwp_kat_fpga_cw340_test_rom
@@ -79,7 +82,7 @@ The pinned vector sets run as part of the AES-KWP, ML-DSA, ML-KEM, SHA3 and SHAK
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:sha3_256_kat_fpga_cw340_test_rom
 ```
 
-The `sha3_224_kat`, `sha3_384_kat`, `sha3_512_kat`, `shake128_kat` and `shake256_kat` targets cover the other SHA3 and SHAKE variants.
+The `sha256_kat`, `sha384_kat`, `sha512_kat`, `sha3_224_kat`, `sha3_384_kat`, `sha3_512_kat`, `shake128_kat` and `shake256_kat` targets cover the other SHA2, SHA3 and SHAKE variants.
 
 These compare the assembled response against the expected results NIST publishes alongside each prompt.
 For ML-DSA and ML-KEM, `--define=acc_has_pqc=true` selects the ACC backends; without it, the same targets test the software backends instead.

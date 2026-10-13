@@ -13,8 +13,8 @@ use serde_json::json;
 use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex, read_vectors};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::hash_commands::{
-    CryptotestHashAlgorithm, CryptotestHashMctOutput, CryptotestHashMessage, CryptotestHashOutput,
-    CryptotestHashShakeDigestLength,
+    CryptotestHashAlgorithm, CryptotestHashMctOutput, CryptotestHashMctVersion,
+    CryptotestHashMessage, CryptotestHashOutput, CryptotestHashShakeDigestLength,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -62,6 +62,8 @@ struct HashTestCase {
     output_len: usize,
     #[serde(default)]
     mct_digests: Vec<Vec<u8>>,
+    #[serde(default)]
+    mct_version: String,
     /// Absent where the outcome is the answer, as in an ACVP prompt.
     #[serde(default)]
     result: Option<bool>,
@@ -87,6 +89,14 @@ fn hash_algorithm(name: &str) -> CryptotestHashAlgorithm {
     }
 }
 
+fn mct_version(name: &str) -> CryptotestHashMctVersion {
+    match name {
+        "standard" => CryptotestHashMctVersion::Standard,
+        "alternate" => CryptotestHashMctVersion::Alternate,
+        _ => panic!("Unsupported Monte Carlo test version: {name}"),
+    }
+}
+
 fn run_hash_mct(
     test_case: &HashTestCase,
     opts: &Opts,
@@ -103,6 +113,7 @@ fn run_hash_mct(
         customization_string_len: 0,
     }
     .send(spi_console)?;
+    mct_version(&test_case.mct_version).send(spi_console)?;
     let output = CryptotestHashMctOutput::recv(spi_console, opts.mct_timeout, false, false)?;
 
     let digests: Vec<&[u8]> = output.digests.chunks(output.digest_len).collect();
