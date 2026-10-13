@@ -7,7 +7,8 @@ from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 
 from basegen.validate import (validate_schema, all_validation_errors,
                               TOPCFG_VALIDATOR, IP_BLOCK_VALIDATOR,
-                              XBAR_VALIDATOR)
+                              XBAR_VALIDATOR,
+                              TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR)
 
 
 # test_topcfg_validation
@@ -31,7 +32,22 @@ KNOWN_GOOD_XBARCFGS = tuple(
     for xbar_cfg in REPO_TOP.glob(
         "hw/top_*/ip/xbar_*/data/autogen/xbar_*.gen.hjson")
 )
-KNOWN_BAD_XBARCFGS = ({}, )
+KNOWN_BAD_XBARCFGS = ({},)
+
+# test_tplparam_validation
+KNOWN_GOOD_TPLPARAMS = tuple(
+    param
+    for tpldesc in REPO_TOP.glob("hw/ip_templates/*/data/*.tpldesc.hjson")
+    for param in import_hjson(tpldesc)["template_param_list"]
+)
+KNOWN_BAD_TPLPARAMS = ({},)
+
+# test_ipcfg_validation
+KNOWN_GOOD_IPCFGS = tuple(
+    import_hjson(ipcfg)
+    for ipcfg in REPO_TOP.glob("hw/top_*/ip_autogen/*/data/*.ipconfig.hjson")
+)
+KNOWN_BAD_IPCFGS = ({},)
 
 # test_nested_schemas
 NESTED_SCHEMAS = (
@@ -88,6 +104,32 @@ def test_xbarcfg_validation():
             continue
         raise Exception("Crossbar configuration validation incorrectly"
                         f" approved bad xbar config!\n\t{bad}")
+
+
+def test_tplparam_validation():
+    assert len(KNOWN_GOOD_TPLPARAMS) > 0 and len(KNOWN_BAD_TPLPARAMS) > 0
+    for good in KNOWN_GOOD_TPLPARAMS:
+        TPL_PARAM_VALIDATOR.validate(good)
+    for bad in KNOWN_BAD_TPLPARAMS:
+        try:
+            TPL_PARAM_VALIDATOR.validate(bad)
+        except ValidationError:
+            continue
+        raise Exception("Template parameter validation incorrectly approved"
+                        f" bad template param input!\n\t{bad}")
+
+
+def test_ipcfg_validation():
+    assert len(KNOWN_GOOD_IPCFGS) > 0 and len(KNOWN_BAD_IPCFGS) > 0
+    for good in KNOWN_GOOD_IPCFGS:
+        IP_CONFIG_VALIDATOR.validate(good)
+    for bad in KNOWN_BAD_IPCFGS:
+        try:
+            IP_CONFIG_VALIDATOR.validate(bad)
+        except ValidationError:
+            continue
+        raise Exception("IP template config validation incorrectly approved"
+                        f" bad IP config!\n\t{bad}")
 
 
 def test_nested_schemas():
