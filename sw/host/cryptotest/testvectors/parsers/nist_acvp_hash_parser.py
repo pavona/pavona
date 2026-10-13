@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parser for converting ACVP SHA3 and SHAKE prompts to JSON."""
+"""Parser for converting ACVP SHA2, SHA3 and SHAKE prompts to JSON."""
 
 import argparse
 import json
@@ -38,8 +38,8 @@ def message(test):
     return list(bytes.fromhex(test["msg"])[:test["len"] // 8])
 
 
-def parse_sha3(data, skip_unsupported):
-    """Parse a SHA3 prompt."""
+def parse_hash(data, skip_unsupported):
+    """Parse a SHA2 or SHA3 prompt."""
     test_vectors = []
     skipped_bits = 0
     skipped_large = 0
@@ -52,13 +52,16 @@ def parse_sha3(data, skip_unsupported):
             if test["len"] % 8 != 0:
                 skipped_bits += 1
                 continue
-            test_vectors.append({
+            vector = {
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
                 "operation": "mct" if test_type == "MCT" else "hash",
                 "message": message(test),
-            })
-    report_skipped("parse_sha3", {
+            }
+            if test_type == "MCT":
+                vector["mct_version"] = group["mctVersion"]
+            test_vectors.append(vector)
+    report_skipped("parse_hash", {
         "bit-length messages are not implemented": skipped_bits,
         "the large data test is not implemented": skipped_large,
     }, skip_unsupported)
@@ -122,7 +125,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-type",
-        choices=["sha3", "shake"],
+        choices=["sha2", "sha3", "shake"],
         required=True,
         help="Type of test vectors to parse.",
     )
@@ -135,8 +138,8 @@ def main() -> int:
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    if args.test_type == "sha3":
-        test_vectors = parse_sha3(raw_data, args.skip_unsupported)
+    if args.test_type in ("sha2", "sha3"):
+        test_vectors = parse_hash(raw_data, args.skip_unsupported)
     else:
         test_vectors = parse_shake(raw_data, args.skip_unsupported)
     apply_expected(test_vectors, args.expected)

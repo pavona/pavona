@@ -36,6 +36,9 @@ VECTOR_SETS = {
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("SHA2-256", ""): ("sha256", "sha2"),
+    ("SHA2-384", ""): ("sha384", "sha2"),
+    ("SHA2-512", ""): ("sha512", "sha2"),
     ("SHA3-224", ""): ("sha3_224", "sha3"),
     ("SHA3-256", ""): ("sha3_256", "sha3"),
     ("SHA3-384", ""): ("sha3_384", "sha3"),
@@ -46,6 +49,9 @@ VECTOR_SETS = {
 
 # Harnesses whose parser and schema are named differently.
 PARSER_NAMES = {
+    "sha256": "hash",
+    "sha384": "hash",
+    "sha512": "hash",
     "sha3_224": "hash",
     "sha3_256": "hash",
     "sha3_384": "hash",

@@ -114,11 +114,11 @@ status_t handle_hash(ujson_t *uj, hash_test_scratch_t *s) {
   }
 
   // Create digest skeleton
-  if (digest_len > ARRAYSIZE(s->digest)) {
+  if (digest_len > ARRAYSIZE(s->work.digest)) {
     LOG_ERROR("Digest too long");
     return INVALID_ARGUMENT();
   }
-  uint32_t *digest_buf = s->digest;
+  uint32_t *digest_buf = s->work.digest;
   memset(digest_buf, 0, digest_len * sizeof(uint32_t));
   otcrypto_hash_digest_t digest = {
       .data = digest_buf,
@@ -192,33 +192,62 @@ enum {
   kHashMctOuterIterations = 100,
   kHashMctInnerIterations = 1000,
   kHashMctMaxDigestWords = 512 / 32,
+  // SHA2 hashes the last three digests, SHA3 the last one.
+  kHashMctMaxWindow = 3,
 };
 
 status_t handle_hash_mct(ujson_t *uj, hash_test_scratch_t *s) {
   cryptotest_hash_algorithm_t uj_algorithm;
   cryptotest_hash_message_t *uj_message = &s->message;
+  cryptotest_hash_mct_version_t uj_mct_version;
   TRY(ujson_deserialize_cryptotest_hash_algorithm_t(uj, &uj_algorithm));
   TRY(ujson_deserialize_cryptotest_hash_message_t(uj, uj_message));
+  TRY(ujson_deserialize_cryptotest_hash_mct_version_t(uj, &uj_mct_version));
+  // ACVP issues the alternate test if the registered message lengths exclude
+  // the standard test's messages. It truncates or zero-pads every message to
+  // the length of the seed. Our registrations do not need it, but the SHA2-256
+  // and SHA2-512 sample vector sets use it.
+  bool alternate = uj_mct_version == kCryptotestHashMctVersionAlternate;
 
   otcrypto_status_t (*hash_oneshot)(otcrypto_const_byte_buf_t,
                                     otcrypto_hash_digest_t *);
   size_t digest_len;
+  size_t window;
   switch (uj_algorithm) {
+    case kCryptotestHashAlgorithmSha256:
+      digest_len = 256 / 32;
+      hash_oneshot = otcrypto_sha2_256;
+      window = 3;
+      break;
+    case kCryptotestHashAlgorithmSha384:
+      digest_len = 384 / 32;
+      hash_oneshot = otcrypto_sha2_384;
+      window = 3;
+      break;
+    case kCryptotestHashAlgorithmSha512:
+      digest_len = 512 / 32;
+      hash_oneshot = otcrypto_sha2_512;
+      window = 3;
+      break;
     case kCryptotestHashAlgorithmSha3_224:
       digest_len = 224 / 32;
       hash_oneshot = otcrypto_sha3_224;
+      window = 1;
       break;
     case kCryptotestHashAlgorithmSha3_256:
       digest_len = 256 / 32;
       hash_oneshot = otcrypto_sha3_256;
+      window = 1;
       break;
     case kCryptotestHashAlgorithmSha3_384:
       digest_len = 384 / 32;
       hash_oneshot = otcrypto_sha3_384;
+      window = 1;
       break;
     case kCryptotestHashAlgorithmSha3_512:
       digest_len = 512 / 32;
       hash_oneshot = otcrypto_sha3_512;
+      window = 1;
       break;
     default:
       LOG_ERROR("Unsupported hash algorithm for MCT: %d", uj_algorithm);
@@ -228,33 +257,71 @@ status_t handle_hash_mct(ujson_t *uj, hash_test_scratch_t *s) {
   cryptotest_hash_mct_output_t *uj_output = &s->mct_output;
   memset(uj_output, 0, sizeof(*uj_output));
   size_t digest_bytes = digest_len * sizeof(uint32_t);
+  size_t seed_len = uj_message->message_len;
+  uint8_t *msg = s->work.mct_message;
+  // The standard test's seed is a digest.
+  if (!alternate && seed_len != digest_bytes) {
+    return INVALID_ARGUMENT();
+  }
+  // The alternate test fits every message to the length of the first seed.
+  size_t max_len = alternate ? seed_len : window * digest_bytes;
+  if (max_len > sizeof(s->work.mct_message)) {
+    return INVALID_ARGUMENT();
+  }
 
-  uint32_t md[kHashMctMaxDigestWords];
-  uint32_t msg[kHashMctMaxDigestWords];
-  otcrypto_hash_digest_t digest = {
-      .data = md,
-      .len = digest_len,
-  };
+  // One buffer beyond the window holds the next digest.
+  uint32_t mds[kHashMctMaxWindow + 1][kHashMctMaxDigestWords];
+  size_t next = 0;
+  const uint8_t *seed = uj_message->message;
+  size_t current_seed_len = seed_len;
   for (size_t j = 0; j < kHashMctOuterIterations; j++) {
+    const uint8_t *prev[kHashMctMaxWindow];
+    size_t prev_len[kHashMctMaxWindow];
+    for (size_t k = 0; k < window; k++) {
+      prev[k] = seed;
+      prev_len[k] = current_seed_len;
+    }
     for (size_t i = 0; i < kHashMctInnerIterations; i++) {
-      const uint8_t *data = uj_message->message;
-      size_t len = uj_message->message_len;
-      if (j > 0 || i > 0) {
-        memcpy(msg, md, digest_bytes);
-        data = (const uint8_t *)msg;
-        len = digest_bytes;
+      // The message concatenates the last `window` digests, initially the seed.
+      size_t len = 0;
+      for (size_t k = 0; k < window; k++) {
+        size_t n = prev_len[k];
+        // The alternate test truncates a message longer than the seed.
+        if (n > max_len - len) {
+          n = max_len - len;
+        }
+        memcpy(&msg[len], prev[k], n);
+        len += n;
+      }
+      // The alternate test zero-pads a message shorter than the seed.
+      if (alternate) {
+        memset(&msg[len], 0, seed_len - len);
+        len = seed_len;
       }
       otcrypto_const_byte_buf_t input = {
           .len = len,
-          .data = data,
+          .data = msg,
+      };
+      otcrypto_hash_digest_t digest = {
+          .data = mds[next],
+          .len = digest_len,
       };
       otcrypto_status_t status = hash_oneshot(input, &digest);
       if (status.value != kOtcryptoStatusValueOk) {
         LOG_ERROR("Bad status value: 0x%x", status.value);
         return INTERNAL(status.value);
       }
+      for (size_t k = 0; k + 1 < window; k++) {
+        prev[k] = prev[k + 1];
+        prev_len[k] = prev_len[k + 1];
+      }
+      prev[window - 1] = (const uint8_t *)mds[next];
+      prev_len[window - 1] = digest_bytes;
+      next = (next + 1) % (window + 1);
     }
-    memcpy(&uj_output->digests[j * digest_bytes], md, digest_bytes);
+    seed = prev[window - 1];
+    current_seed_len = digest_bytes;
+    memcpy(&uj_output->digests[j * digest_bytes], seed, digest_bytes);
   }
 
   uj_output->digests_len = kHashMctOuterIterations * digest_bytes;

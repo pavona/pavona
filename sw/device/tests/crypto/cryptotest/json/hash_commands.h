@@ -49,6 +49,11 @@ UJSON_SERDE_STRUCT(CryptotestHashMessage, cryptotest_hash_message_t, HASH_MESSAG
     field(digest_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHashOutput, cryptotest_hash_output_t, HASH_OUTPUT);
 
+#define HASH_MCT_VERSION(_, value) \
+    value(_, Standard) \
+    value(_, Alternate)
+UJSON_SERDE_ENUM(CryptotestHashMctVersion, cryptotest_hash_mct_version_t, HASH_MCT_VERSION);
+
 #define HASH_MCT_OUTPUT(field, string, bytes) \
     bytes(digests, HASH_CMD_MAX_MCT_DIGESTS_BYTES, digests_len) \
     field(digests_len, size_t) \
