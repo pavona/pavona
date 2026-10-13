@@ -868,10 +868,12 @@ status_t cryptolib_fi_p256_verify_impl(
   };
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
+  uint32_t x_r[kP256ScalarWords];
+  otcrypto_word32_buf_t recovered_r = {.len = kP256ScalarWords, .data = x_r};
 
   pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+                                 &verification_result, recovered_r));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -1091,10 +1093,12 @@ status_t cryptolib_fi_p384_verify_impl(
   };
 
   hardened_bool_t verification_result = kHardenedBoolFalse;
+  uint32_t x_r[kP384ScalarWords];
+  otcrypto_word32_buf_t recovered_r = {.len = kP384ScalarWords, .data = x_r};
 
   pentest_set_trigger_high();
   TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
-                                 &verification_result));
+                                 &verification_result, recovered_r));
   pentest_set_trigger_low();
 
   // Return data back to host.

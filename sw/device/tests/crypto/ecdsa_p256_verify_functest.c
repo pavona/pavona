@@ -38,7 +38,9 @@ status_t ecdsa_p256_verify_test(
                               &testvec->public_key, &session_token));
   hardened_bool_t result;
   TRY(acc_busy_wait_for_done());
-  TRY(p256_ecdsa_verify_finalize(&testvec->signature, session_token, &result));
+  uint32_t x_r[kP256ScalarWords];
+  TRY(p256_ecdsa_verify_finalize(&testvec->signature, session_token, &result,
+                                 x_r));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
     LOG_ERROR("Valid signature failed verification.");

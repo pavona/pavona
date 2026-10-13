@@ -224,14 +224,15 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
  * @param message_digest Message digest to be verified (pre-hashed).
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
+ * @param[out] recovered_r Buffer for the recovered R value.
  * @return Result of the ECDSA verification operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
-    hardened_bool_t *verification_result);
+    otcrypto_const_word32_buf_t signature, hardened_bool_t *verification_result,
+    otcrypto_word32_buf_t recovered_r);
 
 /**
  * Generates a key pair for ECDH with curve P-256.
@@ -392,13 +393,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_start(
  * @param signature Pointer to the signature which was verified.
  * @param session_token Session token for this operation.
  * @param[out] verification_result Whether the signature passed verification.
+ * @param[out] recovered_r Buffer for the recovered R value.
  * @return Result of async ECDSA verify finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
     otcrypto_const_word32_buf_t signature,
     otcrypto_session_token_t session_token,
-    hardened_bool_t *verification_result);
+    hardened_bool_t *verification_result, otcrypto_word32_buf_t recovered_r);
 
 /**
  * Starts asynchronous key generation for ECDH/P-256.

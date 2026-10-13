@@ -375,13 +375,21 @@ status_t handle_ecdsa(ujson_t *uj) {
       otcrypto_status_t status;
       switch (uj_curve) {
         case kCryptotestEcdsaCurveP256: {
-          status = otcrypto_ecdsa_p256_verify(&public_key, message_digest,
-                                              signature, &verification_result);
+          uint32_t x_r[kP256ScalarWords];
+          otcrypto_word32_buf_t recovered_r = {.len = kP256ScalarWords,
+                                               .data = x_r};
+          status =
+              otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
+                                         &verification_result, recovered_r);
           break;
         }
         case kCryptotestEcdsaCurveP384: {
-          status = otcrypto_ecdsa_p384_verify(&public_key, message_digest,
-                                              signature, &verification_result);
+          uint32_t x_r[kP384ScalarWords];
+          otcrypto_word32_buf_t recovered_r = {.len = kP384ScalarWords,
+                                               .data = x_r};
+          status =
+              otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
+                                         &verification_result, recovered_r);
           break;
         }
         default:

@@ -18,6 +18,8 @@ enum {
   kP384PublicKeyWords = 768 / 32,
   /* Number of 32-bit words in a P-384 signature. */
   kP384SignatureWords = 768 / 32,
+  /* Number of 32-bit words in a P-384 recovered R. */
+  kP384RecoveredRWords = 384 / 32,
   /* Number of bytes in a P-384 private key. */
   kP384PrivateKeyBytes = 384 / 8,
 };
@@ -79,10 +81,13 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 
   // Verify the signature.
   LOG_INFO("Verifying...");
+  uint32_t x_r[kP384RecoveredRWords];
+  otcrypto_word32_buf_t recovered_r = {.len = kP384RecoveredRWords,
+                                       .data = x_r};
   CHECK_STATUS_OK(otcrypto_ecdsa_p384_verify(
       &public_key, msg_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      verification_result));
+      verification_result, recovered_r));
 
   return OTCRYPTO_OK;
 }

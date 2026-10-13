@@ -23,6 +23,8 @@ enum {
   kP256PublicKeyWords = 512 / 32,
   /* Number of 32-bit words in a P-256 signature. */
   kP256SignatureWords = 512 / 32,
+  /* Number of 32-bit words in a P-256 recovered R. */
+  kP256RecoveredRWords = 256 / 32,
   /* Number of bytes in a P-256 private key. */
   kP256PrivateKeyBytes = 256 / 8,
 };
@@ -98,10 +100,13 @@ status_t sign_then_verify_test(void) {
   // Verify the signature.
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
+  uint32_t x_r[kP256RecoveredRWords];
+  otcrypto_word32_buf_t recovered_r = {.len = kP256RecoveredRWords,
+                                       .data = x_r};
   CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
       &public_key, message_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &verification_result));
+      &verification_result, recovered_r));
 
   // The signature should pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);

@@ -286,12 +286,13 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
  * @param session_token ACC session token for the operation.
  * @param[out] result Output buffer (true if signature is valid, false
  * otherwise)
+ * @param[out] x_r Buffer for the recovered R value.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
                                     uint32_t session_token,
-                                    hardened_bool_t *result);
+                                    hardened_bool_t *result, uint32_t *x_r);
 
 /**
  * Start an async ECDH/P-256 shared key generation operation on ACC.

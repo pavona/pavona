@@ -423,7 +423,7 @@ status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
 
 status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
                                     uint32_t session_token,
-                                    hardened_bool_t *result) {
+                                    hardened_bool_t *result, uint32_t *x_r) {
   // Return `OTCRYTPO_ASYNC_INCOMPLETE` if ACC not done.
   HARDENED_TRY(acc_assert_idle());
 
@@ -454,7 +454,6 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
                        kP384VerifyMaxInstructionCount);
 
   // Read x_r (recovered R) out of ACC dmem.
-  uint32_t x_r[kP384ScalarWords];
   HARDENED_TRY(acc_dmem_read(kP384ScalarWords, kAccVarXr, x_r));
 
   *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);

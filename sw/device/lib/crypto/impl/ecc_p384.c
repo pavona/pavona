@@ -323,14 +323,18 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
 otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
-    otcrypto_const_word32_buf_t signature,
-    hardened_bool_t *verification_result) {
+    otcrypto_const_word32_buf_t signature, hardened_bool_t *verification_result,
+    otcrypto_word32_buf_t recovered_r) {
   otcrypto_session_token_t session_token = 0;
+  // Check the recovered R length (fail fast).
+  if (launder32(recovered_r.len) != kP384ScalarWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(otcrypto_ecdsa_p384_verify_async_start(
       public_key, message_digest, signature, &session_token));
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
-  return otcrypto_ecdsa_p384_verify_async_finalize(signature, session_token,
-                                                   verification_result);
+  return otcrypto_ecdsa_p384_verify_async_finalize(
+      signature, session_token, verification_result, recovered_r);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
@@ -348,8 +352,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
       .len = signature.len,
   };
   hardened_bool_t verification_result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_ecdsa_p384_verify(
-      public_key, message_digest, signature_check, &verification_result));
+  // Unused buffer for the recovered R.
+  uint32_t x_r[kP384ScalarWords];
+  otcrypto_word32_buf_t recovered_r = {.len = kP384ScalarWords, .data = x_r};
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify(public_key, message_digest,
+                                          signature_check, &verification_result,
+                                          recovered_r));
 
   // Trap if signature verification failed.
   HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
@@ -660,8 +668,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
 otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
     otcrypto_const_word32_buf_t signature,
     otcrypto_session_token_t session_token,
-    hardened_bool_t *verification_result) {
+    hardened_bool_t *verification_result, otcrypto_word32_buf_t recovered_r) {
   if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  // Check the recovered R length.
+  if (launder32(recovered_r.len) != kP384ScalarWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -671,7 +683,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
   HARDENED_TRY(p384_signature_length_check(signature.len));
   p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature.data;
   return p384_ecdsa_verify_finalize(sig_p384, session_token,
-                                    verification_result);
+                                    verification_result, recovered_r.data);
 }
 
 otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
