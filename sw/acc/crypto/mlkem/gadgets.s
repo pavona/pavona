@@ -736,57 +736,41 @@ _bitslice_transpose:
   /* Stage d=8. */
   bn.not     w28, w31
   bn.shv.16h w28, w28 >> 8      /* 0x00ff */
-  bn.shv.16h w29, w0 >> 8
-  bn.xor     w29, w29, w8
+  bn.xor     w29, w8, w0 >> 8
   bn.and     w29, w29, w28
   bn.xor     w8, w8, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w0, w0, w29
-  bn.shv.16h w29, w1 >> 8
-  bn.xor     w29, w29, w9
+  bn.xor     w0, w0, w29 << 8
+  bn.xor     w29, w9, w1 >> 8
   bn.and     w29, w29, w28
   bn.xor     w9, w9, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w1, w1, w29
-  bn.shv.16h w29, w2 >> 8
-  bn.xor     w29, w29, w10
+  bn.xor     w1, w1, w29 << 8
+  bn.xor     w29, w10, w2 >> 8
   bn.and     w29, w29, w28
   bn.xor     w10, w10, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w2, w2, w29
-  bn.shv.16h w29, w3 >> 8
-  bn.xor     w29, w29, w11
+  bn.xor     w2, w2, w29 << 8
+  bn.xor     w29, w11, w3 >> 8
   bn.and     w29, w29, w28
   bn.xor     w11, w11, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w3, w3, w29
-  bn.shv.16h w29, w4 >> 8
-  bn.xor     w29, w29, w12
+  bn.xor     w3, w3, w29 << 8
+  bn.xor     w29, w12, w4 >> 8
   bn.and     w29, w29, w28
   bn.xor     w12, w12, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w4, w4, w29
-  bn.shv.16h w29, w5 >> 8
-  bn.xor     w29, w29, w13
+  bn.xor     w4, w4, w29 << 8
+  bn.xor     w29, w13, w5 >> 8
   bn.and     w29, w29, w28
   bn.xor     w13, w13, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w5, w5, w29
-  bn.shv.16h w29, w6 >> 8
-  bn.xor     w29, w29, w14
+  bn.xor     w5, w5, w29 << 8
+  bn.xor     w29, w14, w6 >> 8
   bn.and     w29, w29, w28
   bn.xor     w14, w14, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w6, w6, w29
-  bn.shv.16h w29, w7 >> 8
-  bn.xor     w29, w29, w15
+  bn.xor     w6, w6, w29 << 8
+  bn.xor     w29, w15, w7 >> 8
   bn.and     w29, w29, w28
   bn.xor     w15, w15, w29
-  bn.shv.16h w29, w29 << 8
-  bn.xor     w7, w7, w29
+  bn.xor     w7, w7, w29 << 8
   /* Stage d=4. */
-  bn.shv.16h w29, w28 << 4
-  bn.xor     w28, w28, w29      /* 0x0f0f */
+  bn.shv.16h w28, w28 >> 4
+  bn.xor     w28, w28, w28 << 8 /* 0x0f0f */
   bn.shv.16h w29, w0 >> 4
   bn.xor     w29, w29, w4
   bn.and     w29, w29, w28
