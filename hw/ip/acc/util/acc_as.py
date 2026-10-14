@@ -1307,12 +1307,8 @@ def run_c_preprocessor(out_dir: str, inputs: List[str], copts: List[str]) -> Lis
     return inputs_pre
 
 
-def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
-    '''Run binutils' as on transformed inputs
-
-    Performs no output redirection and returns the process's exit code.
-
-    '''
+def run_as(other_args: List[str], inputs: List[str]) -> int:
+    '''Assemble transformed inputs; return the exit code. Assembler is clang.'''
     as_name = find_tool('as')
 
     default_args = [
@@ -1411,7 +1407,7 @@ def main(argv: List[str]) -> int:
                 # done.
                 return 0
 
-            return run_binutils_as(transformed, other_args)
+            return run_as(transformed, other_args)
 
 
 if __name__ == '__main__':
