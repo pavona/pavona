@@ -92,3 +92,6 @@ book
 
 # Custom Ruff config overrides
 .ruff.toml
+
+# ACC benchmark results
+bench/acc/logs/

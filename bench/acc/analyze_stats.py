@@ -9,8 +9,11 @@ import pathlib
 import math
 import re
 
+from elftools.elf.elffile import ELFFile  # type: ignore
+
 CYCLES_PAT = re.compile(r'.*instructions in ([0-9]+) cycles.')
-FILENAME_PAT = re.compile(r'(.*)_test[0-9]+.stats')
+FILENAME_PAT = re.compile(r'(.*)_test[0-9]*(_[a-z]+)?.stats')
+SECTIONS = ['.text', '.data', '.bss', '.scratchpad']
 
 
 def parse_file_stats(file):
@@ -26,10 +29,20 @@ def parse_file_stats(file):
 
 def parse_dir_stats(dirpath):
     out = {}
-    for path in dirpath.iterdir():
+    for path in dirpath.glob('*.stats'):
         with path.open() as f:
             out[path.name] = parse_file_stats(f)
     return out
+
+
+def parse_elf_sizes(path):
+    with path.open('rb') as f:
+        sections = {s.name: s['sh_size'] for s in ELFFile(f).iter_sections()}
+    return {s: sections.get(s, 0) for s in SECTIONS}
+
+
+def parse_dir_sizes(dirpath):
+    return {path.stem: parse_elf_sizes(path) for path in dirpath.glob('*.elf')}
 
 
 def analyze_stats(file_stats):
@@ -38,7 +51,7 @@ def analyze_stats(file_stats):
         m = re.match(FILENAME_PAT, filename)
         if not m:
             raise ValueError(f'Unexpected file name format: {filename}')
-        op = m.group(1)
+        op = m.group(1) + (m.group(2) or '')
         if op in ops:
             assert all(k in ops[op] for k in stats)
             assert all(k in stats for k in ops[op])
@@ -191,6 +204,19 @@ def write_csv(samples, csvpath):
                 writer.writerow([op] + [stats[op][m] for m in measurements])
 
 
+def get_sizes(sizes):
+    rows = [['Binary'] + SECTIONS]
+    for binary in sorted(sizes):
+        rows.append([binary] + [sizes[binary][s] for s in SECTIONS])
+    return rows
+
+
+def write_size_csv(sizes, csvpath):
+    with csvpath.open('w') as f:
+        writer = csv.writer(f)
+        writer.writerows(get_sizes(sizes))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Analyze and compare collected execution stats for ACC programs.',
@@ -205,20 +231,30 @@ if __name__ == '__main__':
     parser.add_argument(
         '--csv', required=False, type=pathlib.Path,
         help=('CSV file for results.'))
+    parser.add_argument(
+        '--size-csv', required=False, type=pathlib.Path,
+        help=('CSV file for the code sizes of the first directory.'))
     args = parser.parse_args()
 
     samples = []
     for d in args.benchdir:
         files = parse_dir_stats(d)
         samples.append(analyze_stats(files))
+    sizes = parse_dir_sizes(args.benchdir[0])
 
     if args.csv is not None:
         write_csv(samples, args.csv)
+
+    if args.size_csv is not None:
+        write_size_csv(sizes, args.size_csv)
 
     if len(args.benchdir) == 0:
         raise ValueError('Must specify at least one statistics directory.')
     elif len(args.benchdir) == 1:
         pretty_print_table(get_stats(samples[0]))
+        if sizes:
+            print()
+            pretty_print_table(get_sizes(sizes))
     elif len(args.benchdir) == 2:
         print(f'Comparing {args.benchdir[0].name} against baseline {args.benchdir[1].name}.')
         table = compare_stats(*samples)
