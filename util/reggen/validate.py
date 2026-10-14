@@ -6,7 +6,7 @@ Register JSON validation
 """
 
 import logging as log
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 
 
 # validating version of int(x, 0)
@@ -67,8 +67,18 @@ def check_ln(obj: Dict[str, object], x: str, withwidth: bool,
         return 1
 
     for y in entry:
-        error += check_keys(y, ln_required, ln_optional if withwidth else {},
-                            {}, err_prefix + ' element ' + x)
+        required_fields = set(ln_required.keys())
+        allowed_fields = required_fields | ({'width'} if withwidth else set())
+
+        missing = required_fields - set(y.keys())
+        extra = set(y.keys()) - allowed_fields
+        if missing:
+            log.error(f'{err_prefix} element {x} is missing fields: {missing}')
+            error += len(missing)
+        if extra:
+            log.error(f'{err_prefix} element {x} has extra fields: {extra}')
+            error += len(extra)
+
         if withwidth:
             if 'width' in y:
                 w, err = check_int(y['width'], err_prefix + ' width in ' + x)
@@ -78,29 +88,6 @@ def check_ln(obj: Dict[str, object], x: str, withwidth: bool,
             else:
                 w = 1
             y['width'] = str(w)
-
-    return error
-
-
-def check_keys(obj: Dict[str, object], required_keys: Dict[str, List[str]],
-               optional_keys: Dict[str, List[str]],
-               added_keys: Dict[str, List[str]], err_prefix: str) -> int:
-    error = 0
-    for x in required_keys:
-        if x not in obj:
-            error += 1
-            log.error(err_prefix + " missing required key " + x)
-    for x in obj:
-        type = None
-        if x in required_keys:
-            type = required_keys[x][0]
-        elif x in optional_keys:
-            type = optional_keys[x][0]
-        elif x not in added_keys:
-            log.warning(err_prefix + " contains extra key " + x)
-        if type is not None:
-            if type[:2] == 'ln':
-                error += check_ln(obj, x, type == 'lnw', err_prefix)
 
     return error
 
