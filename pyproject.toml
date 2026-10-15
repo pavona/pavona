@@ -6,7 +6,7 @@
 name = "pavona"
 version = "0.0.0"
 description = "A library of modular, tapeout-proven, and secure-by-default open silicon blocks"
-requires-python = ">=3.10, <3.15"
+requires-python = ">=3.10, <3.16"
 
 dependencies = [
   # Keep sorted
@@ -35,9 +35,7 @@ dependencies = [
 
   # Dependencies: bitstreams cache
   "jsonschema ~= 4.17",
-  # Pin jsonschema2md to 1.5.2; version 1.7.0 causes build issues in user
-  # environments on Ubuntu 22.04.
-  "jsonschema2md==1.5.2",
+  "jsonschema2md==1.7.0",
 
   # Dependencies: gen-flash-img.py
   "pyfinite==1.9.1",

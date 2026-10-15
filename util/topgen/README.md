@@ -183,7 +183,7 @@ options:
 #### Properties
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: Top name.
-- <a id="properties/type"></a>**`type`** *(string, required)*: type of hjson. Shall be 'top' always. Must be one of: `["top"]`.
+- <a id="properties/type"></a>**`type`** *(string, required)*: type of hjson. Shall be 'top' always. Must be one of: "top".
 - <a id="properties/datawidth"></a>**`datawidth`** *(integer)*: default data width.
 - <a id="properties/racl_config"></a>**`racl_config`** *(string)*: Path to a RACL configuration HJSON file.
 - <a id="properties/power"></a>**`power`** *(object)*: power domains supported by the design.
@@ -200,8 +200,8 @@ options:
 - <a id="properties/port"></a>**`port`** *(array)*: assign special attributes to specific ports.
 - <a id="properties/inter_module"></a>**`inter_module`** *(object)*: define the signal connections between the modules.
 - <a id="properties/xbar"></a>**`xbar`** *(array, required)*: list of the xbars used in the top.
-- <a id="properties/pinout"></a>**`pinout`**: pinout configuration. Refer to *[urn:topgen:pinout](#pinout)*.
-- <a id="properties/pinmux"></a>**`pinmux`**: pinmux configuration. Refer to *[urn:topgen:pinmux](#pinmux)*.
+- <a id="properties/pinout"></a>**`pinout`** *(required)*: pinout configuration. Refer to *[urn:topgen:pinout](#pinout)*.
+- <a id="properties/pinmux"></a>**`pinmux`** *(required)*: pinmux configuration. Refer to *[urn:topgen:pinmux](#pinmux)*.
 - <a id="properties/targets"></a>**`targets`** *(array, required)*: target configurations.
   - <a id="properties/targets/items"></a>**Items**: Refer to *[urn:topgen:target](#target)*.
 - <a id="properties/incoming_alert"></a>**`incoming_alert`** *(object)*: Parsed incoming alerts; added property.
@@ -243,7 +243,7 @@ The top configuration partially specifies its list of modules.
 - <a id="properties/reset_connections"></a>**`reset_connections`** *(object, required)*: dict with reset sources.
 - <a id="properties/clock_connections"></a>**`clock_connections`** *(object)*: generated clock connections; added property.
 - <a id="properties/domain"></a>**`domain`** *(array)*: optional list of power domains, defaults to the top config's default power domain.
-  - <a id="properties/domain/items"></a>**Items** *(['string', 'number'])*
+  - <a id="properties/domain/items"></a>**Items** *(string or number)*
 - <a id="properties/clock_reset_export"></a>**`clock_reset_export`** *(array)*: optional list with prefixes for exported clocks and resets at the chip level.
 - <a id="properties/base_addr"></a>**`base_addr`** *(object)*: dict of address space mapped to the corresponding hex start
 address of the peripheral (if the IP has only a single TL-UL interface).
@@ -264,7 +264,7 @@ address of the peripheral (if the IP has only a single TL-UL interface).
 - <a id="properties/racl_mapping"></a>**`racl_mapping`** *(string)*: A special case of racl_mappings. If specified, this is taken to represent
 a dict that associates all interfaces with the given mapping. It is an error
 to specify both this and racl_mappings.
-- <a id="properties/attr"></a>**`attr`** *(string)*: optional attribute indicating whether the IP is 'ipgen', 'reggen_top', or 'reggen_only'. Must be one of: `["ipgen", "reggen_top", "reggen_only"]`.
+- <a id="properties/attr"></a>**`attr`** *(string)*: optional attribute indicating whether the IP is 'ipgen', 'reggen_top', or 'reggen_only'. Must be one of: "ipgen", "reggen_top", or "reggen_only".
 - <a id="properties/targets"></a>**`targets`** *(array)*: Optional list of targets for this PLIC.
 - <a id="properties/plic"></a>**`plic`** *(string)*: Interrupt controller managing this module's interrupts.
 - <a id="properties/alert_handler"></a>**`alert_handler`** *(string)*: Alert handler managing this module's alerts.
@@ -334,7 +334,7 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/type"></a>**`type`** *(string, required)*: whether the signal is unidirectional or part of a request-response pair.
 - <a id="properties/act"></a>**`act`** *(string, required)*: whether it is a request (req) or a response (rsp).
 - <a id="properties/inst_name"></a>**`inst_name`** *(string)*: the instance this signal connects to.
-- <a id="properties/width"></a>**`width`** *(['integer', 'string'], required)*: the number of items of the signal for arrays.
+- <a id="properties/width"></a>**`width`** *(integer or string, required)*: the number of items of the signal for arrays.
 - <a id="properties/default"></a>**`default`** *(string)*: default signal value; added property.
 - <a id="properties/end_idx"></a>**`end_idx`** *(integer)*: end index of req_rsp connection (not using full width); added property.
 - <a id="properties/top_signame"></a>**`top_signame`** *(string)*: name of the signal within the top SV file; added property.
@@ -351,7 +351,7 @@ Tops must also come with a seed configuration Hjson.
 - <a id="properties/type"></a>**`type`** *(string)*: should contain 'interrupt'.
 - <a id="properties/module_name"></a>**`module_name`** *(string, required)*: The module name of the source.
 - <a id="properties/desc"></a>**`desc`** *(string)*: the description of the interrupt.
-- <a id="properties/intr_type"></a>**`intr_type`** *(['string', 'integer'], required)*: The IntrType, either Event or Status.
+- <a id="properties/intr_type"></a>**`intr_type`** *(string or integer, required)*: The IntrType, either Event or Status.
 - <a id="properties/default_val"></a>**`default_val`** *(boolean, required)*: default value of a Status interrupt (invalid for Event interrupt).
 - <a id="properties/incoming"></a>**`incoming`** *(boolean, required)*: comes from rv_plic module.
 - <a id="properties/plic"></a>**`plic`** *(string)*: controller for this interrupt.
@@ -364,15 +364,13 @@ Tops must also come with a seed configuration Hjson.
 #### Properties
 
 - <a id="properties/label"></a>**`label`** *(string, required)*: region label for the linker script.
-- <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: access attributes for the memory region (ro, rw). Must be one of: `["ro", "rw"]`.
+- <a id="properties/swaccess"></a>**`swaccess`** *(string, required)*: access attributes for the memory region (ro, rw). Must be one of: "ro" or "rw".
 - <a id="properties/data_intg_passthru"></a>**`data_intg_passthru`** *(boolean)*: Integrity bits are passed through directly from the memory.
 - <a id="properties/exec"></a>**`exec`** *(boolean, required)*: executable region indication for the linker script.
 - <a id="properties/byte_write"></a>**`byte_write`** *(boolean, required)*: indicate whether the memory supports byte write accesses.
 - <a id="properties/size"></a>**`size`** *(integer)*: Memory region size in bytes for the linker script, xbar, and RTL parameterizations.
 This field must be specified if `config` is not specified.
-- <a id="properties/config"></a>**`config`**: Extra configuration for a particular memory.
-  - **Any of**
-    - <a id="properties/config/anyOf/0"></a>: Refer to *[urn:topgen:eflash](#eflash)*.
+- <a id="properties/config"></a>**`config`**: Extra configuration for a particular memory. Refer to *[urn:topgen:eflash](#eflash)*.
 
 ### Pad
 
@@ -383,7 +381,7 @@ This field must be specified if `config` is not specified.
 - <a id="properties/name"></a>**`name`** *(string, required)*: Pad name.
 - <a id="properties/type"></a>**`type`** *(string, required)*: Pad type.
 - <a id="properties/bank"></a>**`bank`** *(string, required)*: IO power bank for the pad.
-- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
+- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: "direct", "manual", or "muxed".
 - <a id="properties/desc"></a>**`desc`** *(string)*: Pad description.
 - <a id="properties/port_type"></a>**`port_type`** *(string)*: Special port type other than `inout wire`.
 - <a id="properties/idx"></a>**`idx`** *(integer)*: the index of the pad; added property.
@@ -431,11 +429,11 @@ This field must be specified if `config` is not specified.
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: the name of the io.
 - <a id="properties/width"></a>**`width`** *(integer, required)*: the bit width of the io.
-- <a id="properties/type"></a>**`type`** *(string, required)*: input, output, or inout. Must be one of: `["input", "output", "inout"]`.
+- <a id="properties/type"></a>**`type`** *(string, required)*: input, output, or inout. Must be one of: "input", "output", or "inout".
 - <a id="properties/idx"></a>**`idx`** *(integer)*: index of the io (for bus signals with width > 1).
 - <a id="properties/pad"></a>**`pad`** *(string)*: Pad name for direct connections.
 - <a id="properties/attr"></a>**`attr`** *(string)*: Pad type for generating the correct attribute CSR.
-- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
+- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: "direct", "manual", or "muxed".
 - <a id="properties/desc"></a>**`desc`** *(string)*: Signal description.
 - <a id="properties/glob_idx"></a>**`glob_idx`** *(integer)*: global index of the io.
 
@@ -458,7 +456,7 @@ This field must be specified if `config` is not specified.
 
 - <a id="properties/instance"></a>**`instance`** *(string, required)*: Module instance name.
 - <a id="properties/port"></a>**`port`** *(string)*: Port name of module.
-- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: `["direct", "manual", "muxed"]`.
+- <a id="properties/connection"></a>**`connection`** *(string, required)*: Specification of connection type, can be direct, manual or muxed. Must be one of: "direct", "manual", or "muxed".
 - <a id="properties/pad"></a>**`pad`** *(string)*: Pad name for direct connections.
 - <a id="properties/desc"></a>**`desc`** *(string)*: Signal description.
 - <a id="properties/attr"></a>**`attr`** *(string)*: Pad type for generating the correct attribute CSR.
@@ -539,8 +537,8 @@ is high).
 #### Properties
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: Name of target.
-- <a id="properties/pinout"></a>**`pinout`**: Target-specific pinout configuration. Refer to *[urn:topgen:target_pinout](#target-pinout)*.
-- <a id="properties/pinmux"></a>**`pinmux`**: Target-specific pinmux configuration. Refer to *[urn:topgen:target_pinmux](#target-pinmux)*.
+- <a id="properties/pinout"></a>**`pinout`** *(required)*: Target-specific pinout configuration. Refer to *[urn:topgen:target_pinout](#target-pinout)*.
+- <a id="properties/pinmux"></a>**`pinmux`** *(required)*: Target-specific pinmux configuration. Refer to *[urn:topgen:target_pinmux](#target-pinmux)*.
 
 ### Target Pinmux
 

@@ -116,7 +116,7 @@ none | No Access Needed
 - <a id="properties/wakeup_list"></a>**`wakeup_list`** *(array)*: list of peripheral wakeups.
 - <a id="properties/reset_request_list"></a>**`reset_request_list`** *(array)*: list of signals requesting reset.
 - <a id="properties/regwidth"></a>**`regwidth`** *(integer)*: width of registers in bits. Default: `32`.
-- <a id="properties/registers"></a>**`registers`** *(['array', 'object'])*: list of register definition groups and offset control groups.
+- <a id="properties/registers"></a>**`registers`** *(array or object)*: list of register definition groups and offset control groups.
 - <a id="properties/memory"></a>**`memory`** *(object)*: list of memory definitions.
 - <a id="properties/features"></a>**`features`** *(array)*: list of functional features in this block.
 - <a id="properties/countermeasures"></a>**`countermeasures`** *(array)*: list of countermeasures in this block.
@@ -205,7 +205,7 @@ In the fields list each field definition is a group itself.
 
 - <a id="properties/name"></a>**`name`** *(string)*: name of the field.
 - <a id="properties/desc"></a>**`desc`** *(string)*: description of field (required if the field has a name). This field supports the markdown syntax.
-- <a id="properties/bits"></a>**`bits`** *(['integer', 'string'], required)*: bit or bit range (msb:lsb).
+- <a id="properties/bits"></a>**`bits`** *(integer or string, required)*: bit or bit range (msb:lsb).
 - <a id="properties/mubi"></a>**`mubi`** *(boolean)*: boolean flag for whether the field is a multi-bit type.
 - <a id="properties/resval"></a>**`resval`**: reset value, comes from register resval
 if not provided in field. Zero if neither
@@ -336,14 +336,14 @@ A window defines an open region of the register space that can be used for thing
 #### Properties
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the window.
-- <a id="properties/items"></a>**`items`** *(['integer', 'string'], required)*: size in fieldaccess width words of the window.
+- <a id="properties/items"></a>**`items`** *(integer or string, required)*: size in fieldaccess width words of the window.
 - <a id="properties/validbits"></a>**`validbits`** *(integer)*: Number of valid data bits within regwidth sized word.
 Defaults to regwidth. If smaller than the regwidth then in each
 word of the window bits {regwidth-1:validbits} are unused and
 bits {validbits-1:0} are valid.
 - <a id="properties/unusual"></a>**`unusual`** *(boolean)*: True if window has unusual parameters
 (set to prevent Unusual: errors). Default: `false`.
-- <a id="properties/swaccess"></a>**`swaccess`**: software access permitted. Refer to *urn:reggen:swaccess*.
+- <a id="properties/swaccess"></a>**`swaccess`** *(required)*: software access permitted. Refer to *urn:reggen:swaccess*.
 - <a id="properties/data-intg-passthru"></a>**`data-intg-passthru`** *(boolean)*: True if the window has data integrity pass through. Default: `false`.
 - <a id="properties/byte-write"></a>**`byte-write`** *(boolean)*: True if byte writes are supported. Default: `false`.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the window.
@@ -360,7 +360,7 @@ This schema also inherits the properties of `urn:reggen:register`.*
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: base name of the registers.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the registers.
-- <a id="properties/count"></a>**`count`** *(['integer', 'string'], required)*: number of instances to generate. This field can be integer or string matching from param_list.
+- <a id="properties/count"></a>**`count`** *(integer or string, required)*: number of instances to generate. This field can be integer or string matching from param_list.
 - <a id="properties/cname"></a>**`cname`** *(string, required)*: base name for each instance, mostly useful for referring to instance in messages.
 - <a id="properties/fields"></a>**`fields`** *(array, required)*: list of register field description groups. Describes bit positions used for base instance.
 - <a id="properties/regwen_multi"></a>**`regwen_multi`** *(boolean)*: If true, regwen term increments along with current multireg count.
