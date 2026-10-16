@@ -17,6 +17,7 @@ filegroup(
 pavona_ip_reg_rtl(
     name = "regs",
     ip = "otp_macro",
+    regtop_prefixes = ["prim"],
 )
 
 copy_files(

@@ -18,6 +18,7 @@ pavona_ip_reg_rtl(
     name = "regs",
     hjson = "//hw/top_egret/ip_autogen/otp_ctrl/data:otp_ctrl.hjson",
     ip = "otp_ctrl",
+    regtop_prefixes = ["core"],
 )
 
 copy_files(

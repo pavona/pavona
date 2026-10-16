@@ -18,6 +18,7 @@ pavona_ip_reg_rtl(
     name = "regs",
     hjson = "//hw/top_dragonfly/ip_autogen/rv_core_ibex/data:rv_core_ibex.hjson",
     ip = "rv_core_ibex",
+    regtop_prefixes = ["cfg"],
 )
 
 copy_files(

@@ -18,6 +18,7 @@ pavona_ip_reg_rtl(
     name = "regs",
     hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}/data:${module_instance_name}.hjson",
     ip = "${module_instance_name}",
+    regtop_prefixes = ["core"],
 )
 
 copy_files(

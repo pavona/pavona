@@ -18,6 +18,7 @@ pavona_ip_reg_rtl(
     name = "regs",
     hjson = "//hw/top_egret/ip_autogen/flash_ctrl/data:flash_ctrl.hjson",
     ip = "flash_ctrl",
+    regtop_prefixes = ["core"],
 )
 
 copy_files(

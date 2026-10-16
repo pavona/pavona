@@ -17,6 +17,10 @@ filegroup(
 pavona_ip_reg_rtl(
     name = "regs",
     ip = "mbx",
+    regtop_prefixes = [
+        "core",
+        "soc",
+    ],
 )
 
 copy_files(

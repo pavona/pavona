@@ -82,8 +82,13 @@ def pavona_completecfg(name, top, seed, data = [], **kwargs):
 def _pavona_ip_reg_rtl_impl(ctx):
     outputs = [
         ctx.actions.declare_file("{}_reg_pkg.sv".format(ctx.attr.ip)),
-        ctx.actions.declare_file("{}_reg_top.sv".format(ctx.attr.ip)),
     ]
+    for reg_prefix in ctx.attr.regtop_prefixes:
+        outputs.append(
+            ctx.actions.declare_file("{}_{}_reg_top.sv".format(ctx.attr.ip, reg_prefix)),
+        )
+    if not ctx.attr.regtop_prefixes:
+        outputs.append(ctx.actions.declare_file("{}_reg_top.sv".format(ctx.attr.ip)))
     outdir = "/".join(outputs[0].path.split("/")[:-1])  # RTL directory of IP
 
     arguments = [
@@ -117,6 +122,11 @@ pavona_ip_reg_rtl_rule = rule(
     attrs = {
         "ip": attr.string(mandatory = True, doc = "Name of the IP"),
         "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
+        "regtop_prefixes": attr.string_list(
+            mandatory = False,
+            default = [],
+            doc = "Prefixes for generated <ip>_<prefix>_reg_top.sv files, including interface and reg block names",
+        ),
         "alias": attr.label(
             mandatory = False,
             allow_single_file = True,
