@@ -2,7 +2,7 @@
 # Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-from basegen.validate import document_schema
+from basegen.validate import document_schema, correct_doc_links
 import jsonschema2md
 from pathlib import Path
 
@@ -13,22 +13,25 @@ schema_parser = jsonschema2md.Parser(header_level=2)
 
 
 def document(outfile):
-    outfile.write(selfdoc_intro)
+    doc_text = selfdoc_intro
 
-    document_schema(outfile, "urn:topgen:topcfg", schema_parser)
+    doc_text += document_schema(None, "urn:topgen:topcfg", schema_parser)
+    doc_text += "\nThe top configuration partially specifies its list of modules.\n\n"
 
-    outfile.write("\nThe top configuration partially specifies its list of modules.\n\n")
-    document_schema(outfile, "urn:topgen:module", schema_parser)
+    doc_text += document_schema(None, "urn:topgen:module", schema_parser)
 
-    outfile.write("\nTops must also come with a seed configuration Hjson.\n\n")
-    document_schema(outfile, "urn:topgen:seedcfg", schema_parser)
-    outfile.write("\n\n## Other schemas\n\n")
+    doc_text += "\nTops must also come with a seed configuration Hjson.\n\n"
+    doc_text += document_schema(None, "urn:topgen:seedcfg", schema_parser)
+    doc_text += "\n\n## Other schemas\n\n"
 
     for schemafile in sorted((Path(__file__).parent / "schemas").iterdir()):
         schema_name = schemafile.stem  # assume schema name matches file name
         if schema_name in ("BUILD", "topcfg", "module", "seedcfg"):
             continue
-        document_schema(outfile, f"urn:topgen:{schema_name}", schema_parser)
-        outfile.write("\n")
+        doc_text += document_schema(None, f"urn:topgen:{schema_name}", schema_parser)
+        doc_text += "\n"
 
-    outfile.write(selfdoc_outro)
+    doc_text += selfdoc_outro
+    doc_text = correct_doc_links(doc_text)
+
+    outfile.write(doc_text)
