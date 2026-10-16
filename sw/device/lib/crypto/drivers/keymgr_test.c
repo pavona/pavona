@@ -59,7 +59,7 @@ status_t test_setup(void) {
  */
 status_t sw_single_key_test(void) {
   keymgr_output_t key;
-  return keymgr_generate_key_sw(kTestDiversification, &key);
+  return keymgr_generate_key_sw(kTestDiversification, kKeymgrCdiSealing, &key);
 }
 
 /**
@@ -69,7 +69,7 @@ status_t sw_single_key_test(void) {
  * errors, without actually attempting to use the key.
  */
 status_t aes_basic_test(void) {
-  return keymgr_generate_key_aes(kTestDiversification);
+  return keymgr_generate_key_aes(kTestDiversification, kKeymgrCdiSealing);
 }
 
 /**
@@ -79,7 +79,7 @@ status_t aes_basic_test(void) {
  * errors, without actually attempting to use the key.
  */
 status_t kmac_basic_test(void) {
-  return keymgr_generate_key_kmac(kTestDiversification);
+  return keymgr_generate_key_kmac(kTestDiversification, kKeymgrCdiSealing);
 }
 
 /**
@@ -89,7 +89,7 @@ status_t kmac_basic_test(void) {
  * errors, without actually attempting to use the key.
  */
 status_t acc_basic_test(void) {
-  return keymgr_generate_key_acc(kTestDiversification);
+  return keymgr_generate_key_acc(kTestDiversification, kKeymgrCdiSealing);
 }
 
 /**
@@ -127,12 +127,12 @@ status_t sw_keys_change_salt_test(void) {
 
   // Generate a key.
   keymgr_output_t key1;
-  TRY(keymgr_generate_key_sw(div, &key1));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key1));
 
   // Change the salt and generate the key again.
   div.salt[0]++;
   keymgr_output_t key2;
-  TRY(keymgr_generate_key_sw(div, &key2));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key2));
 
   // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
@@ -140,7 +140,7 @@ status_t sw_keys_change_salt_test(void) {
   // Change the salt back to its original value and generate a third time.
   div.salt[0]--;
   keymgr_output_t key3;
-  TRY(keymgr_generate_key_sw(div, &key3));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key3));
 
   // Check that the key is the equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
@@ -165,12 +165,12 @@ status_t sw_keys_change_version_test(void) {
 
   // Generate a key.
   keymgr_output_t key1;
-  TRY(keymgr_generate_key_sw(div, &key1));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key1));
 
   // Change the version and generate the key again.
   div.version++;
   keymgr_output_t key2;
-  TRY(keymgr_generate_key_sw(div, &key2));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key2));
 
   // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
@@ -178,7 +178,7 @@ status_t sw_keys_change_version_test(void) {
   // Change the version back to its original value and generate a third time.
   div.version--;
   keymgr_output_t key3;
-  TRY(keymgr_generate_key_sw(div, &key3));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key3));
 
   // Check that the key is the equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));

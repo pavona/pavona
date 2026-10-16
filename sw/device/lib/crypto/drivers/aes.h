@@ -47,6 +47,13 @@ typedef enum aes_cipher_mode {
 } aes_cipher_mode_t;
 
 /**
+ * Type of key to sideload from key manager.
+ */
+typedef enum aes_key_cdi {
+  kAesKeyCdiSealing = 0x0,
+} aes_key_cdi_t;
+
+/**
  * Represents an AES key.
  *
  * The key may be provided by software as two shares, or it may be a sideloaded
@@ -62,6 +69,11 @@ typedef struct aes_key {
    * Whether the key is sideloaded.
    */
   hardened_bool_t sideload;
+
+  /**
+   * For sideloaded keys, the key manager CDI to use.
+   */
+  aes_key_cdi_t cdi;
 
   /**
    * The length of the key (in 32-bit words).
