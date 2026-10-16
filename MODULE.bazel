@@ -421,7 +421,6 @@ use_repo(
     nist_cavp,
     "nist_cavp_aes_gcm",
     "nist_cavp_aes_kat",
-    "nist_cavp_aes_kw_sp_800_38f",
     "nist_cavp_drbg_sp_800_90a_root",
     "nist_cavp_ecdh_sp_800_56a",
     "nist_cavp_ecdsa_fips_186_4",

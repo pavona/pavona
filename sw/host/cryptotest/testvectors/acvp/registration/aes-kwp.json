@@ -1,0 +1,23 @@
+{
+  "algorithm": "ACVP-AES-KWP",
+  "revision": "1.0",
+  "direction": [
+    "encrypt",
+    "decrypt"
+  ],
+  "kwCipher": [
+    "cipher"
+  ],
+  "keyLen": [
+    128,
+    192,
+    256
+  ],
+  "payloadLen": [
+    {
+      "min": 72,
+      "max": 4096,
+      "increment": 8
+    }
+  ]
+}

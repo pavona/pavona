@@ -30,6 +30,7 @@ CRYPTOTEST = "sw/device/tests/crypto/cryptotest"
 PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
+    ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
@@ -74,7 +75,8 @@ def load_vector_set(path):
 def convert(prompt, answers, out_dir, skip_unsupported):
     """Runs the parser for one vector set, returning (harness, vectors path)."""
     vector_set = load_vector_set(prompt)
-    key = (vector_set["algorithm"], vector_set["mode"])
+    # Algorithms such as the AES modes have no mode.
+    key = (vector_set["algorithm"], vector_set.get("mode", ""))
     if key not in VECTOR_SETS:
         name = " ".join(part for part in key if part)
         print(f"vsId {vector_set['vsId']}: skipping {name}, no cryptotest "
@@ -94,8 +96,8 @@ def convert(prompt, answers, out_dir, skip_unsupported):
     expected = answers.get(vector_set["vsId"])
     if expected:
         args += ["--expected", str(expected)]
-    # Only the ML-DSA parser takes --skip-unsupported.
-    if skip_unsupported and harness == "mldsa":
+    # Only the AES-KWP and ML-DSA parsers take --skip-unsupported.
+    if skip_unsupported and harness in ("aes_kwp", "mldsa"):
         args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None

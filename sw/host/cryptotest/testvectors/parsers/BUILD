@@ -68,15 +68,6 @@ py_binary(
 )
 
 py_binary(
-    name = "nist_cavp_aes_kw_parser",
-    srcs = ["nist_cavp_aes_kw_parser.py"],
-    deps = [
-        ":cryptotest_util",
-        requirement("jsonschema"),
-    ],
-)
-
-py_binary(
     name = "wycheproof_ecdsa_parser",
     srcs = ["wycheproof_ecdsa_parser.py"],
     deps = [
@@ -253,6 +244,15 @@ py_binary(
     name = "wycheproof_mldsa_parser",
     srcs = ["wycheproof_mldsa_parser.py"],
     deps = [
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "nist_acvp_aes_kwp_parser",
+    srcs = ["nist_acvp_aes_kwp_parser.py"],
+    deps = [
+        ":acvp_util",
         requirement("jsonschema"),
     ],
 )

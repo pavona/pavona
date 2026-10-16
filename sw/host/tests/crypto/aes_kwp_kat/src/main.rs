@@ -5,11 +5,12 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
 
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex, read_vectors};
 use cryptotest_commands::aes_kwp_commands::{
     AesKwpSubcommand, CryptotestAesKwpData, CryptotestAesKwpOperation, CryptotestAesKwpOutput,
 };
@@ -33,18 +34,29 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     aes_kwp_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct AesKwpTestCase {
     vendor: String,
-    test_case_id: usize,
+    test_case_id: u64,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     operation: String,
     key_len: usize,
     key: Vec<u8>,
+    /// The input when wrapping, and the expected output when unwrapping.
+    #[serde(default)]
     plaintext: Vec<u8>,
+    /// The input when unwrapping, and the expected output when wrapping.
+    #[serde(default)]
     ciphertext: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in an ACVP prompt.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
 const AES_KWP_CMD_MAX_MSG_BYTES: usize = 520;
@@ -54,6 +66,7 @@ fn run_aes_kwp_testcase(
     test_case: &AesKwpTestCase,
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -80,19 +93,16 @@ fn run_aes_kwp_testcase(
     let input_length;
     let mut input: ArrayVec<u8, AES_KWP_CMD_MAX_MSG_BYTES> = ArrayVec::new();
     let expected_output;
-    let expected_success;
     match test_case.operation.as_str() {
         "encrypt" => {
             input.try_extend_from_slice(&test_case.plaintext)?;
             input_length = test_case.plaintext.len();
             expected_output = &test_case.ciphertext;
-            expected_success = test_case.result;
         }
         "decrypt" => {
             input.try_extend_from_slice(&test_case.ciphertext)?;
             input_length = test_case.ciphertext.len();
             expected_output = &test_case.plaintext;
-            expected_success = test_case.result;
         }
         _ => panic!("Invalid AES-KWP operation"),
     }
@@ -106,18 +116,34 @@ fn run_aes_kwp_testcase(
     .send(spi_console)?;
 
     let output = CryptotestAesKwpOutput::recv(spi_console, opts.timeout, false, false)?;
+    let actual_output = &output.output[..output.output_len];
 
-    // Check if the success flag matches.
-    assert_eq!(output.success, expected_success);
+    if let Some(expected_success) = test_case.result {
+        // Check if the success flag matches.
+        assert_eq!(output.success, expected_success);
 
-    if expected_success {
-        // Only check output if the operation succeeded, as failed
-        // unwrap testvectors don't have an expected output.
-        assert_eq!(output.output_len, expected_output.len());
-        assert_eq!(
-            &output.output[..output.output_len],
-            expected_output.as_slice()
-        );
+        if expected_success {
+            // Only check output if the operation succeeded, as failed
+            // unwrap testvectors don't have an expected output.
+            assert_eq!(actual_output, expected_output.as_slice());
+        }
+    }
+
+    if test_case.vendor == "acvp" {
+        let mut fields = Fields::new();
+        match (test_case.operation.as_str(), output.success) {
+            ("encrypt", _) => {
+                fields.insert("ct".to_string(), json!(hex(actual_output)));
+            }
+            ("decrypt", true) => {
+                fields.insert("pt".to_string(), json!(hex(actual_output)));
+            }
+            ("decrypt", false) => {
+                fields.insert("testPassed".to_string(), json!(false));
+            }
+            (operation, _) => panic!("Invalid AES-KWP operation: {operation}"),
+        }
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
     }
 
     Ok(())
@@ -128,19 +154,14 @@ fn test_aes_kwp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
-    let mut test_counter = 0u32;
-    let test_vector_files = &opts.aes_kwp_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let tests: Vec<AesKwpTestCase> = serde_json::from_str(&raw_json)?;
+    let cases: Vec<AesKwpTestCase> = read_vectors(opts.acvp.vectors(&opts.aes_kwp_json))?;
 
-        for test in &tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_aes_kwp_testcase(test, opts, &spi_console_device)?;
-        }
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_aes_kwp_testcase(case, opts, &spi_console_device, &mut responses)?;
     }
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

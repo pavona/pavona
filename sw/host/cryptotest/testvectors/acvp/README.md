@@ -18,10 +18,19 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 
 ## Supported algorithms
 
+- [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
 
 ## Unsupported capabilities
+
+### AES-KWP
+
+- `kwCipher: inverse`.
+  The cryptolib wraps with the AES encryption direction only.
+- Payloads of at most 64 bits.
+  The cryptolib does not implement the single-block case.
+- AES-KW, the variant without padding.
 
 ### ML-DSA
 
@@ -43,16 +52,17 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 A vector set is answered the same way whether it comes from a certification session or from the pinned test data: the prompt goes in, and a response comes out.
 The parsers turn a prompt into the inputs the harness sends to the device, and the harness assembles the device's outputs into a response.
 
-The pinned vector sets run as part of the ML-DSA and ML-KEM known-answer tests:
+The pinned vector sets run as part of the AES-KWP, ML-DSA and ML-KEM known-answer tests:
 
 ```sh
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:aes_kwp_kat_fpga_cw340_test_rom
 ./bazelisk.sh test --define=acc_has_pqc=true //sw/device/tests/crypto/cryptotest:mldsa_kat_fpga_cw340_pqc_test_rom
 ./bazelisk.sh test --define=acc_has_pqc=true //sw/device/tests/crypto/cryptotest:mlkem_kat_fpga_cw340_pqc_test_rom
 ```
 
 These compare the assembled response against the expected results NIST publishes alongside each prompt.
-`--define=acc_has_pqc=true` selects the ACC backends; without it, the same targets test the software backends instead.
-The `_hardened` variants of both targets always test the hardened ACC backend.
+For ML-DSA and ML-KEM, `--define=acc_has_pqc=true` selects the ACC backends; without it, the same targets test the software backends instead.
+The `_hardened` variants of the ML-DSA and ML-KEM targets always test the hardened ACC backend.
 
 ### Running your own ACVP test vectors
 
