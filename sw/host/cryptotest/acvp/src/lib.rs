@@ -29,6 +29,13 @@ struct VectorSet {
     vs_id: u64,
 }
 
+/// A test group's fields and the test cases grouped under it.
+#[derive(Debug, Default, PartialEq, Eq)]
+struct TestGroup {
+    fields: Fields,
+    tests: Vec<(u64, Fields)>,
+}
+
 /// Where a test case came from; empty on non-ACVP vectors.
 #[derive(Debug, Default, Deserialize)]
 pub struct AcvpIds {
@@ -103,12 +110,29 @@ pub fn check_output(name: &str, tc_id: u64, actual: &[u8], expected: &[u8]) {
 /// Collects test case responses and writes them per vector set.
 #[derive(Debug, Default)]
 pub struct ResponseBuilder {
-    sets: BTreeMap<VectorSet, BTreeMap<u64, Vec<(u64, Fields)>>>,
+    sets: BTreeMap<VectorSet, BTreeMap<u64, TestGroup>>,
 }
 
 impl ResponseBuilder {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Records group fields for the current test group.
+    pub fn set_group_fields(&mut self, ids: &AcvpIds, fields: Fields) {
+        self.sets
+            .entry(VectorSet {
+                algorithm: ids.algorithm.clone(),
+                mode: ids.mode.clone(),
+                revision: ids.revision.clone(),
+                is_sample: ids.is_sample,
+                vs_id: ids.vs_id,
+            })
+            .or_default()
+            .entry(ids.tg_id)
+            .or_default()
+            .fields
+            .extend(fields);
     }
 
     /// Records the response fields for one test case.
@@ -124,6 +148,7 @@ impl ResponseBuilder {
             .or_default()
             .entry(ids.tg_id)
             .or_default()
+            .tests
             .push((tc_id, fields));
     }
 
@@ -151,15 +176,12 @@ impl ResponseBuilder {
     }
 
     /// One vector set, in the two-element submission form.
-    fn document(
-        &self,
-        set: &VectorSet,
-        groups: &BTreeMap<u64, Vec<(u64, Fields)>>,
-    ) -> Result<String> {
+    fn document(&self, set: &VectorSet, groups: &BTreeMap<u64, TestGroup>) -> Result<String> {
         let test_groups: Vec<Value> = groups
             .iter()
-            .map(|(tg_id, tests)| {
-                let tests: Vec<Value> = tests
+            .map(|(tg_id, test_group)| {
+                let tests: Vec<Value> = test_group
+                    .tests
                     .iter()
                     .map(|(tc_id, fields)| {
                         let mut test = Map::new();
@@ -168,7 +190,11 @@ impl ResponseBuilder {
                         Value::Object(test)
                     })
                     .collect();
-                json!({"tgId": tg_id, "tests": tests})
+                let mut group = Map::new();
+                group.insert("tgId".to_string(), json!(tg_id));
+                group.extend(test_group.fields.clone());
+                group.insert("tests".to_string(), json!(tests));
+                Value::Object(group)
             })
             .collect();
         let mut header = json!({

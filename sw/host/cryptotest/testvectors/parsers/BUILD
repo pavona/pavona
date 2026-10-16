@@ -68,6 +68,16 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_ecdsa_parser",
+    srcs = ["nist_acvp_ecdsa_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_ecdsa_parser",
     srcs = ["wycheproof_ecdsa_parser.py"],
     deps = [
