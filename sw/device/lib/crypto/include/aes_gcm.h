@@ -43,7 +43,7 @@ typedef struct otcrypto_aes_gcm_context {
   /**
    * Implementation specific, AES-GCM context data.
    */
-  uint32_t data[98];
+  uint32_t data[99];
   /**
    * Implementation specific, checksum for this struct.
    *

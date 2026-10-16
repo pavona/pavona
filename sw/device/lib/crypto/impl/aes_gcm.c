@@ -278,7 +278,7 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
       key.key_shares[0], key_bytelen, kOtcryptoKeyModeAesGcm,
       &diversification));
-  return keymgr_generate_key_aes(diversification);
+  return keymgr_generate_key_aes(diversification, (keymgr_cdi_t)key.cdi);
 }
 
 /**
