@@ -60,7 +60,8 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     keymgr_diversification_t diversification;
     HARDENED_TRY(
         keyblob_to_keymgr_diversification(blinded_key, &diversification));
-    HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    HARDENED_TRY(keymgr_generate_key_aes(
+        diversification, (keymgr_cdi_t)blinded_key->config.cdi));
     aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (blinded_key->config.hw_backed == kHardenedBoolFalse) {

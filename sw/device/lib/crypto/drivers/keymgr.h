@@ -58,15 +58,24 @@ typedef struct keymgr_output {
 } keymgr_output_t;
 
 /**
+ * Type of key to generate from key manager.
+ */
+typedef enum keymgr_cdi {
+  kKeymgrCdiSealing = 0x0,
+  kKeymgrCdiAttestation = 0x1,
+} keymgr_cdi_t;
+
+/**
  * Derive a key manager key that is visible to software.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param cdi The key CDI (sealing or attestation) to derive the key from.
  * @param[out] key Destination key struct.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_generate_key_sw(const keymgr_diversification_t diversification,
-                                keymgr_output_t *key);
+                                const keymgr_cdi_t cdi, keymgr_output_t *key);
 
 /**
  * Derive a key manager key for the AES block.
@@ -75,11 +84,12 @@ status_t keymgr_generate_key_sw(const keymgr_diversification_t diversification,
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param cdi The key CDI (sealing or attestation) to derive the key from.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_generate_key_aes(
-    const keymgr_diversification_t diversification);
+status_t keymgr_generate_key_aes(const keymgr_diversification_t diversification,
+                                 const keymgr_cdi_t cdi);
 
 /**
  * Derive a key manager key for the KMAC block.
@@ -88,11 +98,12 @@ status_t keymgr_generate_key_aes(
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param cdi The key CDI (sealing or attestation) to derive the key from.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 status_t keymgr_generate_key_kmac(
-    const keymgr_diversification_t diversification);
+    const keymgr_diversification_t diversification, const keymgr_cdi_t cdi);
 
 /**
  * Derive a key manager key for the ACC block.
@@ -101,11 +112,12 @@ status_t keymgr_generate_key_kmac(
  * waits until the operation is complete before returning.
  *
  * @param diversification Diversification input for the key derivation.
+ * @param cdi The key CDI (sealing or attestation) to derive the key from.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_generate_key_acc(
-    const keymgr_diversification_t diversification);
+status_t keymgr_generate_key_acc(const keymgr_diversification_t diversification,
+                                 const keymgr_cdi_t cdi);
 
 /**
  * Clear the sideloaded AES key.
