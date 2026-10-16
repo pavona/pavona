@@ -59,12 +59,12 @@ def parse_testcases(args) -> None:
             "r": test_vec["R"],
             "s": test_vec["S"],
         }
-        if args.operation == "sign":
+        if args.operation == "siggen":
             test_case["d"] = test_vec["d"]
 
-        # Only `verify` test vectors include an explicit success/failure
-        # value. `Sign` test vectors are always expected to succeed.
-        if args.operation == "verify":
+        # Only `sigver` test vectors include an explicit success/failure
+        # value. `siggen` test vectors are always expected to succeed.
+        if args.operation == "sigver":
             # NIST test vectors express the expected result as a string
             # with a short description of the particular failure mode (if
             # applicable).  We can extract the pass/fail condition by
@@ -105,7 +105,7 @@ def main() -> int:
         "--operation",
         type = str,
         help="ECDSA operation the test vectors in `src` are testing",
-        choices=["sign", "verify"],
+        choices=["siggen", "sigver"],
     )
     args = parser.parse_args()
     parse_testcases(args)

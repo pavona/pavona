@@ -63,7 +63,7 @@ run_binary(
         "--schema",
         "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
         "--operation",
-        "verify",
+        "sigver",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
 )
@@ -85,11 +85,68 @@ run_binary(
         "--schema",
         "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
         "--operation",
-        "sign",
+        "siggen",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
 )
 
+run_binary(
+    name = "acvp_ecdsa_siggen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_testvectors//ECDSA-SigGen-FIPS186-5:expectedResults.json",
+        "@acvp_testvectors//ECDSA-SigGen-FIPS186-5:internalProjection.json",
+    ],
+    outs = [":acvp_ecdsa_siggen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//ECDSA-SigGen-FIPS186-5:internalProjection.json)",
+        "--dst",
+        "$(location :acvp_ecdsa_siggen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_testvectors//ECDSA-SigGen-FIPS186-5:expectedResults.json)",
+        "--test-type",
+        "siggen",
+        # NIST's published sample sets declare every capability the algorithm
+        # has, so they contain curves and hash algorithms this cryptolib does
+        # not implement.
+        "--skip-unsupported",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
+)
+
+run_binary(
+    name = "acvp_ecdsa_sigver_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_testvectors//ECDSA-SigVer-FIPS186-5:expectedResults.json",
+        "@acvp_testvectors//ECDSA-SigVer-FIPS186-5:internalProjection.json",
+    ],
+    outs = [":acvp_ecdsa_sigver.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//ECDSA-SigVer-FIPS186-5:internalProjection.json)",
+        "--dst",
+        "$(location :acvp_ecdsa_sigver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_testvectors//ECDSA-SigVer-FIPS186-5:expectedResults.json)",
+        "--test-type",
+        "sigver",
+        # NIST's published sample sets declare every capability the algorithm
+        # has, so they contain curves and hash algorithms this cryptolib does
+        # not implement.
+        "--skip-unsupported",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
+)
 [
     run_binary(
         name = cryptotest_name,

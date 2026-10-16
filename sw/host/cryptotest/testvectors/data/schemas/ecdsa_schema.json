@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ecdsa_schema.json",
+  "$id": "https://raw.githubusercontent.com/pavona/pavona/master/sw/host/cryptotest/testvectors/data/schemas/ecdsa_schema.json",
   "title": "Cryptotest ECDSA Signature Verification Test Vector",
   "description": "A list of testvectors for ECDSA Signature Verification testing",
   "$defs": {
@@ -14,61 +14,80 @@
     }
   },
   "type": "array",
-  "minItems": 1,
   "items": {
     "type": "object",
     "additionalProperties": false,
     "properties": {
       "vendor": {
-        "description": "test vector vendor name",
+        "description": "Test vector vendor name",
         "type": "string"
       },
       "test_case_id": {
-        "description": "test_case_id",
+        "description": "Incremental test case ID",
         "type": "integer"
       },
       "algorithm": {
-        "description": "Should be ecdsa",
+        "description": "Should be 'ecdsa' or 'ECDSA' (ACVP)",
         "type": "string",
-        "enum": ["ecdsa"]
+        "enum": ["ecdsa", "ECDSA"]
+      },
+      "mode": {
+        "description": "ACVP mode the test came from",
+        "type": "string"
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
       },
       "operation": {
-        "description": "ECDSA operation",
+        "description": "Operation type",
         "type": "string",
-        "enum": ["sign", "verify"]
+        "enum": ["keygen", "siggen", "sigver"]
       },
       "curve": {
-        "description": "Curve type",
+        "description": "ECDSA curve",
         "type": "string",
         "enum": ["p256", "p384"]
       },
       "hash_alg": {
-        "description": "Hash algorithm",
+        "description": "Hash algorithm used on message",
         "type": "string",
-        "enum": ["sha-1", "sha-224", "sha-256", "sha-384", "sha-512", "sha3-256", "sha3-384", "sha3-512"]
+        "enum": ["sha-224", "sha-256", "sha-384", "sha-512", "sha3-256", "sha3-384", "sha3-512"]
       },
       "message": {
-        "description": "Message to be verified",
+        "description": "Message to sign or verify",
         "$ref": "#/$defs/byte_array"
       },
       "qx": {
-        "description": "Qx",
+        "description": "Public key x-coordinate",
         "type": "string"
       },
       "qy": {
-        "description": "Qy",
+        "description": "Public key y-coordinate",
         "type": "string"
       },
       "r": {
-        "description": "r parameter",
+        "description": "Signature r parameter",
         "type": "string"
       },
       "s": {
-        "description": "s parameter",
+        "description": "Signature s parameter",
         "type": "string"
       },
       "d": {
-        "description": "d parameter",
+        "description": "Secret key",
         "type": "string"
       },
       "result": {
