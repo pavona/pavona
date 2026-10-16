@@ -47,7 +47,7 @@ run_binary(
         "--schema",
         "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
         "--operation",
-        "verify",
+        "sigver",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
 )
@@ -69,9 +69,59 @@ run_binary(
         "--schema",
         "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
         "--operation",
-        "sign",
+        "siggen",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
+)
+
+run_binary(
+    name = "acvp_ecdsa_siggen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_vectors//:ecdsa-siggen/expectedResults.json",
+        "@acvp_vectors//:ecdsa-siggen/internalProjection.json",
+    ],
+    outs = [":acvp_ecdsa_siggen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:ecdsa-siggen/internalProjection.json)",
+        "--dst",
+        "$(location :acvp_ecdsa_siggen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_vectors//:ecdsa-siggen/expectedResults.json)",
+        "--test-type",
+        "siggen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
+)
+
+run_binary(
+    name = "acvp_ecdsa_sigver_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_vectors//:ecdsa-sigver/expectedResults.json",
+        "@acvp_vectors//:ecdsa-sigver/prompt.json",
+    ],
+    outs = [":acvp_ecdsa_sigver.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:ecdsa-sigver/prompt.json)",
+        "--dst",
+        "$(location :acvp_ecdsa_sigver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_vectors//:ecdsa-sigver/expectedResults.json)",
+        "--test-type",
+        "sigver",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
 )
 
 [
