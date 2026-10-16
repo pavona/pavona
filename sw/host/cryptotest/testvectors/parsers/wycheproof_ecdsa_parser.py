@@ -63,7 +63,7 @@ def parse_test_vectors(raw_data):
                 "vendor": "wycheproof",
                 "test_case_id": test['tcId'],
                 "algorithm": "ecdsa",
-                "operation": "verify",
+                "operation": "sigver",
                 "curve": EC_NAME_MAPPING[key["curve"]],
                 "hash_alg": group["sha"].lower(),
                 "message": list(bytes.fromhex(test["msg"])),
