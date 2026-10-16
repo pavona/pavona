@@ -190,33 +190,33 @@ options:
 - <a id="properties/unmanaged_clocks"></a>**`unmanaged_clocks`** *(array, required)*: list of unmanaged external clocks.
 - <a id="properties/clocks"></a>**`clocks`** *(object, required)*: group of clock properties.
 - <a id="properties/resets"></a>**`resets`** *(object, required)*: list of resets.
-- <a id="properties/reset_requests"></a>**`reset_requests`**: define reset requests grouped by type. Refer to *[urn:topgen:reset_requests](#n%3Atopgen%3Areset_requests)*.
+- <a id="properties/reset_requests"></a>**`reset_requests`**: define reset requests grouped by type. Refer to *[urn:topgen:reset_requests](#reset-requests)*.
 - <a id="properties/num_cores"></a>**`num_cores`** *(integer)*: number of computing units.
 - <a id="properties/default_plic"></a>**`default_plic`** *(string)*: Modules not defining plic have interrupts sent here.
 - <a id="properties/default_alert_handler"></a>**`default_alert_handler`** *(string)*: Modules not defining alert_handler have alerts sent here.
 - <a id="properties/addr_spaces"></a>**`addr_spaces`** *(array, required)*: list of address spaces.
 - <a id="properties/module"></a>**`module`** *(array, required)*: list of modules to instantiate.
-  - <a id="properties/module/items"></a>**Items**: Refer to *[urn:topgen:module](#n%3Atopgen%3Amodule)*.
+  - <a id="properties/module/items"></a>**Items**: Refer to *[urn:topgen:module](#module)*.
 - <a id="properties/port"></a>**`port`** *(array)*: assign special attributes to specific ports.
 - <a id="properties/inter_module"></a>**`inter_module`** *(object)*: define the signal connections between the modules.
 - <a id="properties/xbar"></a>**`xbar`** *(array, required)*: list of the xbars used in the top.
-- <a id="properties/pinout"></a>**`pinout`**: pinout configuration. Refer to *[urn:topgen:pinout](#n%3Atopgen%3Apinout)*.
-- <a id="properties/pinmux"></a>**`pinmux`**: pinmux configuration. Refer to *[urn:topgen:pinmux](#n%3Atopgen%3Apinmux)*.
+- <a id="properties/pinout"></a>**`pinout`**: pinout configuration. Refer to *[urn:topgen:pinout](#pinout)*.
+- <a id="properties/pinmux"></a>**`pinmux`**: pinmux configuration. Refer to *[urn:topgen:pinmux](#pinmux)*.
 - <a id="properties/targets"></a>**`targets`** *(array, required)*: target configurations.
-  - <a id="properties/targets/items"></a>**Items**: Refer to *[urn:topgen:target](#n%3Atopgen%3Atarget)*.
+  - <a id="properties/targets/items"></a>**Items**: Refer to *[urn:topgen:target](#target)*.
 - <a id="properties/incoming_alert"></a>**`incoming_alert`** *(object)*: Parsed incoming alerts; added property.
 - <a id="properties/incoming_interrupt"></a>**`incoming_interrupt`** *(object)*: Parsed incoming interrupts; added property.
 - <a id="properties/exported_clks"></a>**`exported_clks`** *(object)*: clock signal routing rules; added property.
 - <a id="properties/racl"></a>**`racl`** *(object)*: the expansion of the racl_config file; added property.
 - <a id="properties/wakeups"></a>**`wakeups`** *(array)*: list of wakeup requests each holding name, width, and module; added property.
-  - <a id="properties/wakeups/items"></a>**Items**: Refer to *[urn:topgen:wakeup](#n%3Atopgen%3Awakeup)*.
+  - <a id="properties/wakeups/items"></a>**Items**: Refer to *[urn:topgen:wakeup](#wakeup)*.
 - <a id="properties/unmanaged_resets"></a>**`unmanaged_resets`** *(array)*: List of unmanaged external resets; added property.
 - <a id="properties/exported_rsts"></a>**`exported_rsts`** *(object)*: external resets grouped by each module's `clock_reset_export` field; added property.
 - <a id="properties/alert"></a>**`alert`** *(array)*: alerts; added property.
-  - <a id="properties/alert/items"></a>**Items**: Refer to *[urn:topgen:alert](#n%3Atopgen%3Aalert)*.
+  - <a id="properties/alert/items"></a>**Items**: Refer to *[urn:topgen:alert](#alert)*.
 - <a id="properties/outgoing_alert"></a>**`outgoing_alert`** *(object)*: the outgoing alert groups; added property.
 - <a id="properties/interrupt"></a>**`interrupt`** *(array)*: interrupts; added property.
-  - <a id="properties/interrupt/items"></a>**Items**: Refer to *[urn:topgen:interrupt](#n%3Atopgen%3Ainterrupt)*.
+  - <a id="properties/interrupt/items"></a>**Items**: Refer to *[urn:topgen:interrupt](#interrupt)*.
 - <a id="properties/outgoing_interrupt"></a>**`outgoing_interrupt`** *(object)*: the outgoing interrupt groups; added property.
 - <a id="properties/alert_module"></a>**`alert_module`** *(array)*: list of the modules that connects to alert_handler; added property.
 - <a id="properties/alert_connections"></a>**`alert_connections`** *(object)*
@@ -249,15 +249,15 @@ The top configuration partially specifies its list of modules.
 address of the peripheral (if the IP has only a single TL-UL interface).
 - <a id="properties/base_addrs"></a>**`base_addrs`** *(object)*: hex start addresses of the peripheral (if the IP has multiple TL-UL interfaces).
 - <a id="properties/memory"></a>**`memory`** *(object)*: optional dict with memory region attributes.
-  - <a id="properties/memory/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:memory](#n%3Atopgen%3Amemory)*.
+  - <a id="properties/memory/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:memory](#memory)*.
 - <a id="properties/otp_map"></a>**`otp_map`** *(object)*: OTP Map information for OTP Ctrl.
 - <a id="properties/otp_mmap"></a>**`otp_mmap`** *(object)*: Full OTP memory map configuration with secret parameters; added property.
 - <a id="properties/ipgen_params"></a>**`ipgen_params`** *(object)*: Optional ipgen parameters for that instance.
 - <a id="properties/param_decl"></a>**`param_decl`** *(object)*: optional dict that allows to override instantiation parameters.
 - <a id="properties/param_list"></a>**`param_list`** *(array)*: list of parameters; added property.
-  - <a id="properties/param_list/items"></a>**Items**: Refer to *[urn:topgen:parameter](#n%3Atopgen%3Aparameter)*.
+  - <a id="properties/param_list/items"></a>**Items**: Refer to *[urn:topgen:parameter](#parameter)*.
 - <a id="properties/inter_signal_list"></a>**`inter_signal_list`** *(array)*: generated signal information; added property.
-  - <a id="properties/inter_signal_list/items"></a>**Items**: Refer to *[urn:topgen:inter_signal](#n%3Atopgen%3Ainter_signal)*.
+  - <a id="properties/inter_signal_list/items"></a>**Items**: Refer to *[urn:topgen:inter_signal](#intermodule-signal)*.
 - <a id="properties/generate_dif"></a>**`generate_dif`** *(boolean)*: optional bool to indicate if a DIF should be generated for that module.
 - <a id="properties/racl_group"></a>**`racl_group`** *(string)*: Only valid for racl_ctrl IPs. Defines the RACL group this control IP is associated to.
 - <a id="properties/racl_mappings"></a>**`racl_mappings`** *(object)*: dict that maps an interface to its associated RACL mapping.
@@ -372,7 +372,7 @@ Tops must also come with a seed configuration Hjson.
 This field must be specified if `config` is not specified.
 - <a id="properties/config"></a>**`config`**: Extra configuration for a particular memory.
   - **Any of**
-    - <a id="properties/config/anyOf/0"></a>: Refer to *[urn:topgen:eflash](#n%3Atopgen%3Aeflash)*.
+    - <a id="properties/config/anyOf/0"></a>: Refer to *[urn:topgen:eflash](#eflash)*.
 
 ### Pad
 
@@ -413,15 +413,15 @@ This field must be specified if `config` is not specified.
 #### Properties
 
 - <a id="properties/signals"></a>**`signals`** *(array)*: List of Dedicated IOs.
-  - <a id="properties/signals/items"></a>**Items**: Refer to *[urn:topgen:pinmux_signal](#n%3Atopgen%3Apinmux_signal)*.
+  - <a id="properties/signals/items"></a>**Items**: Refer to *[urn:topgen:pinmux_signal](#pinmux-signal)*.
 - <a id="properties/wkup_cnt_width"></a>**`wkup_cnt_width`** *(integer)*: Number of bits in wakeup detector counters.
 - <a id="properties/num_wkup_detect"></a>**`num_wkup_detect`** *(integer)*: Number of wakeup detectors.
 - <a id="properties/enable_usb_wakeup"></a>**`enable_usb_wakeup`** *(boolean, required)*: Enable USB wakeup in pinmux.
 - <a id="properties/enable_strap_sampling"></a>**`enable_strap_sampling`** *(boolean, required)*: Enable hardware strap sampling of pinmux.
 - <a id="properties/ios"></a>**`ios`** *(array)*: Full list of IO; added property.
-  - <a id="properties/ios/items"></a>**Items**: Refer to *[urn:topgen:pinmux_io](#n%3Atopgen%3Apinmux_io)*.
+  - <a id="properties/ios/items"></a>**Items**: Refer to *[urn:topgen:pinmux_io](#pinmux-io)*.
 - <a id="properties/io_counts"></a>**`io_counts`** *(object)*: count of ios grouped by dedicated or muxed; added property.
-  - <a id="properties/io_counts/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:pinmux_io_count](#n%3Atopgen%3Apinmux_io_count)*.
+  - <a id="properties/io_counts/patternProperties/.%2A"></a>**`.*`**: Refer to *[urn:topgen:pinmux_io_count](#pinmux-io-count)*.
 
 ### Pinmux I/O
 
@@ -471,7 +471,7 @@ This field must be specified if `config` is not specified.
 
 - <a id="properties/banks"></a>**`banks`** *(array, required)*: List of IO power banks.
 - <a id="properties/pads"></a>**`pads`** *(array, required)*: List of pads.
-  - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#n%3Atopgen%3Apad)*.
+  - <a id="properties/pads/items"></a>**Items**: Refer to *[urn:topgen:pad](#pad)*.
 
 ### Reset Connection
 
@@ -503,7 +503,7 @@ is high).
 #### Pattern Properties
 
 - <a id="patternProperties"></a>**`.*`**
-  - <a id="patternProperties/items"></a>**Items**: Refer to *[urn:topgen:reset_request](#n%3Atopgen%3Areset_request)*.
+  - <a id="patternProperties/items"></a>**Items**: Refer to *[urn:topgen:reset_request](#reset-request)*.
 #### Properties
 
 - <a id="properties/int"></a>**`int`** *(array)*: internal request list, for example, escalation reset and power glitches.
@@ -539,8 +539,8 @@ is high).
 #### Properties
 
 - <a id="properties/name"></a>**`name`** *(string, required)*: Name of target.
-- <a id="properties/pinout"></a>**`pinout`**: Target-specific pinout configuration. Refer to *[urn:topgen:target_pinout](#n%3Atopgen%3Atarget_pinout)*.
-- <a id="properties/pinmux"></a>**`pinmux`**: Target-specific pinmux configuration. Refer to *[urn:topgen:target_pinmux](#n%3Atopgen%3Atarget_pinmux)*.
+- <a id="properties/pinout"></a>**`pinout`**: Target-specific pinout configuration. Refer to *[urn:topgen:target_pinout](#target-pinout)*.
+- <a id="properties/pinmux"></a>**`pinmux`**: Target-specific pinmux configuration. Refer to *[urn:topgen:target_pinmux](#target-pinmux)*.
 
 ### Target Pinmux
 
@@ -549,7 +549,7 @@ is high).
 #### Properties
 
 - <a id="properties/special_signals"></a>**`special_signals`** *(array, required)*: List of special signals and the pad they are mapped to.
-  - <a id="properties/special_signals/items"></a>**Items**: Refer to *[urn:topgen:special_signal](#n%3Atopgen%3Aspecial_signal)*.
+  - <a id="properties/special_signals/items"></a>**Items**: Refer to *[urn:topgen:special_signal](#special-signal)*.
 
 ### Target Pinout
 

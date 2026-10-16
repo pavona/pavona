@@ -8,6 +8,7 @@ from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 from referencing import Resource
 
+import re
 import logging as log
 import jsonschema2md
 
@@ -100,6 +101,35 @@ def document_schema(outfile: TextIO | None,
     else:
         outfile.write(doc_text)
     return None
+
+
+def correct_doc_links(
+    doc_text: str,
+    registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY
+) -> str:
+    """Correct jsonschema2md link rendering.
+
+    By default, jsonschema2md does not properly address URN-identified schemas.
+    Since URN does not convey the path to the path to the original schema file,
+    instead search for a header with the schema name and link to that if it
+    exists, else remove the link.
+    """
+    doc_link_re = r"Refer to \*\[(?P<urn>.+?)\]\((?P<badlink>.+?)\)\*\."
+    for ref in re.finditer(doc_link_re, doc_text):
+        urn = ref.group("urn")
+        schema = _resolve_schema(urn, registry)
+
+        if re.search(f"^#+\\s+{schema['title']}\\s*?$", doc_text, flags=re.M):
+            cleaned_title = re.sub(r"[^A-Za-z ]", "", schema['title'].lower())
+            repl = re.sub(ref.group("badlink"),
+                          f"#{'-'.join(cleaned_title.split())}",
+                          ref.group(0))
+        else:
+            repl = f"Refer to *{urn}*."  # no link if no subsection
+
+        doc_text = doc_text.replace(ref.group(0), repl)
+
+    return doc_text
 
 
 ##############
