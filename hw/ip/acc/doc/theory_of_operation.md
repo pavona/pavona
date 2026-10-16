@@ -10,16 +10,21 @@
 
 The ACC processor core supports two configurations: a classical mode supporting algorithms such as ECDSA, ECDH, RSA, alongside a post-quantum enabled mode that supports the classical operations in addition to ML-KEM and ML-DSA across all parameter sets.
 ACC requires different hardware configurations to meet these specifications, and is controlled at synthesis time through the `AccPQCEn` RTL parameter.
+This parameter enables the vector ISA extension + `ACCH` WSR register in the MAC, and the direct KMAC AppIntf connection along with KMAC control WSR registers.
+Neither of these features is present in the classical hardware configuration.
+
 The instruction and data memory sizes are configured separately from the rest of the RTL, but both are configured in the [acc.hjson](../data/acc.hjson) file.
 Furthermore, the single source of truth for a top-level design that instantiates ACC will be in the top-level hjson, both [egret](../../../top_egret/data/top_egret.hjson) and [dragonfly](../../../top_dragonfly/data/top_dragonfly.hjson) show this.
+
 The following table outlines the key differences between the classical and post-quantum ready ACC.
-To support first-order-masking of the ML-DSA and ML-KEM parameter sets, the IMEM and DMEM has been increased to 32 KiB each.
-Additionally, a vector ISA extension and direct connection to KMAC were added to accelerate the PQC algorithms, these features are not present in the classical hardware configuration.
+To support first-order-masking of the ML-DSA and ML-KEM parameter sets, the IMEM and DMEM have been increased to 32 KiB each, accompanying the `AccPQCEn = 1` parameter declaration.
+If ACC is configured with `AccPQCEn = 0` in the Egret or Dragonfly top-level hjson, then the reference configuration's instruction memory requirements are reduced to 8 KiB, and data memory reduced to 4 KiB as shown by the following table.
 
 <table>
   <thead>
     <tr>
       <th>Mode</th>
+      <th>IP Params</th>
       <th>IMEM</th>
       <th>DMEM</th>
       <th>ISA</th>
@@ -27,8 +32,8 @@ Additionally, a vector ISA extension and direct connection to KMAC were added to
     </tr>
   </thead>
   <tbody>
-    <tr><td>Classical</td><td>8 KiB</td><td>4 KiB</td><td>Base + Bignum</td><td>No</td></tr>
-    <tr><td>Post-Quantum</td><td>32 KiB</td><td>32 KiB</td><td>Base + Bignum + Vector</td><td>Yes</td></tr>
+    <tr><td>Classical</td><td>AccPQCEn=0</td><td>8 KiB</td><td>4 KiB</td><td>Base + Bignum</td><td>No</td></tr>
+    <tr><td>Post-Quantum</td><td>AccPQCEn=1</td><td>32 KiB</td><td>32 KiB</td><td>Base + Bignum + Vector</td><td>Yes</td></tr>
   </tbody>
 </table>
 
@@ -553,15 +558,21 @@ Host software cannot explicitly trigger an internal secure wipe; it is performed
 
 ### KMAC Application Interface
 
-The ACC has an application interface side-load connection to the KMAC IP allowing for accelerated hashing with the SHA3 and SHAKE algorithms.
+When the `AccPQCEn` parameter is enabled ACC has an application interface side-load connection to the KMAC IP allowing for accelerated hashing with the SHA3 and SHAKE algorithms.
 For KMAC specific implementation details of the AppIntf view the [`KMAC Theory of Operation`](../../kmac/doc/theory_of_operation.md#application-interface).
-The first word written from KMAC on the application interface is used to dynamically configure the algorithm executed within KMAC.
+Messages and digests sent or received from the interface may be first-order masked depending on if the masking configuration bit was set in the configuration CSR.
+The first word written from ACC over the application interface is unmasked regardless of CSR configuration and used to dynamically configure the algorithm executed within KMAC.
 Bits [1:0] select the appropriate SHA3/cSHAKE/SHAKE algorithm and bits [4:2] select the appropriate Keccak drive strength.
 The CSR for configuring the KMAC operation can be found at `0x7D9`.
-After configuring the transaction, writes to the `kmac_msg` WSR register are used to send data over the AppIntf.
-Reading from the `kmac_digest` WSR will contain the valid digest from KMAC.
+After configuring the transaction, writes to the `kmac_msg` and `kmac_msg1` WSR registers are used to send data over the AppIntf.
+If operating in an unmasked configuration, any writes to the `kmac_msg1` WSR will result in a recoverable alert in ACC.
+Likewise, continuous writes to the same share in the masked configuration may lead to a deadlock of the FIFO.
+ACC will detect this and broadcast a fatal error.
+Reading from the `kmac_digest` or `kmac_digest1` WSR will contain the valid digest share from KMAC.
+In an unmasked configuration `kmac_digest` contains the unmasked digest share, and any accesses to `kmac_digest1` result in a recoverable error.
 ACC supports a partial word write through the `kmac_partial_write` CSR register.
-This register applies a byte-mask to the `kmac_msg` WSR such that a word less than 32B can be written to the internal FIFO and sent over the AppIntf.
+This register applies a byte-mask to the `kmac_msg` and `kmac_msg1` WSR such that a word less than 32B can be written to the internal FIFO and sent over the AppIntf.
+The value within this register is reset to a default of 32 following a successful write to each of the active message share WSR registers.
 For register descriptions refer to the [csr.yml](../data/csr.yml) and [wsr.yml](../data/wsr.yml).
 
 <table>
@@ -577,6 +588,21 @@ For register descriptions refer to the [csr.yml](../data/csr.yml) and [wsr.yml](
     <tr><td><code>CsrKmacPartialWrite</code></td><td>0x7F3</td></tr>
   </tbody>
 </table>
+
+### Vector Instructions
+
+When ACC is configured with the `AccPQCEn` parameter, the vector ISA is enabled in the hardware.
+This adds the following instructions to the existing ISA, for more detailed information of each instruction and its encoding, refer to the [ISA guide](./isa.md).
+- {{#acc-insn-ref BN.ADDV}}: Vector addition
+- {{#acc-insn-ref BN.TRN}}: Partial transpose
+- {{#acc-insn-ref BN.SHV}}: Vector shift
+- {{#acc-insn-ref BN.SUBV}}: Vector pseudo-modulo subtraction
+- {{#acc-insn-ref BN.MULV}}: Vectorized multiply and accumulate
+- {{#acc-insn-ref BN.MULV.L}}: Vectorized multiply and accumulate (by lane)
+
+To support vectorized instructions, ACC is built with a vector variant of its big number adder and MAC.
+The vectorized MAC has an additional WSR accumulator register, `ACCH`, which is used to store the upper 256-bits of the MAC result.
+This is in addition to the existing `ACC` WSR register, common to both `AccPQCEn = 1` and `AccPQCEn = 0` variants of ACC.
 
 ## References
 
