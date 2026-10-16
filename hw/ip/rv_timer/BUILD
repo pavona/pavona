@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/rv_timer/data:all_files",
+        "//hw/ip/rv_timer/rtl:all_files",
     ],
 )
 

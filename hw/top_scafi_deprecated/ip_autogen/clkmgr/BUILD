@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_scafi_deprecated/ip_autogen/clkmgr/rtl:all_files"],
 )
 
 filegroup(

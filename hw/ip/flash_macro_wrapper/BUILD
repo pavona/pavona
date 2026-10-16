@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/flash_macro_wrapper/data:all_files",
+        "//hw/ip/flash_macro_wrapper/rtl:all_files",
     ],
 )
 

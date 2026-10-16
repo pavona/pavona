@@ -13,7 +13,7 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ),
+    ) + ["//hw/top_egret/ip_autogen/rv_core_ibex/rtl:all_files"],
 )
 
 filegroup(

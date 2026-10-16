@@ -15,6 +15,7 @@ filegroup(
         ],
     ) + [
         "//hw/ip/entropy_src/data:all_files",
+        "//hw/ip/entropy_src/rtl:all_files",
     ],
 )
 
