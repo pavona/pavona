@@ -154,13 +154,16 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
   // Software partitions don't have scrambling or ECC enabled, so it is possible
   // to read the value and compare it against the expected value before
   // performing the write.
-  bool check_before_write = (
-#ifdef OPENTITAN_IS_EGRET
-      partition == kOtpPartitionRotCreatorAuthCodesign ||
-      partition == kOtpPartitionRotCreatorAuthState ||
-#endif  // OPENTITAN_IS_EGRET
-      partition == kOtpPartitionCreatorSwCfg ||
-      partition == kOtpPartitionOwnerSwCfg);
+  bool check_before_write = (partition == kOtpPartitionRotOwnerAuthSlot0 ||
+                             partition == kOtpPartitionRotOwnerAuthSlot1 ||
+                             partition == kOtpPartitionRotOwnerAuthSlot2 ||
+                             partition == kOtpPartitionRotOwnerAuthSlot3 ||
+                             partition == kOtpPartitionRotOwnerAuthSlot0State ||
+                             partition == kOtpPartitionRotOwnerAuthSlot1State ||
+                             partition == kOtpPartitionRotOwnerAuthSlot2State ||
+                             partition == kOtpPartitionRotOwnerAuthSlot3State ||
+                             partition == kOtpPartitionCreatorSwCfg ||
+                             partition == kOtpPartitionOwnerSwCfg);
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint32_t), ++i) {

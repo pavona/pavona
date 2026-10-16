@@ -93,10 +93,6 @@ BOOT_DATA_RECOVERY_CASES = [
                 items = {
                     # Set the min_sec version.
                     "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": otp_hex(case["min_sec_ver"]),
-                    # Set allowing use of default boot data in PROD LC state.
-                    "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(
-                        CONST.HARDENED_TRUE if case["default_boot_data"] == "default" else CONST.HARDENED_FALSE,
-                    ),
                 },
             ),
         ],
