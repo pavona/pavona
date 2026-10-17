@@ -51,7 +51,7 @@ main:
   la  x11, ek
   la  x12, dk
   li  x13, KYBER_K
-  jal x1, crypto_kem_keypair
+  jal x1, crypto_kem_keypair_hardened
 
   /* Unpack the masked dk secret polys into keygen-dead scratch. */
   la x10, dk

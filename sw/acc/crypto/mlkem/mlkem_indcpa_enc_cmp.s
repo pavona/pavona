@@ -16,17 +16,18 @@
 #define NSHARES 1
 #endif
 
+#ifndef HARDENED
 /**
  * Re-encryption and ciphertext comparison for the decapsulation check.
  *
  * Use the encryption key to encrypt a plaintext message using the randomness r.
  * Compare the re-encrypted ciphertext with the input public ciphertext.
  *
- * Let d = NSHARES, cv = 32 * dv and cu = 32 * du, that is cv = 128 and cu = 320
+ * Let cv = 32 * dv and cu = 32 * du, that is cv = 128 and cu = 320
  * bytes for k = 2, 3 and cv = 160 and cu = 352 bytes for k = 4. The input
  * ciphertext is laid out as c = u || v, with u in c[0 : k * cu] and v in
  * c[k * cu : k * cu + cv].
- *  Step 1: kpoly = poly_frommsg(m)       // masked_poly_frommsg(m) when d > 1
+ *  Step 1: kpoly = poly_frommsg(m)
  *  Step 2: recompute v and compare it against c[k * cu : k * cu + cv].
  *          for i = 0..k - 1:
  *            ek_pke[i] = poly_frombytes(ek_pke[384 * i : 384 * (i + 1)])
@@ -39,7 +40,7 @@
  *            b    = sum_j at[i][j] * sp[j], j = 0..k - 1  // at[i][j] from rho
  *            b    = intt(b) + ep[i]                       // ep[i]: nonce k + i
  *            acc |= compare(poly_polyvec_compress(b), c[i * cu : (i + 1) * cu])
- *  Step 4: w0 = acc                      // finalize_cmp + unmask when d > 1
+ *  Step 4: w0 = acc
  *
  * @param[in]  x10: dmem pointer to the input message m
  * @param[in]  x11: dmem pointer to the input packed public key ek_pke
@@ -47,26 +48,65 @@
  * @param[in]  x13: dmem pointer to the input ciphertext c to compare against
  * @param[in]  x15: k, the security level
  * @param[out] w0: comparison result; 0 if the ciphertexts match and all-ones
- *                 otherwise for UNPROTECTED, 1 if they match and 0 otherwise
- *                 for HARDENED
+ *                 otherwise
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * UNPROTECTED
  * clobbered registers: x2 to x13, x18 to x19, x21 to x28,
  *                      w0 to w15, w17 to w26, mod, acch, acc
- * clobbered flag groups: FG0
- *
- * HARDENED
- * clobbered registers: x2 to x19, x21 to x24, x26 to x31,
- *                      w0 to w15, w17 to w30, acc, mod, acch
  * clobbered flag groups: FG0
  */
 
 .globl indcpa_enc_cmp
 .type indcpa_enc_cmp, @function
 indcpa_enc_cmp:
+#else
+/**
+ * Masked re-encryption and ciphertext comparison for the decapsulation check.
+ *
+ * Use the encryption key to encrypt a plaintext message using the randomness r.
+ * Compare the re-encrypted ciphertext with the input public ciphertext.
+ *
+ * Let cv = 32 * dv and cu = 32 * du, that is cv = 128 and cu = 320
+ * bytes for k = 2, 3 and cv = 160 and cu = 352 bytes for k = 4. The input
+ * ciphertext is laid out as c = u || v, with u in c[0 : k * cu] and v in
+ * c[k * cu : k * cu + cv].
+ *  Step 1: kpoly = masked_poly_frommsg(m)
+ *  Step 2: recompute v and compare it against c[k * cu : k * cu + cv].
+ *          for i = 0..k - 1:
+ *            ek_pke[i] = poly_frombytes(ek_pke[384 * i : 384 * (i + 1)])
+ *            sp[i]     = poly_getnoise_eta_1(r, i)       // nonce i
+ *            v        += ek_pke[i] * ntt(sp[i])
+ *          v   = intt(v) + kpoly + epp                   // epp: nonce 2 * k
+ *          acc = compare(poly_compress(v), c[k * cu : k * cu + cv])
+ *  Step 3: recompute u and compare each row against c[i * cu : (i + 1) * cu].
+ *          for i = 0..k - 1:
+ *            b    = sum_j at[i][j] * sp[j], j = 0..k - 1  // at[i][j] from rho
+ *            b    = intt(b) + ep[i]                       // ep[i]: nonce k + i
+ *            acc |= compare(poly_polyvec_compress(b), c[i * cu : (i + 1) * cu])
+ *  Step 4: w0 = acc                      // finalize_cmp, then unmask
+ *
+ * @param[in]  x10: dmem pointer to the input Boolean-shared message m
+ * @param[in]  x11: dmem pointer to the input packed public key ek_pke
+ * @param[in]  x12: dmem pointer to the input randomness r (32 bytes)
+ * @param[in]  x13: dmem pointer to the input ciphertext c to compare against
+ * @param[in]  x15: k, the security level
+ * @param[out] w0: comparison result; 1 if the ciphertexts match and 0
+ *                 otherwise
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x2 to x19, x21 to x24, x26 to x31,
+ *                      w0 to w15, w17 to w30, acc, mod, acch
+ * clobbered flag groups: FG0
+ */
+
+.globl indcpa_enc_cmp_hardened
+.type indcpa_enc_cmp_hardened, @function
+indcpa_enc_cmp_hardened:
+#endif
   addi x2, x2, -32
   sw   x3, 0(x2)
   add  x3, x2, x0

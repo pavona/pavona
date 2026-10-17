@@ -36,7 +36,7 @@ main:
   la   x11, dk
   la   x12, ss
   li   x13, KYBER_K
-  jal  x1, crypto_kem_dec
+  jal  x1, crypto_kem_dec_hardened
 
   /* ss <- unmask(ss): ss_0 ^= ss_1. */
   la     x2, ss

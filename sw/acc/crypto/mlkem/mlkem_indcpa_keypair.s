@@ -19,6 +19,7 @@
 /* Config to start a SHA3_512 operation. */
 #define SHA3_512_CFG 0x10
 
+#ifndef HARDENED
 /**
  * Key generation for the CPA-secure public-key encryption scheme underlying
  * ML-KEM.
@@ -26,24 +27,20 @@
  * Uses randomness to generate an encryption key and a corresponding decryption
  * key.
  *
- * Let d = NSHARES. When d > 1, the noise is sampled with the masked gadgets
- * masked_poly_getnoise_eta_{init,1} and sk is kept in d arithmetic shares.
  *  Step 1: publicseed || noiseseed <- SHA3-512(seed || k)
  *  Step 2: generate dk_pke, for i = 0..k - 1:
- *          sk[i] = poly_getnoise_eta_1(noiseseed, i)  // nonce i, d shares
+ *          sk[i] = poly_getnoise_eta_1(noiseseed, i)  // nonce i
  *          sk[i] = ntt(sk[i])
- *          dk_pke[384 * i * d : 384 * (i + 1) * d] = poly_tobytes(sk[i])
+ *          dk_pke[384 * i : 384 * (i + 1)] = poly_tobytes(sk[i])
  *  Step 3: generate ek_pke, for i = 0..k - 1:
  *          a[i][j] = poly_gen_matrix(publicseed, i, j), j = 0..k - 1
  *          pk      = poly_tomont(sum_j a[i][j] * sk[j])
  *          e[i]    = poly_getnoise_eta_1(noiseseed, k + i)
  *          pk     += ntt(e[i])
- *          pk      = sum of the d shares of pk         // only for d > 1
  *          ek_pke[384 * i : 384 * (i + 1)] = poly_tobytes(pk)
  *  Step 4: append publicseed to ek_pke
  *
- * @param[in]  x10: dmem pointer to the input seed
- *                  (KYBER_SYMBYTES = 32 bytes per share, 32 * d in total)
+ * @param[in]  x10: dmem pointer to the input seed (KYBER_SYMBYTES = 32 bytes)
  * @param[out] x11: dmem pointer to the output packed public key ek_pke
  * @param[out] x12: dmem pointer to the output packed secret key dk_pke
  * @param[in]  x13: k, the security level
@@ -51,20 +48,56 @@
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * UNPROTECTED
  * clobbered registers: x4 to x13, x18 to x28,
  *                      w0 to w15, w17 to w26, mod, acch, acc
- * clobbered flag groups: FG0
- *
- * HARDENED
- * clobbered registers: x2, x4 to x31,
- *                      w0 to w15, w17 to w30, mod, acch, acc
  * clobbered flag groups: FG0
  */
 
 .globl indcpa_keypair
 .type indcpa_keypair, @function
 indcpa_keypair:
+#else
+/**
+ * Masked key generation for the CPA-secure public-key encryption scheme
+ * underlying ML-KEM.
+ *
+ * Uses Boolean-shared randomness to generate an encryption key and a
+ * corresponding masked decryption key.
+ *
+ * The noise is sampled with the masked gadgets
+ * masked_poly_getnoise_eta_{init,1} and sk is kept in two arithmetic shares.
+ *  Step 1: publicseed || noiseseed <- SHA3-512(seed || k)
+ *  Step 2: generate dk_pke, for i = 0..k - 1:
+ *          sk[i] = poly_getnoise_eta_1(noiseseed, i)  // nonce i, two shares
+ *          sk[i] = ntt(sk[i])
+ *          dk_pke[2 * 384 * i : 2 * 384 * (i + 1)] = poly_tobytes(sk[i])
+ *  Step 3: generate ek_pke, for i = 0..k - 1:
+ *          a[i][j] = poly_gen_matrix(publicseed, i, j), j = 0..k - 1
+ *          pk      = poly_tomont(sum_j a[i][j] * sk[j])
+ *          e[i]    = poly_getnoise_eta_1(noiseseed, k + i)
+ *          pk     += ntt(e[i])
+ *          pk      = sum of the two shares of pk
+ *          ek_pke[384 * i : 384 * (i + 1)] = poly_tobytes(pk)
+ *  Step 4: append publicseed to ek_pke
+ *
+ * @param[in]  x10: dmem pointer to the input seed
+ *                  (two Boolean shares, 2 * KYBER_SYMBYTES = 2 * 32 bytes)
+ * @param[out] x11: dmem pointer to the output packed public key ek_pke
+ * @param[out] x12: dmem pointer to the output packed masked secret key dk_pke
+ * @param[in]  x13: k, the security level
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x2, x4 to x31,
+ *                      w0 to w15, w17 to w30, mod, acch, acc
+ * clobbered flag groups: FG0
+ */
+
+.globl indcpa_keypair_hardened
+.type indcpa_keypair_hardened, @function
+indcpa_keypair_hardened:
+#endif
 #ifndef HARDENED
   add x9, x11, x0
   add x18, x12, x0

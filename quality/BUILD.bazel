@@ -51,12 +51,6 @@ py_test(
 acc_clobbered_regs_test(
     name = "acc_clobbered_regs",
     skip = [
-        # TODO: Support separate UNPROTECTED and HARDENED annotations.
-        "crypto_kem_dec",
-        "crypto_kem_keypair",
-        "indcpa_dec",
-        "indcpa_enc_cmp",
-        "indcpa_keypair",
         # TODO: Support WDR indices the analysis cannot resolve.
         "check_p",
         "check_q",

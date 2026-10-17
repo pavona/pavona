@@ -119,7 +119,11 @@ _mlkem_keygen_common:
   la      x10, coins
   la      x11, ek
   la      x12, dk
+#ifndef HARDENED
   jal     x1, crypto_kem_keypair
+#else
+  jal     x1, crypto_kem_keypair_hardened
+#endif
   ecall
 
 _mlkem_encap_512:
@@ -156,7 +160,11 @@ _mlkem_decap_common:
   la      x10, ct
   la      x11, dk
   la      x12, ss
+#ifndef HARDENED
   jal     x1, crypto_kem_dec
+#else
+  jal     x1, crypto_kem_dec_hardened
+#endif
   ecall
 
 /* The .bss DMEM layout lives in mlkem/mlkem_dmem.s (the shared single

@@ -18,55 +18,88 @@
 
 #define N_WDR 16
 
+#ifndef HARDENED
 /**
  * Decryption for the CPA-secure public-key encryption scheme underlying
  * ML-KEM.
  *
  * Uses the decryption key to decrypt a ciphertext.
  *
- * Let d = NSHARES and cu = 32 * du, that is 320 bytes for k = 2, 3 and
- * 352 bytes for k = 4.
+ * Let cu = 32 * du, that is 320 bytes for k = 2, 3 and 352 bytes for k = 4.
  *  Step 1: unpack dk_pke[0] and compute the first product.
- *          dk_pke[0] = poly_frombytes(dk_pke[0 : 384 * d]) // d shares
- *          dk_pke[0] = refreshmodq(dk_pke[0])              // only for d > 1
+ *          dk_pke[0] = poly_frombytes(dk_pke[0 : 384])
  *          b         = poly_polyvec_decompress(c[0 : cu])
  *          b         = ntt(b)
- *          m         = b * dk_pke[0]                       // d shares
+ *          m         = b * dk_pke[0]
  *  Step 2: accumulate the remaining products, for j = 1..k - 1.
- *          dk_pke[j] = poly_frombytes(dk_pke[384 * j * d : 384 * (j + 1) * d])
- *          dk_pke[j] = refreshmodq(dk_pke[j])              // only for d > 1
+ *          dk_pke[j] = poly_frombytes(dk_pke[384 * j : 384 * (j + 1)])
  *          b         = poly_polyvec_decompress(c[j * cu : (j + 1) * cu])
  *          b         = ntt(b)
  *          m        += b * dk_pke[j]
  *  Step 3: m = intt(m)
  *  Step 4: v = poly_decompress(c[k * cu :])
- *  Step 5: m = v - m            // poly_sub subtracts from share 0 only, so
- *                               // shares 1..d - 1 are negated afterwards
- *  Step 6: r = poly_tomsg(m)    // masked_poly_tomsg when d > 1, which returns
- *                               // r in Boolean-shared form
+ *  Step 5: m = v - m
+ *  Step 6: r = poly_tomsg(m)
  *
  * @param[in]  x10: dmem pointer to the input ciphertext c
- * @param[in]  x11: dmem pointer to the input packed masked secret key dk_pke
+ * @param[in]  x11: dmem pointer to the input packed secret key dk_pke
  * @param[out] x12: dmem pointer to the output message m
  * @param[in]  x13: k, the security level
  * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
  *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
  * @param[in]  w31: all-zero register
  *
- * UNPROTECTED
  * clobbered registers: x2 to x5, x8 to x13, x18 to x19, x21 to x25,
  *                      w0 to w15, w17 to w26, acch, acc, mod
- * clobbered flag groups: FG0
- *
- * HARDENED
- * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
- *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
  * clobbered flag groups: FG0
  */
 
 .globl indcpa_dec
 .type indcpa_dec, @function
 indcpa_dec:
+#else
+/**
+ * Masked decryption for the CPA-secure public-key encryption scheme underlying
+ * ML-KEM.
+ *
+ * Uses the masked decryption key to decrypt a ciphertext.
+ *
+ * Let cu = 32 * du, that is 320 bytes for k = 2, 3 and 352 bytes for k = 4.
+ *  Step 1: unpack dk_pke[0] and compute the first product.
+ *          dk_pke[0] = poly_frombytes(dk_pke[0 : 2 * 384]) // two shares
+ *          dk_pke[0] = refreshmodq(dk_pke[0])
+ *          b         = poly_polyvec_decompress(c[0 : cu])
+ *          b         = ntt(b)
+ *          m         = b * dk_pke[0]                       // two shares
+ *  Step 2: accumulate the remaining products, for j = 1..k - 1.
+ *          dk_pke[j] = poly_frombytes(dk_pke[2 * 384 * j : 2 * 384 * (j + 1)])
+ *          dk_pke[j] = refreshmodq(dk_pke[j])
+ *          b         = poly_polyvec_decompress(c[j * cu : (j + 1) * cu])
+ *          b         = ntt(b)
+ *          m        += b * dk_pke[j]
+ *  Step 3: m = intt(m)
+ *  Step 4: v = poly_decompress(c[k * cu :])
+ *  Step 5: m = v - m              // poly_sub subtracts from share 0 only, so
+ *                                 // share 1 is negated afterwards
+ *  Step 6: r = masked_poly_tomsg(m) // r in Boolean-shared form
+ *
+ * @param[in]  x10: dmem pointer to the input ciphertext c
+ * @param[in]  x11: dmem pointer to the input packed masked secret key dk_pke
+ * @param[out] x12: dmem pointer to the output Boolean-shared message m
+ * @param[in]  x13: k, the security level
+ * @param[in]  w16 (sw0): sw0.0 = q = 3329 (1st 16-bit lane),
+ *                        sw0.2 = -q^-1 mod 2^16 = 3327 (3rd 16-bit lane)
+ * @param[in]  w31: all-zero register
+ *
+ * clobbered registers: x2 to x19, x21 to x25, x29 to x31,
+ *                      w0 to w15, w17 to w26, w28 to w29, acch, acc, mod
+ * clobbered flag groups: FG0
+ */
+
+.globl indcpa_dec_hardened
+.type indcpa_dec_hardened, @function
+indcpa_dec_hardened:
+#endif
   addi x2, x2, -32
   sw   x3, 0(x2)
   add  x3, x2, x0
