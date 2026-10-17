@@ -90,7 +90,7 @@ jobs:
         run: brew bundle cleanup --force --file=Brewfile
       - name: Install Python dependencies
         run: |
-          python3 -m venv ~/.local/share/venv
+          python3.12 -m venv ~/.local/share/venv
           echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
           ~/.local/share/venv/bin/pip install -r python-requirements.txt --require-hashes
       - name: Build device software
