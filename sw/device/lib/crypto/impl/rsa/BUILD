@@ -3,7 +3,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_warnings"],
+)
 
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load("//rules:autogen.bzl", "autogen_acc_insn_count_header")
