@@ -641,6 +641,8 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
     ],
 )
 
