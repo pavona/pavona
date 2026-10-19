@@ -8,6 +8,55 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 
+#include "hw/top/keymgr_dpe_regs.h"  // Generated
+
+/**
+ * Software binding value for advancing to creator root key state.
+ */
+static const dif_keymgr_dpe_advance_params_t kCreatorParams = {
+    .binding_value = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2,
+                      0xb8a8379d, 0x426dc745, 0x19f5cff7, 0x4ec9c6d6},
+    .max_key_version = 0x11,
+    .slot_src_sel = 0x0,
+    .slot_dst_sel = 0x0,
+    .slot_policy = 0b1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT,
+};
+
+/**
+ * Software binding value for advancing to owner intermediate key state.
+ */
+static const dif_keymgr_dpe_advance_params_t kOwnerIntParams = {
+    .binding_value = {0xe4987b39, 0x3f83d390, 0xc2f3bbaf, 0x3195dbfa,
+                      0x23fb480c, 0xb012ae5e, 0xf1394d28, 0x1940ceeb},
+    .max_key_version = 0xaa,
+    .slot_src_sel = 0x0,
+    .slot_dst_sel = 0x0,
+    .slot_policy = 0b1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT,
+};
+
+/**
+ * Software binding value for advancing to owner root key state.
+ *
+ * Values were randomly generated.
+ */
+static const dif_keymgr_dpe_advance_params_t kOwnerRootKeyParams = {
+    .binding_value =
+        {
+            0xd8a812ea,
+            0xb6ebe129,
+            0x217773d4,
+            0x35b37c77,
+            0xec8298be,
+            0x1f7dec77,
+            0x1803199e,
+            0xa02ad81d,
+        },
+    .max_key_version = 0xaa,
+    .slot_src_sel = 0x0,
+    .slot_dst_sel = 0x0,
+    .slot_policy = 0b1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT,
+};
+
 /**
  * Locks OTP, restarts and initializes keymgr_dpe with UDS (a.k.a. the OTP
  * root key).
