@@ -48,6 +48,7 @@
       name: sec_cm_gcm_config_shadow
       desc: "Verify the countermeasure(s) GCM.CONFIG.SHADOW."
       stage: V2S
+      tags: ["gcm"]
       tests: ["aes_shadow_reg_errors"]
     }
     {
@@ -68,6 +69,7 @@
             Internal wires carrying the corresponding signals are forced to invalid values and it is ensured that the DUT stops processing data.
             '''
       stage: V2S
+      tags: ["gcm"]
       tests: ["aes_stress", "aes_config_error", "aes_gcm_save_restore", "aes_core_fi"]
     }
     {
@@ -226,6 +228,7 @@
             It is ensured that upon forcing the state register of the GHASH FSM to an invalid value, the DUT stops processing data, locks up and triggers a fatal alert.
             '''
       stage: V2S
+      tags: ["gcm"]
       tests: ["aes_fi"]
     }
     {
@@ -280,6 +283,7 @@
             Upon detecting a local alert condition it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
             '''
       stage: V2S
+      tags: ["gcm"]
       tests: ["aes_fi", "aes_ghash_fi"]
     }
     {
