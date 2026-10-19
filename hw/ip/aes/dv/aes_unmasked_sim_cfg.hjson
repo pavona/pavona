@@ -10,6 +10,14 @@
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
 
+  // GCM is not supported: remove the GCM-only testpoints.
+  overrides: [
+    {
+      name: testplan
+      value: "{proj_root}/hw/ip/aes/data/aes_testplan.hjson:-gcm"
+    }
+  ]
+
   // Coverage exclusions
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine",
                              "{proj_root}/hw/ip/aes/dv/cov/refines/aes_unmasked_UNR.vRefine"]

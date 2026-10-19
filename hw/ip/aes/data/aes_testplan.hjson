@@ -101,6 +101,7 @@
       desc: '''
             Verify that the DUT handles the NIST GCM test vectors correctly.'''
       stage: V2
+      tags: ["gcm"]
       tests: ["aes_nist_vectors_gcm"]
     }
     {
@@ -147,6 +148,7 @@
             When triggered, save the current context, clear the entire state, restore the context, and proceed with the operation.
             '''
       stage: V2
+      tags: ["gcm"]
       tests: ["aes_gcm_save_restore"]
     }
     {
