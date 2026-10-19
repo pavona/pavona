@@ -11,7 +11,11 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#ifdef HAS_KEYMGR_DPE
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#else
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#endif
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -60,8 +64,13 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
     keymgr_diversification_t diversification;
     HARDENED_TRY(
         keyblob_to_keymgr_diversification(blinded_key, &diversification));
+#ifdef HAS_KEYMGR_DPE
+    HARDENED_TRY(keymgr_generate_key_aes(
+        diversification, (keymgr_slot_t)blinded_key->config.cdi));
+#else
     HARDENED_TRY(keymgr_generate_key_aes(
         diversification, (keymgr_cdi_t)blinded_key->config.cdi));
+#endif
     aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (blinded_key->config.hw_backed == kHardenedBoolFalse) {
