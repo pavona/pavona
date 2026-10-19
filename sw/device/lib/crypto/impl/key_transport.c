@@ -158,8 +158,13 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
     // Call keymgr to sideload the key into AES.
     keymgr_diversification_t diversification;
     HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));
+#ifdef HAS_KEYMGR_DPE
+    HARDENED_TRY(keymgr_generate_key_aes(diversification,
+                                         (keymgr_slot_t)key_kek->config.cdi));
+#else
     HARDENED_TRY(keymgr_generate_key_aes(diversification,
                                          (keymgr_cdi_t)key_kek->config.cdi));
+#endif
   } else if (key_kek->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
