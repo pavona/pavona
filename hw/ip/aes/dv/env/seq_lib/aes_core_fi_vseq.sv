@@ -71,7 +71,8 @@ class aes_core_fi_vseq extends aes_base_vseq;
               $countones(force_value[aes_pkg::AES_OP_WIDTH-1:0]) > 1;)
         end else if (target == 2) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
-              $countones(force_value[aes_pkg::AES_MODE_WIDTH-1:0]) > 1;)
+              $countones(force_value[aes_pkg::AES_MODE_WIDTH-1:0]) > 1;
+              force_value[aes_pkg::AES_MODE_WIDTH-1:0] != aes_pkg::AES_NONE;)
           wait_for_idle = 1;
         end else if (target == 3) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
