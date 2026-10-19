@@ -63,7 +63,8 @@ class aes_common_vseq extends aes_base_vseq;
     if (aes_val != 2'b10) aes_val = 2'b01;
     val = get_csr_val_with_updated_field(ral.ctrl_shadowed.operation, val, aes_val);
 
-    if (!$cast(mode_e, mode_val)) begin
+    // Without GCM support, the hardware also maps AES_GCM to AES_NONE.
+    if (!$cast(mode_e, mode_val) || (!`EN_GCM && mode_val == AES_GCM)) begin
       val = get_csr_val_with_updated_field(ral.ctrl_shadowed.mode, val, AES_NONE);
     end
 
