@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//hw/top_dragonfly:defs.bzl", "DRAGONFLY_SLOTS")
+load("//hw/top_dragonfly/data/autogen:defs.bzl", "DRAGONFLY_IPS")
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -39,6 +40,36 @@ filegroup(
         "//hw/top_dragonfly/ip_autogen/rv_core_ibex:doc_files",
         "//hw/top_dragonfly/ip_autogen/rv_plic:doc_files",
     ],
+)
+
+###########################################################################
+# Hardware generation
+###########################################################################
+
+filegroup(
+    name = "generated",
+    srcs = [
+        "//hw/top_dragonfly/data:completecfg",
+    ] + [ip.attrs.get("regs", None) for ip in DRAGONFLY_IPS],
+)
+
+filegroup(
+    name = "gen",
+    srcs = [
+        "//hw/top_dragonfly/data:gen_completecfg",
+    ] + [ip.attrs.get("regs", "").replace("regs", "gen_regs") for ip in DRAGONFLY_IPS],
+    data = [":generated"],
+)
+
+genrule(
+    name = "generate_hw",
+    srcs = [
+        ":gen",
+        ":generated",
+    ],
+    outs = ["hw.bash"],
+    cmd = "for src in $(execpaths :gen); do echo $$src; done > $@",
+    executable = True,
 )
 
 ###########################################################################
