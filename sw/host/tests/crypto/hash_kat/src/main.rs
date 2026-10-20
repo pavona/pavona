@@ -81,17 +81,17 @@ fn run_hash_testcase(
 
     // Send algorithm type
     match test_case.algorithm.as_str() {
-        "sha-256" => CryptotestHashAlgorithm::Sha256,
-        "sha-384" => CryptotestHashAlgorithm::Sha384,
-        "sha-512" => CryptotestHashAlgorithm::Sha512,
-        "sha3-224" => CryptotestHashAlgorithm::Sha3_224,
-        "sha3-256" => CryptotestHashAlgorithm::Sha3_256,
-        "sha3-384" => CryptotestHashAlgorithm::Sha3_384,
-        "sha3-512" => CryptotestHashAlgorithm::Sha3_512,
-        "shake-128" => CryptotestHashAlgorithm::Shake128,
-        "shake-256" => CryptotestHashAlgorithm::Shake256,
-        "cshake-128" => CryptotestHashAlgorithm::Cshake128,
-        "cshake-256" => CryptotestHashAlgorithm::Cshake256,
+        "SHA2-256" => CryptotestHashAlgorithm::Sha256,
+        "SHA2-384" => CryptotestHashAlgorithm::Sha384,
+        "SHA2-512" => CryptotestHashAlgorithm::Sha512,
+        "SHA3-224" => CryptotestHashAlgorithm::Sha3_224,
+        "SHA3-256" => CryptotestHashAlgorithm::Sha3_256,
+        "SHA3-384" => CryptotestHashAlgorithm::Sha3_384,
+        "SHA3-512" => CryptotestHashAlgorithm::Sha3_512,
+        "SHAKE-128" => CryptotestHashAlgorithm::Shake128,
+        "SHAKE-256" => CryptotestHashAlgorithm::Shake256,
+        "cSHAKE-128" => CryptotestHashAlgorithm::Cshake128,
+        "cSHAKE-256" => CryptotestHashAlgorithm::Cshake256,
         _ => panic!("Unsupported hash algorithm"),
     }
     .send(spi_console)?;
@@ -118,7 +118,7 @@ fn run_hash_testcase(
     // Stepwise hashing is currently supported by SHA2 only.
     let mut failed = false;
     match test_case.algorithm.as_str() {
-        "sha-256" | "sha-384" | "sha-512" => {
+        "SHA2-256" | "SHA2-384" | "SHA2-512" => {
             vec![
                 ("oneshot", hash_output.oneshot_digest),
                 ("stepwise", hash_output.stepwise_digest),

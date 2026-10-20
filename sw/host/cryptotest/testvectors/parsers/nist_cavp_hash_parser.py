@@ -17,15 +17,15 @@ from cryptotest_util import parse_rsp, str_to_byte_array
 # Map hash function names as formatted in the test vectors to their
 # JSON schema names
 HASH_FUNCTION_NAME_MAPPING = {
-    "SHA256": "sha-256",
-    "SHA384": "sha-384",
-    "SHA512": "sha-512",
-    "SHA3_224": "sha3-224",
-    "SHA3_256": "sha3-256",
-    "SHA3_384": "sha3-384",
-    "SHA3_512": "sha3-512",
-    "SHAKE128": "shake-128",
-    "SHAKE256": "shake-256",
+    "SHA256": "SHA2-256",
+    "SHA384": "SHA2-384",
+    "SHA512": "SHA2-512",
+    "SHA3_224": "SHA3-224",
+    "SHA3_256": "SHA3-256",
+    "SHA3_384": "SHA3-384",
+    "SHA3_512": "SHA3-512",
+    "SHAKE128": "SHAKE-128",
+    "SHAKE256": "SHAKE-256",
 }
 
 
@@ -35,7 +35,7 @@ def parse_testcases(args) -> None:
     algorithm = HASH_FUNCTION_NAME_MAPPING[args.algorithm]
     # The test vectors for the SHA functions use "MD" as the key for
     # the message digest. SHAKE functions use "Output".
-    if algorithm.startswith("shake"):
+    if algorithm.startswith("SHAKE"):
         digest_key = "Output"
     else:
         digest_key = "MD"

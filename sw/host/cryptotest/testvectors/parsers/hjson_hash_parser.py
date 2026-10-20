@@ -13,18 +13,18 @@ from cryptotest_util import str_to_byte_array
 
 ALGORITHMS = {
     "SHA3": {
-        224: "sha3-224",
-        256: "sha3-256",
-        384: "sha3-384",
-        512: "sha3-512",
+        224: "SHA3-224",
+        256: "SHA3-256",
+        384: "SHA3-384",
+        512: "SHA3-512",
     },
     "SHAKE": {
-        128: "shake-128",
-        256: "shake-256",
+        128: "SHAKE-128",
+        256: "SHAKE-256",
     },
     "CSHAKE": {
-        128: "cshake-128",
-        256: "cshake-256",
+        128: "cSHAKE-128",
+        256: "cSHAKE-256",
     },
 }
 
