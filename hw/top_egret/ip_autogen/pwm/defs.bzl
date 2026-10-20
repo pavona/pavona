@@ -7,4 +7,5 @@ PWM = pavona_ip(
     name = "pwm",
     hjson = "//hw/top_egret/ip_autogen/pwm/data:pwm.hjson",
     ipconfig = "//hw/top_egret/ip_autogen/pwm/data:top_egret_pwm.ipconfig.hjson",
+    regs = "//hw/top_egret/ip_autogen/pwm/rtl:regs",
 )

@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 SRAM_CTRL = pavona_ip(
     name = "sram_ctrl",
     hjson = "//hw/ip/sram_ctrl/data:sram_ctrl.hjson",
+    regs = "//hw/ip/sram_ctrl/rtl:regs",
 )

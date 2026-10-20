@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 CSRNG = pavona_ip(
     name = "csrng",
     hjson = "//hw/ip/csrng/data:csrng.hjson",
+    regs = "//hw/ip/csrng/rtl:regs",
 )

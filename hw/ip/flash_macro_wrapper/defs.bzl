@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 FLASH_MACRO_WRAPPER = pavona_ip(
     name = "flash_macro_wrapper",
     hjson = "//hw/ip/flash_macro_wrapper/data:flash_macro_wrapper.hjson",
+    regs = "//hw/ip/flash_macro_wrapper/rtl:regs",
 )

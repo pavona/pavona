@@ -7,5 +7,6 @@ PWRMGR = pavona_ip(
     name = "pwrmgr",
     hjson = "//hw/top_${topname}/ip_autogen/pwrmgr/data:pwrmgr.hjson",
     ipconfig = "//hw/top_${topname}/ip_autogen/pwrmgr/data:top_${topname}_pwrmgr.ipconfig.hjson",
+    regs = "//hw/top_${topname}/ip_autogen/pwrmgr/rtl:regs",
     extension = "//hw/top/dt:pwrmgr_binding",
 )

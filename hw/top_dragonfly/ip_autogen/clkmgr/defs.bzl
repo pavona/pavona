@@ -7,6 +7,7 @@ CLKMGR = pavona_ip(
     name = "clkmgr",
     hjson = "//hw/top_dragonfly/ip_autogen/clkmgr/data:clkmgr.hjson",
     ipconfig = "//hw/top_dragonfly/ip_autogen/clkmgr/data:top_dragonfly_clkmgr.ipconfig.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/clkmgr/rtl:regs",
     extension = "//hw/top/dt:clkmgr_binding",
     dt_hdr_deps = ["//sw/device/lib/base:bitfield"],
     dt_src_deps = ["//hw/top:clkmgr_c_regs"],

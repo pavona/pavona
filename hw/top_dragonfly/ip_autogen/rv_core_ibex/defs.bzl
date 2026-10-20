@@ -7,4 +7,5 @@ RV_CORE_IBEX = pavona_ip(
     name = "rv_core_ibex",
     hjson = "//hw/top_dragonfly/ip_autogen/rv_core_ibex/data:rv_core_ibex.hjson",
     ipconfig = "//hw/top_dragonfly/ip_autogen/rv_core_ibex/data:top_dragonfly_rv_core_ibex.ipconfig.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/rv_core_ibex/rtl:regs",
 )

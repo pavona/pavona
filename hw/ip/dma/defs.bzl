@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 DMA = pavona_ip(
     name = "dma",
     hjson = "//hw/ip/dma/data:dma.hjson",
+    regs = "//hw/ip/dma/rtl:regs",
 )

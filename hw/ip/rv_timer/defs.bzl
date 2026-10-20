@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 RV_TIMER = pavona_ip(
     name = "rv_timer",
     hjson = "//hw/ip/rv_timer/data:rv_timer.hjson",
+    regs = "//hw/ip/rv_timer/rtl:regs",
 )

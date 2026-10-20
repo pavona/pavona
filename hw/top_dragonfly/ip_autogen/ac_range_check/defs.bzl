@@ -7,4 +7,5 @@ AC_RANGE_CHECK = pavona_ip(
     name = "ac_range_check",
     hjson = "//hw/top_dragonfly/ip_autogen/ac_range_check/data:ac_range_check.hjson",
     ipconfig = "//hw/top_dragonfly/ip_autogen/ac_range_check/data:top_dragonfly_ac_range_check.ipconfig.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/ac_range_check/rtl:regs",
 )

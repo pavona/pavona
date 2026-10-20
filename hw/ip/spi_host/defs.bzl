@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 SPI_HOST = pavona_ip(
     name = "spi_host",
     hjson = "//hw/ip/spi_host/data:spi_host.hjson",
+    regs = "//hw/ip/spi_host/rtl:regs",
 )

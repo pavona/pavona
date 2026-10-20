@@ -7,5 +7,6 @@ PWRMGR = pavona_ip(
     name = "pwrmgr",
     hjson = "//hw/top_scafi_deprecated/ip_autogen/pwrmgr/data:pwrmgr.hjson",
     ipconfig = "//hw/top_scafi_deprecated/ip_autogen/pwrmgr/data:top_scafi_deprecated_pwrmgr.ipconfig.hjson",
+    regs = "//hw/top_scafi_deprecated/ip_autogen/pwrmgr/rtl:regs",
     extension = "//hw/top/dt:pwrmgr_binding",
 )

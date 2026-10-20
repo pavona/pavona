@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 SYSRST_CTRL = pavona_ip(
     name = "sysrst_ctrl",
     hjson = "//hw/ip/sysrst_ctrl/data:sysrst_ctrl.hjson",
+    regs = "//hw/ip/sysrst_ctrl/rtl:regs",
 )

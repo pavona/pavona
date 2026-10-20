@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 ACC = pavona_ip(
     name = "acc",
     hjson = "//hw/ip/acc/data:acc.hjson",
+    regs = "//hw/ip/acc/rtl:regs",
 )

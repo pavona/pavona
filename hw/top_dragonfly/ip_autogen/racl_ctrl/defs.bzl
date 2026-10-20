@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 RACL_CTRL = pavona_ip(
     name = "racl_ctrl",
     hjson = "//hw/top_dragonfly/ip_autogen/racl_ctrl/data:racl_ctrl.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/racl_ctrl/rtl:regs",
 )

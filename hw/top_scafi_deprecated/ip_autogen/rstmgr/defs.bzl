@@ -7,5 +7,6 @@ RSTMGR = pavona_ip(
     name = "rstmgr",
     hjson = "//hw/top_scafi_deprecated/ip_autogen/rstmgr/data:rstmgr.hjson",
     ipconfig = "//hw/top_scafi_deprecated/ip_autogen/rstmgr/data:top_scafi_deprecated_rstmgr.ipconfig.hjson",
+    regs = "//hw/top_scafi_deprecated/ip_autogen/rstmgr/rtl:regs",
     extension = "//hw/top/dt:rstmgr_binding",
 )

@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 AES = pavona_ip(
     name = "aes",
     hjson = "//hw/ip/aes/data:aes.hjson",
+    regs = "//hw/ip/aes/rtl:regs",
 )

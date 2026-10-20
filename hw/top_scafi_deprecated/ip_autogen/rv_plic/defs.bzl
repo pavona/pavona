@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 RV_PLIC = pavona_ip(
     name = "rv_plic",
     hjson = "//hw/top_scafi_deprecated/ip_autogen/rv_plic/data:rv_plic.hjson",
+    regs = "//hw/top_scafi_deprecated/ip_autogen/rv_plic/rtl:regs",
 )

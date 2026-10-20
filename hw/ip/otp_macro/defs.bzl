@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 OTP_MACRO = pavona_ip(
     name = "otp_macro",
     hjson = "//hw/ip/otp_macro/data:otp_macro.hjson",
+    regs = "//hw/ip/otp_macro/rtl:regs",
 )

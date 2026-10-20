@@ -7,5 +7,6 @@ PWRMGR = pavona_ip(
     name = "pwrmgr",
     hjson = "//hw/top_dragonfly/ip_autogen/pwrmgr/data:pwrmgr.hjson",
     ipconfig = "//hw/top_dragonfly/ip_autogen/pwrmgr/data:top_dragonfly_pwrmgr.ipconfig.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/pwrmgr/rtl:regs",
     extension = "//hw/top/dt:pwrmgr_binding",
 )

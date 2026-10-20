@@ -7,6 +7,7 @@ OTP_CTRL = pavona_ip(
     name = "otp_ctrl",
     hjson = "//hw/top_dragonfly/ip_autogen/otp_ctrl/data:otp_ctrl.hjson",
     ipconfig = "//hw/top_dragonfly/ip_autogen/otp_ctrl/data:top_dragonfly_otp_ctrl.ipconfig.hjson",
+    regs = "//hw/top_dragonfly/ip_autogen/otp_ctrl/rtl:regs",
     extension = "//hw/top_dragonfly/ip_autogen/otp_ctrl/util:dt",
     dt_src_deps = ["//hw/top:otp_ctrl_c_regs"],
 )

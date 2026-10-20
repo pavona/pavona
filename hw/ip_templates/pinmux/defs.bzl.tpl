@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 PINMUX = pavona_ip(
     name = "pinmux",
     hjson = "//hw/top_${topname}/ip_autogen/pinmux/data:pinmux.hjson",
+    regs = "//hw/top_${topname}/ip_autogen/pinmux/rtl:regs",
 )

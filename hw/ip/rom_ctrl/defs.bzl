@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 ROM_CTRL = pavona_ip(
     name = "rom_ctrl",
     hjson = "//hw/ip/rom_ctrl/data:rom_ctrl.hjson",
+    regs = "//hw/ip/rom_ctrl/rtl:regs",
 )

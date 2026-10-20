@@ -7,4 +7,5 @@ ${module_instance_name.upper()} = pavona_ip(
     name = "${module_instance_name}",
     hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}/data:${module_instance_name}.hjson",
     ipconfig = "//hw/top_${topname}/ip_autogen/${module_instance_name}/data:top_${topname}_${module_instance_name}.ipconfig.hjson",
+    regs = "//hw/top_${topname}/ip_autogen/${module_instance_name}/rtl:regs",
 )

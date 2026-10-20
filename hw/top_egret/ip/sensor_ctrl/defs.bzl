@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 SENSOR_CTRL = pavona_ip(
     name = "sensor_ctrl",
     hjson = "//hw/top_egret/ip/sensor_ctrl/data:sensor_ctrl.hjson",
+    regs = "//hw/top_egret/ip/sensor_ctrl/rtl:regs",
 )

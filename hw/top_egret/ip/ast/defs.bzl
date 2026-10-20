@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 AST = pavona_ip(
     name = "ast",
     hjson = "//hw/top_egret/ip/ast/data:ast.hjson",
+    regs = "//hw/top_egret/ip/ast/rtl:regs",
 )

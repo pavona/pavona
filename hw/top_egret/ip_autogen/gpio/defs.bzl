@@ -7,4 +7,5 @@ GPIO = pavona_ip(
     name = "gpio",
     hjson = "//hw/top_egret/ip_autogen/gpio/data:gpio.hjson",
     ipconfig = "//hw/top_egret/ip_autogen/gpio/data:top_egret_gpio.ipconfig.hjson",
+    regs = "//hw/top_egret/ip_autogen/gpio/rtl:regs",
 )

@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 EDN = pavona_ip(
     name = "edn",
     hjson = "//hw/ip/edn/data:edn.hjson",
+    regs = "//hw/ip/edn/rtl:regs",
 )

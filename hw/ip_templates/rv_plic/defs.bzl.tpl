@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 ${module_instance_name.upper()} = pavona_ip(
     name = "${module_instance_name}",
     hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}/data:${module_instance_name}.hjson",
+    regs = "//hw/top_${topname}/ip_autogen/${module_instance_name}/rtl:regs",
 )

@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 ADC_CTRL = pavona_ip(
     name = "adc_ctrl",
     hjson = "//hw/ip/adc_ctrl/data:adc_ctrl.hjson",
+    regs = "//hw/ip/adc_ctrl/rtl:regs",
 )

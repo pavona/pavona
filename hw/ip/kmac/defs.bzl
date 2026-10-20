@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 KMAC = pavona_ip(
     name = "kmac",
     hjson = "//hw/ip/kmac/data:kmac.hjson",
+    regs = "//hw/ip/kmac/rtl:regs",
 )

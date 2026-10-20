@@ -7,5 +7,6 @@ RSTMGR = pavona_ip(
     name = "rstmgr",
     hjson = "//hw/top_${topname}/ip_autogen/rstmgr/data:rstmgr.hjson",
     ipconfig = "//hw/top_${topname}/ip_autogen/rstmgr/data:top_${topname}_rstmgr.ipconfig.hjson",
+    regs = "//hw/top_${topname}/ip_autogen/rstmgr/rtl:regs",
     extension = "//hw/top/dt:rstmgr_binding",
 )

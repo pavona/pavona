@@ -6,4 +6,5 @@ load("//rules/pavona:hw.bzl", "pavona_ip")
 FLASH_CTRL = pavona_ip(
     name = "flash_ctrl",
     hjson = "//hw/top_scafi_deprecated/ip_autogen/flash_ctrl/data:flash_ctrl.hjson",
+    regs = "//hw/top_scafi_deprecated/ip_autogen/flash_ctrl/rtl:regs",
 )
