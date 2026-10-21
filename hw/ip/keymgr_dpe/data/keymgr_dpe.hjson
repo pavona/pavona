@@ -125,6 +125,13 @@
       local:     "false",
       expose:    "true",
     }
+    { name: "NumRomDigestInputs",
+      desc: "Number of digest inputs from ROM_CTRL",
+      type: "int",
+      default: "2",
+      local: "false",
+      expose: "true",
+    },
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
@@ -214,12 +221,6 @@
       desc: "Number of Registers for key version",
       type: "int",
       default: "1",
-      local: "true"
-    },
-    { name: "NumRomDigestInputs",
-      desc: "Number of digest inputs from ROM_CTRL",
-      type: "int",
-      default: "2",
       local: "true"
     },
   ],

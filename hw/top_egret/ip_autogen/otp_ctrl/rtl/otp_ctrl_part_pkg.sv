@@ -15,7 +15,7 @@ package otp_ctrl_part_pkg;
   // Scrambling Constants and Types //
   ////////////////////////////////////
 
-  parameter int NumScrmblKeys = 3;
+  parameter int NumScrmblKeys = 4;
   parameter int NumDigestSets = 4;
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
@@ -36,7 +36,8 @@ package otp_ctrl_part_pkg;
   typedef enum logic [ConstSelWidth-1:0] {
     Secret0Key,
     Secret1Key,
-    Secret2Key
+    Secret2Key,
+    Secret3Key
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
@@ -119,7 +120,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           11'd64,
-      size:             368,
+      size:             392,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -135,8 +136,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd432,
-      size:             712,
+      offset:           11'd456,
+      size:             608,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -152,7 +153,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_CODESIGN
     '{
       variant:          Unbuffered,
-      offset:           11'd1144,
+      offset:           11'd1064,
       size:             472,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -169,7 +170,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_STATE
     '{
       variant:          Unbuffered,
-      offset:           11'd1616,
+      offset:           11'd1536,
       size:             40,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -186,7 +187,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           11'd1656,
+      offset:           11'd1576,
       size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -203,7 +204,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           11'd1728,
+      offset:           11'd1648,
       size:             16,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -220,7 +221,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           11'd1744,
+      offset:           11'd1664,
       size:             40,
       key_sel:          Secret0Key,
       secret:           1'b1,
@@ -237,7 +238,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           11'd1784,
+      offset:           11'd1704,
       size:             88,
       key_sel:          Secret1Key,
       secret:           1'b1,
@@ -254,8 +255,8 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           11'd1872,
-      size:             88,
+      offset:           11'd1792,
+      size:             120,
       key_sel:          Secret2Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -267,6 +268,23 @@ package otp_ctrl_part_pkg;
       iskeymgr_owner:   1'b0,
       zeroizable:       1'b0,
       ignore_read_lock_in_rma: 1'b1
+    },
+    // SECRET3
+    '{
+      variant:          Buffered,
+      offset:           11'd1912,
+      size:             48,
+      key_sel:          Secret3Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b1,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b0
     },
     // LIFE_CYCLE
     '{
@@ -298,6 +316,7 @@ package otp_ctrl_part_pkg;
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
+    Secret3Idx,
     LifeCycleIdx,
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
@@ -349,6 +368,7 @@ package otp_ctrl_part_pkg;
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
+    hw2reg.secret3_digest = part_digest[Secret3Idx];
     return hw2reg;
   endfunction : named_reg_assign
 
@@ -425,6 +445,9 @@ package otp_ctrl_part_pkg;
     // SECRET2
     unused ^= ^{part_init_done[Secret2Idx],
                 part_buf_data[Secret2Offset +: Secret2Size]};
+    // SECRET3
+    unused ^= ^{part_init_done[Secret3Idx],
+                part_buf_data[Secret3Offset +: Secret3Size]};
     // LIFE_CYCLE
     unused ^= ^{part_init_done[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
@@ -490,9 +513,31 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.creator_root_key_share1 =
           part_inv_default[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
     end
+    otp_keymgr_key.creator_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.creator_seed =
+          part_buf_data[CreatorSeedOffset +: CreatorSeedSize];
+    end else begin
+      otp_keymgr_key.creator_seed =
+          part_inv_default[CreatorSeedOffset*8 +: CreatorSeedSize*8];
+    end
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
+    // SECRET3
+    valid = (part_digest[Secret3Idx] != 0);
+    otp_keymgr_key.owner_seed_valid = valid;
+    if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
+      otp_keymgr_key.owner_seed =
+          part_buf_data[OwnerSeedOffset +: OwnerSeedSize];
+    end else begin
+      otp_keymgr_key.owner_seed =
+          part_inv_default[OwnerSeedOffset*8 +: OwnerSeedSize*8];
+    end
+    unused ^= ^part_buf_data[Secret3ZerOffset +: Secret3ZerSize];
+    // This is not used since we consume the
+    // ungated digest values from the part_digest array.
+    unused ^= ^part_buf_data[Secret3DigestOffset +: Secret3DigestSize];
     // LIFE_CYCLE
     unused ^= ^{part_digest[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
