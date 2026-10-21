@@ -10,7 +10,7 @@ from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
 from reggen import validate
 
 from typing import Any, Optional, TextIO
-from basegen.validate import document_schema
+from basegen.validate import document_schema, correct_doc_links
 import jsonschema2md
 
 
@@ -177,18 +177,13 @@ doc_tail = """
 
 """  # noqa: E501
 
-
-def doc_tbl_head(outfile: TextIO, use: bool) -> None:
-    if use:
-        genout(outfile, "\nKey | Kind | Type | Description of Value\n")
-        genout(outfile, "--- | ---- | ---- | --------------------\n")
-    else:
-        genout(outfile, "\nKey | Description\n")
-        genout(outfile, "--- | -----------\n")
+TBL_HEAD_USE = ("\nKey | Kind | Type | Description of Value\n"
+                + "--- | ---- | ---- | --------------------\n")
+TBL_HEAD = ("\nKey | Description\n"
+            + "--- | -----------\n")
 
 
-def doc_tbl_line(outfile: TextIO, key: str, use: Optional[str],
-                 desc: Any) -> None:
+def doc_tbl_line(key: str, use: Optional[str], desc: Any) -> str:
     if use is not None:
         desc_key, desc_txt = desc
         val_type = (validate.val_types[desc_key][0]
@@ -200,57 +195,54 @@ def doc_tbl_line(outfile: TextIO, key: str, use: Optional[str],
 
     if val_type is not None:
         assert use is not None
-        genout(
-            outfile, '{} | {} | {} | {}\n'.format(key, validate.key_use[use],
-                                                  val_type, desc_txt))
+        return '{} | {} | {} | {}\n'.format(key, validate.key_use[use],
+                                            val_type, desc_txt)
     else:
-        genout(outfile, key + " | " + desc_txt + "\n")
+        return key + " | " + desc_txt + "\n"
 
 
 def document(outfile: TextIO) -> None:
-    genout(outfile, doc_intro)
+    doc_text = doc_intro
 
-    genout(outfile, swaccess_intro)
-    doc_tbl_head(outfile, False)
+    doc_text += swaccess_intro + TBL_HEAD
     for key, value in SWACCESS_PERMITTED.items():
-        doc_tbl_line(outfile, key, None, value[0])
+        doc_text += doc_tbl_line(key, None, value[0])
 
-    genout(outfile, hwaccess_intro)
-    doc_tbl_head(outfile, False)
+    doc_text += hwaccess_intro + TBL_HEAD
     for key, hw_value in HWACCESS_PERMITTED.items():
-        doc_tbl_line(outfile, key, None, hw_value[0])
+        doc_text += doc_tbl_line(key, None, hw_value[0])
 
-    genout(outfile, "\n")
-    document_schema(outfile, "urn:reggen:ip_block", schema_parser)
-    genout(outfile, top_example)
+    doc_text += "\n"
+    doc_text += document_schema(None, "urn:reggen:ip_block", schema_parser)
+    doc_text += top_example
 
-    genout(outfile, "\n")
-    document_schema(outfile, "urn:reggen:register", schema_parser)
-    genout(outfile, register_example)
+    doc_text += "\n"
+    doc_text += document_schema(None, "urn:reggen:register", schema_parser)
+    doc_text += register_example
 
-    genout(
-        outfile, "\nIn the fields list each field definition is a group "
-        "itself.\n\n")
-    document_schema(outfile, "urn:reggen:field", schema_parser)
-    genout(outfile, field_example)
+    doc_text += "\nIn the fields list each field definition is a group itself."
+    doc_text += "\n\n"
+    doc_text += document_schema(None, "urn:reggen:field", schema_parser)
+    doc_text += field_example
 
-    genout(outfile, "\n")
-    document_schema(outfile, "urn:reggen:enum_entry", schema_parser)
+    doc_text += "\n"
+    doc_text += document_schema(None, "urn:reggen:enum_entry", schema_parser)
 
-    genout(
-        outfile, "\n\nThe list of registers may include single entry groups "
-        "to control the offset, open a window or generate registers:\n")
-    doc_tbl_head(outfile, True)
+    doc_text += ("\n\nThe list of registers may include single entry groups "
+                 "to control the offset, open a window or generate registers:")
+    doc_text += "\n" + TBL_HEAD_USE
     for x in validate.list_optone:
-        doc_tbl_line(outfile, x, 'o', validate.list_optone[x])
+        doc_text += doc_tbl_line(x, 'o', validate.list_optone[x])
 
-    genout(outfile, offset_intro)
-    genout(outfile, regwen_intro)
+    doc_text += offset_intro
+    doc_text += regwen_intro
 
-    genout(outfile, window_intro)
-    document_schema(outfile, "urn:reggen:window", schema_parser)
+    doc_text += window_intro
+    doc_text += document_schema(None, "urn:reggen:window", schema_parser)
 
-    genout(outfile, multi_intro)
-    document_schema(outfile, "urn:reggen:multiregister", schema_parser)
+    doc_text += multi_intro
+    doc_text += document_schema(None, "urn:reggen:multiregister", schema_parser)
 
-    genout(outfile, doc_tail)
+    doc_text += doc_tail
+    doc_text = correct_doc_links(doc_text)
+    genout(outfile, doc_text)
