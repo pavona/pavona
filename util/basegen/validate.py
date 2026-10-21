@@ -83,10 +83,15 @@ def all_validation_errors(data: dict[str, Any],
     return errors
 
 
+########################
+# Schema documentation #
+########################
+
 def document_schema(outfile: TextIO | None,
                     schema: dict[str, Any] | str | Resource,
                     schema_parser: jsonschema2md.Parser = jsonschema2md.Parser(header_level=2),
-                    registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY) -> str | None:
+                    registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY,
+                    link_correction: dict[str, Any] | None = None) -> str | None:
     """Document the requirements of a given schema in Markdown formatting.
 
     Output can either be directly written to text or returned as str. Schema documentation may be
@@ -95,6 +100,9 @@ def document_schema(outfile: TextIO | None,
     schema = _resolve_schema(schema, registry)
     schema_desc = schema_parser.parse_schema(schema)
     doc_text = "".join(schema_desc)
+
+    if link_correction is not None:
+        doc_text = correct_doc_links(doc_text, **link_correction)
 
     if outfile is None:
         return doc_text
@@ -105,6 +113,7 @@ def document_schema(outfile: TextIO | None,
 
 def correct_doc_links(
     doc_text: str,
+    link_exists: bool | None = None,
     registry: SchemaRegistry = BUILTIN_SCHEMAS_REGISTRY
 ) -> str:
     """Correct jsonschema2md link rendering.
@@ -113,13 +122,22 @@ def correct_doc_links(
     Since URN does not convey the path to the original schema file, instead
     search for a header with the schema name and link to that if it exists,
     else remove the link.
+
+    If `link_exists` is manually passed in, all links will be either removed or
+    updated without searching for the header in the text.
     """
     doc_link_re = r"Refer to \*\[(?P<urn>.+?)\]\((?P<badlink>.+?)\)\*\."
     for ref in re.finditer(doc_link_re, doc_text):
         urn = ref.group("urn")
         schema = _resolve_schema(urn, registry)
 
-        if re.search(f"^#+\\s+{schema['title']}\\s*?$", doc_text, flags=re.M):
+        if link_exists is None:  # must check for link heading
+            linked_heading = re.search(f"^#+\\s+{schema['title']}\\s*?$",
+                                       doc_text,
+                                       flags=re.M)
+            link_exists = linked_heading is not None
+
+        if link_exists:
             cleaned_title = re.sub(r"[^A-Za-z -]", "", schema['title'].lower())
             repl = re.sub(ref.group("badlink"),
                           f"#{'-'.join(cleaned_title.split())}",
