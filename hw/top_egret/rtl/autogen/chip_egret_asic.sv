@@ -928,6 +928,12 @@ module chip_egret_asic #(
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
+  logic unused_ast_pwst;
+  assign unused_ast_pwst = ^{ast_pwst.vcc_pok,
+                             ast_pwst_h.vcc_pok,
+                             ast_pwst_h.main_pok,
+                             ast_pwst_h.io_pok};
+
   logic usb_diff_rx_obs;
 
 
