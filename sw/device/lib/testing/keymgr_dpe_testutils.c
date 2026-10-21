@@ -7,6 +7,7 @@
 #include "hw/top/dt/keymgr_dpe.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "hw/top/dt/rstmgr.h"
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -74,6 +75,38 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
   return OK_STATUS();
 }
 
+status_t keymgr_dpe_testutils_initialize(dif_keymgr_dpe_t *keymgr_dpe) {
+  // Initialize keymgr and advance to OTPRootKey state.
+  TRY(keymgr_dpe_testutils_startup(keymgr_dpe, 0));
+  LOG_INFO("Keymgr entered OTPRootKey State");
+  // Advance to CreatorRootKey (UDS) state and check that the state is correct.
+  // The sim_dv testbench expects this state.
+  TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kCreatorParams));
+  // Generate identity at CreatorRootKey (to follow same sequence and reuse
+  // chip_sw_keymgr_dpe_key_derivation_vseq.sv).
+  dif_keymgr_dpe_generate_params_t gen_params = {
+      .key_dest = kDifKeymgrDpeKeyDestNone,
+      .slot_src_sel = 0,
+  };
+  dif_keymgr_dpe_output_t output;
+  TRY(keymgr_dpe_testutils_generate(keymgr_dpe, &gen_params, &output));
+  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
+
+  // Advance to OwnerIntermediateKey state and check that the state is correct.
+  // The sim_dv testbench expects this state.
+  TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kOwnerIntParams));
+  LOG_INFO("Keymgr entered OwnerIntKey State");
+  if (kBootStage == kBootStageOwner) {
+    // If this is a silicon owner stage test (i.e. not sim_dv testbench),
+    // advance to OwnerRootKey state and check that the key manager is
+    // available.
+    TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kOwnerRootKeyParams));
+  }
+  TRY(keymgr_dpe_testutils_check_state(keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
+  return OK_STATUS();
+}
+
 status_t keymgr_dpe_testutils_advance_state(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {
@@ -106,6 +139,12 @@ status_t keymgr_dpe_testutils_check_state(
   TRY_CHECK(act_state == exp_state,
             "KeymgrDPE in unexpected state: %x, expected to be %x", act_state,
             exp_state);
+  return OK_STATUS();
+}
+
+status_t keymgr_dpe_testutils_max_key_version_get(
+    const dif_keymgr_dpe_t *keymgr_dpe, uint32_t *max_key_version) {
+  TRY(dif_keymgr_dpe_read_max_key_version(keymgr_dpe, max_key_version));
   return OK_STATUS();
 }
 

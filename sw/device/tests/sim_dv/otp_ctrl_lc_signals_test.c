@@ -5,13 +5,13 @@
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -22,14 +22,12 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top/otp_ctrl_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
 static dif_rstmgr_t rstmgr;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
-static dif_flash_ctrl_state_t flash;
 
 // LC RMA token value in OTP SECRET2 partition.
 static const uint8_t kOtpRmaToken[OTP_CTRL_PARAM_RMA_TOKEN_SIZE] = {
@@ -68,23 +66,22 @@ static void init_peripherals(void) {
   };
   // Life cycle
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
+      mmio_region_from_addr(dt_lc_ctrl_primary_reg_block(kDtLcCtrl)), &lc));
   // OTP
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, config));
   // Rstmgr
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(dt_rstmgr_primary_reg_block(kDtRstmgrAon)),
+      &rstmgr));
   // KMAC (init for Keymgr use)
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(dt_kmac_primary_reg_block(kDtKmac)), &kmac));
   CHECK_STATUS_OK(kmac_testutils_config(&kmac, true));
   // Keymgr
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
-  // Flash
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
 }
 
 /**
@@ -182,7 +179,8 @@ static void run_otp_access_tests(test_mode_t test_mode,
 }
 
 /**
- * Try to initialize and advance to kDifKeymgrStateCreatorRootKey state.
+ * Try to initialize and advance to kDifKeymgrDpeStateAvailable
+ * (CreatorRootKey) state.
  *
  * @param expect_init_fail Whether initialization is expected to fail.
  */
@@ -196,20 +194,24 @@ static void keymgr_advance_to_creator_root_key(bool expect_init_fail) {
       TEST_ROM_IDENTIFIER;
 
   // Advance from Reset to Initialized state (or expect it to fail).
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
-  const dif_keymgr_state_t exp_state =
-      expect_init_fail ? kDifKeymgrStateInvalid : kDifKeymgrStateInitialized;
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, exp_state));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(&keymgr_dpe, NULL));
+  const dif_keymgr_dpe_state_t exp_state = expect_init_fail
+                                               ? kDifKeymgrDpeStateInvalid
+                                               : kDifKeymgrDpeStateAvailable;
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(&keymgr_dpe, exp_state));
 
   // Advance to Creator Root Key state (or expect it to fail as well).
   if (is_using_test_rom) {
     LOG_INFO("Using test_rom, setting inputs and advancing state...");
-    CHECK((kDifOk == dif_keymgr_advance_state(&keymgr, &kCreatorParams)) ^
-          expect_init_fail);
+    CHECK(
+        (kDifOk == dif_keymgr_dpe_advance_state(&keymgr_dpe, &kCreatorParams)) ^
+        expect_init_fail);
   } else {
     LOG_INFO("Using rom, only advancing state...");
-    CHECK((kDifOk == dif_keymgr_advance_state_raw(&keymgr)) ^ expect_init_fail);
+    CHECK((kDifOk == dif_keymgr_dpe_advance_state_raw(&keymgr_dpe)) ^
+          expect_init_fail);
   }
 }
 
@@ -218,10 +220,11 @@ static void keymgr_advance_to_creator_root_key(bool expect_init_fail) {
  */
 static void keymgr_check_cannot_advance(void) {
   LOG_INFO("Check that the Keymgr cannot advance...");
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
   // Try to initialize the key manager. We expect this call to fail with
   // a "kDifLocked" code, since the key manager is not enabled.
-  CHECK(kDifLocked == dif_keymgr_advance_state(&keymgr, NULL),
+  CHECK(kDifLocked == dif_keymgr_dpe_advance_state(&keymgr_dpe, NULL),
         "Keymgr is not expected to be available in this LC state.");
 }
 
@@ -242,11 +245,12 @@ static void keymgr_check_can_generate_key(void) {
   LOG_INFO("Trying to advance to Creator Root Key and expecting success...");
   keymgr_advance_to_creator_root_key(/*expect_init_fail=*/false);
   LOG_INFO("Check that the Keymgr can generate a key...");
-  CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&keymgr));
-  CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
-  CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(&keymgr_dpe));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
+  dif_keymgr_dpe_output_t output;
+  CHECK_STATUS_OK(keymgr_dpe_testutils_generate(&keymgr_dpe,
+                                                &kKeyVersionedParams, &output));
 }
 
 /**
@@ -262,9 +266,9 @@ static void reset_chip(void) {
  * This tests the impact of the lc_creator_seed_sw_rw_en and lc_seed_hw_rd_en
  * life cycle access control signals on the SECRET2 partition. Since it uses
  * the key manager to perform some of the testing, this test also checks the
- * impact of lc_keymgr_en on the key manager.
+ * impact of lc_keymgr_dpe_en on the key manager.
  *
- * The SECRETT2 partition should only be readable/writable by SW in
+ * The SECRET2 partition should only be readable/writable by SW in
  * PROD/RMA/DEV. Once it is locked, the partition is not accessible by SW
  * anymore, but becomes accessible to HW (key manager).
  *
@@ -272,16 +276,15 @@ static void reset_chip(void) {
  * check based on the state exposed in the life cycle controller.
  *
  * PROD/DEV/RMA:
- * 1)  Provision non-constant creator/owner secrets to flash
- * 2)  Program SECRET2 partition and read it back
- * 3)  Check that the key manager advance errors out due to all-zero root key
- * 4)  Reset the chip
- * 5)  Check that the SECRET2 partition can still be read
- * 6)  Check that the key manager advance errors out due to all-zero root key
- * 7)  Lock the SECRET2 partition
- * 8)  Reset the chip
- * 9)  Check that the SECRET2 partition is not accessible anymore
- * 10) Check that the key manager can generate a SW key without errors
+ * 1)  Program SECRET2 partition and read it back
+ * 2)  Check that the key manager advance errors out due to all-zero root key
+ * 3)  Reset the chip
+ * 4)  Check that the SECRET2 partition can still be read
+ * 5)  Check that the key manager advance errors out due to all-zero root key
+ * 6)  Lock the SECRET2 partition
+ * 7)  Reset the chip
+ * 8)  Check that the SECRET2 partition is not accessible anymore
+ * 9) Check that the key manager can generate a SW key without errors
  *
  * All other life cycle states:
  * 1) Check that key manager cannot be initialized because it is disabled
@@ -307,9 +310,6 @@ bool test_main(void) {
     case kDifLcCtrlStateRma:
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
-        // Make sure the secrets in flash are non-zero.
-        CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash, &kCreatorSecret,
-                                                    &kOwnerSecret));
         // Program the SECRET2 partition and perform read back test.
         run_otp_access_tests(kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point.

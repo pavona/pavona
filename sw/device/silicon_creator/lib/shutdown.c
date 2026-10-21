@@ -23,6 +23,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -31,12 +32,6 @@
 
 #ifdef HAS_FLASH_CTRL
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#endif
-
-#ifdef HAS_KEYMGR_DPE
-#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
-#else
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif
 
 #include "hw/top/alert_handler_regs.h"
@@ -457,7 +452,9 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
 #endif
 }
 
-SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) { sc_keymgr_disable(); }
+SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
+  sc_keymgr_dpe_disable();
+}
 
 SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
   const uint32_t sram_ctrl_base =

@@ -59,7 +59,6 @@ DIFS = {
     "gpio": {},
     "hmac": {},
     "i2c": {},
-    "keymgr": {},
     "keymgr_dpe": {
         "no_ut": True,
     },

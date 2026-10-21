@@ -26,7 +26,7 @@ load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
-rom_e2e_keymgr_init_configs = [
+rom_e2e_keymgr_dpe_init_configs = [
     {
         "name": "otp_meas",
         "value": CONST.HARDENED_TRUE,
@@ -43,7 +43,7 @@ rom_e2e_keymgr_init_configs = [
 
 [
     otp_json(
-        name = "otp_json_keymgr_{}".format(config["name"]),
+        name = "otp_json_keymgr_dpe_{}".format(config["name"]),
         partitions = [
             otp_partition(
                 name = "OWNER_SW_CFG",
@@ -53,12 +53,12 @@ rom_e2e_keymgr_init_configs = [
             ),
         ],
     )
-    for config in rom_e2e_keymgr_init_configs
+    for config in rom_e2e_keymgr_dpe_init_configs
 ]
 
 [
     otp_image(
-        name = "otp_img_keymgr_{}".format(config["name"]),
+        name = "otp_img_keymgr_dpe_{}".format(config["name"]),
         src = pavona_select_top(
             {
                 "egret": "//hw/top_egret/data/otp:otp_json_rma",
@@ -66,18 +66,18 @@ rom_e2e_keymgr_init_configs = [
             },
             None,
         ),
-        overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
+        overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_dpe_{}".format(config["name"])],
         visibility = ["//visibility:private"],
     )
-    for config in rom_e2e_keymgr_init_configs
+    for config in rom_e2e_keymgr_dpe_init_configs
 ]
 
 [
     pavona_test(
-        name = "rom_e2e_keymgr_init_{}".format(config["name"]),
-        srcs = [":rom_e2e_keymgr_init_test.c"],
+        name = "rom_e2e_keymgr_dpe_init_{}".format(config["name"]),
+        srcs = [":rom_e2e_keymgr_dpe_init_test.c"],
         dv = dv_params(
-            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            otp = ":otp_img_keymgr_dpe_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom",
         ),
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -89,7 +89,7 @@ rom_e2e_keymgr_init_configs = [
             "//hw/top_egret:sim_qemu_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
-            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            otp = ":otp_img_keymgr_dpe_{}".format(config["name"]),
         ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         qemu = qemu_params(
@@ -100,14 +100,14 @@ rom_e2e_keymgr_init_configs = [
         ),
         verilator = verilator_params(
             timeout = "eternal",
-            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            otp = ":otp_img_keymgr_dpe_{}".format(config["name"]),
             rom = "//sw/device/silicon_creator/rom",
         ),
         deps = [
-            "//sw/device/lib/dif:keymgr",
+            "//sw/device/lib/dif:keymgr_dpe",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:rstmgr",
-            "//sw/device/lib/testing:keymgr_testutils",
+            "//sw/device/lib/testing:keymgr_dpe_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -116,14 +116,14 @@ rom_e2e_keymgr_init_configs = [
             "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     )
-    for config in rom_e2e_keymgr_init_configs
+    for config in rom_e2e_keymgr_dpe_init_configs
 ]
 
 test_suite(
-    name = "keymgr_init",
+    name = "keymgr_dpe_init",
     tags = ["manual"],
     tests = [
-        "rom_e2e_keymgr_init_{}".format(config["name"])
-        for config in rom_e2e_keymgr_init_configs
+        "rom_e2e_keymgr_dpe_init_{}".format(config["name"])
+        for config in rom_e2e_keymgr_dpe_init_configs
     ],
 )

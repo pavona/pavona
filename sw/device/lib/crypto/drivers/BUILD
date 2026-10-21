@@ -82,57 +82,57 @@ pavona_test(
     ],
 )
 
-cc_library(
-    name = "keymgr",
-    srcs = ["keymgr.c"],
-    hdrs = [
-        "keymgr.h",
-    ],
-    deps = [
-        ":entropy",
-        ":rv_core_ibex",
-        "//hw/top:keymgr_c_regs",
-        "//hw/top/dt:keymgr",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/runtime:hart",
-    ],
-)
-
-pavona_test(
-    name = "keymgr_test",
-    srcs = ["keymgr_test.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EGRET_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":keymgr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
+#cc_library(
+#    name = "keymgr",
+#    srcs = ["keymgr.c"],
+#    hdrs = [
+#        "keymgr.h",
+#    ],
+#    deps = [
+#        ":entropy",
+#        ":rv_core_ibex",
+#        "//hw/top:keymgr_c_regs",
+#        "//hw/top/dt:keymgr",
+#        "//sw/device/lib/base:abs_mmio",
+#        "//sw/device/lib/base:bitfield",
+#        "//sw/device/lib/base:hardened_memory",
+#        "//sw/device/lib/base:macros",
+#        "//sw/device/lib/crypto/impl:status",
+#        "//sw/device/lib/runtime:hart",
+#    ],
+#)
+#
+#pavona_test(
+#    name = "keymgr_test",
+#    srcs = ["keymgr_test.c"],
+#    broken = fpga_params(tags = ["broken"]),
+#    exec_env = dicts.add(
+#        EGRET_TEST_ENVS,
+#        {
+#            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
+#            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+#            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+#        },
+#    ),
+#    qemu = qemu_params(
+#        globals = {
+#            # Test uses rstmgr, keep running on fatal resets:
+#            "ot-rstmgr.fatal_reset": 0,
+#        },
+#    ),
+#    verilator = verilator_params(
+#        timeout = "long",
+#    ),
+#    deps = [
+#        ":keymgr",
+#        "//sw/device/lib/base:macros",
+#        "//sw/device/lib/base:memory",
+#        "//sw/device/lib/crypto/impl:status",
+#        "//sw/device/lib/testing:keymgr_testutils",
+#        "//sw/device/lib/testing/test_framework:check",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#    ],
+#)
 
 cc_library(
     name = "keymgr_dpe",

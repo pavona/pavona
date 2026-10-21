@@ -85,5 +85,6 @@ in the `sw/device/silicon_creator/lib/drivers/flash_ctrl.h` module.
 The key manager will be moved to the final state so that no creator or
 intermediate stages may be accessed by owner code.
 
-The end state of the key manager is `kScKeymgrStateOwnerKey` for this
-configuration.
+The end state of the key manager is `kScKeymgrDpeStateAvaialble` with the slots
+for sealing (slot 0) and attestation (slot 1) in the Silicon Owner stage for
+this configuration.

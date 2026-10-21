@@ -5,21 +5,22 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top/keymgr_regs.h"  // Generated.
-#include "hw/top/kmac_regs.h"    // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
+#include "hw/top/keymgr_dpe_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"        // Generated.
 
 // The KMAC dif expects a secret key, even though if the configuration is set
 // to use the sideloaded key then it will be ignored. We will write a software
@@ -44,7 +45,7 @@ static const size_t kCustomStringLen = 0;
 static const char kKmacMessage[] = "\x00\x01\x02\x03";
 static const size_t kKmacMessageLen = 4;
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 
 // This is computed and filled by dv side
@@ -56,10 +57,11 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(dt_kmac_primary_reg_block(kDtKmac)), &kmac));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
 }
 
 /**
@@ -103,7 +105,7 @@ static status_t get_total_capacity_len(dif_kmac_mode_kmac_t kmac_mode,
  * First, checks that KMAC works with the software key. Next, checks that when
  * sideload=true, KMAC produces a different result.
  */
-static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
+static void test_kmac_with_sideloaded_key(dif_keymgr_dpe_t *keymgr_dpe,
                                           dif_kmac_t *kmac) {
   // Configure KMAC hardware (using software key and software entropy).
   CHECK_STATUS_OK(kmac_testutils_config(kmac, false));
@@ -136,13 +138,14 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   CHECK_STATUS_OK(kmac_testutils_config(kmac, true));
 
   // Generate the sideloaded key.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
+  sideload_params.key_dest = kDifKeymgrDpeKeyDestKmac;
+  sideload_params.sideload_key = true;
 
   // Get the maximum key version supported by the keymgr in its current state.
   uint32_t max_key_version;
   CHECK_STATUS_OK(
-      keymgr_testutils_max_key_version_get(keymgr, &max_key_version));
+      keymgr_dpe_testutils_max_key_version_get(keymgr_dpe, &max_key_version));
 
   if (sideload_params.version > max_key_version) {
     LOG_INFO("Key version %d is greater than the maximum key version %d",
@@ -152,8 +155,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
     sideload_params.version = max_key_version;
   }
 
+  dif_keymgr_dpe_output_t ignored;
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
   uint32_t output_sideload_good0[kKmacOutputLen];
@@ -180,13 +184,13 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Enable "clear the key" toggle, so that previous sideload key port is
   // cleared.
   CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
+      dif_keymgr_dpe_sideload_clear_set_enabled(keymgr_dpe, kDifToggleEnabled));
 
   // Disable "clear the key" toggle, so that the sideload key port is stable.
   // Otherwise, the sideload port is continuously overwritten by fresh
   // randomness every clock cycle.
-  CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(keymgr_dpe,
+                                                         kDifToggleDisabled));
 
   uint32_t output_sideload_bad[kKmacOutputLen];
   // Initialize this output array because the following `kmac_testutils_kmac`
@@ -209,7 +213,7 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   // Sideload the same KMAC key again and check if we can compute the same
   // result as before.
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr regenerated HW output for Kmac at OwnerIntKey State");
 
   uint32_t output_sideload_good1[kKmacOutputLen];
@@ -225,9 +229,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
 bool test_main(void) {
   init_peripheral_handles();
 
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
   // Test KMAC sideloading.
-  test_kmac_with_sideloaded_key(&keymgr, &kmac);
+  test_kmac_with_sideloaded_key(&keymgr_dpe, &kmac);
   return true;
 }

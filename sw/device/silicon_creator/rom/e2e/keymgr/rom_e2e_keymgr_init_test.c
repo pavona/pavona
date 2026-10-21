@@ -6,12 +6,12 @@
 
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -28,7 +28,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 static uint32_t otp_state[kHmacDigestNumWords + 4] = {0};
@@ -46,8 +46,8 @@ static void print_otp_sw_cfg_digests(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr_dpe));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
@@ -71,10 +71,11 @@ bool test_main(void) {
     LOG_INFO("SW reset. Executing test ...");
   }
 
-  CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
 
-  dif_keymgr_binding_value_t bindings;
-  CHECK_DIF_OK(dif_keymgr_read_binding(&keymgr, &bindings));
+  dif_keymgr_dpe_binding_value_t bindings;
+  CHECK_DIF_OK(dif_keymgr_dpe_read_binding(&keymgr_dpe, &bindings));
 
   const manifest_t *manifest = manifest_def_get();
 
@@ -118,8 +119,8 @@ bool test_main(void) {
 
   // Check that the creator max version is equal to `max_key_version` field of
   // the manifest.
-  dif_keymgr_max_key_version_t versions;
-  CHECK_DIF_OK(dif_keymgr_read_max_key_version(&keymgr, &versions));
+  dif_keymgr_dpe_max_key_version_t versions;
+  CHECK_DIF_OK(dif_keymgr_dpe_read_max_key_version(&keymgr_dpe, &versions));
   CHECK(versions.creator_max_key_version == manifest->max_key_version);
   return true;
 }

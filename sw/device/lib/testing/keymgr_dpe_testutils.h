@@ -11,6 +11,27 @@
 #include "hw/top/keymgr_dpe_regs.h"  // Generated
 
 /**
+ * Versioned key parameters for testing.
+ *
+ * Change destination in order to sideload keys to hardware.
+ */
+static const dif_keymgr_dpe_generate_params_t kKeyVersionedParams = {
+    .key_dest = kDifKeymgrDpeKeyDestNone,
+    .salt =
+        {
+            0xb6521d8f,
+            0x13a0e876,
+            0x1ca1567b,
+            0xb4fb0fdf,
+            0x9f89bc56,
+            0x4bd127c7,
+            0x322288d8,
+            0xde919d54,
+        },
+    .version = 0x11,
+};
+
+/**
  * Software binding value for advancing to creator root key state.
  */
 static const dif_keymgr_dpe_advance_params_t kCreatorParams = {
@@ -56,6 +77,21 @@ static const dif_keymgr_dpe_advance_params_t kOwnerRootKeyParams = {
     .slot_dst_sel = 0x0,
     .slot_policy = 0b1 << KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT,
 };
+
+/**
+ * Initializes the key manager and its dependencies for testing.
+ *
+ * This function initializes the key manager and its dependencies for testing.
+ *
+ * This fuction will call `keymgr_dpe_testutils_startup()`. Additional checks
+ * are performed to ensure that the key manager is in a valid
+ * state, and ready to perform key derivations.
+ *
+ * @param keymgr A key manager handle, may be uninitialized.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_testutils_initialize(dif_keymgr_dpe_t *keymgr_dpe);
 
 /**
  * Locks OTP, restarts and initializes keymgr_dpe with UDS (a.k.a. the OTP
@@ -141,5 +177,17 @@ status_t keymgr_dpe_testutils_check_state(
 OT_WARN_UNUSED_RESULT
 status_t keymgr_dpe_testutils_wait_for_operation_done(
     const dif_keymgr_dpe_t *keymgr_dpe);
+
+/**
+ * Get the maximum key version supported by the key manager.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] max_key_version The maximum key version supported by the key
+ *                             manager.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_testutils_max_key_version_get(
+    const dif_keymgr_dpe_t *keymgr_dpe, uint32_t *max_key_version);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_DPE_TESTUTILS_H_

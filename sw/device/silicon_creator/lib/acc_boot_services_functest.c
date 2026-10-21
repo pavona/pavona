@@ -4,10 +4,9 @@
 
 #include "hw/top/dt/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -20,7 +19,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // Keymgr handle for this test.
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 
 static const dt_acc_t kAccDt = (dt_acc_t)0;
 
@@ -47,7 +46,7 @@ static const ecdsa_p256_signature_t kEcdsaSignature = {
           0x0e200e9b, 0x785690b4, 0xf47efe98}};
 
 // Sample key manager diversification data for testing.
-static const sc_keymgr_diversification_t kDiversification = {
+static const sc_keymgr_dpe_diversification_t kDiversification = {
     .salt = {0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f, 0xf0f1f2f3,
              0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff},
     .version = 0,
@@ -81,19 +80,19 @@ rom_error_t attestation_keygen_test(void) {
   // Check that key generations with different seeds result in different keys.
   ecdsa_p256_public_key_t pk_uds;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk_uds));
   ecdsa_p256_public_key_t pk_cdi0;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldCdi0KeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk_cdi0));
   ecdsa_p256_public_key_t pk_cdi1;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldCdi1KeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk_cdi1));
   ecdsa_p256_public_key_t pk_tpm_ek;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldTpmEkKeySeedIdx,
-                                              kScKeymgrKeyTypeSealing,
+                                              kScKeymgrDpeSlotSealing,
                                               kDiversification, &pk_tpm_ek));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds, (unsigned char *)&pk_cdi0,
                   sizeof(pk_uds));
@@ -107,20 +106,20 @@ rom_error_t attestation_keygen_test(void) {
   // Check that running the same key generation twice results in the same key.
   ecdsa_p256_public_key_t pk_uds_again;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk_uds_again));
   CHECK_ARRAYS_EQ((unsigned char *)&pk_uds_again, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
 
   // Check that key generations with different diversification result in
   // different keys.
-  sc_keymgr_diversification_t diversification_modified;
+  sc_keymgr_dpe_diversification_t diversification_modified;
   memcpy(&diversification_modified, &kDiversification,
          sizeof(diversification_modified));
   diversification_modified.salt[0] ^= 1;
   ecdsa_p256_public_key_t pk_uds_div;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(
-      kFlashInfoFieldUdsKeySeedIdx, kScKeymgrKeyTypeAttestation,
+      kFlashInfoFieldUdsKeySeedIdx, kScKeymgrDpeSlotAttestation,
       diversification_modified, &pk_uds_div));
   CHECK_ARRAYS_NE((unsigned char *)&pk_uds_div, (unsigned char *)&pk_uds,
                   sizeof(pk_uds));
@@ -131,24 +130,25 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // Generate and save the a keypair.
   ecdsa_p256_public_key_t pk;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk));
   RETURN_IF_ERROR(acc_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
-                                                kScKeymgrKeyTypeAttestation,
+                                                kScKeymgrDpeSlotAttestation,
                                                 kDiversification));
 
   // Advance keymgr to the next stage.
   if (num_keymgr_advances == 0) {
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+        &keymgr_dpe, kDifKeymgrDpeStateAvailable));
     CHECK_STATUS_OK(
-        keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
-    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntParams));
     num_keymgr_advances++;
   } else {
     CHECK(num_keymgr_advances == 1);
-    CHECK_STATUS_OK(keymgr_testutils_check_state(
-        &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+        &keymgr_dpe, kDifKeymgrDpeStateAvailable));
     CHECK_STATUS_OK(
-        keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerRootKeyParams));
     num_keymgr_advances++;
   }
 
@@ -175,7 +175,7 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // now gets a different public key because keymgr has advanced.
   ecdsa_p256_public_key_t pk_adv;
   RETURN_IF_ERROR(acc_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
-                                              kScKeymgrKeyTypeAttestation,
+                                              kScKeymgrDpeSlotAttestation,
                                               kDiversification, &pk_adv));
   CHECK_ARRAYS_NE((unsigned char *)&pk, (unsigned char *)&pk_adv, sizeof(pk));
 
@@ -186,13 +186,13 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 rom_error_t attestation_save_clear_key_test(void) {
   // Save and then clear a private key.
   RETURN_IF_ERROR(acc_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
-                                                kScKeymgrKeyTypeAttestation,
+                                                kScKeymgrDpeSlotAttestation,
                                                 kDiversification));
   RETURN_IF_ERROR(acc_boot_attestation_key_clear());
 
   // Save the private key again and check that endorsing succeeds.
   RETURN_IF_ERROR(acc_boot_attestation_key_save(kFlashInfoFieldUdsKeySeedIdx,
-                                                kScKeymgrKeyTypeAttestation,
+                                                kScKeymgrDpeSlotAttestation,
                                                 kDiversification));
   hmac_digest_t digest;
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
@@ -215,10 +215,10 @@ bool test_main(void) {
 
   // Initialize the entropy complex, KMAC, and the key manager.
   CHECK_STATUS_OK(entropy_complex_init());
-  dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
+      keymgr_dpe_testutils_startup(&keymgr_dpe, kDifKeymgrDpeSlot0));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
+      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 
   // Initialize flash.
   dif_flash_ctrl_state_t flash_ctrl;

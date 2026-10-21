@@ -328,20 +328,20 @@ pavona_test(
     ),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -457,7 +457,7 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
@@ -558,7 +558,7 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
@@ -1600,7 +1600,7 @@ pavona_test(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
@@ -1611,7 +1611,7 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
@@ -1642,7 +1642,7 @@ pavona_test(
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
@@ -1652,7 +1652,7 @@ pavona_test(
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
@@ -1695,7 +1695,7 @@ pavona_test(
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
@@ -1706,7 +1706,7 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:edn_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
@@ -2337,32 +2337,8 @@ pavona_test(
 )
 
 pavona_test(
-    name = "keymgr_key_derivation_test",
-    srcs = ["keymgr_key_derivation_test.c"],
-    exec_env = dicts.add(
-        EGRET_TEST_ENVS,
-        {
-            # This test is not supported by the silicon_owner_sival_rom_ext
-            # configuration.
-            "//hw/top_egret:silicon_creator": None,
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-pavona_test(
-    name = "keymgr_derive_sealing_test",
-    srcs = ["keymgr_derive_cdi_test.c"],
+    name = "keymgr_dpe_derive_sealing_test",
+    srcs = ["keymgr_dpe_derive_slot_test.c"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2381,8 +2357,13 @@ pavona_test(
     verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//sw/acc/crypto:x25519_sideload",
+        "//sw/device/lib/dif:acc",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/testing:acc_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
@@ -2393,8 +2374,8 @@ pavona_test(
 )
 
 pavona_test(
-    name = "keymgr_derive_attestation_test",
-    srcs = ["keymgr_derive_cdi_test.c"],
+    name = "keymgr_dpe_derive_attestation_test",
+    srcs = ["keymgr_dpe_derive_slot_test.c"],
     copts = ["-DDERIVE_ATTESTATION"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
@@ -2415,7 +2396,7 @@ pavona_test(
     deps = [
         "//sw/acc/crypto:x25519_sideload",
         "//sw/device/lib/testing:acc_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
@@ -2526,8 +2507,8 @@ pavona_binary(
 )
 
 pavona_test(
-    name = "keymgr_sideload_aes_test",
-    srcs = ["keymgr_sideload_aes_test.c"],
+    name = "keymgr_dpe_sideload_aes_test",
+    srcs = ["keymgr_dpe_sideload_aes_test.c"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2543,27 +2524,28 @@ pavona_test(
     ),
     deps = [
         "//hw/top:aes_c_regs",
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:kmac_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 pavona_test(
-    name = "keymgr_sideload_kmac_test",
-    srcs = ["keymgr_sideload_kmac_test.c"],
+    name = "keymgr_dpe_sideload_kmac_test",
+    srcs = ["keymgr_dpe_sideload_kmac_test.c"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2579,24 +2561,25 @@ pavona_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top:keymgr_c_regs",
+        "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:kmac_c_regs",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 pavona_test(
-    name = "keymgr_sideload_acc_test",
-    srcs = ["keymgr_sideload_acc_test.c"],
+    name = "keymgr_dpe_sideload_acc_test",
+    srcs = ["keymgr_dpe_sideload_acc_test.c"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2618,21 +2601,22 @@ pavona_test(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:acc",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
 pavona_test(
-    name = "keymgr_sideload_acc_simple_test",
-    srcs = ["keymgr_sideload_acc_test.c"],
+    name = "keymgr_dpe_sideload_acc_simple_test",
+    srcs = ["keymgr_dpe_sideload_acc_test.c"],
     copts = ["-DTEST_SIMPLE_CASE_ONLY"],
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
@@ -2656,13 +2640,14 @@ pavona_test(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:acc",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:acc_testutils",
         "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -2799,10 +2784,10 @@ pavona_test(
         "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -2873,11 +2858,11 @@ pavona_test(
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -5732,7 +5717,7 @@ pavona_test(
             "egret": [
                 "//sw/device/lib/dif:flash_ctrl",
                 "//sw/device/lib/testing:flash_ctrl_testutils",
-                "//sw/device/lib/testing:keymgr_testutils",
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
             ],
         },
         [],
@@ -6395,6 +6380,7 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
+            "//hw/top:keymgr_dpe_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
             "//hw/top/dt",
@@ -6407,16 +6393,13 @@ test_suite(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ] + pavona_select_top(
             {
-                "dragonfly": [
-                    "//hw/top:keymgr_dpe_c_regs",
+                "egret": [
+                    "//hw/top:adc_ctrl_c_regs",
+                    "//hw/top:flash_ctrl_c_regs",
+                    "//hw/top:sysrst_ctrl_c_regs",
                 ],
             },
-            [
-                "//hw/top:adc_ctrl_c_regs",
-                "//hw/top:flash_ctrl_c_regs",
-                "//hw/top:keymgr_c_regs",
-                "//hw/top:sysrst_ctrl_c_regs",
-            ],
+            [],
         ),
     )
     for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
@@ -7991,7 +7974,7 @@ pavona_test(
 pavona_test(
     name = "keymgr_dpe_key_derivation_test",
     srcs = ["keymgr_dpe_key_derivation_test.c"],
-    exec_env = DRAGONFLY_TEST_ENVS,
+    exec_env = dicts.add(DRAGONFLY_TEST_ENVS, EGRET_TEST_ENVS),
     deps = [
         "//hw/top/dt",
         "//sw/device/lib/arch:device",

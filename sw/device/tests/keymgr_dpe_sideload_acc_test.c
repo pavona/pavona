@@ -6,24 +6,26 @@
 #include <stdint.h>
 
 #include "hw/top/dt/acc.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_acc.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/acc_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_acc_t acc;
 
@@ -44,10 +46,11 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(dt_kmac_primary_reg_block(kDtKmac)), &kmac));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
   CHECK_DIF_OK(dif_acc_init_from_dt(kAccDt, &acc));
 }
 
@@ -101,16 +104,18 @@ static void run_x25519_app(dif_acc_t *acc, uint32_t *result,
  * This routine does not check the correctness of results, merely sideloads the
  * key from keymgr to ACC and then runs the X25519 program.
  */
-static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
+static void test_acc_with_sideloaded_key(dif_keymgr_dpe_t *keymgr_dpe,
+                                         dif_acc_t *acc) {
   // Generate the sideloaded key.
   // TODO(weicai): also check in SV sequence that the key is correct.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestAcc;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
+  sideload_params.key_dest = kDifKeymgrDpeKeyDestAcc;
+  sideload_params.sideload_key = true;
 
   // Get the maximum key version supported by the keymgr in its current state.
   uint32_t max_key_version;
   CHECK_STATUS_OK(
-      keymgr_testutils_max_key_version_get(keymgr, &max_key_version));
+      keymgr_dpe_testutils_max_key_version_get(keymgr_dpe, &max_key_version));
 
   if (sideload_params.version > max_key_version) {
     LOG_INFO("Key version %d is greater than the maximum key version %d",
@@ -120,8 +125,9 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
     sideload_params.version = max_key_version;
   }
 
+  dif_keymgr_dpe_output_t ignored;
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr generated HW output for ACC.");
 
   // Load the X25519 application.
@@ -139,7 +145,7 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
   CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
       dt_acc_alert_to_alert_id(kAccDt, kDtAccAlertRecov)));
   CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
+      dif_keymgr_dpe_sideload_clear_set_enabled(keymgr_dpe, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
   run_x25519_app(acc, at_clear_salt_result, kAccInvalidKeyErr);
@@ -147,15 +153,15 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
       dt_acc_alert_to_alert_id(kAccDt, kDtAccAlertRecov)));
 
   // Disable sideload key clearing.
-  CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(keymgr_dpe,
+                                                         kDifToggleDisabled));
   LOG_INFO("Disable clearing the Keymgr generated sideload keys.");
 
   // Clear the ERR bits register
   mmio_region_write32(acc->base_addr, ACC_ERR_BITS_REG_OFFSET, 0x0);
-
-  CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(
-      keymgr, sideload_params));  // Regenerate the sideload key.
+  // Regenerate the sideload key.
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr generated HW output for ACC.");
   uint32_t post_clear_salt_result[8];
   run_x25519_app(acc, post_clear_salt_result, kErrBitsOk);
@@ -164,7 +170,7 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
   // Change the salt to generate a different key.
   sideload_params.salt[0] = ~sideload_params.salt[0];
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr generated HW output for ACC.");
 
   uint32_t modified_salt_result[8];
@@ -177,7 +183,7 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
   // Change the salt back to generate the first key again.
   sideload_params.salt[0] = ~sideload_params.salt[0];
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
+      keymgr_dpe_testutils_generate(keymgr_dpe, &sideload_params, &ignored));
   LOG_INFO("Keymgr generated HW output for ACC.");
 
   uint32_t same_key_result[8];
@@ -190,10 +196,10 @@ static void test_acc_with_sideloaded_key(dif_keymgr_t *keymgr, dif_acc_t *acc) {
 
 bool test_main(void) {
   init_peripheral_handles();
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
   // Test ACC sideloading.
-  test_acc_with_sideloaded_key(&keymgr, &acc);
+  test_acc_with_sideloaded_key(&keymgr_dpe, &acc);
 
   return true;
 }

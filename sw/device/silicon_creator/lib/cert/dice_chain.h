@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
@@ -58,7 +58,7 @@ rom_error_t dice_chain_attestation_silicon(void);
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_creator(
-    keymgr_binding_value_t *rom_ext_measurement,
+    keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest);
 
 /**
@@ -74,9 +74,10 @@ rom_error_t dice_chain_attestation_creator(
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
-    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    const manifest_t *owner_manifest,
+    keymgr_dpe_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
-    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
+    keymgr_dpe_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
 
 /**
  * Write back the certificate chain to flash if changed.
