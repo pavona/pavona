@@ -10,8 +10,6 @@ load("//rules:manifest.bzl", "manifest")
 load(
     "//rules/pavona:defs.bzl",
     "pavona_binary",
-    "pavona_test",
-    "silicon_params",
 )
 load(
     "//rules:otp.bzl",

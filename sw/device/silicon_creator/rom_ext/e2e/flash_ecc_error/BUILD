@@ -5,12 +5,7 @@
 load(
     "//rules:const.bzl",
     "CONST",
-    "hex",
     "hex_digits",
-)
-load(
-    "//rules:manifest.bzl",
-    "manifest",
 )
 load(
     "//rules:otp.bzl",
@@ -34,7 +29,6 @@ load(
     "//sw/device/silicon_creator/rom/e2e/boot_policy_flash_ecc_error:defs.bzl",
     "BOOT_POLICY_FLASH_ECC_ERROR_TESTS",
     "FLASH_ECC_ERROR_CAUSES",
-    "SEC_VERS",
 )
 
 package(default_visibility = ["//visibility:public"])

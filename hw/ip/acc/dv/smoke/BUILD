@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
-load("//hw/top:defs.bzl", "pavona_select_top_attr")
 load("//rules:acc.bzl", "acc_binary")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 

@@ -18,7 +18,6 @@ load(
     "ALL_TOPS",
     "ALL_TOP_NAMES",
     "pavona_alias_top_attr",
-    "pavona_if_ip",
 )
 load("@rules_rust//rust:defs.bzl", "rust_library")
 

@@ -5,9 +5,6 @@
 load("//rules:const.bzl", "CONST", "hex")
 load(
     "//rules/pavona:defs.bzl",
-    "DEFAULT_TEST_FAILURE_MSG",
-    "DEFAULT_TEST_SUCCESS_MSG",
-    "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_binary",
     "pavona_test",

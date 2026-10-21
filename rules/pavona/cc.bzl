@@ -5,9 +5,6 @@
 load(
     "@pavona_pavona//rules:rv.bzl",
     "rv_rule",
-    _PAVONA_CPU = "PAVONA_CPU",
-    _PAVONA_PLATFORM = "PAVONA_PLATFORM",
-    _pavona_transition = "pavona_transition",
 )
 load(
     "@pavona_pavona//rules/pavona:transform.bzl",

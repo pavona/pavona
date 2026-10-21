@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
+load("@nonhermetic//:env.bzl", "BIN_PATHS")
 load("@pavona_pavona//rules/pavona:providers.bzl", "OpenTitanBinaryInfo")
 load("@pavona_pavona//rules/pavona:util.bzl", "get_fallback", "get_files")
 load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")

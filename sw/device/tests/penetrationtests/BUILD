@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_acc", "pentest_fi_ibex", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_imm_skip_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
-load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 

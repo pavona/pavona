@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_alias_top_attr", "pavona_if_ip", "pavona_require_ip", "pavona_require_top", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_ip", "pavona_select_top")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
@@ -18,7 +18,6 @@ load(
     "pavona_test",
     "verilator_params",
 )
-load("//rules/pavona:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 

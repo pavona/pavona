@@ -4,7 +4,6 @@
 
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "pavona_binary",
     "pavona_test",
@@ -24,7 +23,6 @@ load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:rom_e2e.bzl",

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_require_top", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_require_top", "pavona_select_top")
 load(
     "//rules:cross_platform.bzl",
     "dual_cc_device_library_of",

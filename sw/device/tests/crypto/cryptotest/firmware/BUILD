@@ -4,8 +4,6 @@
 load(
     "//rules/pavona:defs.bzl",
     "pavona_binary",
-    "pavona_test",
-    "silicon_params",
 )
 
 package(default_visibility = ["//visibility:public"])

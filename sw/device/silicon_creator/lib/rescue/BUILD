@@ -2,20 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
-load(
-    "//rules/pavona:defs.bzl",
-    "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
-    "EGRET_TEST_ENVS",
-    "fpga_params",
-    "pavona_test",
-    "silicon_params",
-    "verilator_params",
-)
-
 package(default_visibility = ["//visibility:public"])
 
 RESCUE_DEPS = [

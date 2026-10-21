@@ -5,8 +5,6 @@
 load(
     "//rules/pavona:defs.bzl",
     "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
-    "EGRET_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
     "silicon_params",

@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:const.bzl", "CONST", "hex_digits")
 load("//rules/pavona:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 load("//rules/pavona:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
@@ -23,7 +22,6 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "dv_params",
     "ecdsa_key_by_name",
     "fpga_params",
@@ -31,7 +29,7 @@ load(
     "pavona_test",
     "verilator_params",
 )
-load("//hw/top:defs.bzl", "pavona_require_top", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 

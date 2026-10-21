@@ -5,14 +5,8 @@
 """Helper macros for generating RISC-V compliance test targets."""
 
 load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
-load(
     "//rules/pavona:defs.bzl",
     "EGRET_TEST_ENVS",
-    "cw310_params",
-    "fpga_params",
     "pavona_test",
     "verilator_params",
 )

@@ -2,14 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "hex")
-load("//rules:manifest.bzl", "manifest")
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "EGRET_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "pavona_binary",
     "pavona_test",

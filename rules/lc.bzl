@@ -4,8 +4,6 @@
 
 """Rules for generating lc_ctrl netlist constants used in SW."""
 
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-
 def _lc_raw_unlock_token_impl(ctx):
     output = ctx.actions.declare_file("src/" + ctx.attr.name + ".rs")
     args = ctx.actions.args()

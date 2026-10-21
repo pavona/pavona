@@ -8,10 +8,6 @@ load(
     "dual_inputs",
 )
 load(
-    "//rules/pavona:defs.bzl",
-    "pavona_test",
-)
-load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "TEST_OWNER_CONFIGS",
 )

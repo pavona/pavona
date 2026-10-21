@@ -5,7 +5,6 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@pavona_pavona//rules/pavona:util.bzl", "get_override")
 load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 

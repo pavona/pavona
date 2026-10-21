@@ -4,7 +4,6 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:ujson.bzl", "ujson_rust")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of")
 
 cc_library(

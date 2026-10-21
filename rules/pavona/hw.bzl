@@ -4,8 +4,6 @@
 
 """Rules to describe HW"""
 
-load("//rules:host.bzl", "host_tools_transition")
-
 def pavona_ip(name, **kwargs):
     """
     Return a structure describing an IP. This can be given to pavona_top.

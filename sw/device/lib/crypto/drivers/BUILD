@@ -5,17 +5,14 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 load(
     "//rules:cross_platform.bzl",
-    "dual_cc_device_library_of",
     "dual_cc_library",
     "dual_inputs",
 )
 load(
     "//rules/pavona:defs.bzl",
     "EGRET_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
     "qemu_params",

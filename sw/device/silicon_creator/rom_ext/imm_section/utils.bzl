@@ -8,7 +8,6 @@ load(
     "SiliconBinaryInfo",
     "get_one_binary_file",
 )
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@pavona_pavona//rules:rv.bzl", "rv_rule")
 load(

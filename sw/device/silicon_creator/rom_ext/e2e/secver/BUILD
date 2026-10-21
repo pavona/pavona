@@ -3,16 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST", "hex", "hex_digits")
-load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
-load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/pavona:defs.bzl", "fpga_params", "pavona_binary", "pavona_test")
-load(
-    "//sw/device/silicon_creator/rom_ext:defs.bzl",
-    "ROM_EXT_VARIATIONS",
-    "ROM_EXT_VERSION",
-    "SLOTS",
-)
 
 package(default_visibility = ["//visibility:public"])
 

@@ -5,7 +5,6 @@
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "pavona_test",

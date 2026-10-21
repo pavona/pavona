@@ -15,7 +15,6 @@ load("//hw/top_egret/data/autogen:defs.bzl", "EGRET_ALERTS")
 load("//hw/top_dragonfly/data/autogen:defs.bzl", "DRAGONFLY_ALERTS")
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",
     "pavona_test",

@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@pavona_pavona//rules/pavona:transform.bzl", "obj_transform")
 load("//rules/pavona:defs.bzl", "PAVONA_CPU", "pavona_binary")
 load("//rules:linker.bzl", "ld_library")
 load(

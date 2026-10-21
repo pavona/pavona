@@ -2,10 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:manifest.bzl", "manifest")
-load("//rules/pavona:defs.bzl", "cw310_params", "fpga_params", "pavona_test")
+load("//rules/pavona:defs.bzl", "fpga_params", "pavona_test")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",

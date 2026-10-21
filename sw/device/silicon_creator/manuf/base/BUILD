@@ -30,7 +30,6 @@ load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
     "OWNER_SLOTS",
 )
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])

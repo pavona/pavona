@@ -21,7 +21,6 @@ load(
     "sim_qemu",
     "sim_verilator",
 )
-load("//rules/pavona:qemu.bzl", "qemu_cfg", "qemu_flash", "qemu_otp")
 
 package(default_visibility = ["//visibility:public"])
 

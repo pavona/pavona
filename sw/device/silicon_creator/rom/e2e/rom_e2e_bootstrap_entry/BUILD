@@ -4,7 +4,6 @@
 
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
 )

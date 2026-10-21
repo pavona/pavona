@@ -12,17 +12,12 @@ load(
     "//rules/pavona:defs.bzl",
     "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
     "EGRET_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "pavona_binary",
     "pavona_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
-)
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")

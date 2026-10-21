@@ -3,14 +3,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "pavona_require_ip", "pavona_require_top", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_select_top")
 load(
     "//rules/pavona:defs.bzl",
-    "PAVONA_CPU",
     "pavona_binary",
     "pavona_test",
 )
-load("//rules/pavona:legacy.bzl", "legacy_rom_targets")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")

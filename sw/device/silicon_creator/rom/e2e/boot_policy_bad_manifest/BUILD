@@ -28,7 +28,6 @@ load(
     "//rules/pavona:defs.bzl",
     "OTTF_SUCCESS_MSG",
     "ROM_BOOT_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
 )

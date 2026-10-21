@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/pavona:defs.bzl", "PAVONA_CPU", "PAVONA_PLATFORM")
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "pavona_if_ip", "pavona_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "pavona_if_ip", "pavona_select_top")
 load("//rules/pavona:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "doxygen_gather_cc")
 

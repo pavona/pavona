@@ -5,7 +5,6 @@
 load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
 )
@@ -13,7 +12,6 @@ load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
     "hex_digits",
 )
 load(

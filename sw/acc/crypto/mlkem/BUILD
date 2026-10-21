@@ -4,7 +4,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:acc.bzl", "acc_binary", "acc_library")
+load("//rules:acc.bzl", "acc_library")
 
 package(default_visibility = ["//visibility:public"])
 

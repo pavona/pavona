@@ -6,7 +6,6 @@ load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library
 load(
     "//rules/pavona:defs.bzl",
     "EGRET_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
     "verilator_params",

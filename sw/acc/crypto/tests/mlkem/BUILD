@@ -10,7 +10,7 @@
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//rules:acc.bzl", "acc_binary", "acc_consttime_test", "acc_library", "acc_sim_test")
+load("//rules:acc.bzl", "acc_sim_test")
 
 acc_sim_test(
     name = "mlkem_check_pk_test",

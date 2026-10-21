@@ -10,8 +10,6 @@ load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/pavona:defs.bzl",
     "EGRET_TEST_ENVS",
-    "cw310_params",
-    "fpga_params",
     "pavona_test",
     "verilator_params",
 )

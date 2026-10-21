@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:linker.bzl", "ld_library")
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
 
 package(default_visibility = ["//visibility:public"])

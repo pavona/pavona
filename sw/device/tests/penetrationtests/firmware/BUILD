@@ -9,9 +9,7 @@ load(
 load(
     "//rules/pavona:defs.bzl",
     "EGRET_SILICON_OWNER_ROM_EXT_ENVS",
-    "EGRET_TEST_ENVS",
     "fpga_params",
-    "pavona_binary",
     "pavona_test",
     "silicon_params",
     "verilator_params",

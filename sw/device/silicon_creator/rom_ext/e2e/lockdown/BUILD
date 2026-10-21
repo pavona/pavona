@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
 )

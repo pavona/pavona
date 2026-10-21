@@ -7,7 +7,6 @@ load("//rules:const.bzl", "CONST", "DRAGONFLY_LOC_ALERTS")
 load("//hw/top_dragonfly/data/autogen:defs.bzl", "DRAGONFLY_ALERTS")
 load(
     "//rules:otp.bzl",
-    "OTP_SIGVERIFY_FAKE_KEYS",
     "STD_OTP_OVERLAYS",
     "otp_alert_classification",
     "otp_alert_digest",

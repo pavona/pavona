@@ -7,12 +7,6 @@ load(
     "STD_OTP_OVERLAYS",
     "otp_image",
 )
-load(
-    "//rules/pavona:defs.bzl",
-    "dv_params",
-    "fpga_params",
-    "pavona_test",
-)
 
 package(default_visibility = ["//visibility:public"])
 

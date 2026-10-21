@@ -6,7 +6,6 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules/pavona:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
     "//rules/pavona:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "pavona_test",
 )

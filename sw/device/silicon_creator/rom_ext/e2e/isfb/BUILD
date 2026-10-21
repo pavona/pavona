@@ -12,10 +12,6 @@ load(
     "pavona_test",
 )
 load(
-    "//sw/device/silicon_creator/rom_ext:defs.bzl",
-    "ROM_EXT_VERSION",
-)
-load(
     "//rules:manifest.bzl",
     "integrator_specific_firmware_binding",
     "isfb_erase_allowed_policy",

@@ -10,8 +10,6 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load(
     "//rules:rv.bzl",
     "rv_rule",
-    _PAVONA_CPU = "PAVONA_CPU",
-    _PAVONA_PLATFORM = "PAVONA_PLATFORM",
 )
 
 TockApplication = provider(

@@ -2,10 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
-load("//rules:fusesoc.bzl", "fusesoc_build")
-load("//hw/top:defs.bzl", "pavona_select_top_attr")
-
 package(default_visibility = ["//visibility:public"])
 
 filegroup(

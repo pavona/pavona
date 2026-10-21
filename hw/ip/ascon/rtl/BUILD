@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "pavona_select_ip_attr")
 load("//rules:autogen.bzl", "pavona_ip_reg_rtl")
 load("//rules:files.bzl", "copy_files")
 

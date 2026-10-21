@@ -21,7 +21,6 @@ load(
 load(
     "//rules/pavona:defs.bzl",
     "fpga_params",
-    "pavona_test",
 )
 
 otp_json(
