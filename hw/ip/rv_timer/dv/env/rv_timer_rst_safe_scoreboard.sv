@@ -9,8 +9,12 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
   `uvm_component_utils(rv_timer_rst_safe_scoreboard)
   `uvm_component_new
 
-  // A compare write's registered qe clears INTR_STATE on the next reference edge. The comparator
-  // can set it again one edge later; the interrupt output then has its existing one-clock delay.
+  // Measured from TL A-channel acceptance at edge N, not from the INTR_STATE clear:
+  // N: the compare value and its write-enable (qe) are registered.
+  // N+1: registered qe clears INTR_STATE.
+  // N+2: INTR_STATE may reassert if the active timer still meets the new compare threshold.
+  // This constant covers those two clocks only. The output register adds another clock,
+  // handled separately by check_interrupt_pin() through wait_clks(1).
   localparam int unsigned CompareReassertDelayClks = 2;
 
   // local variables
@@ -116,8 +120,11 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
               string compare_lower_str = $sformatf("compare_lower%0d_%0d", i, j);
               if (csr_name == compare_lower_str) begin
                 compare_val[i][j][31:0] = csr.get_mirrored_value();
-                // Either compare half clears the pending interrupt, including while active.
-                // The running predictor must then evaluate expiry against the new compare value.
+                // A write to either compare half clears INTR_STATE regardless of CTRL.ACTIVE.
+                // compare_update_due makes compute_and_check_interrupt() recalculate expiry.
+                // Its enabled timer worker sets intr_status_exp back to 1 once the updated
+                // threshold is due and compare_reassert_edge has been reached; it does not
+                // restore the old state unconditionally after a fixed delay.
                 intr_status_exp[i][j] = 0;
                 compare_reassert_edge[i][j] =
                     item.a_channel_ref_edge + CompareReassertDelayClks;
@@ -136,8 +143,9 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
               string compare_upper_str = $sformatf("compare_upper%0d_%0d", i, j);
               if (csr_name == compare_upper_str) begin
                 compare_val[i][j][63:32] = csr.get_mirrored_value();
-                // Clearing does not depend on CTRL.ACTIVE. If the new threshold is already met,
-                // the comparator can reassert the interrupt after this clear.
+                // Upper-half writes also clear INTR_STATE regardless of CTRL.ACTIVE.
+                // compare_update_due schedules expiry recalculation; the timer worker owns
+                // reassertion under the same threshold and clear-delay conditions as above.
                 intr_status_exp[i][j] = 0;
                 compare_reassert_edge[i][j] =
                     item.a_channel_ref_edge + CompareReassertDelayClks;
@@ -253,9 +261,11 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
     fork
       begin
         forever begin : compute_num_clks
-          // calculate number of clocks required to have interrupt
           @(en_timers or num_clk_update_due or compare_update_due);
           wait(under_reset == 0);
+          // num_clks is the TOTAL clocks to expiry from the saved timer_val, not clocks remaining
+          // from this update. The timer worker's separate count tracks clocks ALREADY ELAPSED
+          // from that same starting value. Expiry is due when count reaches num_clks.
           foreach (en_timers[i, j]) begin
             // A compare below the saved timer value is already due, not an unsigned subtraction
             // wrapping into a distant expiry. A zero step never reaches a higher compare value.
@@ -266,9 +276,12 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
                                 ((mtime_diff % step[i]) != 0)) * (prescale[i] + 1) + 1;
             end
           end
-          // Timer writes/readback establish a new value snapshot and elapsed-count origin.
-          // Compare-only updates retain elapsed time; they must not postpone expiry by restarting
-          // the count from the old timer snapshot.
+          // Both update flags recalculate num_clks above; they affect count differently:
+          // - compare_update_due alone: keep count, because only the expiry target changed.
+          // - num_clk_update_due: request count = 0, because timer_val is a new starting value.
+          // If both flags are set, use both updated values above and request count = 0 below.
+          // For example, a compare-only update to num_clks = 150 with count = 60 leaves 90 clocks
+          // to expiry. Resetting count would incorrectly wait another 150 clocks.
           for (int i = 0; i < NUM_HARTS; i++) begin
             if (num_clk_update_due[i]) reset_count[i] = en_timers[i];
           end
@@ -314,7 +327,8 @@ class rv_timer_rst_safe_scoreboard extends cip_rst_safe_scoreboard #(.CFG_T (rv_
                                            "reassert_not_before=%0d"},
                                           cfg.clk_rst_vif.posedge_count,
                                           compare_reassert_edge[a_i][a_j]), UVM_MEDIUM)
-                  // Update exp val and predict it in read address_channel
+                  // Both expiry and the compare-clear delay are satisfied, so set the expected
+                  // interrupt state. RAL prediction occurs when an INTR_STATE read is accepted.
                   intr_status_exp[a_i][a_j] = 1'b1;
                   `uvm_info(`gfn,
                             $sformatf("check_interrupt_pin#1 - intr_status_exp = %p",
