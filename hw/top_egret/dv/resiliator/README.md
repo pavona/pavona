@@ -31,7 +31,7 @@ Supporting pieces elsewhere:
 - `hw/vendor/kjnsen_resiliator/` — vendored Resiliator sources. `sim_main.cpp`
   is compiled into the model by FuseSoC, so it has to live in the source tree
   rather than in a Bazel external repository.
-- `ci/scripts/run-resiliator-campaign.sh` — the nightly entry point.
+- `ci/scripts/run-resiliator-campaign.py` — the nightly entry point.
 
 ## Running it
 
@@ -46,7 +46,7 @@ Build the model and the firmware:
 Run the full campaign the way CI does:
 
 ```sh
-./ci/scripts/run-resiliator-campaign.sh egret
+./ci/scripts/run-resiliator-campaign.py egret
 ```
 
 The simulator writes into `resiliator_out/`.
@@ -78,6 +78,6 @@ Verilator prints during the build:
 - Resiliator: Considering all signals with prefix ibex_resiliator_top.u_core (N total, emitted N of them)
 ```
 
-The `ci/scripts/run-resiliator-campaign.sh` script fails the job if the
+The `ci/scripts/run-resiliator-campaign.py` script fails the job if the
 campaign reports `Total Flip-Flops : 0` in order to avoid silent failures in case, e.g., 
 a part of the design is renamed.

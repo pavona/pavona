@@ -84,7 +84,7 @@ jobs:
         uses: ./.github/actions/prepare-env
       - name: Run fault-injection campaign
         id: campaign
-        run: ./ci/scripts/run-resiliator-campaign.sh egret
+        run: ./ci/scripts/run-resiliator-campaign.py egret
       - name: Upload campaign results
         uses: actions/upload-artifact@v7
         if: ${{ !cancelled() && steps.campaign.outputs.results != '' }}
