@@ -93,7 +93,7 @@ none | No Access Needed
 - <a id="properties/hw_checklist"></a>**`hw_checklist`** *(string)*: path to the hw_checklist, relative to repo root.
 - <a id="properties/sw_checklist"></a>**`sw_checklist`** *(string)*: path to the sw_checklist, relative to repo root.
 - <a id="properties/revisions"></a>**`revisions`** *(array)*: list with revision records.
-  - <a id="properties/revisions/items"></a>**Items**: Refer to *[urn:reggen:revision](#n%3Areggen%3Arevision)*.
+  - <a id="properties/revisions/items"></a>**Items**: Refer to *urn:reggen:revision*.
 - <a id="properties/version"></a>**`version`** *(string)*: module version.
 - <a id="properties/life_stage"></a>**`life_stage`** *(string)*: life stage of module.
 - <a id="properties/design_stage"></a>**`design_stage`** *(string)*: design stage of module.
@@ -153,8 +153,8 @@ The basic structure of a register definition file is thus:
 - <a id="properties/name"></a>**`name`** *(string, required)*: name of the register.
 - <a id="properties/alias_target"></a>**`alias_target`** *(string)*: name of the register to apply the alias definition to.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the register. This field supports the markdown syntax.
-- <a id="properties/swaccess"></a>**`swaccess`**: software access permission to use for fields that don't specify swaccess. Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
-- <a id="properties/hwaccess"></a>**`hwaccess`**: hardware access permission to use for fields that don't specify hwaccess. Refer to *[urn:reggen:hwaccess](#n%3Areggen%3Ahwaccess)*.
+- <a id="properties/swaccess"></a>**`swaccess`**: software access permission to use for fields that don't specify swaccess. Refer to *urn:reggen:swaccess*.
+- <a id="properties/hwaccess"></a>**`hwaccess`**: hardware access permission to use for fields that don't specify hwaccess. Refer to *urn:reggen:hwaccess*.
 - <a id="properties/regwen"></a>**`regwen`** *(string)*: if register is write-protected by another register, that
 register name should be given here. empty-string for no register
 write protection.
@@ -219,10 +219,10 @@ This flag is used as a hint for automatically generated
 software headers with register description.
 - <a id="properties/swaccess"></a>**`swaccess`**: software access permission, copied from
 register if not provided in field.
-(Tool adds if not provided.). Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
+(Tool adds if not provided.). Refer to *urn:reggen:swaccess*.
 - <a id="properties/hwaccess"></a>**`hwaccess`**: hardware access permission, copied from
 register if not provided in field.
-(Tool adds if not provided.). Refer to *[urn:reggen:hwaccess](#n%3Areggen%3Ahwaccess)*.
+(Tool adds if not provided.). Refer to *urn:reggen:hwaccess*.
 - <a id="properties/hwqe"></a>**`hwqe`** *(boolean)*: "true" if hardware uses "q" enable signal,
 which is latched signal of software write pulse.
 Copied from register if not provided in field.
@@ -343,7 +343,7 @@ word of the window bits {regwidth-1:validbits} are unused and
 bits {validbits-1:0} are valid.
 - <a id="properties/unusual"></a>**`unusual`** *(boolean)*: True if window has unusual parameters
 (set to prevent Unusual: errors). Default: `false`.
-- <a id="properties/swaccess"></a>**`swaccess`**: software access permitted. Refer to *[urn:reggen:swaccess](#n%3Areggen%3Aswaccess)*.
+- <a id="properties/swaccess"></a>**`swaccess`**: software access permitted. Refer to *urn:reggen:swaccess*.
 - <a id="properties/data-intg-passthru"></a>**`data-intg-passthru`** *(boolean)*: True if the window has data integrity pass through. Default: `false`.
 - <a id="properties/byte-write"></a>**`byte-write`** *(boolean)*: True if byte writes are supported. Default: `false`.
 - <a id="properties/desc"></a>**`desc`** *(string, required)*: description of the window.
