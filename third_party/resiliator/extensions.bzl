@@ -14,6 +14,6 @@ def _resiliator_repos():
             "https://github.com/kjnsen/verilator/archive/{}.tar.gz".format(RESILIATOR_VERILATOR_COMMIT),
         ],
         strip_prefix = "verilator-" + RESILIATOR_VERILATOR_COMMIT,
-        build_file = "@pavona_pavona//third_party/resiliator:BUILD.verilator.bazel",
+        build_file = "@pavona_pavona//third_party/resiliator:BUILD.resiliator.bazel",
         sha256 = "7e23ef809c95c7b87c438c748c4bf3852a0d436a5dad3c7d20d1ea302c78a454",
     )

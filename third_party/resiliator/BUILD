@@ -2,7 +2,7 @@
 
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
 
-exports_files(["BUILD.verilator.bazel"])
+exports_files(["BUILD.resiliator.bazel"])
 
 configure_make(
     name = "build_verilator",
