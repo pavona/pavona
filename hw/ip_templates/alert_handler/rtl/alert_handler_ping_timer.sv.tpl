@@ -131,8 +131,8 @@ module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*;
   // valid. This comes at the cost of a bias towards certain alert IDs that
   // will be pinged twice as often on average - but it ensures that we have
   // less alert IDs that need to be skipped since they are invalid.
-  assign id_to_ping_d = (lfsr_state[PING_CNT_DW +: IdDw] >= NAlerts) ?
-                        lfsr_state[PING_CNT_DW +: IdDw] - NAlerts    :
+  assign id_to_ping_d = (lfsr_state[PING_CNT_DW +: IdDw] >= IdDw'(NAlerts)) ?
+                        lfsr_state[PING_CNT_DW +: IdDw] - IdDw'(NAlerts)    :
                         lfsr_state[PING_CNT_DW +: IdDw];
 
   // we need to hold the ID stable while the ping is ongoing since this will result in
