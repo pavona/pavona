@@ -147,6 +147,7 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
 )
+
 [
     run_binary(
         name = cryptotest_name,
