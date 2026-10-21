@@ -1,6 +1,7 @@
 # Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+from pathlib import Path
 from basegen.lib import REPO_TOP, import_hjson
 from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
@@ -9,7 +10,8 @@ from basegen.validate import (validate_schema, all_validation_errors,
                               TOPCFG_VALIDATOR, IP_BLOCK_VALIDATOR,
                               XBAR_VALIDATOR,
                               TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR,
-                              RACL_VALIDATOR, RACL_MAPPING_VALIDATOR)
+                              RACL_VALIDATOR, RACL_MAPPING_VALIDATOR,
+                              document_schema, correct_doc_links)
 
 
 # test_topcfg_validation
@@ -64,18 +66,34 @@ KNOWN_GOOD_MAPPINGS = tuple(
 )
 KNOWN_BAD_MAPPINGS = ({}, {"null": 1})
 
-# test_nested_schemas
+
 NESTED_SCHEMAS = (
     {
         "$id": "urn:test_basegen:parent",
+        "title": "Parent",
+        "description": "This schema references another schema.",
         "properties": {
             "my_child": {"$ref": "urn:test_basegen:child"}}},
     {
         "$id": "urn:test_basegen:child",
+        "title": "Child of parent",
         "required": ["foo"],
         "properties": {
             "foo": {"type": "integer"}}}
 )
+_PARENT, _CHILD = NESTED_SCHEMAS
+TEST_REGISTRY = SchemaRegistry().with_resources((
+    (_PARENT["$id"], SchemaResource(_PARENT, DRAFT202012)),
+    (_CHILD["$id"], SchemaResource(_CHILD, DRAFT202012))
+)).crawl()
+
+# test_document_schema
+# test_document_schema_links
+# test_correct_doc_links
+TEST_DIR = Path(__file__).parent.resolve()
+DOC_KEY = TEST_DIR / "doc_key.md"
+
+# test_nested_schemas
 GOOD_PARENTS = ({}, {"my_child": {"foo": 3}})
 BAD_PARENTS = ({"my_child": {}},
                {"my_child": {"foo": "3"}})
@@ -179,18 +197,36 @@ def test_mapping_validation():
                         f" mapping input!\n\t{bad}")
 
 
-def test_nested_schemas():
-    parent, child = NESTED_SCHEMAS
-    registry = SchemaRegistry().with_resources((
-        (parent["$id"], SchemaResource(parent, DRAFT202012)),
-        (child["$id"], SchemaResource(child, DRAFT202012))
-    )).crawl()
+def test_document_schema():
+    expected = "\n".join(DOC_KEY.read_text().splitlines()[8:])
+    result = document_schema(
+        outfile=None, schema=_CHILD, registry=TEST_REGISTRY)
+    assert result.splitlines() == expected.splitlines()
 
+
+def test_document_schema_links():
+    expected = "\n".join(DOC_KEY.read_text().splitlines()[:7])
+    result = document_schema(
+        outfile=None, schema=_PARENT, registry=TEST_REGISTRY,
+        link_correction={"use_link": True, "registry": TEST_REGISTRY})
+    assert result.splitlines() == expected.splitlines()
+
+
+def test_correct_doc_links():
+    text = "\n".join([document_schema(outfile=None, schema=_PARENT,
+                                      registry=TEST_REGISTRY),
+                      document_schema(outfile=None, schema=_CHILD,
+                                      registry=TEST_REGISTRY)])
+    result = correct_doc_links(text, registry=TEST_REGISTRY)
+    assert result == DOC_KEY.read_text()
+
+
+def test_nested_schemas():
     for good in GOOD_PARENTS:
-        validate_schema(good, "urn:test_basegen:parent", registry)
+        validate_schema(good, "urn:test_basegen:parent", TEST_REGISTRY)
     for bad in BAD_PARENTS:
         try:
-            validate_schema(bad, "urn:test_basegen:parent", registry)
+            validate_schema(bad, "urn:test_basegen:parent", TEST_REGISTRY)
         except ValidationError:
             continue
         raise Exception("nested schema failed to catch bad dataset:"
