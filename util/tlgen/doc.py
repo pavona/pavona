@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Generate self-documentation for a TL-UL crossbar."""
 
-from basegen.validate import document_schema
+from basegen.validate import document_schema, correct_doc_links
 import jsonschema2md
 
 
@@ -11,12 +11,13 @@ def selfdoc(heading: int, cmd: str = "") -> str:
     """Return self-documentation for TL crossbar."""
     schema_parser = jsonschema2md.Parser(header_level=heading)
 
-    return "\n".join([document_schema(outfile=None,
-                                      schema="urn:tlgen:xbar",
-                                      schema_parser=schema_parser),
-                      document_schema(outfile=None,
-                                      schema="urn:tlgen:node",
-                                      schema_parser=schema_parser),
-                      document_schema(outfile=None,
-                                      schema="urn:tlgen:addrs",
-                                      schema_parser=schema_parser)])
+    doc_text = "\n".join([document_schema(outfile=None,
+                                          schema="urn:tlgen:xbar",
+                                          schema_parser=schema_parser),
+                          document_schema(outfile=None,
+                                          schema="urn:tlgen:node",
+                                          schema_parser=schema_parser),
+                          document_schema(outfile=None,
+                                          schema="urn:tlgen:addrs",
+                                          schema_parser=schema_parser)])
+    return correct_doc_links(doc_text)
