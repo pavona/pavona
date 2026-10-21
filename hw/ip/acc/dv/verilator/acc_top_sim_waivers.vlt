@@ -6,8 +6,13 @@
 
 lint_off -rule WIDTH -file "*/acc_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
 lint_off -rule WIDTH -file "*/acc_top_sim.sv" -match "*'stack_wr_ptr_q' generates 4 bits*"
-lint_off -rule WIDTH -file "*/prim_count.sv" -match "*'PossibleActions'*"
 lint_off -rule WIDTH -file "*/prim_diff_decode.sv" -match "*'skew_cnt_q'*"
+
+// Both signals are given a value at time zero and are driven procedurally
+// afterwards, which is intentional in a simulation model.  Verilator 5 points
+// out the combination in case a reset was meant instead.
+lint_off -rule PROCASSINIT -file "*/acc_top_sim.sv" -match "*'acc_start_done'*"
+lint_off -rule PROCASSINIT -file "*/acc_core_model.sv" -match "*'model_state'*"
 
 // VARHIDDEN: Local FSM enum values legitimately shadow package-level names
 lint_off -rule VARHIDDEN -file "*/kmac_core.sv" -match "*StTerminalError*"

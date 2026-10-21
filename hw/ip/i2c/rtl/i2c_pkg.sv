@@ -49,6 +49,11 @@ package i2c_pkg;
   // byte and an identifier defined by i2c_acq_byte_id_e.
   parameter int unsigned ACQ_FIFO_WIDTH = I2C_ACQ_BYTE_ID_WIDTH + 8;
 
+  // Timing counter in the controller and target FSMs.
+  // The counter is loaded with the sum of two timing register fields,
+  // so it must be at least one bit wider than the widest field.
+  typedef logic [15:0] tcount_t;
+
   typedef enum bit {
     WRITE = 1'b0,
     READ = 1'b1

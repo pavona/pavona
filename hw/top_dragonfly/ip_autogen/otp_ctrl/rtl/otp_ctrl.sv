@@ -719,14 +719,6 @@ end
     reg2hw.alert_test.fatal_macro_error.qe
   };
 
-  localparam logic [NumAlerts-1:0] AlertIsFatal = {
-    1'b0, // recov_prim_otp_alert
-    1'b1, // fatal_prim_otp_alert
-    1'b1, // fatal_bus_integ_error_q
-    1'b1, // fatal_check_error_q
-    1'b1  // fatal_macro_error_q
-  };
-
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
