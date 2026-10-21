@@ -55,6 +55,11 @@ filesets:
       - lint/${module_instance_name}.vbl
     file_type: waiver
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -67,6 +72,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: ${module_instance_name}
 

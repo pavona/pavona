@@ -13,6 +13,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:virtual_ip:otp_ctrl_macro_pkg
       - lowrisc:prim:mubi
 
     files:
@@ -48,6 +49,12 @@ filesets:
       - lint/otp_ctrl_top_specific_pkg.vbl
     file_type: veribleLintWaiver
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -60,6 +67,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: lc_ctrl
 

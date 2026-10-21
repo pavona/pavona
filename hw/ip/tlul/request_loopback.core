@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:assert
       - lowrisc:tlul:common
+      - lowrisc:tlul:socket_1n
     files:
       - rtl/tlul_request_loopback.sv
     file_type: systemVerilogSource
@@ -36,6 +37,11 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -48,6 +54,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: tlul_request_loopback
 

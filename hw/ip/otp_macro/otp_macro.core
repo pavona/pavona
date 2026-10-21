@@ -12,6 +12,12 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:secded
+      - lowrisc:prim:subreg
+      - lowrisc:prim:reg_we_check
+      - lowrisc:prim:sparse_fsm
+      - lowrisc:tlul:adapter_reg
+      - lowrisc:tlul:trans_intg
+      - lowrisc:tlul:lc_gate
       - lowrisc:ip:otp_macro_pkg
       - lowrisc:virtual_ip:otp_ctrl_macro_pkg
       - lowrisc:virtual_constants:top_racl_pkg
@@ -40,6 +46,11 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -51,6 +62,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: otp_macro
 

@@ -16,6 +16,21 @@ inputs:
   install-verible:
     description: Install verbile
     default: false
+  slang-version:
+    description: Slang version to install
+    required: true
+    default: 'v12.0'
+  slang-sha256:
+    description: SHA-256 of the slang release tarball for slang-version
+    required: true
+    default: 'd1f680e2c90b95daab3b812a6431055e3d8828fde281dbf89b72ee3eceb90dd5'
+  slang-path:
+    description: Path at which to install slang
+    required: true
+    default: /tools/slang
+  install-slang:
+    description: Install slang
+    default: false
   configure-bazel:
     description: Configure Bazel to use remote cache
     required: true
@@ -127,6 +142,20 @@ runs:
         # Fixup bin permission which is broken in tarball.
         sudo chmod 755 "${{ inputs.verible-path }}/bin"
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+
+    - name: Install slang
+      if: inputs.install-slang == 'true'
+      run: |
+        SLANG_TAR="slang-linux-x86_64.tar.gz"
+        SLANG_URL="https://github.com/MikePopoloski/slang/releases/download/${{ inputs.slang-version }}/${SLANG_TAR}"
+        source ci/scripts/utils.sh
+        retry 5 2 2 curl -sSfL "$SLANG_URL" -o "$RUNNER_TEMP/${SLANG_TAR}"
+        echo "${{ inputs.slang-sha256 }}  $RUNNER_TEMP/${SLANG_TAR}" | sha256sum -c -
+        sudo mkdir -p "${{ inputs.slang-path }}/bin"
+        sudo tar -C "${{ inputs.slang-path }}/bin" -xvzf "$RUNNER_TEMP/${SLANG_TAR}"
+        echo "${{ inputs.slang-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
       working-directory: ${{ inputs.working-directory }}
 

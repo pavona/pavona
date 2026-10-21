@@ -30,6 +30,10 @@ __TOOL_REQUIREMENTS__ = {
         'min_version': '0.82.0',
         'as_needed': True
     },
+    'slang': {
+        'min_version': '12.0.0',
+        'as_needed': True
+    },
     'verible': {
         'min_version': 'v0.0-3622-g07b310a3',
         'as_needed': True

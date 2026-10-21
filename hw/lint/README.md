@@ -38,6 +38,12 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
+
+  files_slang_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
   [...]
 
 targets:
@@ -46,6 +52,7 @@ targets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
+      - tool_slang       ? (files_slang_waiver)
       - files_rtl
     toplevel: aes
 
@@ -60,25 +67,25 @@ targets:
         verilator_options:
           - "-Wall"
 ```
-Note that the setup shown above supports RTL style linting with the open source tool [Verible](https://github.com/google/verible/), with [Verilator](https://www.veripool.org/wiki/verilator), and with the commercial tool [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/).
+Note that the setup shown above supports RTL style linting with the open source tool [Verible](https://github.com/google/verible/), with [Verilator](https://www.veripool.org/wiki/verilator), with [slang](https://github.com/MikePopoloski/slang), and with the commercial tool [AscentLint](https://www.realintent.com/rtl-linting-ascent-lint/).
 In particular, Verible lint detects style elements that are in violation with the Verilog style guide.
 
-The same lint target is reused for all three tools (we override the tool selection when invoking FuseSoC).
+The same lint target is reused for all tools (we override the tool selection when invoking FuseSoC).
 Lint waivers can be added to the flow by placing them in the corresponding waiver file.
 In this example this would be `lint/aes.waiver` for AscentLint and `lint/aes.vlt` for Verilator.
 
-All three linting tools mentioned above have been integrated with the `dvsim` regression tool.
+All linting tools mentioned above have been integrated with the `dvsim` regression tool.
 In order to manually invoke any of the linting tools on a specific block, make sure that the corresponding linting tool is properly installed, step into the project root and call
 ```sh
 cd $REPO_TOP
-util/dvsim/dvsim.py hw/top_egret/lint/top_egret_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge --select-cfgs <lint-config-name>
+util/dvsim/dvsim.py hw/top_egret/lint/top_egret_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint|slang) --local --purge --select-cfgs <lint-config-name>
 ```
 where `<lint-config-name>` is the name of the linting configuration as defined in the `top_egret_lint_cfgs.hjson` regression list (currently that file contains a lint configuration for all available comportable IPs and the top-level).
 
 In order to run all defined configs in `top_egret_lint_cfgs.hjson` as a batch regression, just omit the `--select-cfgs` switch as follows:
 ```sh
 cd $REPO_TOP
-util/dvsim/dvsim.py hw/top_egret/lint/top_egret_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint) --local --purge
+util/dvsim/dvsim.py hw/top_egret/lint/top_egret_lint_cfgs.hjson --tool (ascentlint|verilator|veriblelint|slang) --local --purge
 ```
 The `purge` option ensures that the scratch directory is fully erased before starting the build.
 The number of parallel workers can be set using `--max-parallel <number>`.

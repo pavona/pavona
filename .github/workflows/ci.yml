@@ -88,6 +88,7 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           install-verible: true
+          install-slang: true
       - name: Countermeasures implemented (egret)
         run: ./ci/scripts/check-countermeasures.sh egret
       - name: Countermeasures implemented (scafi_deprecated)
@@ -132,6 +133,10 @@ jobs:
         run: ./ci/scripts/verible-lint.sh dv dragonfly
       - name: Verible FPV dragonfly
         run: ./ci/scripts/verible-lint.sh fpv dragonfly
+      - name: Slang RTL egret
+        run: ./ci/scripts/slang-lint.sh egret
+      - name: Slang RTL dragonfly
+        run: ./ci/scripts/slang-lint.sh dragonfly
       - name: Validate alert classification for Egret
         run: ./ci/scripts/validate_alert_classification.py egret hw/top_egret/ip_autogen/alert_handler/data/top_egret_alert_handler.ipconfig.hjson "$(realpath hw/top_egret/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
       - name: Validate alert classification for Dragonfly

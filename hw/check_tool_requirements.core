@@ -23,6 +23,11 @@ scripts:
     # copyto.
     #filesets:
     #  - files_check_tool_requirements
+  check_tool_requirements_slang:
+    cmd:
+      - python3
+      - check_tool_requirements.py
+      - 'slang'
 
 targets:
   default:
@@ -31,3 +36,4 @@ targets:
     hooks:
       pre_build:
         - tool_veriblelint ? (check_tool_requirements_verible)
+        - tool_slang ? (check_tool_requirements_slang)

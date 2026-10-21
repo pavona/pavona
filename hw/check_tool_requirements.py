@@ -198,6 +198,11 @@ class ToolReq:
                 .format(actual_version, self.min_version))
 
 
+class SlangToolReq(ToolReq):
+    # Example output: slang version 12.0.0+545f88b2e
+    version_regex = re.compile(r'slang version ([0-9]+\.[0-9]+\.[0-9]+)')
+
+
 class VeribleToolReq(ToolReq):
     tool_cmd = ['verible-verilog-lint', '--version']
 
@@ -337,7 +342,8 @@ def dict_to_tool_req(path, tool, raw):
         'vcs': VcsToolReq,
         'verible': VeribleToolReq,
         'vivado': VivadoToolReq,
-        'ninja': NinjaToolReq
+        'ninja': NinjaToolReq,
+        'slang': SlangToolReq
     }
     cls = classes.get(tool, ToolReq)
 
