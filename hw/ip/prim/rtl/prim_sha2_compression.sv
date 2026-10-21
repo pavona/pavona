@@ -42,7 +42,7 @@ module prim_sha2_compression import prim_sha2_pkg::*;
   output sha_word64_t [7:0] hash_o,
 
   // Digest input/output signals
-  input  [63:0]             message_length_i, // bits but byte based
+  input  [9:0]              message_length_i, // bits but byte based
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0

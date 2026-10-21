@@ -9,11 +9,7 @@
 
 module prim_sha2 import prim_sha2_pkg::*;
 #(
-  parameter bit MultimodeEn = 0, // assert to enable multi-mode digest feature
-
-  localparam int unsigned RndWidth256 = $clog2(NumRound256),
-  localparam int unsigned RndWidth512 = $clog2(NumRound512),
-  localparam sha_word64_t ZeroWord    = '0
+  parameter bit MultimodeEn = 0 // assert to enable multi-mode digest feature
  ) (
   input clk_i,
   input rst_ni,
@@ -137,7 +133,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .digest_mode_i      (digest_mode_i),
     .hash_done_o        (hash_done_o),
     .hash_o             (),
-    .message_length_i   (message_length_i),
+    .message_length_i   (message_length_i[9:0]),
     .digest_i           (digest_i),
     .digest_we_i        (digest_we_i),
     .digest_o           (digest_o),
