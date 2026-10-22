@@ -6,8 +6,8 @@
 
 MOTIVE
 ------
-Bazel is used to build device software for OpenTitan.
-Many different software binaries may be run on or loaded into an OpenTitan
+Bazel is used to build device software for Pavona.
+Many different software binaries may be run on or loaded into a Pavona
 system in simulation, which Bazel Targets are used to define and build.
 
 Bazel rules can output multiple files, and the software collateral that
@@ -35,6 +35,25 @@ ACTIONS
 - Build the Bazel Target for each label
 - Use Bazel 'cquery' to locate the output files for the target
 - Copy the output files to the simulation working directory
+
+With --prebuild, the same is done for the software of many tests at once, into
+the cache their sw_build steps copy from (--cache-dir), ahead of the runs.
+
+CACHING
+-------
+dvsim gives each of its invocations a directory of its own (--cache-dir),
+holding one entry per distinct set of images the selected tests need. The
+prebuild fills it before the runs start, and each test then copies its own
+images out of it instead of building them.
+
+That directory is new on every dvsim invocation, so an entry is never stale.
+A new directory does not mean a rebuild, though: Bazel compiles only what has
+changed, so the prebuild usually just copies software it had already built.
+The last few of these directories are kept and older ones are removed.
+
+A test whose images are not in the cache builds them itself. That happens when
+the cfg sets no prebuild command, and when the prebuild ran but could not build
+those particular images.
 
 DETAILS
 -------
@@ -69,6 +88,8 @@ opentitantool) that are also dependencies of the Bazel test target.
 """
 
 import argparse
+import hashlib
+import json
 from pathlib import Path
 import subprocess
 import os
@@ -77,6 +98,7 @@ import shutil
 import shlex
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Optional
 import textwrap
 
 import logging
@@ -155,7 +177,7 @@ class BazelRunner:
         self.cmd = ""
         self.airgapped_opts = []
         self.build_opts = []
-        self.cquery_opts_common = BAZEL_COMMON_CQUERY_FLAGS
+        self.cquery_opts_common = list(BAZEL_COMMON_CQUERY_FLAGS)
 
     def __str__(self):
         s = textwrap.dedent(f"""
@@ -167,7 +189,11 @@ class BazelRunner:
         """)
         return s
 
-    def build(self, labels: list[str], opts: list[str] = []) -> None:
+    def build(self, labels: list[str], opts: list[str] = [], check: bool = True) -> bool:
+        """Build the labels. Returns whether the build succeeded.
+
+        With check, a failed build exits the script instead.
+        """
         build_cmd = (
             self.cmd,
             "build",
@@ -177,7 +203,7 @@ class BazelRunner:
             *opts,
         )
         logger.info(f"build_cmd = {' '.join(build_cmd)}")
-        self._run_cmd(build_cmd)
+        return self._run_cmd(build_cmd, check=check) is not None
 
     def query(self, label: str, opts: list[str]) -> list[str]:
         query_cmd = (
@@ -202,11 +228,23 @@ class BazelRunner:
         logger.info(f"cquery_cmd = {' '.join(cquery_cmd)}")
         return self._run_cmd(cquery_cmd)
 
-    def _run_cmd(self, cmd: list[str]) -> list[str]:
+    def info(self, key: str) -> str:
+        """Return a single value from `bazel info`, e.g. "execution_root"."""
+        info_cmd = (
+            self.cmd,
+            "info",
+            *self.airgapped_opts,
+            key,
+        )
+        logger.info(f"info_cmd = {' '.join(info_cmd)}")
+        return self._run_cmd(info_cmd)[0]
+
+    def _run_cmd(self, cmd: list[str], check: bool = True) -> Optional[list[str]]:
         """Run a single subprocess command.
 
         Returns:
-            Each (non-empty) line of the stdout as a list of strings.
+            Each (non-empty) line of the stdout as a list of strings. If the
+            command fails, exits the script, or without check returns None.
         """
 
         cmd = [x for x in cmd if x]  # Remove empty strings
@@ -219,6 +257,8 @@ class BazelRunner:
             print(res.stdout, flush=True)
             print("---- STDERR ----")
             print(res.stderr, flush=True)
+            if not check:
+                return None
             sys.exit(f"_run_cmd -> had a non-zero return code of {res.returncode}.")
 
         logger.debug("_run_cmd -> stdout:\n%s\n", res.stdout)
@@ -274,17 +314,8 @@ class ImageQuery:
     kind: str
 
 
-def _deploy_software_collateral(args) -> None:
-    """Build, then deploy the software collateral"""
-
-    images_str = "\n".join(args.sw_images)
-    logger.info(
-        "Building and deploying collateral for the following images:\n"
-        "[IMAGES]\n"
-        f"{images_str}\n"
-        "[RUN_DIR]\n"
-        f"{args.run_dir}\n"
-    )
+def _make_bazel_runner(args) -> BazelRunner:
+    """Set up the Bazel invocations for the build options in args."""
 
     bazel_runner = BazelRunner()
 
@@ -316,53 +347,110 @@ def _deploy_software_collateral(args) -> None:
     # Print a summary of the accumulated bazel_runner configuration that we will use to
     # assemble all further bazel operations.
     logger.info(bazel_runner)
+    return bazel_runner
+
+
+def _image_query(image: str, args, bazel_runner: BazelRunner) -> ImageQuery:
+    """Determine the label to build for an image, and the cquery for its files."""
+
+    image_string = ImageString(image)
+
+    if sw_type_e(image_string.index) in (
+        sw_type_e.SwTypeROM,
+        sw_type_e.SwTypeTestSlotA,
+        sw_type_e.SwTypeTestSlotB,
+        sw_type_e.SwTypeCtnRAM,
+        sw_type_e.SwTypeSecondROM,
+        sw_type_e.SwTypeACC,
+    ):
+        if "silicon_creator" in image_string.flags:
+            # Add the flag `silicon_creator` when using a flash image built
+            # for the `silicon_creator` device.
+            # This is used for GLS tests that integrate the ROM macro, which
+            # is built for the `silicon_creator` device, not the `sim_dv` device.
+            #
+            # Currently, the '_silicon_creator' suffix is added manually when
+            # instantiating rules.
+            label = f"{image_string.label}_silicon_creator"
+        else:
+            # If test type is `pavona_test` and the flash image was generated
+            # by the `pavona_test` Bazel macro itself, or it was generated
+            # by the `pavona_flash_binary` or `pavona_binary` Bazel macros,
+            # then we need to append the device suffix.
+            label = f"{image_string.label}_{args.sw_build_device}"
+
+        # For this type of image, relevant files may be present in both the 'data'
+        # and 'srcs' attributes of the target. Query for both.
+        cquery = f"labels(data, {label}) union labels(srcs, {label})"
+
+    else:
+        # For all other values of sw_type_e, the label/query is just the label
+        # passed as input (minus all trailing flags).
+        label = image_string.label
+        cquery = image_string.label
+
+    # Query to determine what 'kind' the target is
+    kind_query = bazel_runner.cquery(label, ["--output=label_kind"])
+    kind = kind_query[0].split(" ")[0]
+
+    return ImageQuery(image_string, label, cquery, kind)
+
+
+def _image_runfiles(iq: ImageQuery, args, bazel_runner: BazelRunner) -> list[str]:
+    """Return the built files to deploy for an image."""
+
+    # First, run the query to get the maximal set of runfiles for the image
+    runfiles = _get_image_runfiles(iq, bazel_runner)
+
+    # Some rules may return runfiles for many different software devices, but
+    # we only require the files for a specific device (passed by --sw-build-device)
+    # Our bazel rules always append the device as the final element of the filename
+    # before any extensions (the final string fragment before the first period)
+    # Perform a crude string-contains check to determine if this is one of those rules,
+    # and if so, remove files unrelated to this device
+    dev = args.sw_build_device
+
+    def _f_endswith_dev(f: Path) -> bool:
+        f_stem = str(f).split(".")[0]
+        return f_stem.endswith(dev)
+
+    is_device_specific = any([_f_endswith_dev(Path(f)) for f in runfiles])
+    if is_device_specific and ("dont_filter" not in iq.image_string.flags):
+        logger.info(
+            f"This query returned device_specific '{dev}' files, filtering "
+            "out runfiles for other devices..."
+        )
+        runfiles = list(filter(lambda f: _f_endswith_dev(Path(f)), runfiles))
+
+    return runfiles
+
+
+def _exec_root(bazel_runner: BazelRunner) -> Path:
+    """Return Bazel's execution root."""
+    exec_root = Path(bazel_runner.info("execution_root"))
+    logger.info(f"execution root: {exec_root}\n")
+    return exec_root
+
+
+def _deploy_software_collateral(args) -> None:
+    """Build one test's software images and copy them into its run directory."""
+
+    images_str = "\n".join(args.sw_images)
+    logger.info(
+        "Building and deploying collateral for the following images:\n"
+        "[IMAGES]\n"
+        f"{images_str}\n"
+        "[RUN_DIR]\n"
+        f"{args.run_dir}\n"
+    )
+
+    bazel_runner = _make_bazel_runner(args)
 
     # Determine the final label and cquery expression to build and get the
     # artifacts for each image.
     image_query_map = {}
     for image in args.sw_images:
-        image_string = ImageString(image)
-
-        if sw_type_e(image_string.index) in (
-            sw_type_e.SwTypeROM,
-            sw_type_e.SwTypeTestSlotA,
-            sw_type_e.SwTypeTestSlotB,
-            sw_type_e.SwTypeCtnRAM,
-            sw_type_e.SwTypeSecondROM,
-            sw_type_e.SwTypeACC,
-        ):
-            if "silicon_creator" in image_string.flags:
-                # Add the flag `silicon_creator` when using a flash image built
-                # for the `silicon_creator` device.
-                # This is used for GLS tests that integrate the ROM macro, which
-                # is built for the `silicon_creator` device, not the `sim_dv` device.
-                #
-                # Currently, the '_silicon_creator' suffix is added manually when
-                # instantiating rules.
-                label = f"{image_string.label}_silicon_creator"
-            else:
-                # If test type is `pavona_test` and the flash image was generated
-                # by the `pavona_test` Bazel macro itself, or it was generated
-                # by the `pavona_flash_binary` or `pavona_binary` Bazel macros,
-                # then we need to append the device suffix.
-                label = f"{image_string.label}_{args.sw_build_device}"
-
-            # For this type of image, relevant files may be present in both the 'data'
-            # and 'srcs' attributes of the target. Query for both.
-            cquery = f"labels(data, {label}) union labels(srcs, {label})"
-
-        else:
-            # For all other values of sw_type_e, the label/query is just the label
-            # passed as input (minus all trailing flags).
-            label = image_string.label
-            cquery = image_string.label
-
-        # Query to determine what 'kind' the target is
-        kind_query = bazel_runner.cquery(label, ["--output=label_kind"])
-        kind = kind_query[0].split(" ")[0]
-
-        # Add a query object to the set for this image
-        image_query_map[image] = ImageQuery(image_string, label, cquery, kind)
+        image_query_map[image] = _image_query(image, args, bazel_runner)
 
     logger.info("Image query parameters determined.\n")
 
@@ -372,42 +460,124 @@ def _deploy_software_collateral(args) -> None:
     bazel_runner.build(bazel_labels)
     logger.info("All labels built.\n")
 
+    exec_root = _exec_root(bazel_runner)
+
     # Now the build is complete, deploy the files for each target
     for image in args.sw_images:
         logger.info(f"Querying runfiles for image : {image}")
-
-        iq = image_query_map[image]
-
-        # First, run the query to get the maximal set of runfiles for the image
-        runfiles = _get_image_runfiles(iq, bazel_runner)
-
-        # Some rules may return runfiles for many different software devices, but
-        # we only require the files for a specific device (passed by --sw-build-device)
-        # Our bazel rules always append the device as the final element of the filename
-        # before any extensions (the final string fragment before the first period)
-        # Perform a crude string-contains check to determine if this is one of those rules,
-        # and if so, remove files unrelated to this device
-        dev = args.sw_build_device
-
-        def _f_endswith_dev(f: Path) -> bool:
-            f_stem = str(f).split(".")[0]
-            return f_stem.endswith(dev)
-
-        is_device_specific = any([_f_endswith_dev(Path(f)) for f in runfiles])
-        if is_device_specific and ("dont_filter" not in iq.image_string.flags):
-            logger.info(
-                f"This query returned device_specific '{dev}' files, filtering "
-                "out runfiles for other devices..."
-            )
-            runfiles = list(filter(lambda f: _f_endswith_dev(Path(f)), runfiles))
+        runfiles = _image_runfiles(image_query_map[image], args, bazel_runner)
 
         # Now copy any runfiles for this image to the test's working directory so they
         # can be accessed easily via relative path.
-        _copy_files_to_run_dir(runfiles, args.run_dir)
+        _copy_files_to_run_dir(runfiles, args.run_dir, exec_root)
         runfiles_str = "\n".join(runfiles)
         logger.info(
             f"Deployed the following collateral:\n[IMAGE]\n{image}\n[FILES]\n{runfiles_str}\n"
         )
+
+
+def _cache_key(args) -> str:
+    """Name of the cache entry for the software of args."""
+    return hashlib.sha256(json.dumps([
+        args.sw_images, args.sw_build_opts, args.sw_build_device,
+        ENV.get("BAZEL_OTP_DATA_PERM_FLAG", ""),
+    ]).encode()).hexdigest()[:16]
+
+
+def _deploy_from_cache(args) -> None:
+    """Copy one test's software out of the cache, or build it in this run.
+
+    Runs once per seed. The prebuild has normally built every set of images
+    the cfg needs already, so this only copies. It falls back to building
+    when the cfg prebuilds nothing, or when the prebuild could not build
+    these particular images.
+    """
+    entry = args.cache_dir / _cache_key(args)
+    complete = entry / ".complete"
+    if not complete.exists():
+        logger.info(f"No prebuilt software in {entry}, building it here.")
+        _deploy_software_collateral(args)
+        return
+
+    files = [f for f in entry.iterdir() if f != complete]
+    for f in files:
+        shutil.copyfile(f, args.run_dir / f.name)
+    files_str = "\n".join(str(f) for f in files)
+    logger.info(f"Deployed from the software cache:\n{files_str}\n")
+
+
+def _prebuild(manifest: Path, cache_dir: Path) -> None:
+    """Build the software of many tests at once, into the cache they copy from.
+
+    An entry that could not be built or deployed is left out. The tests that
+    need it build it themselves, as without a prebuild, and fail with the reason.
+    """
+    entries = [
+        argparse.Namespace(
+            sw_images=_space_sep_str(e["sw_images"]),
+            sw_build_opts=_space_sep_str(e["sw_build_opts"]),
+            sw_build_device=e["sw_build_device"],
+        )
+        for e in json.loads(manifest.read_text())
+    ]
+    logger.info(f"Prebuilding the software of {len(entries)} set(s) of images into {cache_dir}")
+
+    # Create scratch cache
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # Bazel builds one configuration per invocation
+    groups: dict[tuple, list] = {}
+    for e in entries:
+        groups.setdefault((tuple(e.sw_build_opts), e.sw_build_device), []).append(e)
+
+    deployed = 0
+    for (opts, device), group in groups.items():
+        logger.info(f"Building {len(group)} set(s) of images with {list(opts)} for {device}")
+        bazel_runner = _make_bazel_runner(group[0])
+
+        queries = {}
+        for image in dict.fromkeys(i for e in group for i in e.sw_images):
+            try:
+                # Get real Bazel label
+                queries[image] = _image_query(image, group[0], bazel_runner)
+            except SystemExit as err:
+                logger.error(f"Cannot resolve {image}, its tests will build it themselves: {err}")
+
+        labels = list(dict.fromkeys(q.label for q in queries.values()))
+        logger.info(f"Building {len(labels)} label(s)...")
+        if not bazel_runner.build(labels, ["--keep_going"], check=False):
+            logger.warning(
+                "Some software did not build (see above). The tests that need it "
+                "will build it themselves and report why."
+            )
+        exec_root = _exec_root(bazel_runner)
+
+        runfiles = {}
+        for e in group:
+            key = _cache_key(e)
+            entry = cache_dir / key
+            # If complete exists, then it has been deployed already
+            if (entry / ".complete").exists():
+                deployed += 1
+                continue
+            shutil.rmtree(entry, ignore_errors=True)
+            entry.mkdir()
+            try:
+                for image in e.sw_images:
+                    if image not in runfiles:
+                        runfiles[image] = _image_runfiles(queries[image], e, bazel_runner)
+                    _copy_files_to_run_dir(runfiles[image], entry, exec_root)
+            except (SystemExit, KeyError, OSError) as err:
+                shutil.rmtree(entry, ignore_errors=True)
+                logger.error(
+                    f"Cannot deploy {' '.join(e.sw_images)}, its tests will build "
+                    f"it themselves: {err!r}"
+                )
+                continue
+            (entry / ".complete").touch()
+            deployed += 1
+
+    logger.info(f"Prebuilt {deployed} of {len(entries)} set(s) of images.")
 
 
 def _get_image_runfiles(iq: ImageQuery, bazel_runner: BazelRunner) -> list[str]:
@@ -479,25 +649,29 @@ def _get_image_runfiles(iq: ImageQuery, bazel_runner: BazelRunner) -> list[str]:
     return runfiles
 
 
-def _copy_files_to_run_dir(files: list[str], run_dir: Path) -> None:
+def _copy_files_to_run_dir(files: list[str], run_dir: Path, exec_root: Path) -> None:
     """Copy all target artifacts to the run directory.
+
+    Relative paths are resolved against exec_root, Bazel's execution root.
 
     If the artifact is a .bin, and a .elf file of the same name also exists,
     also copy the equivalent .elf file.
     """
 
     for f in [Path(f) for f in files]:
-        shutil.copyfile(f, run_dir / f.name)
+        src = f if f.is_absolute() else exec_root / f
+        shutil.copyfile(src, run_dir / f.name)
         # If we are copying a .bin file, and the corresponding .elf file exists, also copy that
-        maybe_elf = f.with_suffix(".elf")
+        maybe_elf = src.with_suffix(".elf")
         if f.suffix == "bin" and maybe_elf.exists():
             shutil.copy(maybe_elf, run_dir)
 
 
-def _main() -> None:
-    def _space_sep_str(value):
-        return list(filter(None, value.split(" ")))
+def _space_sep_str(value):
+    return list(filter(None, value.split(" ")))
 
+
+def _main() -> None:
     def _int_or_str(value):
         try:
             return int(value)
@@ -530,6 +704,19 @@ def _main() -> None:
         type=Path,
         help="Run directory where the software artifacts should be deployed to",
     )
+    parser.add_argument(
+        "--cache-dir",
+        type=Path,
+        help="Directory holding the software prebuilt for this dvsim invocation. "
+        "Filled once by --prebuild; each test then copies its own images from it "
+        "instead of building them.",
+    )
+    parser.add_argument(
+        "--prebuild",
+        type=Path,
+        help="Build the software of every test listed in this JSON manifest into "
+        "--cache-dir, instead of deploying one test's software.",
+    )
     args = parser.parse_args()
 
     log_level = logging.INFO
@@ -541,7 +728,19 @@ def _main() -> None:
     for name, val in sorted(vars(args).items()):
         logger.info("  %s = %r", name, val)
 
-    _deploy_software_collateral(args)
+    if args.prebuild:
+        if not args.cache_dir:
+            parser.error("--prebuild needs --cache-dir")
+        # Whatever goes wrong, the tests build their own software, so this
+        # never fails the regression.
+        try:
+            _prebuild(args.prebuild, args.cache_dir)
+        except (Exception, SystemExit) as err:
+            logger.exception(f"Prebuild stopped, the tests will build their own software: {err!r}")
+    elif args.cache_dir:
+        _deploy_from_cache(args)
+    else:
+        _deploy_software_collateral(args)
 
 
 if __name__ == "__main__":

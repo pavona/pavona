@@ -17,7 +17,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Optional
 
-from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
+from Deploy import (CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, SwPrebuild, RunTest)
 from FlowCfg import FlowCfg
 from modes import BuildMode, Mode, RunMode, find_mode
 from Regression import Regression
@@ -521,11 +521,21 @@ class SimCfg(FlowCfg):
                       "--gui_debug / -gd option or switch to Xcelium tool.")
             sys.exit(1)
 
+        # Build the software the tests need once, alongside the builds, rather
+        # than in each run. It is scheduled with --run-only too, since it does
+        # not depend on the builds.
+        self.sw_prebuild = None
+        if SwPrebuild.needed(self.runs, self):
+            self.sw_prebuild = SwPrebuild(self.runs, self)
+
         # Add builds to the list of things to run, only if --run-only switch
         # is not passed.
         self.deploy = []
         if not self.run_only:
             self.deploy += self.builds
+
+        if self.sw_prebuild:
+            self.deploy.append(self.sw_prebuild)
 
         if not self.build_only:
             self.deploy += self.runs
