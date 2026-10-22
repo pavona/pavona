@@ -427,7 +427,6 @@ cc_library(
     deps = [
         "//hw/top:kmac_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
@@ -456,7 +455,7 @@ pavona_test(
     ),
     deps = [
         ":kmac",
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",

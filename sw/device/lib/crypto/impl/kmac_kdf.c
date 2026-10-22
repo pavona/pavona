@@ -72,7 +72,13 @@ otcrypto_status_t otcrypto_kmac_kdf(
     // `key_derivation_key->keyblob_length` is 8 words long.
     HARDENED_TRY(keyblob_to_keymgr_diversification(key_derivation_key,
                                                    &diversification));
-    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+#ifdef HAS_KEYMGR_DPE
+    HARDENED_TRY(keymgr_generate_key_kmac(
+        diversification, (keymgr_slot_t)key_derivation_key->config.cdi));
+#else
+    HARDENED_TRY(keymgr_generate_key_kmac(
+        diversification, (keymgr_cdi_t)key_derivation_key->config.cdi));
+#endif
   } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
     // Remask the key.
     HARDENED_TRY(keyblob_remask(key_derivation_key));

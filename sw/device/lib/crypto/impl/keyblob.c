@@ -335,5 +335,11 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
 status_t keyblob_sideload_key_acc(const otcrypto_blinded_key_t *key) {
   keymgr_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-  return keymgr_generate_key_acc(diversification);
+#ifdef HAS_KEYMGR_DPE
+  return keymgr_generate_key_acc(diversification,
+                                 (keymgr_slot_t)key->config.cdi);
+#else
+  return keymgr_generate_key_acc(diversification,
+                                 (keymgr_cdi_t)key->config.cdi);
+#endif
 }
