@@ -265,6 +265,7 @@ class csr_rw_seq extends csr_base_seq;
       uvm_reg_field  test_fields[$];
       dv_base_reg    test_dv_csr;
       bit            supports_byte_enable;
+      bit            has_user_frontdoor;
       bit            do_field_rd_check;
 
       // The test_csrs list may be jumbled from different RAL models. Hence, we find at runtime, if
@@ -275,6 +276,7 @@ class csr_rw_seq extends csr_base_seq;
         if (adapter != null) begin
           supports_byte_enable = adapter.supports_byte_enable;
         end
+        has_user_frontdoor = test_csrs[i].get_frontdoor(map) != null;
       end
 
       // check if parent block or register is excluded from write
@@ -307,7 +309,7 @@ class csr_rw_seq extends csr_base_seq;
       if (test_dv_csr.get_is_shadowed) wait_no_outstanding_access();
 
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(do_field_rd_check,
-          !supports_byte_enable -> !do_field_rd_check;)
+          (!supports_byte_enable || has_user_frontdoor) -> !do_field_rd_check;)
       do_check_csr_or_field_rd(.csr(test_csrs[i]),
                               .blocking(blocking),
                               .compare(!external_checker),
