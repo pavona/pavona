@@ -24,6 +24,8 @@ ACVP_VECTOR_SETS = {
         "files": {
             "expectedResults.json": "feaee0d9e2387fa88e6e9502336ac9d60a16d785ce3dd53fd97978deb871b433",
             "prompt.json": "7d760e84600e8eb4befbfd12cd09fda7313b07f2d1f48c5104a9a9866a4501d9",
+        },
+    },
     "ecdsa-siggen": {
         "algorithm": "ECDSA-sigGen-FIPS186-5",
         "registration_sha256": "1eb734065d91cc0291ee7164b8b2eecc0b9083bd43b26ed352ae582cb69dd7e9",
