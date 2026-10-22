@@ -332,7 +332,7 @@ module top_${top["name"]} #(
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
+      otp_ctrl_otp_broadcast.hw_cfg2_data.manuf_state;
   assign keymgr_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 

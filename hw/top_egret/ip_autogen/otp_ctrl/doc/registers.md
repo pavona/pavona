@@ -3,66 +3,100 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_egret/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
 ## Summary
 
-| Name                                                                                   | Offset   |   Length | Description                                                                                                                                |
-|:---------------------------------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| otp_ctrl.[`INTR_STATE`](#intr_state)                                                   | 0x0      |        4 | Interrupt State Register                                                                                                                   |
-| otp_ctrl.[`INTR_ENABLE`](#intr_enable)                                                 | 0x4      |        4 | Interrupt Enable Register                                                                                                                  |
-| otp_ctrl.[`INTR_TEST`](#intr_test)                                                     | 0x8      |        4 | Interrupt Test Register                                                                                                                    |
-| otp_ctrl.[`ALERT_TEST`](#alert_test)                                                   | 0xc      |        4 | Alert Test Register                                                                                                                        |
-| otp_ctrl.[`STATUS`](#status)                                                           | 0x10     |        4 | OTP status register.                                                                                                                       |
-| otp_ctrl.[`PARTITION_STATUS_0`](#partition_status_0)                                   | 0x14     |        4 | OTP partition status register 0.                                                                                                           |
-| otp_ctrl.[`ERR_CODE_0`](#err_code)                                                     | 0x18     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_1`](#err_code)                                                     | 0x1c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_2`](#err_code)                                                     | 0x20     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_3`](#err_code)                                                     | 0x24     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_4`](#err_code)                                                     | 0x28     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_5`](#err_code)                                                     | 0x2c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_6`](#err_code)                                                     | 0x30     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_7`](#err_code)                                                     | 0x34     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_8`](#err_code)                                                     | 0x38     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_9`](#err_code)                                                     | 0x3c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_10`](#err_code)                                                    | 0x40     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_11`](#err_code)                                                    | 0x44     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`ERR_CODE_12`](#err_code)                                                    | 0x48     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
-| otp_ctrl.[`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)                               | 0x4c     |        4 | Register write enable for all direct access interface registers.                                                                           |
-| otp_ctrl.[`DIRECT_ACCESS_CMD`](#direct_access_cmd)                                     | 0x50     |        4 | Command register for direct accesses.                                                                                                      |
-| otp_ctrl.[`DIRECT_ACCESS_ADDRESS`](#direct_access_address)                             | 0x54     |        4 | Address register for direct accesses.                                                                                                      |
-| otp_ctrl.[`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata)                               | 0x58     |        4 | Write data for direct accesses.                                                                                                            |
-| otp_ctrl.[`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata)                               | 0x5c     |        4 | Write data for direct accesses.                                                                                                            |
-| otp_ctrl.[`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata)                               | 0x60     |        4 | Read data for direct accesses.                                                                                                             |
-| otp_ctrl.[`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata)                               | 0x64     |        4 | Read data for direct accesses.                                                                                                             |
-| otp_ctrl.[`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)                               | 0x68     |        4 | Register write enable for [`CHECK_TRIGGER.`](#check_trigger)                                                                               |
-| otp_ctrl.[`CHECK_TRIGGER`](#check_trigger)                                             | 0x6c     |        4 | Command register for direct accesses.                                                                                                      |
-| otp_ctrl.[`CHECK_REGWEN`](#check_regwen)                                               | 0x70     |        4 | Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD.`](#consistency_check_period) |
-| otp_ctrl.[`CHECK_TIMEOUT`](#check_timeout)                                             | 0x74     |        4 | Timeout value for the integrity and consistency checks.                                                                                    |
-| otp_ctrl.[`INTEGRITY_CHECK_PERIOD`](#integrity_check_period)                           | 0x78     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                                                             |
-| otp_ctrl.[`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period)                       | 0x7c     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                                                             |
-| otp_ctrl.[`VENDOR_TEST_READ_LOCK`](#vendor_test_read_lock)                             | 0x80     |        4 | Runtime read lock for the VENDOR_TEST partition.                                                                                           |
-| otp_ctrl.[`CREATOR_SW_CFG_READ_LOCK`](#creator_sw_cfg_read_lock)                       | 0x84     |        4 | Runtime read lock for the CREATOR_SW_CFG partition.                                                                                        |
-| otp_ctrl.[`OWNER_SW_CFG_READ_LOCK`](#owner_sw_cfg_read_lock)                           | 0x88     |        4 | Runtime read lock for the OWNER_SW_CFG partition.                                                                                          |
-| otp_ctrl.[`ROT_CREATOR_AUTH_CODESIGN_READ_LOCK`](#rot_creator_auth_codesign_read_lock) | 0x8c     |        4 | Runtime read lock for the ROT_CREATOR_AUTH_CODESIGN partition.                                                                             |
-| otp_ctrl.[`ROT_CREATOR_AUTH_STATE_READ_LOCK`](#rot_creator_auth_state_read_lock)       | 0x90     |        4 | Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.                                                                                |
-| otp_ctrl.[`VENDOR_TEST_DIGEST_0`](#vendor_test_digest)                                 | 0x94     |        4 | Integrity digest for the VENDOR_TEST partition.                                                                                            |
-| otp_ctrl.[`VENDOR_TEST_DIGEST_1`](#vendor_test_digest)                                 | 0x98     |        4 | Integrity digest for the VENDOR_TEST partition.                                                                                            |
-| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_0`](#creator_sw_cfg_digest)                           | 0x9c     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                                                         |
-| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_1`](#creator_sw_cfg_digest)                           | 0xa0     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                                                         |
-| otp_ctrl.[`OWNER_SW_CFG_DIGEST_0`](#owner_sw_cfg_digest)                               | 0xa4     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                                                           |
-| otp_ctrl.[`OWNER_SW_CFG_DIGEST_1`](#owner_sw_cfg_digest)                               | 0xa8     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                                                           |
-| otp_ctrl.[`ROT_CREATOR_AUTH_CODESIGN_DIGEST_0`](#rot_creator_auth_codesign_digest)     | 0xac     |        4 | Integrity digest for the ROT_CREATOR_AUTH_CODESIGN partition.                                                                              |
-| otp_ctrl.[`ROT_CREATOR_AUTH_CODESIGN_DIGEST_1`](#rot_creator_auth_codesign_digest)     | 0xb0     |        4 | Integrity digest for the ROT_CREATOR_AUTH_CODESIGN partition.                                                                              |
-| otp_ctrl.[`ROT_CREATOR_AUTH_STATE_DIGEST_0`](#rot_creator_auth_state_digest)           | 0xb4     |        4 | Integrity digest for the ROT_CREATOR_AUTH_STATE partition.                                                                                 |
-| otp_ctrl.[`ROT_CREATOR_AUTH_STATE_DIGEST_1`](#rot_creator_auth_state_digest)           | 0xb8     |        4 | Integrity digest for the ROT_CREATOR_AUTH_STATE partition.                                                                                 |
-| otp_ctrl.[`HW_CFG0_DIGEST_0`](#hw_cfg0_digest)                                         | 0xbc     |        4 | Integrity digest for the HW_CFG0 partition.                                                                                                |
-| otp_ctrl.[`HW_CFG0_DIGEST_1`](#hw_cfg0_digest)                                         | 0xc0     |        4 | Integrity digest for the HW_CFG0 partition.                                                                                                |
-| otp_ctrl.[`HW_CFG1_DIGEST_0`](#hw_cfg1_digest)                                         | 0xc4     |        4 | Integrity digest for the HW_CFG1 partition.                                                                                                |
-| otp_ctrl.[`HW_CFG1_DIGEST_1`](#hw_cfg1_digest)                                         | 0xc8     |        4 | Integrity digest for the HW_CFG1 partition.                                                                                                |
-| otp_ctrl.[`SECRET0_DIGEST_0`](#secret0_digest)                                         | 0xcc     |        4 | Integrity digest for the SECRET0 partition.                                                                                                |
-| otp_ctrl.[`SECRET0_DIGEST_1`](#secret0_digest)                                         | 0xd0     |        4 | Integrity digest for the SECRET0 partition.                                                                                                |
-| otp_ctrl.[`SECRET1_DIGEST_0`](#secret1_digest)                                         | 0xd4     |        4 | Integrity digest for the SECRET1 partition.                                                                                                |
-| otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                                         | 0xd8     |        4 | Integrity digest for the SECRET1 partition.                                                                                                |
-| otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                                         | 0xdc     |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
-| otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                                         | 0xe0     |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
-| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                             | 0x800    |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software                                        |
+| Name                                                                                     | Offset   |   Length | Description                                                                                                                                |
+|:-----------------------------------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| otp_ctrl.[`INTR_STATE`](#intr_state)                                                     | 0x0      |        4 | Interrupt State Register                                                                                                                   |
+| otp_ctrl.[`INTR_ENABLE`](#intr_enable)                                                   | 0x4      |        4 | Interrupt Enable Register                                                                                                                  |
+| otp_ctrl.[`INTR_TEST`](#intr_test)                                                       | 0x8      |        4 | Interrupt Test Register                                                                                                                    |
+| otp_ctrl.[`ALERT_TEST`](#alert_test)                                                     | 0xc      |        4 | Alert Test Register                                                                                                                        |
+| otp_ctrl.[`STATUS`](#status)                                                             | 0x10     |        4 | OTP status register.                                                                                                                       |
+| otp_ctrl.[`PARTITION_STATUS_0`](#partition_status_0)                                     | 0x14     |        4 | OTP partition status register 0.                                                                                                           |
+| otp_ctrl.[`ERR_CODE_0`](#err_code)                                                       | 0x18     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_1`](#err_code)                                                       | 0x1c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_2`](#err_code)                                                       | 0x20     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_3`](#err_code)                                                       | 0x24     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_4`](#err_code)                                                       | 0x28     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_5`](#err_code)                                                       | 0x2c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_6`](#err_code)                                                       | 0x30     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_7`](#err_code)                                                       | 0x34     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_8`](#err_code)                                                       | 0x38     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_9`](#err_code)                                                       | 0x3c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_10`](#err_code)                                                      | 0x40     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_11`](#err_code)                                                      | 0x44     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_12`](#err_code)                                                      | 0x48     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_13`](#err_code)                                                      | 0x4c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_14`](#err_code)                                                      | 0x50     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_15`](#err_code)                                                      | 0x54     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_16`](#err_code)                                                      | 0x58     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_17`](#err_code)                                                      | 0x5c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_18`](#err_code)                                                      | 0x60     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_19`](#err_code)                                                      | 0x64     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_20`](#err_code)                                                      | 0x68     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_21`](#err_code)                                                      | 0x6c     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`ERR_CODE_22`](#err_code)                                                      | 0x70     |        4 | This register holds information about error conditions that occurred in the agents                                                         |
+| otp_ctrl.[`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)                                 | 0x74     |        4 | Register write enable for all direct access interface registers.                                                                           |
+| otp_ctrl.[`DIRECT_ACCESS_CMD`](#direct_access_cmd)                                       | 0x78     |        4 | Command register for direct accesses.                                                                                                      |
+| otp_ctrl.[`DIRECT_ACCESS_ADDRESS`](#direct_access_address)                               | 0x7c     |        4 | Address register for direct accesses.                                                                                                      |
+| otp_ctrl.[`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata)                                 | 0x80     |        4 | Write data for direct accesses.                                                                                                            |
+| otp_ctrl.[`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata)                                 | 0x84     |        4 | Write data for direct accesses.                                                                                                            |
+| otp_ctrl.[`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata)                                 | 0x88     |        4 | Read data for direct accesses.                                                                                                             |
+| otp_ctrl.[`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata)                                 | 0x8c     |        4 | Read data for direct accesses.                                                                                                             |
+| otp_ctrl.[`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)                                 | 0x90     |        4 | Register write enable for [`CHECK_TRIGGER.`](#check_trigger)                                                                               |
+| otp_ctrl.[`CHECK_TRIGGER`](#check_trigger)                                               | 0x94     |        4 | Command register for direct accesses.                                                                                                      |
+| otp_ctrl.[`CHECK_REGWEN`](#check_regwen)                                                 | 0x98     |        4 | Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD.`](#consistency_check_period) |
+| otp_ctrl.[`CHECK_TIMEOUT`](#check_timeout)                                               | 0x9c     |        4 | Timeout value for the integrity and consistency checks.                                                                                    |
+| otp_ctrl.[`INTEGRITY_CHECK_PERIOD`](#integrity_check_period)                             | 0xa0     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                                                             |
+| otp_ctrl.[`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period)                         | 0xa4     |        4 | This value specifies the maximum period that can be generated pseudo-randomly.                                                             |
+| otp_ctrl.[`VENDOR_TEST_READ_LOCK`](#vendor_test_read_lock)                               | 0xa8     |        4 | Runtime read lock for the VENDOR_TEST partition.                                                                                           |
+| otp_ctrl.[`CREATOR_SW_CFG_READ_LOCK`](#creator_sw_cfg_read_lock)                         | 0xac     |        4 | Runtime read lock for the CREATOR_SW_CFG partition.                                                                                        |
+| otp_ctrl.[`OWNER_SW_CFG_READ_LOCK`](#owner_sw_cfg_read_lock)                             | 0xb0     |        4 | Runtime read lock for the OWNER_SW_CFG partition.                                                                                          |
+| otp_ctrl.[`OWNERSHIP_SLOT_STATE_READ_LOCK`](#ownership_slot_state_read_lock)             | 0xb4     |        4 | Runtime read lock for the OWNERSHIP_SLOT_STATE partition.                                                                                  |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_READ_LOCK`](#rot_owner_auth_slot0_read_lock)             | 0xb8     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT0 partition.                                                                                  |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_READ_LOCK`](#rot_owner_auth_slot1_read_lock)             | 0xbc     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT1 partition.                                                                                  |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_READ_LOCK`](#rot_owner_auth_slot2_read_lock)             | 0xc0     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT2 partition.                                                                                  |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_READ_LOCK`](#rot_owner_auth_slot3_read_lock)             | 0xc4     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT3 partition.                                                                                  |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_STATE_READ_LOCK`](#rot_owner_auth_slot0_state_read_lock) | 0xc8     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT0_STATE partition.                                                                            |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_STATE_READ_LOCK`](#rot_owner_auth_slot1_state_read_lock) | 0xcc     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT1_STATE partition.                                                                            |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_STATE_READ_LOCK`](#rot_owner_auth_slot2_state_read_lock) | 0xd0     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT2_STATE partition.                                                                            |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_STATE_READ_LOCK`](#rot_owner_auth_slot3_state_read_lock) | 0xd4     |        4 | Runtime read lock for the ROT_OWNER_AUTH_SLOT3_STATE partition.                                                                            |
+| otp_ctrl.[`SCRATCH_FUSES_READ_LOCK`](#scratch_fuses_read_lock)                           | 0xd8     |        4 | Runtime read lock for the SCRATCH_FUSES partition.                                                                                         |
+| otp_ctrl.[`VENDOR_TEST_DIGEST_0`](#vendor_test_digest)                                   | 0xdc     |        4 | Integrity digest for the VENDOR_TEST partition.                                                                                            |
+| otp_ctrl.[`VENDOR_TEST_DIGEST_1`](#vendor_test_digest)                                   | 0xe0     |        4 | Integrity digest for the VENDOR_TEST partition.                                                                                            |
+| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_0`](#creator_sw_cfg_digest)                             | 0xe4     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                                                         |
+| otp_ctrl.[`CREATOR_SW_CFG_DIGEST_1`](#creator_sw_cfg_digest)                             | 0xe8     |        4 | Integrity digest for the CREATOR_SW_CFG partition.                                                                                         |
+| otp_ctrl.[`OWNER_SW_CFG_DIGEST_0`](#owner_sw_cfg_digest)                                 | 0xec     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                                                           |
+| otp_ctrl.[`OWNER_SW_CFG_DIGEST_1`](#owner_sw_cfg_digest)                                 | 0xf0     |        4 | Integrity digest for the OWNER_SW_CFG partition.                                                                                           |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_DIGEST_0`](#rot_owner_auth_slot0_digest)                 | 0xf4     |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT0 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_DIGEST_1`](#rot_owner_auth_slot0_digest)                 | 0xf8     |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT0 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_DIGEST_0`](#rot_owner_auth_slot1_digest)                 | 0xfc     |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT1 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_DIGEST_1`](#rot_owner_auth_slot1_digest)                 | 0x100    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT1 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_DIGEST_0`](#rot_owner_auth_slot2_digest)                 | 0x104    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT2 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_DIGEST_1`](#rot_owner_auth_slot2_digest)                 | 0x108    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT2 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_DIGEST_0`](#rot_owner_auth_slot3_digest)                 | 0x10c    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT3 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_DIGEST_1`](#rot_owner_auth_slot3_digest)                 | 0x110    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT3 partition.                                                                                   |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_0`](#rot_owner_auth_slot0_state_digest)     | 0x114    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT0_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_1`](#rot_owner_auth_slot0_state_digest)     | 0x118    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT0_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_0`](#rot_owner_auth_slot1_state_digest)     | 0x11c    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT1_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_1`](#rot_owner_auth_slot1_state_digest)     | 0x120    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT1_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_0`](#rot_owner_auth_slot2_state_digest)     | 0x124    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT2_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_1`](#rot_owner_auth_slot2_state_digest)     | 0x128    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT2_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_0`](#rot_owner_auth_slot3_state_digest)     | 0x12c    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT3_STATE partition.                                                                             |
+| otp_ctrl.[`ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_1`](#rot_owner_auth_slot3_state_digest)     | 0x130    |        4 | Integrity digest for the ROT_OWNER_AUTH_SLOT3_STATE partition.                                                                             |
+| otp_ctrl.[`HW_CFG0_DIGEST_0`](#hw_cfg0_digest)                                           | 0x134    |        4 | Integrity digest for the HW_CFG0 partition.                                                                                                |
+| otp_ctrl.[`HW_CFG0_DIGEST_1`](#hw_cfg0_digest)                                           | 0x138    |        4 | Integrity digest for the HW_CFG0 partition.                                                                                                |
+| otp_ctrl.[`HW_CFG1_DIGEST_0`](#hw_cfg1_digest)                                           | 0x13c    |        4 | Integrity digest for the HW_CFG1 partition.                                                                                                |
+| otp_ctrl.[`HW_CFG1_DIGEST_1`](#hw_cfg1_digest)                                           | 0x140    |        4 | Integrity digest for the HW_CFG1 partition.                                                                                                |
+| otp_ctrl.[`HW_CFG2_DIGEST_0`](#hw_cfg2_digest)                                           | 0x144    |        4 | Integrity digest for the HW_CFG2 partition.                                                                                                |
+| otp_ctrl.[`HW_CFG2_DIGEST_1`](#hw_cfg2_digest)                                           | 0x148    |        4 | Integrity digest for the HW_CFG2 partition.                                                                                                |
+| otp_ctrl.[`SECRET0_DIGEST_0`](#secret0_digest)                                           | 0x14c    |        4 | Integrity digest for the SECRET0 partition.                                                                                                |
+| otp_ctrl.[`SECRET0_DIGEST_1`](#secret0_digest)                                           | 0x150    |        4 | Integrity digest for the SECRET0 partition.                                                                                                |
+| otp_ctrl.[`SECRET1_DIGEST_0`](#secret1_digest)                                           | 0x154    |        4 | Integrity digest for the SECRET1 partition.                                                                                                |
+| otp_ctrl.[`SECRET1_DIGEST_1`](#secret1_digest)                                           | 0x158    |        4 | Integrity digest for the SECRET1 partition.                                                                                                |
+| otp_ctrl.[`SECRET2_DIGEST_0`](#secret2_digest)                                           | 0x15c    |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
+| otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                                           | 0x160    |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
+| otp_ctrl.[`SECRET3_DIGEST_0`](#secret3_digest)                                           | 0x164    |        4 | Integrity digest for the SECRET3 partition.                                                                                                |
+| otp_ctrl.[`SECRET3_DIGEST_1`](#secret3_digest)                                           | 0x168    |        4 | Integrity digest for the SECRET3 partition.                                                                                                |
+| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                               | 0x800    |     2048 | Any read to this window directly maps to the corresponding offset in the creator and owner software                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -169,28 +203,38 @@ OTP status register.
 OTP partition status register 0.
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x7ff`
+- Reset mask: `0x1fffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VENDOR_TEST_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CREATOR_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OWNER_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_CREATOR_AUTH_CODESIGN_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_CREATOR_AUTH_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LIFE_CYCLE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "VENDOR_TEST_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CREATOR_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OWNER_SW_CFG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "OWNERSHIP_SLOT_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT3_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT0_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT1_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT2_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ROT_OWNER_AUTH_SLOT3_STATE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCRATCH_FUSES_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HW_CFG2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET0_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET1_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET2_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SECRET3_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LIFE_CYCLE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            | Description                                                                                                                                    |
-|:------:|:------:|:-------:|:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:11  |        |         |                                 | Reserved                                                                                                                                       |
-|   10   |   ro   |   0x0   | LIFE_CYCLE_ERROR                | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   9    |   ro   |   0x0   | SECRET2_ERROR                   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   8    |   ro   |   0x0   | SECRET1_ERROR                   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   7    |   ro   |   0x0   | SECRET0_ERROR                   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   6    |   ro   |   0x0   | HW_CFG1_ERROR                   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   5    |   ro   |   0x0   | HW_CFG0_ERROR                   | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   4    |   ro   |   0x0   | ROT_CREATOR_AUTH_STATE_ERROR    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   3    |   ro   |   0x0   | ROT_CREATOR_AUTH_CODESIGN_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   2    |   ro   |   0x0   | OWNER_SW_CFG_ERROR              | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   1    |   ro   |   0x0   | CREATOR_SW_CFG_ERROR            | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
-|   0    |   ro   |   0x0   | VENDOR_TEST_ERROR               | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|  Bits  |  Type  |  Reset  | Name                             | Description                                                                                                                                    |
+|:------:|:------:|:-------:|:---------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:21  |        |         |                                  | Reserved                                                                                                                                       |
+|   20   |   ro   |   0x0   | LIFE_CYCLE_ERROR                 | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   19   |   ro   |   0x0   | SECRET3_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   18   |   ro   |   0x0   | SECRET2_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   17   |   ro   |   0x0   | SECRET1_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   16   |   ro   |   0x0   | SECRET0_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   15   |   ro   |   0x0   | HW_CFG2_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   14   |   ro   |   0x0   | HW_CFG1_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   13   |   ro   |   0x0   | HW_CFG0_ERROR                    | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   12   |   ro   |   0x0   | SCRATCH_FUSES_ERROR              | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   11   |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT3_STATE_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   10   |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT2_STATE_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   9    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT1_STATE_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   8    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT0_STATE_ERROR | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   7    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT3_ERROR       | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   6    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT2_ERROR       | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   5    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT1_ERROR       | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   4    |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT0_ERROR       | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   3    |   ro   |   0x0   | OWNERSHIP_SLOT_STATE_ERROR       | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   2    |   ro   |   0x0   | OWNER_SW_CFG_ERROR               | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   1    |   ro   |   0x0   | CREATOR_SW_CFG_ERROR             | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
+|   0    |   ro   |   0x0   | VENDOR_TEST_ERROR                | Set to 1 if an error occurred in this partition. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index. |
 
 ## ERR_CODE
 This register holds information about error conditions that occurred in the agents
@@ -219,6 +263,16 @@ fatal_check_error alert.
 | ERR_CODE_10 | 0x40     |
 | ERR_CODE_11 | 0x44     |
 | ERR_CODE_12 | 0x48     |
+| ERR_CODE_13 | 0x4c     |
+| ERR_CODE_14 | 0x50     |
+| ERR_CODE_15 | 0x54     |
+| ERR_CODE_16 | 0x58     |
+| ERR_CODE_17 | 0x5c     |
+| ERR_CODE_18 | 0x60     |
+| ERR_CODE_19 | 0x64     |
+| ERR_CODE_20 | 0x68     |
+| ERR_CODE_21 | 0x6c     |
+| ERR_CODE_22 | 0x70     |
 
 
 ### Fields
@@ -248,7 +302,7 @@ fatal_check_error alert.
 
 ## DIRECT_ACCESS_REGWEN
 Register write enable for all direct access interface registers.
-- Offset: `0x4c`
+- Offset: `0x74`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -274,7 +328,7 @@ will also be set to 0 in such a case.
 
 ## DIRECT_ACCESS_CMD
 Command register for direct accesses.
-- Offset: `0x50`
+- Offset: `0x78`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -295,7 +349,7 @@ Command register for direct accesses.
 
 ## DIRECT_ACCESS_ADDRESS
 Address register for direct accesses.
-- Offset: `0x54`
+- Offset: `0x7c`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -331,8 +385,8 @@ partition is being written to.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| DIRECT_ACCESS_WDATA_0 | 0x58     |
-| DIRECT_ACCESS_WDATA_1 | 0x5c     |
+| DIRECT_ACCESS_WDATA_0 | 0x80     |
+| DIRECT_ACCESS_WDATA_1 | 0x84     |
 
 
 ### Fields
@@ -356,8 +410,8 @@ partition is read from.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| DIRECT_ACCESS_RDATA_0 | 0x60     |
-| DIRECT_ACCESS_RDATA_1 | 0x64     |
+| DIRECT_ACCESS_RDATA_0 | 0x88     |
+| DIRECT_ACCESS_RDATA_1 | 0x8c     |
 
 
 ### Fields
@@ -372,7 +426,7 @@ partition is read from.
 
 ## CHECK_TRIGGER_REGWEN
 Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
-- Offset: `0x68`
+- Offset: `0x90`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -389,7 +443,7 @@ Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
 
 ## CHECK_TRIGGER
 Command register for direct accesses.
-- Offset: `0x6c`
+- Offset: `0x94`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 - Register enable: [`CHECK_TRIGGER_REGWEN`](#check_trigger_regwen)
@@ -418,7 +472,7 @@ in the [`STATUS`](#status) and [`ERR_CODE`](#err_code) registers, and via the in
 
 ## CHECK_REGWEN
 Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD.`](#consistency_check_period)
-- Offset: `0x70`
+- Offset: `0x98`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -435,7 +489,7 @@ Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) an
 
 ## CHECK_TIMEOUT
 Timeout value for the integrity and consistency checks.
-- Offset: `0x74`
+- Offset: `0x9c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -462,7 +516,7 @@ safe side. A value of zero disables the timeout mechanism (default).
 ## INTEGRITY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
 Only applies to the HW_CFG* and SECRET* partitions once they are locked.
-- Offset: `0x78`
+- Offset: `0xa0`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -488,7 +542,7 @@ A value of zero disables the timer (default). Note that a one-off check can alwa
 ## CONSISTENCY_CHECK_PERIOD
 This value specifies the maximum period that can be generated pseudo-randomly.
 This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions once they are locked.
-- Offset: `0x7c`
+- Offset: `0xa4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CHECK_REGWEN`](#check_regwen)
@@ -513,7 +567,7 @@ A value of zero disables the timer (default). Note that a one-off check can alwa
 
 ## VENDOR_TEST_READ_LOCK
 Runtime read lock for the VENDOR_TEST partition.
-- Offset: `0x80`
+- Offset: `0xa8`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -531,7 +585,7 @@ Runtime read lock for the VENDOR_TEST partition.
 
 ## CREATOR_SW_CFG_READ_LOCK
 Runtime read lock for the CREATOR_SW_CFG partition.
-- Offset: `0x84`
+- Offset: `0xac`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -549,7 +603,7 @@ Runtime read lock for the CREATOR_SW_CFG partition.
 
 ## OWNER_SW_CFG_READ_LOCK
 Runtime read lock for the OWNER_SW_CFG partition.
-- Offset: `0x88`
+- Offset: `0xb0`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -565,9 +619,9 @@ Runtime read lock for the OWNER_SW_CFG partition.
 |  31:1  |        |         |                        | Reserved                                                                                           |
 |   0    |  rw0c  |   0x1   | OWNER_SW_CFG_READ_LOCK | When cleared to 0, read access to the OWNER_SW_CFG partition is locked. Write 0 to clear this bit. |
 
-## ROT_CREATOR_AUTH_CODESIGN_READ_LOCK
-Runtime read lock for the ROT_CREATOR_AUTH_CODESIGN partition.
-- Offset: `0x8c`
+## OWNERSHIP_SLOT_STATE_READ_LOCK
+Runtime read lock for the OWNERSHIP_SLOT_STATE partition.
+- Offset: `0xb4`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -575,17 +629,17 @@ Runtime read lock for the ROT_CREATOR_AUTH_CODESIGN partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_CODESIGN_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 370}}
+{"reg": [{"name": "OWNERSHIP_SLOT_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 320}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                | Description                                                                                                     |
-|:------:|:------:|:-------:|:------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                                     | Reserved                                                                                                        |
-|   0    |  rw0c  |   0x1   | ROT_CREATOR_AUTH_CODESIGN_READ_LOCK | When cleared to 0, read access to the ROT_CREATOR_AUTH_CODESIGN partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name                           | Description                                                                                                |
+|:------:|:------:|:-------:|:-------------------------------|:-----------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                | Reserved                                                                                                   |
+|   0    |  rw0c  |   0x1   | OWNERSHIP_SLOT_STATE_READ_LOCK | When cleared to 0, read access to the OWNERSHIP_SLOT_STATE partition is locked. Write 0 to clear this bit. |
 
-## ROT_CREATOR_AUTH_STATE_READ_LOCK
-Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.
-- Offset: `0x90`
+## ROT_OWNER_AUTH_SLOT0_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT0 partition.
+- Offset: `0xb8`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 - Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
@@ -593,13 +647,157 @@ Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT0_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 320}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             | Description                                                                                                  |
-|:------:|:------:|:-------:|:---------------------------------|:-------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                                  | Reserved                                                                                                     |
-|   0    |  rw0c  |   0x1   | ROT_CREATOR_AUTH_STATE_READ_LOCK | When cleared to 0, read access to the ROT_CREATOR_AUTH_STATE partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name                           | Description                                                                                                |
+|:------:|:------:|:-------:|:-------------------------------|:-----------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                | Reserved                                                                                                   |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT0_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT0 partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT1_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT1 partition.
+- Offset: `0xbc`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT1_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 320}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                           | Description                                                                                                |
+|:------:|:------:|:-------:|:-------------------------------|:-----------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                | Reserved                                                                                                   |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT1_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT1 partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT2_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT2 partition.
+- Offset: `0xc0`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT2_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 320}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                           | Description                                                                                                |
+|:------:|:------:|:-------:|:-------------------------------|:-----------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                | Reserved                                                                                                   |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT2_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT2 partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT3_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT3 partition.
+- Offset: `0xc4`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT3_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 320}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                           | Description                                                                                                |
+|:------:|:------:|:-------:|:-------------------------------|:-----------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                | Reserved                                                                                                   |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT3_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT3 partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT0_STATE_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT0_STATE partition.
+- Offset: `0xc8`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT0_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 380}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 | Description                                                                                                      |
+|:------:|:------:|:-------:|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                      | Reserved                                                                                                         |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT0_STATE_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT0_STATE partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT1_STATE_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT1_STATE partition.
+- Offset: `0xcc`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT1_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 380}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 | Description                                                                                                      |
+|:------:|:------:|:-------:|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                      | Reserved                                                                                                         |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT1_STATE_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT1_STATE partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT2_STATE_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT2_STATE partition.
+- Offset: `0xd0`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT2_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 380}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 | Description                                                                                                      |
+|:------:|:------:|:-------:|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                      | Reserved                                                                                                         |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT2_STATE_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT2_STATE partition is locked. Write 0 to clear this bit. |
+
+## ROT_OWNER_AUTH_SLOT3_STATE_READ_LOCK
+Runtime read lock for the ROT_OWNER_AUTH_SLOT3_STATE partition.
+- Offset: `0xd4`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT3_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 380}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 | Description                                                                                                      |
+|:------:|:------:|:-------:|:-------------------------------------|:-----------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                                      | Reserved                                                                                                         |
+|   0    |  rw0c  |   0x1   | ROT_OWNER_AUTH_SLOT3_STATE_READ_LOCK | When cleared to 0, read access to the ROT_OWNER_AUTH_SLOT3_STATE partition is locked. Write 0 to clear this bit. |
+
+## SCRATCH_FUSES_READ_LOCK
+Runtime read lock for the SCRATCH_FUSES partition.
+- Offset: `0xd8`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SCRATCH_FUSES_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                    | Description                                                                                         |
+|:------:|:------:|:-------:|:------------------------|:----------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                         | Reserved                                                                                            |
+|   0    |  rw0c  |   0x1   | SCRATCH_FUSES_READ_LOCK | When cleared to 0, read access to the SCRATCH_FUSES partition is locked. Write 0 to clear this bit. |
 
 ## VENDOR_TEST_DIGEST
 Integrity digest for the VENDOR_TEST partition.
@@ -614,8 +812,8 @@ the digest becomes visible in this CSR.
 
 | Name                 | Offset   |
 |:---------------------|:---------|
-| VENDOR_TEST_DIGEST_0 | 0x94     |
-| VENDOR_TEST_DIGEST_1 | 0x98     |
+| VENDOR_TEST_DIGEST_0 | 0xdc     |
+| VENDOR_TEST_DIGEST_1 | 0xe0     |
 
 
 ### Fields
@@ -641,8 +839,8 @@ the digest becomes visible in this CSR.
 
 | Name                    | Offset   |
 |:------------------------|:---------|
-| CREATOR_SW_CFG_DIGEST_0 | 0x9c     |
-| CREATOR_SW_CFG_DIGEST_1 | 0xa0     |
+| CREATOR_SW_CFG_DIGEST_0 | 0xe4     |
+| CREATOR_SW_CFG_DIGEST_1 | 0xe8     |
 
 
 ### Fields
@@ -668,8 +866,8 @@ the digest becomes visible in this CSR.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| OWNER_SW_CFG_DIGEST_0 | 0xa4     |
-| OWNER_SW_CFG_DIGEST_1 | 0xa8     |
+| OWNER_SW_CFG_DIGEST_0 | 0xec     |
+| OWNER_SW_CFG_DIGEST_1 | 0xf0     |
 
 
 ### Fields
@@ -682,59 +880,221 @@ the digest becomes visible in this CSR.
 |:------:|:------:|:-------:|:--------------------|:--------------|
 |  31:0  |   ro   |   0x0   | OWNER_SW_CFG_DIGEST |               |
 
-## ROT_CREATOR_AUTH_CODESIGN_DIGEST
-Integrity digest for the ROT_CREATOR_AUTH_CODESIGN partition.
+## ROT_OWNER_AUTH_SLOT0_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT0 partition.
 The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
-After a reset, write access to the ROT_CREATOR_AUTH_CODESIGN partition is locked and
+After a reset, write access to the ROT_OWNER_AUTH_SLOT0 partition is locked and
 the digest becomes visible in this CSR.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
 ### Instances
 
-| Name                               | Offset   |
-|:-----------------------------------|:---------|
-| ROT_CREATOR_AUTH_CODESIGN_DIGEST_0 | 0xac     |
-| ROT_CREATOR_AUTH_CODESIGN_DIGEST_1 | 0xb0     |
+| Name                          | Offset   |
+|:------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT0_DIGEST_0 | 0xf4     |
+| ROT_OWNER_AUTH_SLOT0_DIGEST_1 | 0xf8     |
 
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_CODESIGN_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT0_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             | Description   |
-|:------:|:------:|:-------:|:---------------------------------|:--------------|
-|  31:0  |   ro   |   0x0   | ROT_CREATOR_AUTH_CODESIGN_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name                        | Description   |
+|:------:|:------:|:-------:|:----------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT0_DIGEST |               |
 
-## ROT_CREATOR_AUTH_STATE_DIGEST
-Integrity digest for the ROT_CREATOR_AUTH_STATE partition.
+## ROT_OWNER_AUTH_SLOT1_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT1 partition.
 The integrity digest is 0 by default. Software must write a non-zero
 digest value via the direct access interface in order to lock the partition.
-After a reset, write access to the ROT_CREATOR_AUTH_STATE partition is locked and
+After a reset, write access to the ROT_OWNER_AUTH_SLOT1 partition is locked and
 the digest becomes visible in this CSR.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
 ### Instances
 
-| Name                            | Offset   |
-|:--------------------------------|:---------|
-| ROT_CREATOR_AUTH_STATE_DIGEST_0 | 0xb4     |
-| ROT_CREATOR_AUTH_STATE_DIGEST_1 | 0xb8     |
+| Name                          | Offset   |
+|:------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT1_DIGEST_0 | 0xfc     |
+| ROT_OWNER_AUTH_SLOT1_DIGEST_1 | 0x100    |
 
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT1_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                          | Description   |
-|:------:|:------:|:-------:|:------------------------------|:--------------|
-|  31:0  |   ro   |   0x0   | ROT_CREATOR_AUTH_STATE_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name                        | Description   |
+|:------:|:------:|:-------:|:----------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT1_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT2_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT2 partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT2 partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                          | Offset   |
+|:------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT2_DIGEST_0 | 0x104    |
+| ROT_OWNER_AUTH_SLOT2_DIGEST_1 | 0x108    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT2_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                        | Description   |
+|:------:|:------:|:-------:|:----------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT2_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT3_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT3 partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT3 partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                          | Offset   |
+|:------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT3_DIGEST_0 | 0x10c    |
+| ROT_OWNER_AUTH_SLOT3_DIGEST_1 | 0x110    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT3_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                        | Description   |
+|:------:|:------:|:-------:|:----------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT3_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT0_STATE_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT0_STATE partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT0_STATE partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                                | Offset   |
+|:------------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_0 | 0x114    |
+| ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_1 | 0x118    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT0_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                              | Description   |
+|:------:|:------:|:-------:|:----------------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT0_STATE_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT1_STATE_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT1_STATE partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT1_STATE partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                                | Offset   |
+|:------------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_0 | 0x11c    |
+| ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_1 | 0x120    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT1_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                              | Description   |
+|:------:|:------:|:-------:|:----------------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT1_STATE_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT2_STATE_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT2_STATE partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT2_STATE partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                                | Offset   |
+|:------------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_0 | 0x124    |
+| ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_1 | 0x128    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT2_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                              | Description   |
+|:------:|:------:|:-------:|:----------------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT2_STATE_DIGEST |               |
+
+## ROT_OWNER_AUTH_SLOT3_STATE_DIGEST
+Integrity digest for the ROT_OWNER_AUTH_SLOT3_STATE partition.
+The integrity digest is 0 by default. Software must write a non-zero
+digest value via the direct access interface in order to lock the partition.
+After a reset, write access to the ROT_OWNER_AUTH_SLOT3_STATE partition is locked and
+the digest becomes visible in this CSR.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name                                | Offset   |
+|:------------------------------------|:---------|
+| ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_0 | 0x12c    |
+| ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_1 | 0x130    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ROT_OWNER_AUTH_SLOT3_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                              | Description   |
+|:------:|:------:|:-------:|:----------------------------------|:--------------|
+|  31:0  |   ro   |   0x0   | ROT_OWNER_AUTH_SLOT3_STATE_DIGEST |               |
 
 ## HW_CFG0_DIGEST
 Integrity digest for the HW_CFG0 partition.
@@ -747,8 +1107,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| HW_CFG0_DIGEST_0 | 0xbc     |
-| HW_CFG0_DIGEST_1 | 0xc0     |
+| HW_CFG0_DIGEST_0 | 0x134    |
+| HW_CFG0_DIGEST_1 | 0x138    |
 
 
 ### Fields
@@ -772,8 +1132,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| HW_CFG1_DIGEST_0 | 0xc4     |
-| HW_CFG1_DIGEST_1 | 0xc8     |
+| HW_CFG1_DIGEST_0 | 0x13c    |
+| HW_CFG1_DIGEST_1 | 0x140    |
 
 
 ### Fields
@@ -786,6 +1146,31 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 |:------:|:------:|:-------:|:---------------|:--------------|
 |  31:0  |   ro   |   0x0   | HW_CFG1_DIGEST |               |
 
+## HW_CFG2_DIGEST
+Integrity digest for the HW_CFG2 partition.
+The integrity digest is 0 by default. The digest calculation can be triggered via the [`DIRECT_ACCESS_CMD.`](#direct_access_cmd)
+After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name             | Offset   |
+|:-----------------|:---------|
+| HW_CFG2_DIGEST_0 | 0x144    |
+| HW_CFG2_DIGEST_1 | 0x148    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "HW_CFG2_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name           | Description   |
+|:------:|:------:|:-------:|:---------------|:--------------|
+|  31:0  |   ro   |   0x0   | HW_CFG2_DIGEST |               |
+
 ## SECRET0_DIGEST
 Integrity digest for the SECRET0 partition.
 The integrity digest is 0 by default. The digest calculation can be triggered via the [`DIRECT_ACCESS_CMD.`](#direct_access_cmd)
@@ -797,8 +1182,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET0_DIGEST_0 | 0xcc     |
-| SECRET0_DIGEST_1 | 0xd0     |
+| SECRET0_DIGEST_0 | 0x14c    |
+| SECRET0_DIGEST_1 | 0x150    |
 
 
 ### Fields
@@ -822,8 +1207,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET1_DIGEST_0 | 0xd4     |
-| SECRET1_DIGEST_1 | 0xd8     |
+| SECRET1_DIGEST_0 | 0x154    |
+| SECRET1_DIGEST_1 | 0x158    |
 
 
 ### Fields
@@ -847,8 +1232,8 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| SECRET2_DIGEST_0 | 0xdc     |
-| SECRET2_DIGEST_1 | 0xe0     |
+| SECRET2_DIGEST_0 | 0x15c    |
+| SECRET2_DIGEST_1 | 0x160    |
 
 
 ### Fields
@@ -860,6 +1245,31 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 |  Bits  |  Type  |  Reset  | Name           | Description   |
 |:------:|:------:|:-------:|:---------------|:--------------|
 |  31:0  |   ro   |   0x0   | SECRET2_DIGEST |               |
+
+## SECRET3_DIGEST
+Integrity digest for the SECRET3 partition.
+The integrity digest is 0 by default. The digest calculation can be triggered via the [`DIRECT_ACCESS_CMD.`](#direct_access_cmd)
+After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name             | Offset   |
+|:-----------------|:---------|
+| SECRET3_DIGEST_0 | 0x164    |
+| SECRET3_DIGEST_1 | 0x168    |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SECRET3_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name           | Description   |
+|:------:|:------:|:-------:|:---------------|:--------------|
+|  31:0  |   ro   |   0x0   | SECRET3_DIGEST |               |
 
 ## SW_CFG_WINDOW
 Any read to this window directly maps to the corresponding offset in the creator and owner software

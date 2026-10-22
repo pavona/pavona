@@ -298,21 +298,6 @@ class BootDataTest : public rom_test::RomTest {
   }
 
   /**
-   * Sets an expectation that the device queries for whether the default boot
-   * data entry should be loaded when in the `prod` lifecycle state.
-   *
-   * @param allowed_in_prod Whether loading the default entry should be allowed.
-   */
-  void ExpectAllowedInProdCheck(bool allowed_in_prod) {
-    EXPECT_CALL(
-        otp_,
-        read32(
-            OTP_CTRL_PARAM_CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN_OFFSET))
-        .WillOnce(
-            Return(allowed_in_prod ? kHardenedBoolTrue : kHardenedBoolFalse));
-  }
-
-  /**
    * Sets an expectation that the default boot data entry is loaded and its
    * digest is checked.
    */
@@ -380,7 +365,6 @@ TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
   ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
 
   // Expect to fall back to loading the default entry.
-  ExpectAllowedInProdCheck(false);
   ExpectDefaultEntryRead();
 
   boot_data_t boot_data = {{0}};
@@ -394,7 +378,6 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
   ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
 
   // Expect to fall back to loading the default entry.
-  ExpectAllowedInProdCheck(false);
   ExpectDefaultEntryRead();
 
   boot_data_t boot_data = {{0}};
@@ -402,32 +385,19 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
   EXPECT_EQ(boot_data, kDefaultEntry);
 }
 
-TEST_F(BootDataReadTest, ReadDefaultAllowedInProdTest) {
-  // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
-
-  // Expect to fall back to loading the default entry (allowed in prod).
-  ExpectAllowedInProdCheck(true);
-  ExpectDefaultEntryRead();
-
-  boot_data_t boot_data = {{0}};
-  EXPECT_EQ(boot_data_read(kLcStateProd, &boot_data), kErrorOk);
-  EXPECT_EQ(boot_data, kDefaultEntry);
-}
-
-TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
-  // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
-
-  // Expect to fall back to loading the default entry (now allowed in prod).
-  ExpectAllowedInProdCheck(false);
-  // Do not expect the default entry to be read.
-
-  boot_data_t boot_data = {{0}};
-  EXPECT_EQ(boot_data_read(kLcStateProd, &boot_data), kErrorBootDataNotFound);
-}
+// This test is currently disabled because default boot data is temporarily
+// allowed in PROD. This is expected to be reverted once external flash support
+// is added.
+//
+// TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
+//  // Expect both pages to be searched, but give no entry for either.
+//  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
+//  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+//
+//  // Do not expect the default entry to be read.
+//  boot_data_t boot_data = {{0}};
+//  EXPECT_EQ(boot_data_read(kLcStateProd, &boot_data), kErrorBootDataNotFound);
+//}
 
 TEST_F(BootDataReadTest, ReadV1AsV2Test) {
   // Expect both to be searched, but only provide an entry in one.

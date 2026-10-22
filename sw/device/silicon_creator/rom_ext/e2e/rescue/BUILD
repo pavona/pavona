@@ -363,9 +363,8 @@ pavona_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        # We configure OTP to preserve the reset reason and set the watchdog timeout
-        # to one second.
-        otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_preserve_reset_prod",
+        # We configure OTP to set the watchdog timeout to one second.
+        otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_prod",
         # We use the spidfu rom_ext because we can trigger with a GPIO and we
         # want to simulate the trigger being jammed.
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",

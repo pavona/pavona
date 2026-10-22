@@ -6,12 +6,14 @@
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_irq_error(void) {
-  uint32_t mcause;
+  uint32_t mcause, mepc;
+  CSR_READ(CSR_REG_MEPC, &mepc);
   CSR_READ(CSR_REG_MCAUSE, &mcause);
   // Shuffle the mcause bits into the uppermost byte of the word and report
   // the cause as kErrorInterrupt.
@@ -23,6 +25,7 @@ static rom_error_t rom_irq_error(void) {
   // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
   // as zero and those would be the next bits used should the number of
   // interrupt causes increase).
+  dbg_printf("MCAUSE = 0x%x, MEPC = 0x%x\n", mcause, mepc);
   mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
   return kErrorInterrupt + mcause;
 }

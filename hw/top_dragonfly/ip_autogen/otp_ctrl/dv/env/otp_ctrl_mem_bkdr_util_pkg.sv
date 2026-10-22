@@ -91,8 +91,9 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_hw_cfg1_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
+      bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
       bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
-      bit [EnSramIfetchSize*8-1:0] en_sram_ifetch
+      bit [DisRvDmLateDebugSize*8-1:0] dis_rv_dm_late_debug
   );
     bit [HwCfg1DigestSize*8-1:0] digest;
     bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
@@ -100,10 +101,11 @@ package otp_ctrl_mem_bkdr_util_pkg;
     bit [31:0] word;
 
     word = {
-      en_sram_ifetch,
-      en_csrng_sw_app_read
+      dis_rv_dm_late_debug,
+      en_csrng_sw_app_read,
+      en_sram_ifetch
     };
-    mem_bkdr_util_h.write32(0 + EnCsrngSwAppReadOffset, word);
+    mem_bkdr_util_h.write32(0 + EnSramIfetchOffset, word);
     concat_data.push_front(word);
 
     partition_data = {<<32{concat_data}};
