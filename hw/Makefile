@@ -76,7 +76,6 @@ top_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*.hjson
 top_complete_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.gen.hjson
 top_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/$*_seed.$(SEED_MODE).hjson
 top_complete_seed_hjson = $(PRJ_DIR)/hw/$*/$(dir_hjson)/autogen/$*.secrets.$(SEED_MODE).gen.hjson
-top_chip_hjson = $(PRJ_DIR)/hw/$(TOPS)/$(dir_hjson)/$(TOPS).hjson
 
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
@@ -103,7 +102,7 @@ cmdgen: top
 	(cd ${PRJ_DIR}; find . -name "*.md" -print0 | \
 	 xargs -0 -P 8 $(XARGS_REPLACE) ./util/cmdgen.py -u {})
 
-regs:
+regs: $(ips_reg)
 $(ips_reg): %_reg:
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
@@ -115,9 +114,9 @@ $(tops_reg): %_reg:
 
 top_and_cmdgen: cmdgen
 
-dvgen:
+dvgen: cmdgen
 	${PRJ_DIR}/util/gen_ip_collection.py --flow sim_dv --tops top_egret top_dragonfly
 
 all: cmdgen regs dvgen
 
-.PHONY: all
+.PHONY: all top top_and_cmdgen cmdgen regs dvgen $(ips_reg) $(tops_gen) $(tops_reg)
