@@ -7,11 +7,6 @@
 
 set -e
 
-cleanup () {
-  git restore .
-  git clean -df .
-}
-
 if [ $# != 1 ]; then
     echo >&2 "Usage: check-countermeasures.sh <toplevel-name>"
     exit 1
@@ -25,8 +20,5 @@ fi
 
 ./util/top_cm_and_blocks.py -t ${hjson_file} check_cm || {
     echo "::error::Countermeasure check failed."
-    cleanup
     exit 1
 }
-
-cleanup
