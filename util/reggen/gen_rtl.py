@@ -5,7 +5,7 @@
 
 import logging as log
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Callable, Dict, Optional, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
@@ -89,7 +89,8 @@ def get_reg_tx_type(block: IpBlock, reg: RegBase, hw2reg: bool) -> str:
     return '_'.join([block.name.lower(), x2x, r0.name.lower(), type_suff])
 
 
-def gen_rtl(block: IpBlock, outdir: str) -> int:
+def gen_rtl(block: IpBlock, outdir: str,
+            postprocess: Callable[[str], str] = lambda text: text) -> int:
     # Read Register templates
     reg_top_tpl = Template(
         filename=str(importlib.resources.files('reggen') / 'reg_top.sv.tpl'))
@@ -108,8 +109,8 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
     reg_pkg_path = Path(outdir) / (block.name.lower() + alias_impl + '_reg_pkg.sv')
     reg_pkg_path.parent.mkdir(parents=True, exist_ok=True)
     try:
-        reg_pkg_path.write_text(reg_pkg_tpl.render(block=block, alias_impl=alias_impl),
-                                encoding='UTF-8')
+        reg_pkg_path.write_text(
+            postprocess(reg_pkg_tpl.render(block=block, alias_impl=alias_impl)), encoding='UTF-8')
     except:  # noqa F722 for template Exception handling
         log.error(exceptions.text_error_template().render())
         return 1
@@ -130,11 +131,11 @@ def gen_rtl(block: IpBlock, outdir: str) -> int:
         reg_top_path.parent.mkdir(parents=True, exist_ok=True)
         try:
             reg_top_path.write_text(
-                reg_top_tpl.render(block=block,
-                                   mod_base=mod_base,
-                                   mod_name=mod_name,
-                                   if_name=if_name,
-                                   rb=rb),
+                postprocess(reg_top_tpl.render(block=block,
+                                               mod_base=mod_base,
+                                               mod_name=mod_name,
+                                               if_name=if_name,
+                                               rb=rb)),
                 encoding='UTF-8')
         except:  # noqa F722 for template Exception handling
             log.error(exceptions.text_error_template().render())

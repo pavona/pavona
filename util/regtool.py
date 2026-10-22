@@ -18,6 +18,7 @@ from reggen import (
 from reggen.ip_block import IpBlock
 from topgen.lib import load_cfg, find_modules
 
+import copyright_merge
 import version_file
 
 DESC = """regtool, generate register info from Hjson source"""
@@ -296,37 +297,20 @@ def main():
             gen_json.gen_json(obj, outfile, fmt)
             outfile.write('\n')
     else:
+        def merge_copyrights(text):
+            return copyright_merge.merge_copyright_from(text, srcfull)
+
         if fmt == 'rtl':
-            return gen_rtl.gen_rtl(obj, outdir)
+            return gen_rtl.gen_rtl(obj, outdir, merge_copyrights)
         if fmt == 'sec_cm_testplan':
             return gen_sec_cm_testplan.gen_sec_cm_testplan(obj, outdir)
         if fmt == 'dv':
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
         if fmt == 'fpv':
             return gen_fpv.gen_fpv(obj, outdir)
-        src_lic = None
-        src_copy = ''
-        found_spdx = None
-        found_lunder = None
-        copy = re.compile(r'.*(copyright.*)|(.*\(c\).*)', re.IGNORECASE)
-        # REUSE-IgnoreStart
-        spdx = re.compile(r'.*(SPDX-License-Identifier:.+)')
-        # REUSE-IgnoreEnd
-        lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
-        for line in srcfull.splitlines():
-            mat = copy.match(line)
-            if mat is not None:
-                src_copy += mat.group(1)
-            mat = spdx.match(line)
-            if mat is not None:
-                found_spdx = mat.group(1)
-            mat = lunder.match(line)
-            if mat is not None:
-                found_lunder = mat.group(1)
-        if found_lunder:
-            src_lic = found_lunder
-        if found_spdx:
-            src_lic += '\n' + found_spdx
+
+        src_copy = '\n// '.join(copyright_merge.extract_copyright(srcfull))
+        src_lic = '\n'.join(copyright_merge.extract_license(srcfull)) or None
 
         with outfile:
             if fmt == 'registers':
