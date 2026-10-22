@@ -95,8 +95,13 @@ rom_error_t acc_boot_attestation_keygen(
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into ACC.
+#ifdef HAS_KEYMGR_DPE
   HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(key_type, diversification));
+      sc_keymgr_generate_key_acc(kScKeymgrSlot1, diversification));
+#else
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation, diversification));
+#endif
 
   // Write the mode.
   uint32_t mode = kAccBootModeAttestationKeygen;
@@ -172,8 +177,13 @@ rom_error_t acc_boot_attestation_key_save(
     uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification) {
   // Trigger key manager to sideload the attestation key into ACC.
+#ifdef HAS_KEYMGR_DPE
   HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(key_type, diversification));
+      sc_keymgr_generate_key_acc(kScKeymgrSlot1, diversification));
+#else
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation, diversification));
+#endif
 
   // Write the mode.
   uint32_t mode = kAccBootModeAttestationKeySave;

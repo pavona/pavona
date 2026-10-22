@@ -22,10 +22,10 @@ class chip_sw_rom_e2e_jtag_debug_vseq extends chip_sw_base_vseq;
     // BUILD file located at sw/device/silicon_creator/rom/e2e/BUILD.
 
     // Halt the CPU before the first instruction is executed. The chip just came out of POR - so
-    // there is no need to issue an NDM reset again. Just wait for lc_ready signal and immediately
-    // issue a halt req.
+    // there is no need to issue an NDM reset again. Just wait for rv_dm_dmi signal and
+    // immediately issue a halt req.
     cfg.debugger.set_elf_file(elf_file);
-    `DV_WAIT(cfg.chip_vif.rv_dm_lc_hw_debug_en)
+    `DV_WAIT(cfg.chip_vif.rv_dm_dmi_hw_debug_en)
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
     cfg.debugger.set_dmactive(1);
     cfg.debugger.set_haltreq(1);

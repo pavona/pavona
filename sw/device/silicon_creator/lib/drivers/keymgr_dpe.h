@@ -77,6 +77,16 @@ typedef enum sc_keymgr_dest {
 } sc_keymgr_dest_t;
 
 /**
+ * Destination for key generation.
+ */
+typedef enum sc_keymgr_slot {
+  kScKeymgrSlot0 = 0,
+  kScKeymgrSlot1 = 1,
+  kScKeymgrSlot2 = 2,
+  kScKeymgrSlot3 = 3,
+} sc_keymgr_slot_t;
+
+/**
  * The following constants represent the expected number of sec_mmio register
  * writes performed by functions in provided in this module. See
  * `SEC_MMIO_WRITE_INCREMENT()` for more details.
@@ -125,6 +135,16 @@ void sc_keymgr_sw_binding_unlock_wait(void);
 void sc_keymgr_max_ver_set(uint32_t max_key_ver);
 
 /**
+ * Blocks until the max key version registers are unlocked.
+ *
+ * This function can be called after `sc_keymgr_advance_state()` to wait for the
+ * software binding registers to become available for writing and to update the
+ * cached value of `MAX_KEY_VER_REGWEN` register in the `sec_mmio` expectations
+ * table.
+ */
+void sc_keymgr_max_ver_unlock_wait(void);
+
+/**
  * Sets the entropy reseed interval of the key manager.
  *
  * @param entropy_reseed_interval Number of key manager cycles before the
@@ -147,8 +167,24 @@ void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
  * before the secure mmio `sec_mmio_check_values()` function to make sure the
  * value of the `SW_BINDING_REGWEN` register is updated in the secure mmio
  * expectations table.
+ *
+ * @param src_slot: The key manager DPE slot to advance from.
+ * @param dest_slot: The key manager DPE slot to write the derived secret.
+ * @param allow_child: Whether to allow further ADVANCE operations from the
+ * derived secret.
+ * @param exportable: Whether to allow the derived secret to be exported from
+ * the destination slot.
+ * @param retain_parent: Whether to allow the derived secret to derive children
+ * in other slots without erasing itself.
+ * @param sw_binding_only: Whether to use ONLY the software binding value to
+ * derive the secret to the destination slot.
  */
-void sc_keymgr_advance_state(void);
+rom_error_t sc_keymgr_advance_state(sc_keymgr_slot_t src_slot,
+                                    sc_keymgr_slot_t dest_slot,
+                                    hardened_bool_t allow_child,
+                                    hardened_bool_t exportable,
+                                    hardened_bool_t retain_parent,
+                                    hardened_bool_t sw_binding_only);
 
 /**
  * Checks the state of the key manager.
@@ -204,15 +240,15 @@ typedef struct sc_keymgr_ecc_key {
  * waits until the operation is complete before returning. Can sideload an
  * attestation or sealing key based on user input.
  *
+ * @param src_slot: The key manager DPE slot to sideload the key from.
  * @param destination: Hardware destination for key material.
- * @param key_type Key type: attestation or sealing.
  * @param diversification Diversification input for the key derivation.
  * @return OK or error.
  */
 
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_generate_key(sc_keymgr_dest_t destination,
-                                   sc_keymgr_key_type_t key_type,
+rom_error_t sc_keymgr_generate_key(sc_keymgr_slot_t src_slot,
+                                   sc_keymgr_dest_t destination,
                                    sc_keymgr_diversification_t diversification);
 
 /**
@@ -234,15 +270,15 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination);
  * waits until the operation is complete before returning. Can sideload an
  * attestation or sealing key based on user input.
  *
+ * @param src_slot: The key manager DPE slot to sideload the key from.
  * @param key_type Key type: attestation or sealing.
  * @param diversification Diversification input for the key derivation.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
 inline rom_error_t sc_keymgr_generate_key_acc(
-    sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification) {
-  return sc_keymgr_generate_key(kScKeymgrDestAcc, key_type, diversification);
+    sc_keymgr_slot_t src_slot, sc_keymgr_diversification_t diversification) {
+  return sc_keymgr_generate_key(src_slot, kScKeymgrDestAcc, diversification);
 }
 
 /**
@@ -261,14 +297,26 @@ inline rom_error_t sc_keymgr_sideload_clear_acc(void) {
 /**
  * Sets the binding registers and advances the keymgr.
  *
- * @param attest_binding The attestation binding value to use.
- * @param max_key_version Maximum key version associated with the target
- *                        stage.
+ * @param src_slot: The key manager DPE slot to advance from.
+ * @param dest_slot: The key manager DPE slot to write the derived secret.
+ * @param allow_child: Whether to allow further ADVANCE operations from the
+ * derived secret.
+ * @param exportable: Whether to allow the derived secret to be exported from
+ * the destination slot.
+ * @param retain_parent: Whether to allow the derived secret to derive children
+ * in other slots without erasing itself.
+ * @param sw_binding_only: Whether to use ONLY the software binding value to
+ * derive the secret to the destination slot.
+ * @param binding The software binding value to use.
+ * @param max_key_version Maximum key version associated with the target stage.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sc_keymgr_advance(keymgr_binding_value_t *attest_binding,
-                              uint32_t max_key_version);
+rom_error_t sc_keymgr_advance(
+    sc_keymgr_slot_t src_slot, sc_keymgr_slot_t dest_slot,
+    hardened_bool_t allow_child, hardened_bool_t exportable,
+    hardened_bool_t retain_parent, hardened_bool_t sw_binding_only,
+    keymgr_binding_value_t *binding, uint32_t max_key_version);
 
 /**
  * Disable the keymgr controller.

@@ -13,6 +13,10 @@ load(
     "dual_inputs",
 )
 load(
+    "//rules:otp.bzl",
+    "otp_image",
+)
+load(
     "//rules/pavona:defs.bzl",
     "DRAGONFLY_TEST_ENVS",
     "EGRET_CW340_TEST_ENVS",
@@ -25,6 +29,8 @@ load(
     "verilator_params",
 )
 load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_require_ip", "pavona_select_top")
+load("//hw/top_dragonfly/data/otp:defs.bzl", "DRAGONFLY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS")
+load("//hw/top_egret/data/otp:defs.bzl", "EGRET_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -357,6 +363,32 @@ cc_test(
     ],
 )
 
+otp_image(
+    name = "otp_img_keymgr_functest",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+        },
+        None,
+    ),
+    overlays = pavona_select_top(
+        {
+            "egret": EGRET_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
+                "@//hw/top_egret/data/otp:otp_json_secret0",
+                "@//hw/top_egret/data/otp:otp_json_secret1",
+                "@//hw/top_egret/data/otp:otp_json_secret2",
+            ],
+            "dragonfly": DRAGONFLY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
+                "@//hw/top_dragonfly/data/otp:otp_json_secret0",
+                "@//hw/top_dragonfly/data/otp:otp_json_secret1",
+                "@//hw/top_dragonfly/data/otp:otp_json_secret2",
+            ],
+        },
+        None,
+    ),
+)
+
 pavona_test(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
@@ -379,6 +411,7 @@ pavona_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        otp = ":otp_img_keymgr_functest",
     ),
     deps = [
         ":keymgr",
@@ -420,6 +453,35 @@ cc_library(
     ],
 )
 
+pavona_test(
+    name = "keymgr_dpe_functest",
+    srcs = ["keymgr_dpe_functest.c"],
+    exec_env = DRAGONFLY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+        otp = ":otp_img_keymgr_functest",
+    ),
+    deps = [
+        ":keymgr_dpe",
+        ":kmac",
+        ":lifecycle",
+        ":retention_sram",
+        "//hw/top:kmac_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
 cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
@@ -427,7 +489,6 @@ cc_library(
     deps = [
         "//hw/top:kmac_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
