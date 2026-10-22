@@ -61,6 +61,9 @@ ci/scripts/include-guard.sh $tgt_branch
 echo -e "\n### Use rustfmt to check Rust coding style"
 ci/scripts/rust-format.sh $tgt_branch
 
+echo -e "\n### Use buiildifier to check Bazel coding style"
+bazel test //quality:buildifier_check --test_output=streamed
+
 echo -e "\n### Run shellcheck on all shell scripts"
 util/sh/scripts/run-shellcheck.sh
 
