@@ -423,7 +423,6 @@ use_repo(
     "nist_cavp_aes_kat",
     "nist_cavp_drbg_sp_800_90a_root",
     "nist_cavp_ecdh_sp_800_56a",
-    "nist_cavp_ecdsa_fips_186_4",
     "nist_cavp_hmac_fips_198_1",
     "nist_cavp_rsa_fips_186_3",
     "nist_cavp_sha2_fips_180_4",
