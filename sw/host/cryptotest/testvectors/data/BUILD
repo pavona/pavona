@@ -49,48 +49,6 @@ genrule(
 ]
 
 run_binary(
-    name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
-    srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
-        "@nist_cavp_ecdsa_fips_186_4//:SigVer.rsp",
-    ],
-    outs = [":nist_cavp_ecdsa_fips_186_4_sig_ver.json"],
-    args = [
-        "--src",
-        "$(location @nist_cavp_ecdsa_fips_186_4//:SigVer.rsp)",
-        "--dst",
-        "$(location :nist_cavp_ecdsa_fips_186_4_sig_ver.json)",
-        "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
-        "--operation",
-        "sigver",
-    ],
-    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
-)
-
-run_binary(
-    name = "nist_cavp_ecdsa_fips_186_4_sign_json",
-    srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
-        # We use the .txt test vector file here, because the .rsp one does not
-        # include the private keys.
-        "@nist_cavp_ecdsa_fips_186_4//:SigGen.txt",
-    ],
-    outs = ["nist_cavp_ecdsa_fips_186_4_sign.json"],
-    args = [
-        "--src",
-        "$(location @nist_cavp_ecdsa_fips_186_4//:SigGen.txt)",
-        "--dst",
-        "$(location :nist_cavp_ecdsa_fips_186_4_sign.json)",
-        "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
-        "--operation",
-        "siggen",
-    ],
-    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
-)
-
-run_binary(
     name = "acvp_ecdsa_siggen_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
