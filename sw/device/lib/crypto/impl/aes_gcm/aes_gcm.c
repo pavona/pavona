@@ -24,6 +24,10 @@ enum {
    * Log2 of the number of bytes in an AES block.
    */
   kAesBlockLog2NumBytes = 4,
+  /**
+   * Maximum number of words supported in an AES-GCM tag.
+   **/
+  kAesGcmMaxTagWords = 4,
 };
 static_assert(kAesBlockNumBytes == (1 << kAesBlockLog2NumBytes),
               "kAesBlockLog2NumBytes does not match kAesBlockNumBytes");
@@ -543,7 +547,10 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
                                const uint32_t *tag, size_t *output_len,
                                uint8_t *output, hardened_bool_t *success) {
   // Get the expected authentication tag.
-  uint32_t expected_tag[tag_len];
+  if (tag_len > kAesGcmMaxTagWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t expected_tag[kAesGcmMaxTagWords];
   size_t bytes_written;
   HARDENED_TRY(
       aes_gcm_final(ctx, tag_len, expected_tag, &bytes_written, output));
