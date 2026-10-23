@@ -100,12 +100,16 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 import textwrap
+import time
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 BAZEL_COMMON_CQUERY_FLAGS = ["--ui_event_filters=-info", "--noshow_progress"]
+
+BAZEL_RETRYABLE_ERROR = "BUILD file not found in directory '' of external repository"
+BAZEL_RETRY_DELAY_SECS = 30
 
 # Query files (passed via --starlark:file)
 BAZEL_STARLARK_FILE_DATA_RUNFILES_FILES_QUERY = (
@@ -251,6 +255,13 @@ class BazelRunner:
         logger.debug(f"_run_cmd -> cmd:\n{cmd}")
 
         res = subprocess.run(cmd, capture_output=True, encoding="utf-8", text=True)
+        if res.returncode != 0 and BAZEL_RETRYABLE_ERROR in res.stderr:
+            logger.warning(
+                "_run_cmd -> an external repository was incomplete, "
+                f"retrying in {BAZEL_RETRY_DELAY_SECS}s:\n{res.stderr}"
+            )
+            time.sleep(BAZEL_RETRY_DELAY_SECS)
+            res = subprocess.run(cmd, capture_output=True, encoding="utf-8", text=True)
 
         if res.returncode != 0:
             print("---- STDOUT ----")
