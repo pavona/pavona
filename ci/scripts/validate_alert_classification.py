@@ -135,7 +135,9 @@ def validate_digest_values(
     alert_handler_regtool_file = alert_handler_file.parent / "alert_handler.hjson"
 
     stashed_regs_output = TemporaryFile(mode="x+t")
+    regs_output_file_exists = True
     if not REGS_OUTPUT_FILE.is_file():
+        regs_output_file_exists = False
         REGS_OUTPUT_FILE.touch()
 
     try:
@@ -169,7 +171,11 @@ def validate_digest_values(
         return False, {}
     finally:  # restore original register output regardless of error or no error
         stashed_regs_output.seek(0)
-        REGS_OUTPUT_FILE.write_text(stashed_regs_output.read())
+        if regs_output_file_exists:
+            REGS_OUTPUT_FILE.write_text(stashed_regs_output.read())
+        else:
+            REGS_OUTPUT_FILE.unlink()
+
         stashed_regs_output.close()
 
     expected_digests_hex = {}
