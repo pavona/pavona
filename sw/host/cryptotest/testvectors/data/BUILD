@@ -299,10 +299,6 @@ HMAC_RANDOM_COUNT = 64
         ("SHA256", "sha2_fips_180_4", []),
         ("SHA384", "sha2_fips_180_4", []),
         ("SHA512", "sha2_fips_180_4", []),
-        ("SHA3_224", "sha3_fips_202", []),
-        ("SHA3_256", "sha3_fips_202", []),
-        ("SHA3_384", "sha3_fips_202", []),
-        ("SHA3_512", "sha3_fips_202", []),
         (
             "SHAKE128",
             "shake_fips_202",
@@ -318,6 +314,68 @@ HMAC_RANDOM_COUNT = 64
         "ShortMsg",
         "LongMsg",
     ] + extra_msg_types
+]
+
+[
+    run_binary(
+        name = "acvp_sha3_{}_json".format(digest_len),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHA3-{}-2.0:expectedResults.json".format(digest_len),
+            "@acvp_testvectors//SHA3-{}-2.0:prompt.json".format(digest_len),
+        ],
+        outs = [":acvp_sha3_{}.json".format(digest_len)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//SHA3-{}-2.0:prompt.json)".format(digest_len),
+            "--dst",
+            "$(location :acvp_sha3_{}.json)".format(digest_len),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//SHA3-{}-2.0:expectedResults.json)".format(digest_len),
+            "--test-type",
+            "sha3",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
+    )
+    for digest_len in [
+        "224",
+        "256",
+        "384",
+        "512",
+    ]
+]
+
+[
+    run_binary(
+        name = "acvp_shake_{}_json".format(security),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json".format(security),
+            "@acvp_testvectors//SHAKE-{}-FIPS202:prompt.json".format(security),
+        ],
+        outs = [":acvp_shake_{}.json".format(security)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:prompt.json)".format(security),
+            "--dst",
+            "$(location :acvp_shake_{}.json)".format(security),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json)".format(security),
+            "--test-type",
+            "shake",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
+    )
+    for security in [
+        "128",
+        "256",
+    ]
 ]
 
 ################################################################################
