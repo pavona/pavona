@@ -144,7 +144,10 @@ class cip_rst_safe_scoreboard #(type RAL_T = dv_base_reg_block,
     fork
       process_clk_rst_fifo();
       process_tl_fifos();
-      if (cfg.list_of_alerts.size()) process_alert_fifos();
+      // Process every alert FIFO that was constructed. A derived block may add
+      // protocol-compatible alert channels whose architectural meaning differs
+      // from the standard DUT-output alerts named by cfg.list_of_alerts.
+      if (alert_fifos.size()) process_alert_fifos();
       if (cfg.list_of_alerts.size()) check_alerts();
       if (cfg.list_of_alerts.size()) process_set_exp_alerts();
     join_none
@@ -784,8 +787,11 @@ class cip_rst_safe_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction
 
   protected virtual function void reset_alert_state();
+    // Flush the transport itself by what was constructed, not by one source of
+    // channel names. This also covers protocol-compatible FIFOs added by a
+    // derived scoreboard.
+    foreach (alert_fifos[alert_name]) alert_fifos[alert_name].flush();
     foreach (cfg.list_of_alerts[i]) begin
-      alert_fifos[cfg.list_of_alerts[i]].flush();
       expected_alert[cfg.list_of_alerts[i]] = '0;
       under_alert_handshake[cfg.list_of_alerts[i]] = 0;
     end
