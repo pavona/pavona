@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -9,6 +10,9 @@
 // Date: Tue Apr 29 15:40:49 2025
 // ExclMode: default
 //==================================================
+// Only top-independent exclusions belong here. Toggle declarations depend on
+// the selected top's packed RACL widths and live in its separate exclusion file.
+// All exclusions require the testbench's fixed EnableRacl=0 configuration.
 CHECKSUM: "306328011"
 INSTANCE: tb.dut
 ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
@@ -19,24 +23,6 @@ CHECKSUM: "1320980848 2271067206"
 INSTANCE: tb.dut.u_reg
 ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
 Block 63 "1261723120" "assign unused_policy_sel = (^racl_policies_i);"
-CHECKSUM: "1430650738 2795922920"
-INSTANCE: tb.dut
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.overflow "logic racl_error_o.overflow"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.racl_role "logic racl_error_o.racl_role[0:0]"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.read_access "logic racl_error_o.read_access"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.valid "logic racl_error_o.valid"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_policies_i[0].write_perm "logic racl_policies_i[0].write_perm[1:0]"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_policies_i[0].read_perm "logic racl_policies_i[0].read_perm[1:0]"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.request_address "logic racl_error_o.request_address[31:0]"
-ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
-Toggle racl_error_o.ctn_uid "logic racl_error_o.ctn_uid[0:0]"
 CHECKSUM: "1320980848 1082815162"
 INSTANCE: tb.dut.u_reg
 ANNOTATION: "Excluding RACL signals for non-racl RV_timer."
