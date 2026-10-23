@@ -64,24 +64,26 @@ Use `./bazelisk.sh build` to build a particular target.
 The following command builds the mask ROM (note that this is insufficient for a test, because you need an execution environment; read further).
 
 ```sh
-./bazelisk.sh build sw/device/silicon_creator/rom:mask_rom
+./bazelisk.sh build sw/device/silicon_creator/rom:rom
 ```
 which prints something like:
 ```
 ...
-INFO: Analyzed target //sw/device/silicon_creator/rom:mask_rom (645 packages loaded, 25678 targets configured).
+INFO: Analyzed target //sw/device/silicon_creator/rom:rom (688 packages loaded, 30135 targets configured).
 INFO: Found 1 target...
-Target //sw/device/silicon_creator/rom:mask_rom up-to-date:
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw310.39.scr.vmem
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw310.elf
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw310.dis
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw310.map
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw310.32.vmem
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw340.39.scr.vmem
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw340.elf
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw340.dis
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw340.map
-  bazel-bin/sw/device/silicon_creator/rom/mask_rom_fpga_cw340.32.vmem
+Target //sw/device/silicon_creator/rom:rom up-to-date:
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw310.39.scr.vmem
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw310.elf
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw310.dis
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw310.map
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw310.32.vmem
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw340.39.scr.vmem
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw340.elf
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw340.dis
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw340.map
+  bazel-bin/sw/device/silicon_creator/rom/rom_fpga_cw340.32.vmem
+  bazel-bin/sw/device/silicon_creator/rom/rom_sim_dv.39.scr.vmem
+  bazel-bin/sw/device/silicon_creator/rom/rom_sim_dv.elf
 ...
 ```
 
