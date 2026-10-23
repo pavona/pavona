@@ -30,4 +30,6 @@ EXCLUDED_DIRS=(
 readarray -t shell_scripts < \
     <(find . \( "${EXCLUDED_DIRS[@]}" \) -prune -o -name '*.sh' -print)
 
-"$SHELLCHECK" --severity=warning "${shell_scripts[@]}"
+# TODO : should remove this severity and elevate all lints to errors.
+# since it's hiding some pretty bad bash practices
+${SHELLCHECK} --severity=warning "${shell_scripts[@]}"

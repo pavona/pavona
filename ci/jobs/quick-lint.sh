@@ -41,6 +41,9 @@ ci/scripts/exec-check.sh
 echo -e "\n### Check for non-ASCII characters in source code"
 ci/scripts/check-ascii.sh
 
+echo -e "\n#### Check Bazel build graph"
+./bazelisk.sh build --nobuild //...
+
 echo -e "\n### Run Python lint (flake8)"
 ci/scripts/python-lint.sh $tgt_branch || {
     echo "(ignoring python lint errors)"
@@ -48,6 +51,9 @@ ci/scripts/python-lint.sh $tgt_branch || {
 
 echo -e "\n### Run Python lint (mypy)"
 ci/scripts/mypy.sh $tgt_branch
+
+echo -e "\n### Python (ruff)"
+ruff check
 
 echo -e "\n### Validate testplans with schema."
 ci/scripts/validate_testplans.sh
@@ -64,5 +70,14 @@ ci/scripts/rust-format.sh $tgt_branch
 echo -e "\n### Run shellcheck on all shell scripts"
 util/sh/scripts/run-shellcheck.sh
 
-echo -e "\n### Check what kinds of changes the PR contains"
-ci/scripts/get-build-type.sh $tgt_branch PullRequest
+echo -e "\n### Trailing whitespace"
+ci/scripts/whitespace.sh "$tgt_branch"
+
+echo -e "\n### Broken links"
+ci/scripts/check-links.sh
+
+echo -e "\n### Lint Doxygen comments (cryptolib)"
+./bazelisk.sh run @doxygen//:bin/doxygen quality/Doxyfile.lint
+
+echo -e "\n### Lock files"
+ci/scripts/check-lock-files.sh

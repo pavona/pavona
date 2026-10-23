@@ -95,3 +95,6 @@ book
 
 # ACC benchmark results
 bench/acc/logs/
+
+# doxygen lint xml output directory. See ./quality/Doxyfile.lint:15
+doxylint-xml/

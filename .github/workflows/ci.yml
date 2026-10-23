@@ -33,47 +33,8 @@ jobs:
           fetch-depth: 0 # Required so we can lint commit messages.
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-      - name: Show environment
-        run: ./ci/scripts/show-env.sh
-      - name: Commit metadata
-        run: ./ci/scripts/lint-commits.sh "$GITHUB_BASE_REF"
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: License headers
-        run: ./ci/scripts/check-licence-headers.sh "$GITHUB_BASE_REF"
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: Executable bits
-        run: ./ci/scripts/exec-check.sh
-      - name: Non-ASCII characters
-        run: ./ci/scripts/check-ascii.sh
-      - name: Check Bazel build graph
-        run: ./bazelisk.sh build --nobuild //...
-      - name: Python (flake8)
-        run: ./ci/scripts/python-lint.sh "$GITHUB_BASE_REF"
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: Python (mypy)
-        run: ./ci/scripts/mypy.sh
-      - name: Python (ruff)
-        run: ruff check
-      - name: Validate testplans with schema
-        run: ./ci/scripts/validate_testplans.sh
-      - name: C/C++ formatting
-        run: ./bazelisk.sh test //quality:clang_format_check
-      - name: Rust formatting
-        run: ./bazelisk.sh test //quality:rustfmt_check
-      - name: Shellcheck
-        run: ./bazelisk.sh test //quality:shellcheck_check
-      - name: Header guards
-        run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: Trailing whitespace
-        run: ./ci/scripts/whitespace.sh "$GITHUB_BASE_REF"
-        if: ${{ github.event_name == 'pull_request' }}
-      - name: Broken links
-        run: ./ci/scripts/check-links.sh
-      - name: Lint Doxygen comments (cryptolib)
-        run: ./bazelisk.sh run @doxygen//:bin/doxygen quality/Doxyfile.lint
-      - name: Lock files
-        run: ./ci/scripts/check-lock-files.sh
+      - name: Run Quick Lint
+        run: ./ci/jobs/quick-lint.sh
 
   slow_lint:
     name: Lint (slow)
