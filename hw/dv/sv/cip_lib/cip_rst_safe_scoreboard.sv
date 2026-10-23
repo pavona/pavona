@@ -797,6 +797,11 @@ class cip_rst_safe_scoreboard #(type RAL_T = dv_base_reg_block,
               "cip_rst_safe_scoreboard::reset(%0s): clearing CSR/TL/CIP scoreboard state", kind),
               UVM_LOW)
     csr_utils_pkg::clear_outstanding_access();
+    // The direction FIFO and its corresponding A/D FIFOs form one ordered
+    // transaction stream. Reset must discard all three parts of every stream;
+    // retaining a pre-reset direction entry could pair it with a post-reset
+    // channel item.
+    foreach (tl_dir_fifos[i]) tl_dir_fifos[i].flush();
     foreach (tl_a_chan_fifos[i]) tl_a_chan_fifos[i].flush();
     foreach (tl_d_chan_fifos[i]) tl_d_chan_fifos[i].flush();
     foreach (edn_fifos[i]) edn_fifos[i].flush();
@@ -817,6 +822,12 @@ class cip_rst_safe_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual function void check_phase(uvm_phase phase);
     super.check_phase(phase);
+    // tl_channels_e is an enum rather than a UVM object, so use its count
+    // directly instead of the object-printing end-of-test FIFO macro.
+    foreach (tl_dir_fifos[i]) begin
+      `DV_CHECK_EQ(tl_dir_fifos[i].used(), 0,
+                   $sformatf("Unprocessed TL direction items remain for %s", i))
+    end
     foreach (tl_a_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifos[i])
     foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
   endfunction
