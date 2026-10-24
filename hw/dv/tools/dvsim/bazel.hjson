@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
+  // Where the software of this dvsim invocation is kept, one entry per distinct
+  // set of images, for every seed of every test to copy from.
+  sw_cache_dir: "{scratch_path}/sw_cache/{timestamp}"
+
   sw_build_cmd: [
     "python",
     "{proj_root}/util/py/scripts/build_sw_collateral_for_sim.py",
@@ -10,6 +14,19 @@
 	  "--sw-build-device={sw_build_device}",
 	  "--seed={seed}",
 	  "--run-dir={run_dir}",
+	  "--cache-dir={sw_cache_dir}",
   ]
   sw_build_opts: []
+
+  // Builds the software of every test of the cfg into sw_cache_dir in one Bazel
+  // invocation, while the simulation executables compile, so that the runs only
+  // copy it. Set this to [] to have each test build its own software instead.
+  sw_prebuild_cmd: [
+    "python",
+    "{proj_root}/util/py/scripts/build_sw_collateral_for_sim.py",
+    "--prebuild={sw_cache_dir}/manifest.json",
+    "--cache-dir={sw_cache_dir}",
+  ]
+  sw_prebuild_dir: "{sw_cache_dir}"
+  sw_prebuild_timeout_mins: 240
 }

@@ -59,6 +59,10 @@ ifneq (${sw_images},)
 	cd ${proj_root} && ${sw_build_cmd} --build-seed=${build_seed}
 endif
 
+sw_prebuild:
+	@echo -e "\n[make]: sw_prebuild"
+	cd ${proj_root} && ${sw_prebuild_cmd}
+
 simulate: sw_build
 	@echo -e "\n[make]: simulate"
 	cd ${run_dir} && ${run_cmd} ${run_opts}
@@ -128,6 +132,7 @@ cov_analyze:
 	run \
 	pre_run \
 	sw_build \
+	sw_prebuild \
 	simulate \
 	post_run \
 	run_result \

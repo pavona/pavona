@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging as log
 import pprint
 import random
@@ -25,6 +26,26 @@ class Deploy():
 
     # Indicate the target for each sub-class.
     target = "none"
+
+    @property
+    def stage(self):
+        """The stage of the regression this job is scheduled in.
+
+        A job's target says what kind of job it is: the flow makefile target it
+        runs (build, run, cov_merge, ...) and the resources it asks for. Its
+        stage says when the scheduler may start it. The scheduler runs the
+        stages one after another, in the order their jobs are first added, and
+        a job waits only for the jobs it depends on in the stage before.
+
+        Most targets are a stage of their own, so by default a job's stage is
+        its target. A target whose jobs have to start together with another
+        target's joins that target's stage: sw_prebuild runs in the build stage,
+        alongside the builds of the simulation executables.
+        """
+        return self.target
+
+    # Whether the jobs that depend on this one may run if it fails.
+    optional_for_dependents = False
 
     # List of variable names that are to be treated as "list of commands".
     # This tells '_construct_cmd' that these vars are lists that need to
@@ -500,6 +521,86 @@ class CompileOneShot(Deploy):
         Limit build jobs to 60 minutes if the timeout is not set.
         """
         return self.build_timeout_mins if self.build_timeout_mins is not None else 60
+
+
+class SwPrebuild(Deploy):
+    """Builds the software of every selected test of a cfg, once, in the build stage.
+
+    The job runs alongside the builds of the simulation executables. It builds
+    the software (sw_images) of all the cfg's selected tests in one Bazel
+    invocation, which builds them in parallel and builds what they share once,
+    into the cfg's software cache (sw_cache_dir). Each run's sw_build step then
+    only copies its images from there.
+
+    The runs wait for this job but do not need it to succeed. If it could not
+    build a test's software, that test's sw_build step builds it itself, and
+    the test fails with Bazel's error in its log if that fails too.
+
+    It is scheduled with --run-only as well, so after changing only software,
+    dvsim -ru rebuilds it without recompiling the simulation executables.
+    """
+
+    target = "sw_prebuild"
+    stage = "build"  # Starts with the builds of the simulation executables
+    optional_for_dependents = True
+    weight = 5
+
+    # How many software caches to keep in the cfg's scratch area
+    max_caches = 5
+
+    def __init__(self, run_items, sim_cfg):
+        # One entry per distinct set of software. The fields are what the run's
+        # sw_build step passes the script, so that both compute the same cache
+        # entry for a test.
+        self.manifest = []
+        self.sw_runs = [run for run in run_items if run.sw_images]
+        for run in self.sw_runs:
+            entry = {
+                "sw_images": " ".join(run.sw_images),
+                "sw_build_opts": " ".join(run.sw_build_opts),
+                "sw_build_device": run.sw_build_device,
+            }
+            if entry not in self.manifest:
+                self.manifest.append(entry)
+
+        super().__init__(sim_cfg)
+
+        for run in self.sw_runs:
+            run.dependencies.append(self)
+
+    @staticmethod
+    def needed(run_items, sim_cfg):
+        """Whether the cfg prebuilds software and any of the runs needs some."""
+        return (bool(getattr(sim_cfg, "sw_prebuild_cmd", None)) and
+                any(run.sw_images for run in run_items))
+
+    def _define_attrs(self):
+        super()._define_attrs()
+        self.mandatory_cmd_attrs.update({
+            "proj_root": False,
+            "sw_prebuild_cmd": False,
+        })
+
+        self.mandatory_misc_attrs.update({
+            "sw_prebuild_dir": False,
+            "sw_prebuild_timeout_mins": False,
+        })
+
+    def _set_attrs(self):
+        super()._set_attrs()
+        self.qual_name = self.target
+        self.full_name = self.sim_cfg.name + ":" + self.qual_name
+
+    def pre_launch(self):
+        # Written when the job is about to run, so that it only exists for a
+        # prebuild that runs.
+        odir = Path(self.odir)
+        clean_odirs(odir=odir, max_odirs=self.max_caches)
+        odir.mkdir(parents=True, exist_ok=True)
+        (odir / "manifest.json").write_text(json.dumps(self.manifest, indent=2))
+
+    def get_timeout_mins(self):
+        return int(self.sw_prebuild_timeout_mins)
 
 
 class RunTest(Deploy):

@@ -6,17 +6,21 @@
 set -o errexit
 set -o pipefail
 
+fetch_toolchain() {
+  "$@" || { echo "Fetching the toolchain failed, retrying in 30s" >&2; sleep 30; "$@"; }
+}
+
 # If we are on an air-gapped machine, we need to first ensure the toolchain has
 # been unpacked from the repository cache.
 if [[ -n ${BAZEL_CACHE} ]]; then
   BAZEL_CMD="bazel"
-  ${BAZEL_CMD} fetch \
+  fetch_toolchain ${BAZEL_CMD} fetch \
     --distdir="${BAZEL_DISTDIR}" \
     --repository_cache="${BAZEL_CACHE}" \
     @llvm_toolchain_llvm//...
 else
   BAZEL_CMD="./bazelisk.sh"
-  ${BAZEL_CMD} fetch @llvm_toolchain_llvm//...
+  fetch_toolchain ${BAZEL_CMD} fetch @llvm_toolchain_llvm//...
 fi
 
 # Set environment variables for the RV32 linker and assembler.

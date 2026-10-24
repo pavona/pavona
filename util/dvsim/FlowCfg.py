@@ -130,6 +130,9 @@ class FlowCfg():
         self.target_runtime = {}
         self.total_runtime = ""
 
+        # If a signal or an error stopped the run before all of its jobs finished.
+        self.interrupted = False
+
         # Merge in the values from the loaded hjson file. If subclasses want to
         # add other default parameters that depend on the parameters above,
         # they can override _merge_hjson and add their parameters at the start
@@ -471,7 +474,9 @@ class FlowCfg():
         scheduler = Scheduler(deploy, get_launcher_cls(), self.interactive)
         try:
             results = scheduler.run()
+            self.interrupted = scheduler.interrupted
         except (Exception, KeyboardInterrupt):
+            self.interrupted = True
             # An interrupted or broken run is exactly when the logs and the
             # per-job numbers matter most, so losing them is not an option.
             # Hand back the statuses gathered so far and let the caller report

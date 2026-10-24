@@ -64,6 +64,9 @@ class SlurmLauncher(Launcher):
         self.process = None
         self.slurm_log_file = Path(self.deploy.get_log_path() + '.slurm')
         self.slurm_script_file = None
+        # srun writes the job's output here, and the log only receives it once
+        # the job is over, so this is the file that shows the job has started.
+        self.live_log_path = str(self.slurm_log_file)
 
         # Where the job writes its own Slurm job id, so that the peak memory
         # can be asked for without having to search the queue for the job.
@@ -117,10 +120,22 @@ class SlurmLauncher(Launcher):
         # its standard input to the job by default, so every concurrent job
         # would contend for the terminal that dvsim was started from and stall
         # until that terminal delivered input.
-        slurm_cmd = (f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} '
-                     f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} '
-                     f'--job-name={shlex.quote(self.deploy.full_name)} '
-                     f'--input=none {self.slurm_script_file}')
+        #
+        # A kind of job can ask for its own resources, for example
+        # SLURM_MEM_COV_MERGE for coverage merges, which need far more memory
+        # than a simulation. Slurm holds a job back until its licenses are free
+        # only if the job asks for them, so SLURM_LICENSES_RUN is how a
+        # simulation queues in Slurm rather than in the license server.
+        target = self.deploy.target.upper()
+        mem = os.environ.get(f'SLURM_MEM_{target}', SLURM_MEM)
+        cpus = os.environ.get(f'SLURM_CPUS_PER_TASK_{target}', SLURM_CPUS_PER_TASK)
+        licenses = os.environ.get(f'SLURM_LICENSES_{target}', '')
+        slurm_cmd = (f'srun -p {SLURM_QUEUE} --mem={mem} --mincpus={SLURM_MINCPUS} '
+                     f'--time={SLURM_TIMEOUT} --cpus-per-task={cpus} '
+                     f'--job-name={shlex.quote(self.deploy.full_name)} ')
+        if licenses:
+            slurm_cmd += f'--licenses={licenses} '
+        slurm_cmd += f'--input=none {self.slurm_script_file}'
 
         try:
             with self.slurm_log_file.open('w') as out_file:
@@ -165,21 +180,7 @@ class SlurmLauncher(Launcher):
 
             return 'D'
 
-        # Copy slurm job results to log file
-        if self.slurm_log_file.exists():
-            try:
-                with self.slurm_log_file.open('r') as slurm_file:
-                    try:
-                        with open(self.deploy.get_log_path(), 'a') as out_file:
-                            shutil.copyfileobj(slurm_file, out_file)
-                    except IOError as e:
-                        raise LauncherError(f'File Error: {e} when handling '
-                                            f'{self.deploy.get_log_path()}')
-                # Remove the temporary file from the slurm process
-                self.slurm_log_file.unlink()
-            except IOError as e:
-                raise LauncherError(f'File Error: {e} when handling {self.slurm_log_file}')
-
+        self._collect_log()
         self.exit_code = self.process.returncode
         status, err_msg = self._check_status()
         self._post_finish(status, err_msg)
@@ -290,7 +291,26 @@ class SlurmLauncher(Launcher):
         except subprocess.TimeoutExpired:
             self.process.kill()
 
+    def _collect_log(self) -> None:
+        '''Move what srun wrote for the job into the job's log.
+
+        Called when the job ends however it ends, because a job dvsim killed
+        is the one whose log matters most and would otherwise leave it empty.
+        '''
+        if not self.slurm_log_file.exists():
+            return
+        try:
+            with self.slurm_log_file.open('r') as slurm_file, \
+                    open(self.deploy.get_log_path(), 'a') as out_file:
+                shutil.copyfileobj(slurm_file, out_file)
+            self.slurm_log_file.unlink()
+        except OSError as e:
+            log.warning('Could not move %s into %s: %s', self.slurm_log_file,
+                        self.deploy.get_log_path(), e)
+
     def _post_finish(self, status, err_msg):
+        # Before the base class, which reads the log of a killed job.
+        self._collect_log()
         super()._post_finish(status, err_msg)
         if self.slurm_script_file and self.slurm_script_file.exists():
             self.slurm_script_file.unlink()

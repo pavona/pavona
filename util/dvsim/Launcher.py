@@ -104,7 +104,7 @@ class Launcher:
 
     # Kill a job whose peak resident set size grows beyond this many GB. None
     # disables the check. It is only enforced by the launchers that can measure
-    # a running job's memory, which today means LocalLauncher.
+    # a running job's memory.
     max_job_mem_gb = None
 
     # Give up on a job that has not started doing its work within this many
@@ -224,6 +224,10 @@ class Launcher:
         # was launched. None until one of the deploy's started_patterns turns up
         # in the log.
         self._run_start_time = None
+
+        # The file the job's output reaches while it runs, which is where the
+        # start marker is looked for.
+        self.live_log_path = deploy.get_log_path()
 
         # How far the log has been read looking for that marker, and the tail
         # carried over so that a marker split across two reads still matches.
@@ -366,7 +370,7 @@ class Launcher:
             return
 
         try:
-            with open(self.deploy.get_log_path(), "rb") as f:
+            with open(self.live_log_path, "rb") as f:
                 f.seek(self._log_scan_offset)
                 chunk = f.read()
                 self._log_scan_offset = f.tell()

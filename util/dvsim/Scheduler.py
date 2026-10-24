@@ -119,6 +119,9 @@ class Scheduler:
         self.target_runtime = {}
         self.total_runtime = ""
 
+        # Whether a signal stopped the run before every job had finished.
+        self.interrupted = False
+
         # Create the launcher instance for all items.
         for item in self.items:
             item.create_launcher()
@@ -195,6 +198,7 @@ class Scheduler:
 
         finally:
             signal(SIGINT, old_handler)
+            self.interrupted = stop_now.is_set()
 
         # Cleanup the status printer.
         self.status_printer.exit()
@@ -211,7 +215,7 @@ class Scheduler:
         'items' is a list of Deploy objects.
         """
         for item in items:
-            target_dict = self._scheduled.setdefault(item.target, {})
+            target_dict = self._scheduled.setdefault(item.stage, {})
             cfg_list = target_dict.setdefault(item.sim_cfg, [])
             if item not in cfg_list:
                 cfg_list.append(item)
@@ -222,7 +226,7 @@ class Scheduler:
         When all items in _scheduled[target][cfg] are finally removed, the cfg
         key is deleted.
         """
-        target_dict = self._scheduled[item.target]
+        target_dict = self._scheduled[item.stage]
         cfg_list = target_dict.get(item.sim_cfg)
         if cfg_list is not None:
             try:
@@ -266,9 +270,9 @@ class Scheduler:
         """
         for next_item in self._get_successors(item):
             assert next_item not in self.item_to_status
-            assert next_item not in self._queued[next_item.target]
+            assert next_item not in self._queued[next_item.stage]
             self.item_to_status[next_item] = "Q"
-            self._queued[next_item.target].append(next_item)
+            self._queued[next_item.stage].append(next_item)
             self._remove_from_scheduled(next_item)
 
     def _cancel_successors(self, item):
@@ -297,7 +301,7 @@ class Scheduler:
             target = self._get_next_target(None)
             cfgs = set(self._scheduled[target])
         else:
-            target = self._get_next_target(item.target)
+            target = self._get_next_target(item.stage)
             cfgs = {item.sim_cfg}
 
         if target is None:
@@ -354,6 +358,10 @@ class Scheduler:
 
             dep_status = self.item_to_status[dep]
             assert dep_status in ["P", "F", "K"]
+
+            # Such a dependency only had to finish first.
+            if dep.optional_for_dependents:
+                continue
 
             if item.needs_all_dependencies_passing:
                 if dep_status in ["F", "K"]:
@@ -593,9 +601,9 @@ class Scheduler:
         either, we move it straight to _killed.
         """
         self.item_to_status[item] = "K"
-        self._killed[item.target].add(item)
-        if item in self._queued[item.target]:
-            self._queued[item.target].remove(item)
+        self._killed[item.stage].add(item)
+        if item in self._queued[item.stage]:
+            self._queued[item.stage].remove(item)
         else:
             self._remove_from_scheduled(item)
 
@@ -609,6 +617,6 @@ class Scheduler:
         else:
             item.launcher.kill()
         self.item_to_status[item] = "K"
-        self._killed[item.target].add(item)
-        self._running[item.target].remove(item)
+        self._killed[item.stage].add(item)
+        self._running[item.stage].remove(item)
         self._cancel_successors(item)
