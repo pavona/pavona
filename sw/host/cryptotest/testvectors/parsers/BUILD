@@ -59,10 +59,10 @@ py_binary(
 )
 
 py_binary(
-    name = "nist_cavp_ecdsa_parser",
-    srcs = ["nist_cavp_ecdsa_parser.py"],
+    name = "nist_acvp_ecdsa_parser",
+    srcs = ["nist_acvp_ecdsa_parser.py"],
     deps = [
-        ":cryptotest_util",
+        ":acvp_util",
         requirement("jsonschema"),
     ],
 )

@@ -36,6 +36,8 @@ VECTOR_SETS = {
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("ECDSA", "sigGen"): ("ecdsa", "siggen"),
+    ("ECDSA", "sigVer"): ("ecdsa", "sigver"),
 }
 
 
@@ -96,8 +98,8 @@ def convert(prompt, answers, out_dir, skip_unsupported):
     expected = answers.get(vector_set["vsId"])
     if expected:
         args += ["--expected", str(expected)]
-    # Only the AES-KWP and ML-DSA parsers take --skip-unsupported.
-    if skip_unsupported and harness in ("aes_kwp", "mldsa"):
+    # Only the AES-KWP, ECDSA, and ML-DSA parsers take --skip-unsupported.
+    if skip_unsupported and harness in ["aes_kwp", "ecdsa", "mldsa"]:
         args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None
