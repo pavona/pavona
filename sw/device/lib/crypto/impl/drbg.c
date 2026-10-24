@@ -69,16 +69,21 @@ static otcrypto_status_t seed_material_xor(
     return OTCRYPTO_OK;
   }
 
-  // Copy into a word-aligned buffer. Using a word-wise XOR is slightly safer
-  // from a side channel perspective than byte-wise.
-  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
-  uint32_t value_words[nwords];
-  value_words[nwords - 1] = 0;
-  memcpy(value_words, value.data, value.len);
+  // Copy all complete words. Using a word-wise XOR is slightly safer from a
+  // side channel perspective than byte-wise.
+  size_t nwords = value.len / sizeof(uint32_t);
+  for (size_t i = 0; i < nwords; ++i) {
+    uint32_t value_word;
+    memcpy(&value_word, value.data + i * sizeof(uint32_t), sizeof(uint32_t));
+    seed_material->data[i] ^= value_word;
+  }
 
-  // XOR with seed value.
-  for (size_t i = 0; i < nwords; i++) {
-    seed_material->data[i] ^= value_words[i];
+  // If there are any remaining bytes, copy those as well
+  size_t bytes_left = value.len % sizeof(uint32_t);
+  if (bytes_left != 0) {
+    uint32_t value_word = 0;
+    memcpy(&value_word, &value.data[nwords], bytes_left);
+    seed_material->data[nwords] ^= value_word;
   }
 
   return OTCRYPTO_OK;
