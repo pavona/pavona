@@ -7,9 +7,6 @@
 
 set -e
 
-# Remove file containing invalid UTF-8
-rm -f sw/vendor/eembc_coremark/docs/html/index/General2.html
-
 # Run Offline Link Check
 ./bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
     --offline --no-progress \
