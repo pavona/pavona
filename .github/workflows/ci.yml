@@ -49,57 +49,8 @@ jobs:
         with:
           install-verible: true
           install-slang: true
-      - name: Countermeasures implemented (egret)
-        run: ./ci/scripts/check-countermeasures.sh egret
-      - name: Countermeasures implemented (scafi_deprecated)
-        run: ./ci/scripts/check-countermeasures.sh scafi_deprecated
-      - name: Bazel test suite tags
-        run: ./ci/scripts/check_bazel_test_suites.py
-      # See #21973: disabled until Verilator tags are fixed.
-      # - name: Check Bazel tags
-      #   run: ./ci/scripts/check-bazel-tags.sh
-      #   continue-on-error: true
-      - name: Banned Bazel rules
-        run: ./ci/scripts/check-bazel-banned-rules.sh
-      - name: Bazel target names
-        run: ./ci/scripts/check_bazel_target_names.py
-      - name: DV software images
-        run: ./ci/scripts/check_dv_sw_images.sh
-      - name: Unrunnable tests
-        run: ./ci/scripts/check-unrunnable-tests.sh
-      - name: Build documentation
-        run: ./ci/scripts/build-docs.sh
-      - name: Generated files
-        run: ./ci/scripts/check-generated.sh
-        env:
-          OT_DESTRUCTIVE: 1 # Required by the script to clean up.
-      - name: Check sim_cfg files
-        run: ./ci/scripts/check-sim-cfgs.py
-      - name: ACC assembly lint
-        run: ./bazelisk.sh test //quality:acc_lint
-      - name: Vendored files
-        run: ./ci/scripts/check-vendoring.sh
-      - name: Verible RTL egret
-        run: ./ci/scripts/verible-lint.sh rtl egret
-      - name: Verible DV egret
-        run: ./ci/scripts/verible-lint.sh dv egret
-      - name: Verible FPV egret
-        run: ./ci/scripts/verible-lint.sh fpv egret
-      - name: Verible RTL dragonfly
-        run: ./ci/scripts/verible-lint.sh rtl dragonfly
-      - name: Verible DV dragonfly
-        run: ./ci/scripts/verible-lint.sh dv dragonfly
-      - name: Verible FPV dragonfly
-        run: ./ci/scripts/verible-lint.sh fpv dragonfly
-      - name: Slang RTL egret
-        run: ./ci/scripts/slang-lint.sh egret
-      - name: Slang RTL dragonfly
-        run: ./ci/scripts/slang-lint.sh dragonfly
-      - name: Validate alert classification for Egret
-        run: ./ci/scripts/validate_alert_classification.py egret hw/top_egret/ip_autogen/alert_handler/data/top_egret_alert_handler.ipconfig.hjson "$(realpath hw/top_egret/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
-      - name: Validate alert classification for Dragonfly
-        run: ./ci/scripts/validate_alert_classification.py dragonfly hw/top_dragonfly/ip_autogen/alert_handler/data/top_dragonfly_alert_handler.ipconfig.hjson "$(realpath hw/top_dragonfly/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
-
+      - name: Slow Lint
+        run: ./ci/jobs/slow-lint.sh
   dependency-licenses:
     name: Check software dependency licenses
     runs-on:
