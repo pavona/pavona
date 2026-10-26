@@ -26,6 +26,9 @@ extern "C" {
  * The personalization string may empty, and may be up to 48 bytes long; any
  * longer will result in an error.
  *
+ * `perso_string` input is expected in the standard byte order, i.e. the same as
+ * perso_string in SP 800-90Ar1.
+ *
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
@@ -38,6 +41,9 @@ otcrypto_status_t otcrypto_drbg_instantiate(
  *
  * Reseeds the DRBG with fresh entropy that is automatically fetched from the
  * entropy source and updates the working state parameters.
+ *
+ * `additional_input` input is expected in the standard byte order, i.e. the
+ * same as additional_input in SP 800-90Ar1.
  *
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the DRBG reseed operation.
@@ -57,6 +63,9 @@ otcrypto_status_t otcrypto_drbg_reseed(
  * personalization string must not be longer than the entropy input, and may be
  * empty.
  *
+ * `entropy` and `perso_string` are expected in the standard byte order, i.e.
+ * the same as entropy_input and perso_string respectively in SP 800-90Ar1.
+ *
  * @param entropy Pointer to the user defined entropy value.
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
@@ -71,6 +80,10 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
  * Reseeds the DRBG with entropy input from the user through the `entropy`
  * parameter and updates the working state parameters. Calling this function
  * breaks FIPS compliance until the DRBG is uninstantiated.
+ *
+ * `entropy` and `additional_input` are expected in the standard byte order,
+ * i.e. the same as entropy_input and additional_input respectively in SP
+ * 800-90Ar1.
  *
  * @param entropy Pointer to the user defined entropy value.
  * @param additional_input Pointer to the additional input for DRBG.
@@ -95,6 +108,10 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * multiple of 4, some output from the hardware will be discarded. This detail
  * may be important for known-answer tests.
  *
+ * `additional_input` is expected in the standard byte order, i.e. the same as
+ * additional_input in SP 800-90Ar1. Similarly, `drbg_output` is provided in the
+ * standard byte order, the same as `pseudorandom_bits` in SP 800-90Ar1.
+ *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
@@ -117,6 +134,10 @@ otcrypto_status_t otcrypto_drbg_generate(
  * The output is generated in 16-byte blocks; if `drbg_output->len` is not a
  * multiple of 4, some output from the hardware will be discarded. This detail
  * may be important for known-answer tests.
+ *
+ * `additional_input` is expected in the standard byte order, i.e. the same as
+ * additional_input in SP 800-90Ar1. Similarly, `drbg_output` is provided in the
+ * standard byte order, the same as `pseudorandom_bits` in SP 800-90Ar1.
  *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
