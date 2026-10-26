@@ -64,53 +64,38 @@ fn run_drbg_testcase(
 
     CryptotestCommand::Drbg.send(spi_console)?;
 
-    // Convert all inputs to little-endian
-    let mut entropy_le = Vec::from(test_case.entropy.as_slice());
-    let mut perso_string_le = Vec::from(test_case.personalization_string.as_slice());
-    let mut reseed_entropy_le = Vec::from(test_case.reseed_entropy.as_slice());
-    let mut reseed_addl_le = Vec::from(test_case.reseed_additional_input.as_slice());
-    let mut addl_1_le = Vec::from(test_case.additional_input_1.as_slice());
-    let mut addl_2_le = Vec::from(test_case.additional_input_2.as_slice());
-    entropy_le.reverse();
-    perso_string_le.reverse();
-    reseed_entropy_le.reverse();
-    reseed_addl_le.reverse();
-    addl_1_le.reverse();
-    addl_2_le.reverse();
+    let entropy = Vec::from(test_case.entropy.as_slice());
+    let perso_string = Vec::from(test_case.personalization_string.as_slice());
+    let reseed_entropy = Vec::from(test_case.reseed_entropy.as_slice());
+    let reseed_addl = Vec::from(test_case.reseed_additional_input.as_slice());
+    let addl_1 = Vec::from(test_case.additional_input_1.as_slice());
+    let addl_2 = Vec::from(test_case.additional_input_2.as_slice());
 
     // Send everything
     CryptotestDrbgInput {
-        entropy: ArrayVec::try_from(entropy_le.as_slice()).unwrap(),
-        entropy_len: entropy_le.len(),
-        personalization_string: ArrayVec::try_from(perso_string_le.as_slice()).unwrap(),
-        personalization_string_len: perso_string_le.len(),
+        entropy: ArrayVec::try_from(entropy.as_slice()).unwrap(),
+        entropy_len: entropy.len(),
+        personalization_string: ArrayVec::try_from(perso_string.as_slice()).unwrap(),
+        personalization_string_len: perso_string.len(),
         reseed: if test_case.reseed { 1 } else { 0 },
-        reseed_entropy: ArrayVec::try_from(reseed_entropy_le.as_slice()).unwrap(),
-        reseed_entropy_len: reseed_entropy_le.len(),
-        reseed_additional_input: ArrayVec::try_from(reseed_addl_le.as_slice()).unwrap(),
-        reseed_additional_input_len: reseed_addl_le.len(),
-        additional_input_1: ArrayVec::try_from(addl_1_le.as_slice()).unwrap(),
-        additional_input_1_len: addl_1_le.len(),
-        additional_input_2: ArrayVec::try_from(addl_2_le.as_slice()).unwrap(),
-        additional_input_2_len: addl_2_le.len(),
+        reseed_entropy: ArrayVec::try_from(reseed_entropy.as_slice()).unwrap(),
+        reseed_entropy_len: reseed_entropy.len(),
+        reseed_additional_input: ArrayVec::try_from(reseed_addl.as_slice()).unwrap(),
+        reseed_additional_input_len: reseed_addl.len(),
+        additional_input_1: ArrayVec::try_from(addl_1.as_slice()).unwrap(),
+        additional_input_1_len: addl_1.len(),
+        additional_input_2: ArrayVec::try_from(addl_2.as_slice()).unwrap(),
+        additional_input_2_len: addl_2.len(),
         output_len: test_case.output.len(),
     }
     .send(spi_console)?;
 
     // Get output
     let drbg_output = CryptotestDrbgOutput::recv(spi_console, opts.timeout, false, false)?;
-    // The expected output is in a mixed-endian format (32-bit words
-    // are in little-endian order, but the bytes within the words are
-    // in big-endian order). Convert the actual output to match this
-    // format.
-    let mut output = Vec::from(&drbg_output.output[..drbg_output.output_len]);
-    let mut i = 0;
-    while i + 4 <= output.len() {
-        output[i..i + 4].reverse();
-        i += 4;
-    }
+    let output = Vec::from(&drbg_output.output[..drbg_output.output_len]);
+
     // Output byte length not a multiple of 4 is currently unsupported.
-    if i != output.len() {
+    if output.len() % 4 != 0 {
         panic!("Output length in bytes was not a multiple of 4.");
     }
     let success = test_case.output == output;

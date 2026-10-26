@@ -32,17 +32,32 @@ static status_t seed_material_construct(
   if (value.len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  seed_material->len = value.len > 0 ? kEntropySeedWords : 0;
 
-  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
-  seed_material->len = nwords;
+  // Copy all complete words of the value into the seed. Note that because
+  // `seed_material` is stored in reverse byte order from the byte array of the
+  // same name in SP 800-90Ar1 (to allow for direct use by the CSRNG without
+  // byte reordering), this copy needs to happen from the tail of the array
+  // backward.
+  size_t full_words = value.len / sizeof(uint32_t);
+  for (size_t i = 0; i < full_words; i++) {
+    uint32_t value_word;
+    memcpy(&value_word, value.data + i * sizeof(uint32_t), sizeof(uint32_t));
+    seed_material->data[(kEntropySeedWords - 1) - i] =
+        __builtin_bswap32(value_word);
+  }
 
-  // Copy seed data.
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(seed_material->data, value.data, value.len);
+  // Copy the remaining bytes of the value, if any, into the seed.
+  size_t bytes_left = value.len % sizeof(uint32_t);
+  if (bytes_left != 0) {
+    uint32_t value_word = 0;
+    memcpy(&value_word, value.data + full_words * sizeof(uint32_t), bytes_left);
+    seed_material->data[(kEntropySeedWords - 1) - full_words] =
+        __builtin_bswap32(value_word);
+  }
 
   // Set any unset bytes to zero.
-  size_t unset_bytes = nwords * sizeof(uint32_t) - value.len;
-  memset(((unsigned char *)seed_material->data) + value.len, 0, unset_bytes);
+  memset(seed_material->data, 0, kEntropySeedBytes - value.len);
 
   return OTCRYPTO_OK;
 }
@@ -51,7 +66,9 @@ static status_t seed_material_construct(
  * XOR the entropy seed with another value.
  *
  * Returns `OTCRYPTO_BAD_ARGS` if the provided value is longer than the seed.
- * If the value is shorter, only the prefix will be XOR'ed.
+ * If the value is shorter, only the tail of `seed_material` (corresponding
+ * to the first bytes of the byte array of the same name in SP 800-90Ar1) will
+ * be XORed.
  *
  * This operation is not constant-time relative to `value.len`.
  *
@@ -69,16 +86,26 @@ static otcrypto_status_t seed_material_xor(
     return OTCRYPTO_OK;
   }
 
-  // Copy into a word-aligned buffer. Using a word-wise XOR is slightly safer
-  // from a side channel perspective than byte-wise.
-  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
-  uint32_t value_words[nwords];
-  value_words[nwords - 1] = 0;
-  memcpy(value_words, value.data, value.len);
+  // XOR in all complete words of the value into the seed. Note that because
+  // `seed_material` is stored in reverse byte order from the byte array of the
+  // same name in SP 800-90Ar1 (to allow for direct use by the CSRNG without
+  // byte reordering), this XOR needs to happen from the tail of the array
+  // backward.
+  size_t full_words = value.len / sizeof(uint32_t);
+  for (size_t i = 0; i < full_words; i++) {
+    uint32_t value_word;
+    memcpy(&value_word, value.data + i * sizeof(uint32_t), sizeof(uint32_t));
+    seed_material->data[(kEntropySeedWords - 1) - i] ^=
+        __builtin_bswap32(value_word);
+  }
 
-  // XOR with seed value.
-  for (size_t i = 0; i < nwords; i++) {
-    seed_material->data[i] ^= value_words[i];
+  // XOR the remaining bytes of the value, if any, into the seed.
+  size_t bytes_left = value.len % sizeof(uint32_t);
+  if (bytes_left != 0) {
+    uint32_t value_word = 0;
+    memcpy(&value_word, value.data + full_words * sizeof(uint32_t), bytes_left);
+    seed_material->data[(kEntropySeedWords - 1) - full_words] ^=
+        __builtin_bswap32(value_word);
   }
 
   return OTCRYPTO_OK;
@@ -189,8 +216,17 @@ static otcrypto_status_t generate(hardened_bool_t fips_check,
 
   entropy_seed_material_t seed_material;
   HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
-  return entropy_csrng_generate(&seed_material, drbg_output.data,
-                                drbg_output.len, fips_check);
+  HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output.data,
+                                      drbg_output.len, fips_check));
+  // Byte swap each word of the generated value. Note that because `drbg_output`
+  // is returned in big-endian words (as the CSRNG hardware outputs results in
+  // reverse byte order), a byte swap is required in order to provide the output
+  // in little-endian.
+  for (size_t i = 0; i < drbg_output.len; i++) {
+    drbg_output.data[i] = __builtin_bswap32(drbg_output.data[i]);
+  }
+
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_drbg_generate(
