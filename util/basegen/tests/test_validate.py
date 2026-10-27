@@ -12,6 +12,8 @@ from basegen.validate import (validate_schema, all_validation_errors,
                               TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR,
                               RACL_VALIDATOR, RACL_MAPPING_VALIDATOR,
                               document_schema, correct_doc_links)
+import sys
+import pytest
 
 
 # test_topcfg_validation
@@ -241,3 +243,7 @@ def test_all_validation_errors():
     all_errors = all_validation_errors(bad_data, validator)
 
     assert len(all_errors) == len(required_keys)
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main())
