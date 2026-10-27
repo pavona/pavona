@@ -7,7 +7,7 @@ import re
 from typing import List, Match, Union, Optional
 
 import tabulate
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 
 
 def name_width(x: Signal) -> str:

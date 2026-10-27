@@ -13,7 +13,7 @@ from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
 from reggen.interrupt import Interrupt, IntrType
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 from reggen.lib import check_int, check_list, check_str_dict, check_str
 from reggen.multi_register import MultiRegister, EmptyMultiRegException
 from reggen.params import ReggenParams

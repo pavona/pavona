@@ -9,7 +9,7 @@ from reggen.bits import Bits
 from reggen.lib import check_name, check_str, check_int, check_bool, check_list
 from basegen.validate import create_validator
 from basegen.lib import cast_hjson_values
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 
 
 class IntrType(JsonEnum):

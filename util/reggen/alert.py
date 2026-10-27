@@ -5,7 +5,7 @@
 from typing import Dict, List
 
 from reggen.bits import Bits
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 from reggen.lib import check_name, check_str, check_list
 from basegen.validate import create_validator
 
