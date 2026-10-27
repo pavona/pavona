@@ -17,6 +17,8 @@ filegroup(
         "CONTRIBUTING.md",
         "LICENSE",
         "README.md",
+        "SECURITY.md",
+        "rfc/rfc-2026-03-RFC/rfc_2026_03_rfc.md",
         "//doc:doc_files",
         "//hw:doc_files",
         "//rules/pavona:doc_files",

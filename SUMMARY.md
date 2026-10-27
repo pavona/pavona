@@ -26,6 +26,8 @@
 # Contributing
 
 - [Contributing](./CONTRIBUTING.md)
+  - [Security](./SECURITY.md)
+  - [RFC Process (not finalized)](./rfc/rfc-2026-03-RFC/rfc_2026_03_rfc.md)
   - [Vendoring Philosophy](./doc/contributing/hw/vendor.md)
 - [Style](./doc/contributing/style_guides/README.md)
   - [Verilog](./doc/contributing/style_guides/verilog_coding_style.md)

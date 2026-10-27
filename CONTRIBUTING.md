@@ -44,6 +44,10 @@ Most technical discussions around specific features and bugs occur on the Pavona
 The main way to file a bug report is to open an issue on GitHub.
 Participating on GitHub requires a GitHub account.
 
+### Security Disclosures
+
+See [`SECURITY.md`](SECURITY.md) for information on how to handle security vulnerabilities.
+
 ## Contributing to the project
 
 If you would like to submit a pull request or otherwise contribute to the project, you'll need to complete a Contributor License Agreement (CLA).
@@ -64,6 +68,21 @@ Similar to the process for individuals, the CLA assistant will check that you or
 ### Corporate (GlobalPlatform member)
 
 If you are an employee of a corporation that is a member of GlobalPlatform, it is unnecessary to sign a separate corporate CLA.
+
+## Recommended Contribution Process
+
+Depending on the size and impact of your contribution, it may need to go through the [RFC process](./rfc/rfc-2026-03-RFC/rfc_2026_03_rfc.md).
+
+If not, the lightweight process is:
+1. Check if an issue or pull request (PR) addressing the same matter already exists.
+   If so, consider contributing to the existing issue/PR instead of opening a new one.
+2. Assess whether the matter may be security sensitive.
+   If so, follow the [proper process for reporting vulnerabilities](./SECURITY.md).
+3. [Create a GitHub issue](./doc/contributing/github_notes.md#labeling-and-assigning-issues-and-pull-requests) to raise awareness, start the discussion, and build consensus that the issue needs to be addressed.
+4. Start implementation and prepare a first PR.
+   Create the PR from a fork of this repo.
+   Reference the GitHub issue in your PR description and commit messages (see the [Github Notes](./doc/contributing/github_notes.md#referencing-issues-and-pull-requests)).
+   To simplify and speed up code review, try to [break larger contributions](./doc/contributing/github_notes.md#pr-scope-number-of-commits) like new features and major changes into multiple, smaller PRs wherever possible.
 
 ## Signing off your commits
 
@@ -99,3 +118,34 @@ Some key guidelines are:
   No merge commits are permitted.
 
 For more information, consult the [GitHub notes](./doc/contributing/github_notes.md).
+
+## Licensing
+
+Copyrights are indicated via comments in individual files:
+```
+    // Copyright CONTRIBUTOR NAME HERE.
+    // Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    // SPDX-License-Identifier: Apache-2.0
+```
+
+No previously existing copyright statements may be removed.
+
+## Code style
+
+All source code contributions must adhere to project style guides.
+We use separate style guides for different languages; see the [style guide index](./doc/contributing/style_guides/README.md).
+
+If unsure about the style, be consistent with the existing code and do your best to match its style.
+
+## Vendored Code
+
+Not all source code included in the repository has been developed as part of the project.
+Pavona also leverages external code released under compatible open-source licenses.
+The process of incorporating such code into the repository, including copying and applying patches, is managed through the "vendor" script.
+
+The "vendored" code is usually found in a vendor subdirectory such as `hw/vendor`.
+It should never be modified directly in the repository.
+Instead, modifications should be discussed and implemented upstream and then be vendored in.
+However, when dealing with third-party code, please first raise awareness and discuss on the mailing list before creating issues and pull requests upstream.
+
+Further information regarding vendor code can be found in the [Vendor Tool User Guide](./hw/vendor.md)
