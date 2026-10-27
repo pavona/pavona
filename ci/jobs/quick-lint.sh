@@ -103,6 +103,10 @@ section "Lock files"
 ci/scripts/check-lock-files.sh
 section_end
 
+section "Check licenses are all okay"
+ci/scripts/check-dependency-licenses.sh
+section_end
+
 if is_clean "$before"; then
   exit 0
 else
