@@ -5,6 +5,9 @@
 from pathlib import Path
 from basegen.lib import cast_hjson_values, import_hjson
 
+import sys
+import pytest
+
 
 # test_cast_hjson_values
 MOCK_TO_CAST = {
@@ -48,3 +51,7 @@ def test_import_hjson():
     assert import_hjson(mock_hjson) == MOCK_HJSON_WITH_CASTING
     assert import_hjson(str(mock_hjson.resolve()), True) == MOCK_HJSON_NO_CASTING
     mock_hjson.unlink()
+
+
+if __name__ == "__main__":
+    sys.exit(pytest.main())

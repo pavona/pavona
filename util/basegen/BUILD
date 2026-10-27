@@ -39,6 +39,15 @@ py_library(
 )
 
 py_test(
+    name = "test_lib",
+    srcs = ["tests/test_lib.py"],
+    deps = [
+        ":basegen",
+        requirement("pytest"),
+    ],
+)
+
+py_test(
     name = "test_validate",
     srcs = ["tests/test_validate.py"],
     data = [
