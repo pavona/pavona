@@ -12,7 +12,7 @@ import re
 import logging as log
 import jsonschema2md
 
-from typing import Any, TextIO
+from typing import Any, TextIO, cast
 from .lib import REPO_TOP, import_hjson
 
 
@@ -44,7 +44,7 @@ def _resolve_schema(schema: dict[str, Any] | str | SchemaResource,
     if isinstance(schema, str):
         schema = registry[schema]  # Resource
     if isinstance(schema, Resource):
-        schema = schema.contents
+        return cast(dict[str, Any], schema.contents)
     return schema
 
 

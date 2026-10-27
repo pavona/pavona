@@ -38,4 +38,4 @@ def register_udps(compiler: RDLCompiler) -> None:
     """
     compiler.register_udp(Hwre)
     compiler.register_udp(Shadowed)
-    compiler.compile_file(OPENTITAN_UDPS)
+    compiler.compile_file(str(OPENTITAN_UDPS))

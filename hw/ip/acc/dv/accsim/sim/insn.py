@@ -1896,7 +1896,7 @@ class BNWSRR(ACCInsn):
             # returns false. If a digest value is available, it returns True.
             if not state.kmac._masked_mode:
                 state.stop_at_end_of_cycle(ErrBits.KMAC_RECOV_ERROR)
-                return
+                return None
 
             while not state.wsrs.KMAC_DIGEST1.request_value_share1():
                 # There's a pending KMAC request. Stall for a cycle.
@@ -1971,6 +1971,7 @@ class BNWSRW(ACCInsn):
         if DEBUG_KMAC or DEBUG_ARITH:
             eprint(f"write WSR: {format(val, '064x')}")
         state.wsrs.write_at_idx(self.wsr, val)
+        return None
 
 
 class BNTRN(ACCInsn):
