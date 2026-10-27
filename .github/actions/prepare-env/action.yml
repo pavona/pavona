@@ -40,7 +40,7 @@ inputs:
     default: ${{ github.workspace }}
   python-version:
     description: Python version to install and use
-    default: '3.12'
+    default: '3.14'
   vivado-version:
     description: Vivado version to configure, if any.
     default: ''
