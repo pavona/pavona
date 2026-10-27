@@ -5,22 +5,20 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use ecdsa::SignatureWithOid;
-use ecdsa::{ECDSA_SHA256_OID, ECDSA_SHA384_OID, ECDSA_SHA512_OID};
 use num_bigint_dig::BigInt;
 use num_traits::Num;
 use p256::U256;
-use p256::ecdsa::signature::Verifier;
+use p256::ecdsa::signature::hazmat::PrehashVerifier;
 use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
-use p256::pkcs8::ObjectIdentifier;
 use p384::U384;
 use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
 use serde::Deserialize;
+use serde_json::json;
 use sha2::digest::generic_array::GenericArray;
 use sha2::{Digest, Sha256, Sha384, Sha512};
-use std::fs;
 use std::time::Duration;
 
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex, read_vectors};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ecdsa_commands::{
     CryptotestEcdsaCoordinate, CryptotestEcdsaCurve, CryptotestEcdsaHashAlg,
@@ -46,6 +44,9 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     ecdsa_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 fn scalar_zero() -> String {
@@ -55,21 +56,31 @@ fn scalar_zero() -> String {
 #[derive(Debug, Deserialize)]
 struct EcdsaTestCase {
     vendor: String,
-    test_case_id: usize,
-    algorithm: String,
+    test_case_id: u64,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     operation: String,
     curve: String,
     hash_alg: String,
     message: Vec<u8>,
+    #[serde(default = "scalar_zero")]
     qx: String,
+    #[serde(default = "scalar_zero")]
     qy: String,
     #[serde(default = "scalar_zero")]
     r: String,
     #[serde(default = "scalar_zero")]
     s: String,
-    #[serde(default)]
+    #[serde(default = "scalar_zero")]
     d: String,
     result: bool,
+}
+
+#[derive(Default)]
+struct EcdsaOutputs {
+    success: bool,
+    r: Vec<u8>,
+    s: Vec<u8>,
 }
 
 const ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256: usize = 32;
@@ -88,7 +99,6 @@ fn p256_verify_signature(
     qy: &mut Vec<u8>,
     r: &[u8],
     s: &[u8],
-    hash_oid: ObjectIdentifier,
 ) -> bool {
     // Convert qx and qy to big-endian (resize to full length beforehand in case there are leading
     // zero(es))
@@ -111,19 +121,15 @@ fn p256_verify_signature(
         false,
     ))
     .expect("Qx and Qy did not form a valid public key")
-    .verify(
+    .verify_prehash(
         message,
-        &SignatureWithOid::new(
-            p256::ecdsa::Signature::from_scalars(
-                GenericArray::from(
-                    <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256]>::try_from(r).unwrap(),
-                ),
-                GenericArray::from(
-                    <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256]>::try_from(s).unwrap(),
-                ),
-            )
-            .expect("Invalid signature format"),
-            hash_oid,
+        &p256::ecdsa::Signature::from_scalars(
+            GenericArray::from(
+                <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256]>::try_from(r).unwrap(),
+            ),
+            GenericArray::from(
+                <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256]>::try_from(s).unwrap(),
+            ),
         )
         .expect("Invalid signature format"),
     )
@@ -136,7 +142,6 @@ fn p384_verify_signature(
     qy: &mut Vec<u8>,
     r: &[u8],
     s: &[u8],
-    hash_oid: ObjectIdentifier,
 ) -> bool {
     // Convert qx and qy to big-endian (resize to full length beforehand in case there are leading
     // zero(es))
@@ -159,19 +164,15 @@ fn p384_verify_signature(
         false,
     ))
     .expect("Qx and Qy did not form a valid public key")
-    .verify(
+    .verify_prehash(
         message,
-        &SignatureWithOid::new(
-            p384::ecdsa::Signature::from_scalars(
-                GenericArray::from(
-                    <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384]>::try_from(r).unwrap(),
-                ),
-                GenericArray::from(
-                    <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384]>::try_from(s).unwrap(),
-                ),
-            )
-            .expect("Invalid signature format"),
-            hash_oid,
+        &p384::ecdsa::Signature::from_scalars(
+            GenericArray::from(
+                <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384]>::try_from(r).unwrap(),
+            ),
+            GenericArray::from(
+                <[u8; ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384]>::try_from(s).unwrap(),
+            ),
         )
         .expect("Invalid signature format"),
     )
@@ -183,13 +184,13 @@ fn run_ecdsa_testcase(
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
     failures: &mut Vec<String>,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
         test_case.vendor,
         test_case.test_case_id
     );
-    assert_eq!(test_case.algorithm.as_str(), "ecdsa");
     let mut qx: Vec<u8> = BigInt::from_str_radix(&test_case.qx, 16)
         .unwrap()
         .to_bytes_le()
@@ -209,67 +210,40 @@ fn run_ecdsa_testcase(
 
     // Get the hash function and hash the message to get the digest (unfortunately this code is
     // challenging to deduplicate because the `Digest` trait is not object safe).
-    let (hash_alg, hash_oid, message_digest): (
-        CryptotestEcdsaHashAlg,
-        Option<ObjectIdentifier>,
-        Vec<u8>,
-    ) = match test_case.hash_alg.as_str() {
-        "sha-256" => {
-            let mut hasher = Sha256::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha256,
-                Some(ECDSA_SHA256_OID),
-                hasher.finalize().to_vec(),
-            )
-        }
-        "sha-384" => {
-            let mut hasher = Sha384::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha384,
-                Some(ECDSA_SHA384_OID),
-                hasher.finalize().to_vec(),
-            )
-        }
-        "sha-512" => {
-            let mut hasher = Sha512::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha512,
-                Some(ECDSA_SHA512_OID),
-                hasher.finalize().to_vec(),
-            )
-        }
-        "sha3-256" => {
-            let mut hasher = sha3::Sha3_256::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha3_256,
-                None,
-                hasher.finalize().to_vec(),
-            )
-        }
-        "sha3-384" => {
-            let mut hasher = sha3::Sha3_384::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha3_384,
-                None,
-                hasher.finalize().to_vec(),
-            )
-        }
-        "sha3-512" => {
-            let mut hasher = sha3::Sha3_512::new();
-            hasher.update(test_case.message.as_slice());
-            (
-                CryptotestEcdsaHashAlg::Sha3_512,
-                None,
-                hasher.finalize().to_vec(),
-            )
-        }
-        _ => panic!("Invalid ECDSA hash mode"),
-    };
+    let (hash_alg, message_digest): (CryptotestEcdsaHashAlg, Vec<u8>) =
+        match test_case.hash_alg.as_str() {
+            "sha-256" => {
+                let mut hasher = Sha256::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha256, hasher.finalize().to_vec())
+            }
+            "sha-384" => {
+                let mut hasher = Sha384::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha384, hasher.finalize().to_vec())
+            }
+            "sha-512" => {
+                let mut hasher = Sha512::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha512, hasher.finalize().to_vec())
+            }
+            "sha3-256" => {
+                let mut hasher = sha3::Sha3_256::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha3_256, hasher.finalize().to_vec())
+            }
+            "sha3-384" => {
+                let mut hasher = sha3::Sha3_384::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha3_384, hasher.finalize().to_vec())
+            }
+            "sha3-512" => {
+                let mut hasher = sha3::Sha3_512::new();
+                hasher.update(test_case.message.as_slice());
+                (CryptotestEcdsaHashAlg::Sha3_512, hasher.finalize().to_vec())
+            }
+            _ => panic!("Invalid ECDSA hash mode"),
+        };
 
     // Determine the curve and check the lengths of the other arguments based on the curve choice.
     // Depending on our choice of curve, calculate the two components of the masked private key.
@@ -300,7 +274,7 @@ fn run_ecdsa_testcase(
                 ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256,
             );
             let (operation, d0, d1) = match test_case.operation.as_str() {
-                "sign" => {
+                "siggen" => {
                     // Calculate masked private key
 
                     // Pad private key `d` to 32 bytes
@@ -329,7 +303,7 @@ fn run_ecdsa_testcase(
                         d1_bytes.to_vec(),
                     )
                 }
-                "verify" => (CryptotestEcdsaOperation::Verify, vec![], vec![]),
+                "sigver" => (CryptotestEcdsaOperation::Verify, vec![], vec![]),
                 _ => panic!("Unsupported ECDSA operation: {}", test_case.operation),
             };
             (operation, CryptotestEcdsaCurve::P256, d0, d1)
@@ -360,7 +334,7 @@ fn run_ecdsa_testcase(
                 ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384,
             );
             let (operation, d0, d1) = match test_case.operation.as_str() {
-                "sign" => {
+                "siggen" => {
                     // Calculate masked private key
 
                     // Pad private key `d` to 48 bytes
@@ -389,7 +363,7 @@ fn run_ecdsa_testcase(
                         d1_bytes.to_vec(),
                     )
                 }
-                "verify" => (CryptotestEcdsaOperation::Verify, vec![], vec![]),
+                "sigver" => (CryptotestEcdsaOperation::Verify, vec![], vec![]),
                 _ => panic!("Unsupported ECDSA operation: {}", test_case.operation),
             };
             (operation, CryptotestEcdsaCurve::P384, d0, d1)
@@ -447,7 +421,8 @@ fn run_ecdsa_testcase(
         unmasked_len: d0.len(),
     }
     .send(spi_console)?;
-    let success = match operation {
+
+    let outputs = match operation {
         CryptotestEcdsaOperation::Sign => {
             let mut output_signature =
                 CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false, false)?;
@@ -456,37 +431,43 @@ fn run_ecdsa_testcase(
             output_signature.s.truncate(output_signature.s_len);
             output_signature.r.reverse();
             output_signature.s.reverse();
-            match test_case.curve.as_str() {
-                "p256" => p256_verify_signature(
-                    &test_case.message,
-                    &mut qx,
-                    &mut qy,
-                    &output_signature.r,
-                    &output_signature.s,
-                    hash_oid.expect("Unsupported hash algorithm for Sign verification"),
-                ),
-                "p384" => p384_verify_signature(
-                    &test_case.message,
-                    &mut qx,
-                    &mut qy,
-                    &output_signature.r,
-                    &output_signature.s,
-                    hash_oid.expect("Unsupported hash algorithm for Sign verification"),
-                ),
-                &_ => panic!("Unsupported ECC curve"),
+            EcdsaOutputs {
+                r: output_signature.r.to_vec(),
+                s: output_signature.s.to_vec(),
+                ..Default::default()
             }
         }
         CryptotestEcdsaOperation::Verify => {
             let ecdsa_output =
                 CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false, false)?;
-            match ecdsa_output {
+            let success = match ecdsa_output {
                 CryptotestEcdsaVerifyOutput::Success => true,
                 CryptotestEcdsaVerifyOutput::Failure => false,
                 CryptotestEcdsaVerifyOutput::IntValue(i) => {
                     panic!("Invalid ECDSA verify result: {}", i)
                 }
+            };
+            EcdsaOutputs {
+                success,
+                ..Default::default()
             }
         }
+        CryptotestEcdsaOperation::IntValue(_) => {
+            unreachable!("Should be caught above")
+        }
+    };
+
+    let success = match operation {
+        CryptotestEcdsaOperation::Sign => match test_case.curve.as_str() {
+            "p256" => {
+                p256_verify_signature(&message_digest, &mut qx, &mut qy, &outputs.r, &outputs.s)
+            }
+            "p384" => {
+                p384_verify_signature(&message_digest, &mut qx, &mut qy, &outputs.r, &outputs.s)
+            }
+            &_ => panic!("Unsupported ECC curve"),
+        },
+        CryptotestEcdsaOperation::Verify => outputs.success,
         CryptotestEcdsaOperation::IntValue(_) => {
             unreachable!("Should be caught above")
         }
@@ -507,6 +488,24 @@ fn run_ecdsa_testcase(
             test_case.test_case_id
         ));
     }
+
+    if test_case.vendor == "acvp" {
+        let mut fields = Fields::new();
+        match operation {
+            CryptotestEcdsaOperation::Sign => {
+                fields.insert("r".to_string(), json!(hex(&outputs.r)));
+                fields.insert("s".to_string(), json!(hex(&outputs.s)));
+            }
+            CryptotestEcdsaOperation::Verify => {
+                fields.insert("testPassed".to_string(), json!(&outputs.success));
+            }
+            CryptotestEcdsaOperation::IntValue(_) => {
+                unreachable!("Should be caught above")
+            }
+        }
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
+    }
+
     Ok(())
 }
 
@@ -515,28 +514,28 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
-    let mut test_counter = 0u32;
+    let cases: Vec<EcdsaTestCase> = read_vectors(opts.acvp.vectors(&opts.ecdsa_json))?;
     let mut failures = vec![];
-    let test_vector_files = &opts.ecdsa_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let ecdsa_tests: Vec<EcdsaTestCase> = serde_json::from_str(&raw_json)?;
-
-        for ecdsa_test in &ecdsa_tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_ecdsa_testcase(ecdsa_test, opts, &spi_console_device, &mut failures)?;
-        }
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_ecdsa_testcase(
+            case,
+            opts,
+            &spi_console_device,
+            &mut failures,
+            &mut responses,
+        )?;
     }
     assert_eq!(
         0,
         failures.len(),
         "Failed {} out of {} tests. Failures: {:?}",
         failures.len(),
-        test_counter,
+        cases.len(),
         failures
     );
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

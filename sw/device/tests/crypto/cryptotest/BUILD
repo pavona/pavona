@@ -174,8 +174,8 @@ ECDSA_TESTVECTOR_TARGETS = [
         "p384_sha3_512",
     ]
 ] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_ecdsa_fips_186_4_sig_ver_json",
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_ecdsa_fips_186_4_sign_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_ecdsa_siggen_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_ecdsa_sigver_json",
 ] + [
     "//sw/host/cryptotest/testvectors/data:random_ecdsa_{}".format(random_target)
     for random_target in [
@@ -199,6 +199,9 @@ ECDSA_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "ecdsa_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = ECDSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
