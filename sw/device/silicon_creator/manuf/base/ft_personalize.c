@@ -79,8 +79,14 @@ static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
 // clang-format off
 static_assert(
     OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_STATE_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_STATE_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_STATE_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_STATE_SIZE,
     "The largest DICE measured OTP partition is no longer the "
     "OwnerSwCfg partition. Update the "
     "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
@@ -129,8 +135,14 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 static hmac_digest_t kZeroDigest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
 static hmac_digest_t otp_creator_sw_cfg_measurement;
 static hmac_digest_t otp_owner_sw_cfg_measurement;
-static hmac_digest_t otp_rot_creator_auth_codesign_measurement;
-static hmac_digest_t otp_rot_creator_auth_state_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot0_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot1_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot2_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot3_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot0_state_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot1_state_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot2_state_measurement;
+static hmac_digest_t otp_rot_owner_auth_slot3_state_measurement;
 static manuf_certgen_inputs_t certgen_inputs;
 static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
@@ -577,11 +589,29 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
                             &otp_owner_sw_cfg_measurement,
                             /*use_expected_values=*/true));
-  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
-                            &otp_rot_creator_auth_codesign_measurement,
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot0,
+                            &otp_rot_owner_auth_slot0_measurement,
                             /*use_expected_values=*/false));
-  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
-                            &otp_rot_creator_auth_state_measurement,
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot1,
+                            &otp_rot_owner_auth_slot1_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot2,
+                            &otp_rot_owner_auth_slot2_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot3,
+                            &otp_rot_owner_auth_slot3_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot0State,
+                            &otp_rot_owner_auth_slot0_state_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot1State,
+                            &otp_rot_owner_auth_slot1_state_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot2State,
+                            &otp_rot_owner_auth_slot2_state_measurement,
+                            /*use_expected_values=*/false));
+  TRY(measure_otp_partition(kOtpPartitionRotOwnerAuthSlot3State,
+                            &otp_rot_owner_auth_slot3_state_measurement,
                             /*use_expected_values=*/false));
 
   /*****************************************************************************
@@ -600,8 +630,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // Build the certificate in a temp buffer, use all_certs for that.
   TRY(dice_uds_tbs_cert_build(
       &otp_creator_sw_cfg_measurement, &otp_owner_sw_cfg_measurement,
-      &otp_rot_creator_auth_codesign_measurement,
-      &otp_rot_creator_auth_state_measurement, &uds_key_ids, &curr_pubkey,
+      &otp_rot_owner_auth_slot0_measurement,
+      &otp_rot_owner_auth_slot0_state_measurement, &uds_key_ids, &curr_pubkey,
       all_certs, &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -1145,10 +1175,23 @@ static status_t provision(ujson_t *uj) {
       .uds_pubkey_id = &uds_pubkey_id,
       .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
       .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
-      .otp_rot_creator_auth_codesign_measurement =
-          &otp_rot_creator_auth_codesign_measurement,
-      .otp_rot_creator_auth_state_measurement =
-          &otp_rot_creator_auth_state_measurement};
+      .otp_rot_owner_auth_slot0_measurement =
+          &otp_rot_owner_auth_slot0_measurement,
+      .otp_rot_owner_auth_slot1_measurement =
+          &otp_rot_owner_auth_slot1_measurement,
+      .otp_rot_owner_auth_slot2_measurement =
+          &otp_rot_owner_auth_slot2_measurement,
+      .otp_rot_owner_auth_slot3_measurement =
+          &otp_rot_owner_auth_slot3_measurement,
+      .otp_rot_owner_auth_slot0_state_measurement =
+          &otp_rot_owner_auth_slot0_state_measurement,
+      .otp_rot_owner_auth_slot1_state_measurement =
+          &otp_rot_owner_auth_slot1_state_measurement,
+      .otp_rot_owner_auth_slot2_state_measurement =
+          &otp_rot_owner_auth_slot2_state_measurement,
+      .otp_rot_owner_auth_slot3_state_measurement =
+          &otp_rot_owner_auth_slot3_state_measurement,
+  };
   TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
   TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
   TRY(log_self_hash(pre_endorse.perso_blob_to_host));
