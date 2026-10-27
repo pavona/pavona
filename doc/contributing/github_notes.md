@@ -9,7 +9,7 @@ The Getting Started guide describes exactly what you need to do with Git, but th
 ## Getting a working repository
 
 To develop in the repository you will need to get a copy on your local machine.
-To contribute back to the main repository through the _pull request_ process, you need to first make your own _fork_ of the repository.
+To contribute back to the main repository through the _pull request_ (PR) process, you need to first make your own _fork_ of the repository.
 Once you have forked the main repository, you will clone your fork to your local machine.
 
 First, log into GitHub and go to the [pavona repository](https://github.com/pavona/pavona), then click "Fork".
@@ -185,6 +185,26 @@ git interpret-trailers --if-exists doNothing --trailer \
 EOF
 chmod +x .git/hooks/prepare-commit-msg
 ```
+
+## Commit messages
+
+There are many useful guides available on [how to write commit messages and why](https://chris.beams.io/posts/git-commit/).
+
+Some simple and useful guidelines are:
+* A commit message consists of a subject line followed by an optional body.
+* Keep the subject line short.
+  Ideally under 50 characters.
+* Capitalize the subject line.
+* Use the imperative mood in the subject line.
+* Use the present tense ("Add feature" not "Added feature").
+* When changes are restricted to a specific area, you should add a tag to the start of the subject line in square brackets, e.g. "\[uart/rtl\] Rework Tx FSM".
+  See also: [subject tags](#subject-tags).
+* Do not end the subject line with a period.
+* Separate subject from body with a blank line.
+* Wrap the body at 72 characters.
+* Use the body to explain what and why (rather than how).
+
+The messages of signed-off commits ([indicating acceptance](../../CONTRIBUTING.md) of the Contributor License Agreement) also include a "signed-off-by" line.
 
 ## Update your repository with changes in the upstream repository
 
@@ -462,6 +482,7 @@ These are all the steps needed.
 Once your pull request is reviewed and merged, you will be able to see that the commit is also visible in the original pull request.
 
 ## Dealing with email notifications
+
 In your profile settings, under notifications, you can set up whether you get email notifications and what your default email address is.
 Under the "Custom routing" you can choose to receive emails from upstream repositories at a different email address in case you're active in multiple organizations.
 You can also filter GitHub emails based on the To and CC fields.
@@ -474,3 +495,132 @@ The CC field can include any of the following depending on the type of notificat
 - `mention@noreply.github.com`
 - `subscribed@noreply.github.com`
 These can help you set up automatically sorting emails into specific folders.
+
+## Labeling and assigning issues and pull requests
+
+Labels can be useful for categorizing, prioritizing, and assigning open issues and PRs.
+Anyone may assign the appropriate labels to an issue or PR.
+If possible, you should also add a meaningful tag to the subject line of your issue or PR as outlined in [subject tags](#subject-tags).
+
+Assignees indicate people who are actively working on an issue, so it's best to let people assign themselves when they start working on it.
+If you'd like to bring an issue to the attention of a particular contributor or ask if they might be able to help solve it, simply mention them in a comment (e.g., "@*githubname* what do you think?")).
+Anyone who feels qualified to help should respond to issues, though if you're working outside your usual area of expertise and making a best-effort guess, it's polite to say so.
+
+For PRs, it does not make sense to assign people, but when creating a PR, you should request a review from other people familiar in the corresponding area.
+This includes:
+* people regularly working on the affected parts of the code, and
+* people involved in discussing the solution of the problem addressed by the PR.
+
+However, review requests are not obligations to perform a review.
+Reviewers may not be able to review every requesting PR.
+
+## Referencing issues and pull requests
+
+Commits and PRs related to existing issues or PRs should reference those to provide better context.
+References should always be accompanied by a brief summary of the outcome of the referenced discussion and how the current PR/commit/issue relates to that.
+References are not only relevant for [automatically closing issues](https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/linking-a-pull-request-to-an-issue#linking-a-pull-request-to-an-issue-using-a-keyword) but also for documentation.
+
+Both long references such as `pavona/pavona#1` and short references `#1` can be used in commit messages.
+However, short references should not be used in the subject line, as they might accidentally create links to unrelated issues if commits containing such references end up in other repositories, e.g., when vendoring in external sources.
+
+For this project, the format `ISSUE=#XX` for `PR=#XX` is recommended, since these markers make it easy for tools to find the related references.
+
+See also: [References and URLs on GitHub](https://help.github.com/en/github/writing-on-github/autolinked-references-and-urls).
+
+## Subject tags
+
+If code changes, issues, or pull requests are restricted to a specific area, adding a tag in square brackets (e.g., "\[uart/rtl\]") to the subject line can help to identify areas affected by changes.
+Tags are particularly helpful when dealing with pull requests as they can guide team members for code review and simplify later retrieval of specific PRs through the GitHub web interface.
+
+You can add multiple tags separated by a comma (e.g., "\[top, dv\]") to indicate that multiple separated areas are affected.
+In addition, you can add further levels of hierarchy to make the indication more precise such as "\[uart/rtl\]" instead of just "\[uart\]", "\[sw/device\]" instead of "\[sw\]".
+
+## PR scope, number of commits
+
+A PR should contain all the code changes required to address an issue or implement a change.
+At the same time, a PR should be as small as possible to simplify and speed up the review process.
+It may make sense to break down larger contributions into multiple self-contained PRs.
+This does not hold for bug fixes: a single PR is sufficient to fix a bug.
+
+Regardless, each individual commit should be atomic.
+The code base should remain usable even with only the first commit of a PR, or the first PR of a series of PRs, merged.
+
+Code changes not strictly related to the target feature, major change, or issue should go into a separate PR.
+
+In some cases, preparatory code changes may be required before a change is implemented, or a new feature may require changes in a somewhat unrelated part of the code.
+For example, it may be the case that the register interface of an IP must be updated using the latest version of the register tool, before a new register required for the targeted feature can be added.
+Such changes, if small, can be in the same PR, but they should be in a separate commit with a reasonable commit message explaining why the change is necessary.
+
+PRs with more, smaller commits instead of a few large commits simplifies debugging.
+
+## Code review
+
+The main purpose of code review is to make sure the code changes appropriately solve the problem the PR intends to address.
+It is thus vital to provide meaningful commit messages and PR descriptions with references to issues where problems and the proposed solutions are outlined.
+
+Code review is a core part of high quality implementation.
+It helps ensure that:
+* The design follows good practices.
+* The code matches the style guides.
+* The code is appropriately commented.
+* Code changes are reflected in the documentation.
+* The changes are reasonably structured.
+* Commit messages are meaningful.
+
+When doing code review, you should check if these guidelines are followed.
+If some of the points are not met, or if you see potential improvements in the modified areas, bring this up in a comment.
+The author of the PR will then address or comment on all feedback.
+It is generally the responsibility of the reviewer who started the discussion to decide whether the feedback has been addressed appropriately.
+If the author and the reviewer cannot find agreement, a third party should be brought into the discussion.
+
+When reviewing code and giving/discussing feedback, keep in mind that:
+* Code review is not design review.
+  If a PR comes without clear motivation or is not aligned with project intent, this should be discussed first and separately from the actual code review.
+* This is a collaborative, distributed open-source project bringing lots of people together with different motivations and backgrounds.
+  Many people will see the same issue from different viewpoints.
+  Always be friendly and patient.
+
+See also: [reviewing pull requests on GitHub](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/reviewing-proposed-changes-in-a-pull-request).
+
+## How to receive a code review?
+
+Code review may be an intimidating process, especially if you're new to the open-source community.
+Getting lots of comments on even minor style violations can be disheartening.
+Know that your contributions are always appreciated - the reality is that in many cases initial code review is the most scrutiny a given piece of code will get.
+Therefore, it is worth pushing to ensure it meets all coding standards rather than hoping it will be fixed in the future.
+
+## Merging PRs
+
+Changes made because of review feedback should go into the corresponding commits in the PR instead of having a single commit containing all changes addressing the feedback.
+To keep a clean, linear history, no merge commits and no long series of "fixup" patches.
+Instead, use rebase to restructure your work as a series of logically ordered, atomic patches (`git rebase -i` helps).
+PRs should not be squashed when merging; keep the individual commits including commit messages making up the PR.
+
+To reduce the risk of accidentally introducing bugs or breaking existing functionality, we leverage [continuous integration](./ci/README.md) (CI) checks on every PR.
+The results of these CI checks [can be viewed](./ci/faq.md) through the GitHub web interface.
+In general, CI should pass before merging any PRs.
+
+If the CI checks for a PR succeed and the PR affects larger parts of the code base, it may be best to wait 24 hours before merging.
+This allows project contributors spread across their many time zones an opportunity to provide feedback.
+
+## TODO comments
+
+We track non-trivial pieces of work via GitHub issues rather than TODO comments in the code.
+We do not use TODO(name) comments as used in some code bases - if it is important enough to assign someone, it is worth tracking via an issue.
+
+If you as a code reviewer come across TODOs, you should encourage the author to create a GitHub issue to track the work item, which can be referenced using a comment such as `// TODO(pavona/pavona#<issue_number>): <brief description>`.
+Code authors are encouraged to use TODO rather than FIXME.
+
+## Auto-generated code
+
+This repo includes utilities to automatically generate parts of the source code based on configuration files and templates.
+Examples for auto-generated RTL code include the register interface of the peripheral IP cores (using the register tool reggen), the top level (using topgen) and the main TL-UL crossbar (using tlgen).
+Some of these auto-generated source files are checked into (committed to) the repository.
+This allows people to both build the system without having to invoke the utilities and easily compare generated output after changes (with `git diff`).
+
+To prevent people from editing auto-generated top-level files, these files both contain a header marking them as such, and they live in subfolders called `autogen/`.
+When implementing changes that affect auto-generated files, the configuration or template file must be edited, the auto-generated files need to be regenerated and everything needs to be committed to the repository.
+
+It can be helpful to split changes to auto-generated files into multiple commits:
+* changes to any templates or scripts
+* the re-generated source files

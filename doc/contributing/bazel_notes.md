@@ -169,6 +169,11 @@ They can be listed by running the following:
 The subsections below describe how to use them.
 All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
 
+To run all the linters, use:
+```sh
+./bazelisk.sh run format
+```
+
 ## Linting C/C++ Code
 
 The Pavona supported linter for C/C++ files is `clang-format`, and can be run with Bazel as shown below.
