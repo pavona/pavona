@@ -67,6 +67,9 @@ inputs:
   vivado-lab-version:
     description: Vivado Lab Edition version for FPGA bootstrapping, if required.
     default: '2024.2'
+  install-cargo:
+    description: Install cargo and cargo deny
+    default: false
 
 runs:
   using: composite
@@ -291,4 +294,12 @@ runs:
         # Use system-provided certs, which are in a different directory than
         # Debian derivatives, and the latter is the default for bazel's python
         echo "SSL_CERT_FILE=/etc/pki/tls/cert.pem" >> $GITHUB_ENV
+      shell: bash
+    # needed for dependency license quick lint step
+    - name: Install cargo
+      if: inputs.install-cargo == 'true'
+      run: |
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+        echo "~/.cargo/bin" >> "$GITHUB_PATH"
+        ~/.cargo/bin/cargo install cargo-deny --version 0.18.4
       shell: bash
