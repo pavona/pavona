@@ -32,6 +32,26 @@
         "type": "string",
         "enum": ["HMAC-SHA-1", "HMAC-SHA2-224", "HMAC-SHA2-256", "HMAC-SHA2-384", "HMAC-SHA2-512", "HMAC-SHA3-256", "HMAC-SHA3-384", "HMAC-SHA3-512"]
       },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "mac_len": {
+        "description": "Length of the MAC in bytes that an ACVP test asks for",
+        "type": "integer"
+      },
       "key": {
         "description": "Key to use for tag generation",
         "$ref": "#/$defs/byte_array"

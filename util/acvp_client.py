@@ -31,6 +31,9 @@ PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
+    ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),
+    ("HMAC-SHA2-384", ""): ("hmac_sha384", "hmac"),
+    ("HMAC-SHA2-512", ""): ("hmac_sha512", "hmac"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
@@ -49,6 +52,9 @@ VECTOR_SETS = {
 
 # Harnesses whose parser and schema are named differently.
 PARSER_NAMES = {
+    "hmac_sha256": "hmac",
+    "hmac_sha384": "hmac",
+    "hmac_sha512": "hmac",
     "sha256": "hash",
     "sha384": "hash",
     "sha512": "hash",
@@ -119,8 +125,8 @@ def convert(prompt, answers, out_dir, skip_unsupported):
     expected = answers.get(vector_set["vsId"])
     if expected:
         args += ["--expected", str(expected)]
-    # Only the AES-KWP, hash and ML-DSA parsers take --skip-unsupported.
-    if skip_unsupported and parser in ("aes_kwp", "hash", "mldsa"):
+    # Only the AES-KWP, hash, HMAC and ML-DSA parsers take --skip-unsupported.
+    if skip_unsupported and parser in ("aes_kwp", "hash", "hmac", "mldsa"):
         args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None

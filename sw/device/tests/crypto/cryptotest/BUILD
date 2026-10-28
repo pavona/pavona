@@ -444,6 +444,7 @@ cryptotest(
 )
 
 HMAC_SHA256_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_hmac_sha2_256_json",
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha256.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha256_fips_198_1_json",
 ] + [
@@ -459,6 +460,9 @@ HMAC_SHA256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha256_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = HMAC_SHA256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
@@ -466,6 +470,7 @@ cryptotest(
 )
 
 HMAC_SHA384_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_hmac_sha2_384_json",
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha384.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha384_fips_198_1_json",
 ] + [
@@ -481,6 +486,9 @@ HMAC_SHA384_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha384_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = HMAC_SHA384_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
@@ -488,6 +496,7 @@ cryptotest(
 )
 
 HMAC_SHA512_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_hmac_sha2_512_json",
     "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_sha512.json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_sha512_fips_198_1_json",
 ] + [
@@ -503,6 +512,9 @@ HMAC_SHA512_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha512_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = HMAC_SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
