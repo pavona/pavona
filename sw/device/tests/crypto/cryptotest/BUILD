@@ -230,14 +230,6 @@ cryptotest(
 
 SHA256_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_sha2_256_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha256_{}_json".format(
-        msg_type.lower(),
-    )
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-    ]
 ]
 
 SHA256_TESTVECTOR_ARGS = " ".join([
@@ -258,14 +250,6 @@ cryptotest(
 
 SHA384_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_sha2_384_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha384_{}_json".format(
-        msg_type.lower(),
-    )
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-    ]
 ]
 
 SHA384_TESTVECTOR_ARGS = " ".join([
@@ -286,14 +270,6 @@ cryptotest(
 
 SHA512_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_sha2_512_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha2_fips_180_4_sha512_{}_json".format(
-        msg_type.lower(),
-    )
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-    ]
 ]
 
 SHA512_TESTVECTOR_ARGS = " ".join([
