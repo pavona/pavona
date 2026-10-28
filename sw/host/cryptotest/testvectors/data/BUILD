@@ -423,33 +423,6 @@ run_binary(
 
 [
     run_binary(
-        name = "nist_cavp_hmac_{}_fips_198_1_json".format(hash_alg),
-        srcs = [
-            "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
-            "@nist_cavp_hmac_fips_198_1//:HMAC.rsp",
-        ],
-        outs = ["nist_cavp_hmac_{}_fips_198_1.json".format(hash_alg)],
-        args = [
-            "--src",
-            "$(location @nist_cavp_hmac_fips_198_1//:HMAC.rsp)",
-            "--dst",
-            "$(location :nist_cavp_hmac_{}_fips_198_1.json)".format(hash_alg),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
-            "--hash",
-            hash_alg,
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hmac_parser",
-    )
-    for hash_alg in [
-        "sha256",
-        "sha384",
-        "sha512",
-    ]
-]
-
-[
-    run_binary(
         name = "acvp_hmac_sha2_{}_json".format(digest_len),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
