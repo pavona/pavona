@@ -83,6 +83,15 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool, verbose: bool
                 "missing a matching end marker!"
             )
 
+        # Python 3.13 changed the argparse --help layout. The committed help
+        # texts are generated with Python 3.12, so skip them on newer versions.
+        # TODO: Regenerate the help texts and remove this once CI uses Python
+        # 3.13 or newer.
+        if sys.version_info >= (3, 13) and cmd.endswith("--help"):
+            logger.info(f"{rel_path}:L{match_start_linum}: Skipping `{cmd}`.")
+            pos = match_end.end(0)
+            continue
+
         if dry_run:
             logger.info(f"{rel_path}:L{match_start_linum}: `{cmd}`")
             # don't run
