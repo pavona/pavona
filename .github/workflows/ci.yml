@@ -34,7 +34,7 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
       - name: Run Quick Lint
-        run: ./ci/jobs/quick-lint.sh "$GITHUB_BASE_REF"
+        run: ./ci/jobs/quick-lint.sh "${GITHUB_BASE_REF:-main}"
   slow_lint:
     name: Lint (slow)
     runs-on:
