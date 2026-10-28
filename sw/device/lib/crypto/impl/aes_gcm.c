@@ -12,7 +12,6 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
@@ -20,6 +19,12 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+
+#ifdef HAS_KEYMGR_DPE
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#else
+#include "sw/device/lib/crypto/drivers/keymgr.h"
+#endif
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('a', 'g', 'c')
@@ -278,7 +283,11 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
       key.key_shares[0], key_bytelen, kOtcryptoKeyModeAesGcm,
       &diversification));
-  return keymgr_generate_key_aes(diversification);
+#ifdef HAS_KEYMGR_DPE
+  return keymgr_generate_key_aes(diversification, (keymgr_slot_t)key.cdi);
+#else
+  return keymgr_generate_key_aes(diversification, (keymgr_cdi_t)key.cdi);
+#endif
 }
 
 /**
