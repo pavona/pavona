@@ -262,49 +262,8 @@ HMAC_RANDOM_COUNT = 64
 ]
 
 ################################################################################
-# SHA2, SHA3 - NIST CAVP KAT
+# SHA2, SHA3, SHAKE - NIST ACVP
 ################################################################################
-
-[
-    run_binary(
-        name = "nist_cavp_{}_{}_{}_json".format(
-            src_repo,
-            algorithm.lower(),
-            msg_type.lower(),
-        ),
-        srcs = [
-            "@nist_cavp_{}//:{}{}.rsp".format(src_repo, algorithm, msg_type),
-            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
-        ],
-        outs = [":nist_{}_{}.json".format(
-            algorithm.lower(),
-            msg_type.lower(),
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_{}//:{}{}.rsp)".format(src_repo, algorithm, msg_type),
-            "--dst",
-            "$(location :nist_{}_{}.json)".format(
-                algorithm.lower(),
-                msg_type.lower(),
-            ),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
-            "--algorithm",
-            algorithm,
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hash_parser",
-    )
-    for algorithm, src_repo, extra_msg_types in [
-        ("SHA256", "sha2_fips_180_4", []),
-        ("SHA384", "sha2_fips_180_4", []),
-        ("SHA512", "sha2_fips_180_4", []),
-    ]
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-    ] + extra_msg_types
-]
 
 [
     run_binary(
