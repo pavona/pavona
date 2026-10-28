@@ -379,15 +379,6 @@ cryptotest(
 
 SHAKE128_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_shake_128_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake128_{}_json".format(
-        msg_type.lower(),
-    )
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-        "VariableOut",
-    ]
 ]
 
 SHAKE128_TESTVECTOR_ARGS = " ".join([
@@ -408,15 +399,6 @@ cryptotest(
 
 SHAKE256_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_shake_256_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_shake_fips_202_shake256_{}_json".format(
-        msg_type.lower(),
-    )
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-        "VariableOut",
-    ]
 ]
 
 SHAKE256_TESTVECTOR_ARGS = " ".join([

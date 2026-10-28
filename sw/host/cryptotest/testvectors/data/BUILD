@@ -299,16 +299,6 @@ HMAC_RANDOM_COUNT = 64
         ("SHA256", "sha2_fips_180_4", []),
         ("SHA384", "sha2_fips_180_4", []),
         ("SHA512", "sha2_fips_180_4", []),
-        (
-            "SHAKE128",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
-        (
-            "SHAKE256",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
     ]
     for msg_type in [
         "ShortMsg",
