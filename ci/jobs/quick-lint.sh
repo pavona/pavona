@@ -94,7 +94,7 @@ section "Use rustfmt to check Rust coding style"
 section_end
 
 section "Use buildifier to check Bazel coding style"
-bazel test //quality:buildifier_check --test_output=streamed
+./bazelisk.sh test //quality:buildifier_check --test_output=streamed
 section_end
 
 section "Run shellcheck on all shell scripts"
