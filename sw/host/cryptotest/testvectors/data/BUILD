@@ -450,6 +450,37 @@ run_binary(
 
 [
     run_binary(
+        name = "acvp_hmac_sha2_{}_json".format(digest_len),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
+            "@acvp_testvectors//HMAC-SHA2-{}-2.0:expectedResults.json".format(digest_len),
+            "@acvp_testvectors//HMAC-SHA2-{}-2.0:prompt.json".format(digest_len),
+        ],
+        outs = [":acvp_hmac_sha2_{}.json".format(digest_len)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//HMAC-SHA2-{}-2.0:prompt.json)".format(digest_len),
+            "--dst",
+            "$(location :acvp_hmac_sha2_{}.json)".format(digest_len),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//HMAC-SHA2-{}-2.0:expectedResults.json)".format(digest_len),
+            "--test-type",
+            "hmac",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hmac_parser",
+    )
+    for digest_len in [
+        "256",
+        "384",
+        "512",
+    ]
+]
+
+[
+    run_binary(
         name = cryptotest_name,
         srcs = [
             "@wycheproof//testvectors_v1:{}".format(src_name),
