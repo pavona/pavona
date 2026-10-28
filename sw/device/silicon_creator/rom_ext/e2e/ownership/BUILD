@@ -628,7 +628,7 @@ ownership_transfer_test(
 )
 
 pavona_binary(
-    name = "keymgr_test",
+    name = "keymgr_dpe_test",
     testonly = True,
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     defines = [
@@ -645,7 +645,7 @@ pavona_binary(
     deps = [
         "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -656,7 +656,7 @@ pavona_binary(
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
 ownership_transfer_test(
-    name = "transfer_keymgr_test",
+    name = "transfer_keymgr_dpe_test",
     srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
     defines = [
         "WITH_OWNERSHIP_INFO=1",
@@ -667,7 +667,7 @@ ownership_transfer_test(
     },
     fpga = fpga_params(
         binaries = {
-            ":keymgr_test": "keymgr_test",
+            ":keymgr_dpe_test": "keymgr_dpe_test",
         },
         changes_otp = True,
         test_cmd = """
@@ -680,7 +680,7 @@ ownership_transfer_test(
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
             --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
-            --rescue-after-activate={keymgr_test}
+            --rescue-after-activate={keymgr_dpe_test}
             --keygen-check=true
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
@@ -688,7 +688,7 @@ ownership_transfer_test(
     deps = [
         "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",

@@ -11,7 +11,12 @@ load(
     "dual_inputs",
 )
 load(
+    "//rules:otp.bzl",
+    "otp_image",
+)
+load(
     "//rules/pavona:defs.bzl",
+    "DRAGONFLY_TEST_ENVS",
     "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
@@ -22,6 +27,9 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//hw/top:defs.bzl", "pavona_select_top")
+load("//hw/top_dragonfly/data/otp:defs.bzl", "DRAGONFLY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS")
+load("//hw/top_egret/data/otp:defs.bzl", "EGRET_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS")
 
 config_setting(
     name = "acc_has_pqc",
@@ -74,17 +82,69 @@ pavona_test(
     ],
 )
 
+#cc_library(
+#    name = "keymgr",
+#    srcs = ["keymgr.c"],
+#    hdrs = [
+#        "keymgr.h",
+#    ],
+#    deps = [
+#        ":entropy",
+#        ":rv_core_ibex",
+#        "//hw/top:keymgr_c_regs",
+#        "//hw/top/dt:keymgr",
+#        "//sw/device/lib/base:abs_mmio",
+#        "//sw/device/lib/base:bitfield",
+#        "//sw/device/lib/base:hardened_memory",
+#        "//sw/device/lib/base:macros",
+#        "//sw/device/lib/crypto/impl:status",
+#        "//sw/device/lib/runtime:hart",
+#    ],
+#)
+#
+#pavona_test(
+#    name = "keymgr_test",
+#    srcs = ["keymgr_test.c"],
+#    broken = fpga_params(tags = ["broken"]),
+#    exec_env = dicts.add(
+#        EGRET_TEST_ENVS,
+#        {
+#            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
+#            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
+#            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+#        },
+#    ),
+#    qemu = qemu_params(
+#        globals = {
+#            # Test uses rstmgr, keep running on fatal resets:
+#            "ot-rstmgr.fatal_reset": 0,
+#        },
+#    ),
+#    verilator = verilator_params(
+#        timeout = "long",
+#    ),
+#    deps = [
+#        ":keymgr",
+#        "//sw/device/lib/base:macros",
+#        "//sw/device/lib/base:memory",
+#        "//sw/device/lib/crypto/impl:status",
+#        "//sw/device/lib/testing:keymgr_testutils",
+#        "//sw/device/lib/testing/test_framework:check",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#    ],
+#)
+
 cc_library(
-    name = "keymgr",
-    srcs = ["keymgr.c"],
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
     hdrs = [
-        "keymgr.h",
+        "keymgr_dpe.h",
     ],
     deps = [
         ":entropy",
         ":rv_core_ibex",
-        "//hw/top:keymgr_c_regs",
-        "//hw/top/dt:keymgr",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt:keymgr_dpe",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened_memory",
@@ -94,18 +154,37 @@ cc_library(
     ],
 )
 
-pavona_test(
-    name = "keymgr_test",
-    srcs = ["keymgr_test.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EGRET_TEST_ENVS,
+otp_image(
+    name = "otp_img_keymgr_test",
+    src = pavona_select_top(
         {
-            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
         },
+        None,
     ),
+    overlays = pavona_select_top(
+        {
+            "egret": EGRET_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
+                "@//hw/top_egret/data/otp:otp_json_secret0",
+                "@//hw/top_egret/data/otp:otp_json_secret1",
+                "@//hw/top_egret/data/otp:otp_json_secret2",
+            ],
+            "dragonfly": DRAGONFLY_STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
+                "@//hw/top_dragonfly/data/otp:otp_json_secret0",
+                "@//hw/top_dragonfly/data/otp:otp_json_secret1",
+                "@//hw/top_dragonfly/data/otp:otp_json_secret2",
+                "@//hw/top_dragonfly/data/otp:otp_json_secret3",
+            ],
+        },
+        None,
+    ),
+)
+
+pavona_test(
+    name = "keymgr_dpe_test",
+    srcs = ["keymgr_dpe_test.c"],
+    exec_env = DRAGONFLY_TEST_ENVS,
     qemu = qemu_params(
         globals = {
             # Test uses rstmgr, keep running on fatal resets:
@@ -114,13 +193,14 @@ pavona_test(
     ),
     verilator = verilator_params(
         timeout = "long",
+        otp = ":otp_img_keymgr_test",
     ),
     deps = [
-        ":keymgr",
+        ":keymgr_dpe",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
-        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

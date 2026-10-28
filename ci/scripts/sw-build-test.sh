@@ -49,7 +49,7 @@ printf "%s\n"              \
     --build_tests_only=false                     \
     --define DISABLE_VERILATOR_BUILD=true        \
     --test_tag_filters=-broken,-verilator,-dv    \
-    --target_pattern_file="$target_pattern_file"
+    --target_pattern_file="$target_pattern_file" --keep_going
 
 # Run software unit tests.
 ./bazelisk.sh test                                     \

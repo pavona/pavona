@@ -11,17 +11,12 @@
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/drivers/acc.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 
 #include "hw/top/acc_regs.h"  // Generated.
 
 #ifdef HAS_FLASH_CTRL
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#endif
-
-#ifdef HAS_KEYMGR_DPE
-#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
-#else
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #endif
 
 static_assert(kAttestationSeedWords <= 16,
@@ -91,17 +86,12 @@ enum {
 rom_error_t acc_boot_app_load(void) { return sc_acc_load_app(kAccAppBoot); }
 
 rom_error_t acc_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
+    uint32_t additional_seed_idx, sc_keymgr_dpe_slot_t slot,
+    sc_keymgr_dpe_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into ACC.
-#ifdef HAS_KEYMGR_DPE
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(kScKeymgrSlot1, diversification));
-#else
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation, diversification));
-#endif
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_generate_key_acc(
+      kScKeymgrDpeSlotAttestation, diversification));
 
   // Write the mode.
   uint32_t mode = kAccBootModeAttestationKeygen;
@@ -148,14 +138,12 @@ static void pubkey_le_to_be_convert(ecdsa_p256_public_key_t *pubkey) {
   util_reverse_bytes(pubkey->y, kEcdsaP256PublicKeyCoordBytes);
 }
 
-rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_dpe_ecc_key_t key,
                                           hmac_digest_t *pubkey_id,
                                           ecdsa_p256_public_key_t *pubkey) {
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(key.required_keymgr_state));
-
   // Generate / sideload key material into ACC, and generate the ECC keypair.
   HARDENED_RETURN_IF_ERROR(acc_boot_attestation_keygen(
-      key.keygen_seed_idx, key.type, *key.keymgr_diversifier, pubkey));
+      key.keygen_seed_idx, key.slot, *key.keymgr_diversifier, pubkey));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from ACC in little endian format, so we convert the key to
@@ -174,16 +162,11 @@ rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
 }
 
 rom_error_t acc_boot_attestation_key_save(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification) {
+    uint32_t additional_seed_idx, sc_keymgr_dpe_slot_t slot,
+    sc_keymgr_dpe_diversification_t diversification) {
   // Trigger key manager to sideload the attestation key into ACC.
-#ifdef HAS_KEYMGR_DPE
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(kScKeymgrSlot1, diversification));
-#else
-  HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_acc(kScKeymgrKeyTypeAttestation, diversification));
-#endif
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_generate_key_acc(
+      kScKeymgrDpeSlotAttestation, diversification));
 
   // Write the mode.
   uint32_t mode = kAccBootModeAttestationKeySave;

@@ -182,6 +182,18 @@ dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
   return kDifOk;
 }
 
+dif_result_t dif_keymgr_dpe_set_entropy_reseed_interval(
+    const dif_keymgr_dpe_t *keymgr_dpe, uint32_t interval) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                               interval);
+  return kDifOk;
+}
+
 dif_result_t dif_keymgr_dpe_advance_state(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {
@@ -243,6 +255,28 @@ dif_result_t dif_keymgr_dpe_advance_state(
       params->slot_dst_sel);
   reg_control = bitfield_field32_write(
       reg_control, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
+                               reg_control);
+  mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_START_REG_OFFSET,
+                      1 << KEYMGR_DPE_START_EN_BIT);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_advance_state_raw(
+    const dif_keymgr_dpe_t *keymgr_dpe) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!is_ready(keymgr_dpe)) {
+    return kDifLocked;
+  }
+  uint32_t reg_control = bitfield_field32_write(
+      KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE);
   mmio_region_write32_shadowed(keymgr_dpe->base_addr,
                                KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
@@ -320,6 +354,35 @@ dif_result_t dif_keymgr_dpe_generate(
   // Start the operation
   mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_START_REG_OFFSET,
                       1 << KEYMGR_DPE_START_EN_BIT);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_sideload_clear_set_enabled(
+    const dif_keymgr_dpe_t *keymgr_dpe, dif_toggle_t state) {
+  if (keymgr_dpe == NULL || !dif_is_valid_toggle(state)) {
+    return kDifBadArg;
+  }
+
+  dif_keymgr_sideload_clr_t val = state == kDifToggleEnabled
+                                      ? kDifKeymgrDpeSideLoadClearAll
+                                      : kDifKeymgrDpeSideLoadClearNone;
+
+  mmio_region_write32(keymgr_dpe->base_addr,
+                      KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET, val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_sideload_clear_get_enabled(
+    const dif_keymgr_dpe_t *keymgr_dpe, dif_toggle_t *state) {
+  if (keymgr_dpe == NULL || state == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg_val = mmio_region_read32(keymgr_dpe->base_addr,
+                                        KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET);
+  *state = dif_bool_to_toggle(reg_val == kDifKeymgrDpeSideLoadClearAll);
 
   return kDifOk;
 }
@@ -403,5 +466,28 @@ dif_result_t dif_keymgr_dpe_get_state(const dif_keymgr_dpe_t *keymgr_dpe,
 
   *state =
       bitfield_field32_read(reg_state, KEYMGR_DPE_WORKING_STATE_STATE_FIELD);
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_read_binding(
+    const dif_keymgr_dpe_t *keymgr_dpe,
+    dif_keymgr_dpe_binding_value_t *output) {
+  if (keymgr_dpe == NULL || output == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_memcpy_from_mmio32(keymgr_dpe->base_addr,
+                                 KEYMGR_DPE_SW_BINDING_0_REG_OFFSET,
+                                 output->binding, sizeof(output->binding));
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_read_max_key_version(
+    const dif_keymgr_dpe_t *keymgr_dpe, uint32_t *version) {
+  if (keymgr_dpe == NULL || version == NULL) {
+    return kDifBadArg;
+  }
+  *version = mmio_region_read32(keymgr_dpe->base_addr,
+                                KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET);
+
   return kDifOk;
 }

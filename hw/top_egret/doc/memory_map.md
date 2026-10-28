@@ -54,7 +54,7 @@ The main address space, shared between the CPU and DM
 | aes                 | default     | `0x41100000`   | `0x100`        | `0x40`         | aes                              |
 | hmac                | default     | `0x41110000`   | `0x2000`       | `0x800`        | hmac                             |
 | kmac                | default     | `0x41120000`   | `0x1000`       | `0x400`        | kmac                             |
-| keymgr              | default     | `0x41140000`   | `0x100`        | `0x40`         | keymgr                           |
+| keymgr_dpe          | default     | `0x41140000`   | `0x100`        | `0x40`         | keymgr_dpe                       |
 | csrng               | default     | `0x41150000`   | `0x80`         | `0x20`         | csrng                            |
 | entropy_src         | default     | `0x41160000`   | `0x100`        | `0x40`         | entropy_src                      |
 | edn0                | default     | `0x41170000`   | `0x80`         | `0x20`         | edn0                             |

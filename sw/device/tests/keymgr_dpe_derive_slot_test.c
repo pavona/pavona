@@ -1,3 +1,4 @@
+// Copyright zeroRISC Inc.
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -6,9 +7,15 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "hw/top/dt/keymgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "sw/device/lib/arch/boot_stage.h"
+#include "sw/device/lib/dif/dif_acc.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
+#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/testing/acc_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
@@ -18,7 +25,7 @@
 
 #include "hw/top_egret/sw/autogen/top_egret.h"
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_acc_t acc;
 static dif_rstmgr_t rstmgr;
@@ -40,9 +47,9 @@ enum {
 // Compile-time directive to choose between CDI flow types. The default
 // derivation type is sealing.
 #ifndef DERIVE_ATTESTATION
-  kCdiType = kDifKeymgrSealingCdi
+  kSrcSlot = kDifKeymgrDpeSlotSealing
 #else
-  kCdiType = kDifKeymgrAttestationCdi
+  kSrcSlot = kDifKeymgrDpeSlotAttestation
 #endif
 };
 
@@ -57,8 +64,8 @@ enum {
  * X25519 public key and the sideload ACC key refer to the same thing.
  */
 typedef struct cdi_outputs {
-  dif_keymgr_output_t identity;
-  dif_keymgr_output_t sw_key;
+  dif_keymgr_dpe_output_t identity;
+  dif_keymgr_dpe_output_t sw_key;
   uint32_t sideload_key[kX2551PublicKeySizeBytes];
 } cdi_outputs_t;
 
@@ -79,7 +86,7 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static void init_peripheral_handles(void) {
   // The testutils initialize the key manager and KMAC handles.
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
   // Reconfigure the KMAC to use the EDN entropy source as opposed to a
   // software-provided one as is default in the testutils.
@@ -106,8 +113,8 @@ static void init_peripheral_handles(void) {
  * @param output_b Second key manager output.
  * @return Result of the equality check.
  */
-static bool compare_outputs(const dif_keymgr_output_t *output_a,
-                            const dif_keymgr_output_t *output_b) {
+static bool compare_outputs(const dif_keymgr_dpe_output_t *output_a,
+                            const dif_keymgr_dpe_output_t *output_b) {
   uint32_t scratch[kKeymgrOutputSizeWords];
   for (int i = 0; i < kKeymgrOutputSizeWords; i++) {
     // Check whether two masked keys are equal without unmasking them:
@@ -166,12 +173,11 @@ static void ret_sram_read_keys(cdi_outputs_t *outputs, size_t *offset) {
  * @param identity The destination of the read identity.
  */
 static void derive_identity(const char *state_name,
-                            dif_keymgr_output_t *identity) {
-  CHECK_STATUS_OK(keymgr_testutils_generate_identity(
-      &keymgr, (dif_keymgr_identity_seed_params_t){.cdi_type = kCdiType}));
+                            dif_keymgr_dpe_output_t *identity) {
+  CHECK_STATUS_OK(keymgr_dpe_testutils_generate(
+      &keymgr_dpe,
+      &(dif_keymgr_dpe_generate_params_t){.slot_src_sel = kSrcSlot}, identity));
   LOG_INFO("Keymgr generated identity at %s State", state_name);
-
-  CHECK_DIF_OK(dif_keymgr_read_output(&keymgr, identity));
 }
 
 /**
@@ -181,29 +187,34 @@ static void derive_identity(const char *state_name,
  * @param state_name The current key manager state string.
  * @param key The destination of the read software key.
  */
-static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
+static void derive_sw_key(const char *state_name,
+                          dif_keymgr_dpe_output_t *key) {
   uint32_t max_version;
-  CHECK_STATUS_OK(keymgr_testutils_max_key_version_get(&keymgr, &max_version));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_max_key_version_get(&keymgr_dpe, &max_version));
 
-  dif_keymgr_versioned_key_params_t params = kKeyVersionedParams;
-  params.dest = kDifKeymgrVersionedKeyDestSw;
+  dif_keymgr_dpe_generate_params_t params = kKeyVersionedParams;
+  params.key_dest = kDifKeymgrDpeKeyDestNone;
+  params.sideload_key = true;
   params.version = max_version;
-  params.cdi_type = kCdiType;
+  params.slot_src_sel = kSrcSlot;
 
-  CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_generate(&keymgr_dpe, &params, key));
   LOG_INFO("Keymgr generated SW output at %s State", state_name);
-
-  CHECK_DIF_OK(dif_keymgr_read_output(&keymgr, key));
 
 #ifndef DERIVE_ATTESTATION
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
-  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
-      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
-  CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
-  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
-      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(dt_keymgr_dpe_alert_to_alert_id(
+          kDtKeymgrDpe, kDtKeymgrDpeAlertRecovOperationErr)));
+  dif_keymgr_dpe_output_t ignored;
+  CHECK_STATUS_NOT_OK(
+      keymgr_dpe_testutils_generate(&keymgr_dpe, &params, &ignored));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(dt_keymgr_dpe_alert_to_alert_id(
+          kDtKeymgrDpe, kDtKeymgrDpeAlertRecovOperationErr)));
 #endif
 }
 
@@ -218,17 +229,22 @@ static void derive_sw_key(const char *state_name, dif_keymgr_output_t *key) {
 static void derive_sideload_acc_key(const char *state_name,
                                     uint32_t key[kKeymgrOutputSizeWords]) {
   uint32_t max_version;
-  CHECK_STATUS_OK(keymgr_testutils_max_key_version_get(&keymgr, &max_version));
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_max_key_version_get(&keymgr_dpe, &max_version));
 
-  dif_keymgr_versioned_key_params_t params = kKeyVersionedParams;
-  params.dest = kDifKeymgrVersionedKeyDestAcc;
+  dif_keymgr_dpe_generate_params_t params = kKeyVersionedParams;
+  params.key_dest = kDifKeymgrDpeKeyDestAcc;
+  params.sideload_key = true;
   params.version = max_version;
+  params.slot_src_sel = kSrcSlot;
 
-  CHECK_STATUS_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
+  dif_keymgr_dpe_output_t ignored;
+  CHECK_STATUS_OK(
+      keymgr_dpe_testutils_generate(&keymgr_dpe, &params, &ignored));
   LOG_INFO("Keymgr generated HW output for Acc at %s State", state_name);
 
   // Run the X25519 public key generation. For more details, see the ACC
-  // sideload test sw/device/tests/keymgr_sideload_acc_test.c.
+  // sideload test sw/device/tests/keymgr_dpe_sideload_acc_test.c.
   CHECK_STATUS_OK(acc_testutils_load_app(&acc, kAccAppX25519));
   CHECK_DIF_OK(dif_acc_set_ctrl_software_errs_fatal(&acc, false));
 
@@ -249,11 +265,14 @@ static void derive_sideload_acc_key(const char *state_name,
   // If the key version is larger than the permitted maximum version, then
   // the key generation must fail.
   params.version += 1;
-  CHECK_STATUS_OK(ottf_alerts_expect_alert_start(
-      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
-  CHECK_STATUS_NOT_OK(keymgr_testutils_generate_versioned_key(&keymgr, params));
-  CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
-      dt_keymgr_alert_to_alert_id(kDtKeymgr, kDtKeymgrAlertRecovOperationErr)));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_start(dt_keymgr_dpe_alert_to_alert_id(
+          kDtKeymgrDpe, kDtKeymgrDpeAlertRecovOperationErr)));
+  CHECK_STATUS_NOT_OK(
+      keymgr_dpe_testutils_generate(&keymgr_dpe, &params, &ignored));
+  CHECK_STATUS_OK(
+      ottf_alerts_expect_alert_finish(dt_keymgr_dpe_alert_to_alert_id(
+          kDtKeymgrDpe, kDtKeymgrDpeAlertRecovOperationErr)));
 #endif
 }
 
@@ -299,8 +318,8 @@ static void derive_keys(const char *state_name,
 }
 
 /**
- * This test implements both the `chip_sw_keymgr_derive_sealing` and
- * `chip_sw_keymgr_derive_attestation` testplan items, i.e.,
+ * This test implements both the `chip_sw_keymgr_dpe_derive_sealing` and
+ * `chip_sw_keymgr_dpe_derive_attestation` testplan items, i.e.,
  * verifies the validity of the sealing and attestation CDI flows. The
  * individual testpoint requirements are as follows:
  *
@@ -334,7 +353,8 @@ static void derive_keys(const char *state_name,
  * - The software binding registers must be locked after configuration until a
  *   keymgr advance operation.
  *
- * This check is implemented in the keymgr DIF (see `dif_keymgr_advance_state`).
+ * This check is implemented in the keymgr DIF (see
+ * `dif_keymgr_dpe_advance_state`).
  *
  * - OTP SECRET2 partition (which contains the CREATOR_ROOT_KEY) and flash info
  *   pages 1 and 2 in partition 0 must be configured, otherwise the keymgr will
@@ -342,13 +362,14 @@ static void derive_keys(const char *state_name,
  *
  * The provisioning of the device secrets in the OTP SECRET2 partition is
  * handled by the Bazel execution environment, and the flash info secrets are
- * handled by the keymgr testutils (see `keymgr_testutils_init_nvm_then_reset`).
+ * handled by the keymgr testutils (see
+ * `keymgr_dpe_testutils_init_nvm_then_reset`).
  *
  * - Ensure the entropy complex is running in continuous mode, and that KMAC is
  *   configured to extract entropy from EDN.
  *
- * This is configured in the keymgr testutils (see `keymgr_testutils_startup`)
- * and in `init_peripheral_handles`.
+ * This is configured in the keymgr testutils (see
+ * `keymgr_dpe_testutils_startup`) and in `init_peripheral_handles`.
  *
  * - The test should check for any error or fault code status, to ensure all
  *   operations executed successfully.
@@ -359,64 +380,43 @@ static void derive_keys(const char *state_name,
  * @param reset_counter Indicator of the test phase.
  */
 static void test_derive_cdi(size_t reset_counter) {
-  const char *state_name;
-
-  dif_keymgr_state_t keymgr_state;
-  CHECK_DIF_OK(dif_keymgr_get_state(&keymgr, &keymgr_state));
-
   cdi_outputs_t curr_outputs;
   cdi_outputs_t next_outputs;
 
   size_t offset = 0;
   const bool write = reset_counter == 0;
 
-  switch (keymgr_state) {
-    case kDifKeymgrStateCreatorRootKey:
-
-      CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
-      LOG_INFO("Keymgr entered %s State", state_name);
-
-      derive_keys(state_name, NULL, &offset, write, &curr_outputs);
+  switch (kBootStage) {
+    case kBootStageRom:
+      OT_FALLTHROUGH_INTENDED;
+    case kBootStageRomExt:
+      LOG_INFO("Deriving Silicon Creator root key.");
+      derive_keys("SiliconCreatorRoot", NULL, &offset, write, &curr_outputs);
 
       CHECK_STATUS_OK(
-          keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-
-      OT_FALLTHROUGH_INTENDED;
-    case kDifKeymgrStateOwnerIntermediateKey:
-
-      CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
-      LOG_INFO("Keymgr entered %s State", state_name);
-
-      derive_keys(state_name,
+          keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntParams));
+      LOG_INFO("Deriving Silicon Creator identity key.");
+      derive_keys("SiliconCreatorIdentity",
                   // If the initial key manager state is smaller than
                   // the current one, verify that the new keys differ
                   // from the previous ones.
-                  keymgr_state < kDifKeymgrStateOwnerIntermediateKey
-                      ? &curr_outputs
-                      : NULL,
-                  &offset, write, &next_outputs);
+                  kBootStage < kBootStageRomExt ? &curr_outputs : NULL, &offset,
+                  write, &next_outputs);
       memcpy(&curr_outputs, &next_outputs, sizeof(cdi_outputs_t));
 
-      CHECK_STATUS_OK(
-          keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+      CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(&keymgr_dpe,
+                                                         &kOwnerRootKeyParams));
 
       OT_FALLTHROUGH_INTENDED;
-    case kDifKeymgrStateOwnerRootKey:
-
-      CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
-      LOG_INFO("Keymgr entered %s State", state_name);
-
-      derive_keys(
-          state_name,
-          keymgr_state < kDifKeymgrStateOwnerRootKey ? &curr_outputs : NULL,
-          &offset, write, &next_outputs);
+    case kBootStageOwner:
+      LOG_INFO("Deriving Silicon Owner identity key.");
+      derive_keys("SiliconOwnerIdentity",
+                  kBootStage < kBootStageOwner ? &curr_outputs : NULL, &offset,
+                  write, &next_outputs);
 
       break;
     default:
-      // Theoretically, the key manager can boot into an earlier state
-      // (`kDifKeymgrStateReset` or `kDifKeymgrStateInitialized`). This is not
-      // supported by the testutils and thus must not occur here.
-      CHECK(0, "unexpected key manager state %u", keymgr_state);
+      CHECK(0, "unexpected boot stage %u", kBootStage);
   }
 }
 

@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/flash_ctrl.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/kmac.h"
+#include "hw/top/dt/lc_ctrl.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -15,10 +19,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 static dif_flash_ctrl_state_t flash;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc;
 static dif_otp_ctrl_t otp;
@@ -165,15 +167,17 @@ static const partition_check_cfg_t kTest[] = {
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(dt_kmac_primary_reg_block(kDtKmac)), &kmac));
   CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EGRET_LC_CTRL_REGS_BASE_ADDR), &lc));
+      mmio_region_from_addr(dt_lc_ctrl_primary_reg_block(kDtLcCtrl)), &lc));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash,
+      mmio_region_from_addr(dt_flash_ctrl_primary_reg_block(kDtFlashCtrl))));
 }
 
 static void partition_check(const partition_check_cfg_t cfg) {
@@ -210,21 +214,22 @@ static void partition_check(const partition_check_cfg_t cfg) {
 }
 
 // Advance the keymgr state to the expected state.
-static void keymgr_advance_state(dif_keymgr_t *keymgr,
-                                 dif_keymgr_state_params_t *params,
-                                 dif_keymgr_state_t expected_state) {
-  CHECK_DIF_OK(dif_keymgr_advance_state(keymgr, params));
-  dif_keymgr_status_codes_t keymgr_status_codes;
+static void keymgr_advance_state(dif_keymgr_dpe_t *keymgr_dpe,
+                                 dif_keymgr_dpe_advance_params_t *params,
+                                 dif_keymgr_dpe_state_t expected_state) {
+  CHECK_DIF_OK(dif_keymgr_dpe_advance_state(keymgr_dpe, params));
+  dif_keymgr_dpe_status_codes_t keymgr_dpe_status_codes;
   do {
-    CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &keymgr_status_codes));
-  } while (!(keymgr_status_codes & kDifKeymgrStatusCodeIdle));
+    CHECK_DIF_OK(
+        dif_keymgr_dpe_get_status_codes(keymgr_dpe, &keymgr_dpe_status_codes));
+  } while (!(keymgr_dpe_status_codes & kDifKeymgrDpeStatusCodeIdle));
 
-  dif_keymgr_state_t keymgr_state;
-  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &keymgr_state));
-  LOG_INFO("Keymgr state: 0x%x", keymgr_state);
-  CHECK(keymgr_state == expected_state,
+  dif_keymgr_dpe_state_t keymgr_dpe_state;
+  CHECK_DIF_OK(dif_keymgr_dpe_get_state(keymgr_dpe, &keymgr_dpe_state));
+  LOG_INFO("Keymgr state: 0x%x", keymgr_dpe_state);
+  CHECK(keymgr_dpe_state == expected_state,
         "Expected keymgr state not reached. got: %d, expected: %d",
-        keymgr_state, expected_state);
+        keymgr_dpe_state, expected_state);
 }
 
 // Provision the creator secrets in the OTP. This signals the DUT that the
@@ -242,10 +247,7 @@ static void dut_provision_creator_secrets(void) {
 bool test_main(void) {
   init_peripheral_handles();
 
-  CHECK_DIF_OK(
-      dif_keymgr_configure(&keymgr, (dif_keymgr_config_t){
-                                        .entropy_reseed_interval = 0xFFFF,
-                                    }));
+  CHECK_DIF_OK(dif_keymgr_dpe_set_entropy_reseed_interval(&keymgr_dpe, 0xFFFF));
 
   CHECK_DIF_OK(
       dif_kmac_configure(&kmac, (dif_kmac_config_t){
@@ -271,18 +273,18 @@ bool test_main(void) {
     partition_check(kTest[kCheckIdLcDevIsoPartAccess]);
 
     // The DUT has not been personalized, so we expect this to fail.
-    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInvalid);
+    keymgr_advance_state(&keymgr_dpe, NULL, kDifKeymgrDpeStateInvalid);
     dut_provision_creator_secrets();
   } else if (curr_state == kDifLcCtrlStateProd) {
     partition_check(kTest[kCheckIdProvisionedCreatorSeed]);
     partition_check(kTest[kCheckIdProvisionedOwnerSeed]);
     partition_check(kTest[kCheckIdLcProdIsoPartAccess]);
-    keymgr_advance_state(&keymgr, NULL, kDifKeymgrStateInitialized);
+    keymgr_advance_state(&keymgr_dpe, NULL, kDifKeymgrDpeStateAvailable);
 
-    dif_keymgr_state_params_t params = {
+    dif_keymgr_dpe_advance_params_t params = {
         .binding_value = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF},
         .max_key_version = 0xFFFFFFFF};
-    keymgr_advance_state(&keymgr, &params, kDifKeymgrStateCreatorRootKey);
+    keymgr_advance_state(&keymgr_dpe, &params, kDifKeymgrDpeStateAvailable);
   }
 
   test_status_set(kTestStatusInWfi);

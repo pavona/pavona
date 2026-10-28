@@ -4,7 +4,15 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/ibex_fi.h"
 
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/csrng.h"
+#include "hw/top/dt/edn.h"
+#include "hw/top/dt/flash_ctrl.h"
+#include "hw/top/dt/hmac.h"
+#include "hw/top/dt/keymgr_dpe.h"
 #include "hw/top/dt/otp_ctrl.h"
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
@@ -34,7 +42,7 @@
 #include "hw/top/edn_regs.h"
 #include "hw/top/entropy_src_regs.h"
 #include "hw/top/hmac_regs.h"
-#include "hw/top/keymgr_regs.h"
+#include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/rv_core_ibex_regs.h"
 #include "hw/top/sram_ctrl_regs.h"
@@ -2329,12 +2337,20 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
     read_csrs[i] = 0x1BADB002;
   }
 
+  uint32_t aes_regs = dt_aes_primary_reg_block(kDtAes);
+  uint32_t alert_handler_regs =
+      dt_alert_handler_primary_reg_block(kDtAlertHandler);
+  uint32_t csrng_regs = dt_csrng_primary_reg_block(kDtCsrng);
+  uint32_t edn0_regs = dt_edn_primary_reg_block(kDtEdnFirst);
+  uint32_t hmac_regs = dt_hmac_primary_reg_block(kDtHmac);
+  uint32_t keymgr_dpe_regs = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe);
+  uint32_t sram_ret_regs = dt_sram_ctrl_primary_reg_block(kDtSramCtrlRetAon);
+
   // Clear the `sha_en` bit to ensure the message length registers are
   // writeable. Leave the rest of the configuration unchanged.
-  uint32_t cfg =
-      abs_mmio_read32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  uint32_t cfg = abs_mmio_read32(hmac_regs + HMAC_CFG_REG_OFFSET);
   cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
-  abs_mmio_write32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+  abs_mmio_write32(hmac_regs + HMAC_CFG_REG_OFFSET, cfg);
 
   // Make explicit register variables for the test
   register volatile uint32_t reg_x9 asm("x9");
@@ -2345,42 +2361,33 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   if (uj_data.trigger & 0x1) {
     PENTEST_ASM_TRIGGER_HIGH
   }
-  abs_mmio_write32(TOP_EGRET_AES_BASE_ADDR + AES_IV_0_REG_OFFSET,
-                   uj_data.ref_values[0]);
-  abs_mmio_write32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET,
-                   uj_data.ref_values[1]);
-  abs_mmio_write32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
+  abs_mmio_write32(aes_regs + AES_IV_0_REG_OFFSET, uj_data.ref_values[0]);
+  abs_mmio_write32(hmac_regs + HMAC_DIGEST_0_REG_OFFSET, uj_data.ref_values[1]);
+  abs_mmio_write32(hmac_regs + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
                    uj_data.ref_values[2]);
-  abs_mmio_write32(
-      TOP_EGRET_KEYMGR_BASE_ADDR + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
-      uj_data.ref_values[3]);
-  abs_mmio_write32(TOP_EGRET_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET,
+  abs_mmio_write32(keymgr_dpe_regs + KEYMGR_DPE_SW_BINDING_7_REG_OFFSET,
+                   uj_data.ref_values[3]);
+  abs_mmio_write32(keymgr_dpe_regs + KEYMGR_DPE_SALT_0_REG_OFFSET,
                    uj_data.ref_values[4]);
-  abs_mmio_write32(TOP_EGRET_CSRNG_BASE_ADDR + CSRNG_RESEED_INTERVAL_REG_OFFSET,
+  abs_mmio_write32(csrng_regs + CSRNG_RESEED_INTERVAL_REG_OFFSET,
                    uj_data.ref_values[5]);
-  abs_mmio_write32(TOP_EGRET_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET,
-                   uj_data.ref_values[6]);
-  abs_mmio_write32(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
-                       SRAM_CTRL_READBACK_REG_OFFSET,
+  abs_mmio_write32(csrng_regs + CSRNG_CTRL_REG_OFFSET, uj_data.ref_values[6]);
+  abs_mmio_write32(sram_ret_regs + SRAM_CTRL_READBACK_REG_OFFSET,
                    uj_data.ref_values[7]);
+  abs_mmio_write32_shadowed(aes_regs + AES_CTRL_SHADOWED_REG_OFFSET,
+                            uj_data.ref_values[8]);
   abs_mmio_write32_shadowed(
-      TOP_EGRET_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
-      uj_data.ref_values[8]);
-  abs_mmio_write32_shadowed(
-      TOP_EGRET_KEYMGR_BASE_ADDR + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+      keymgr_dpe_regs + KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
       uj_data.ref_values[9]);
-  abs_mmio_write32(TOP_EGRET_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET,
-                   uj_data.ref_values[10]);
+  abs_mmio_write32(edn0_regs + EDN_CTRL_REG_OFFSET, uj_data.ref_values[10]);
   abs_mmio_write32_shadowed(
-      TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
-          ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+      alert_handler_regs + ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
       uj_data.ref_values[11]);
   abs_mmio_write32_shadowed(
-      TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
-          ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET,
+      alert_handler_regs + ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET,
       uj_data.ref_values[12]);
   abs_mmio_write32_shadowed(
-      TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
+      alert_handler_regs +
           ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET,
       uj_data.ref_values[13]);
   reg_x9 = uj_data.ref_values[14];
@@ -2401,36 +2408,28 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
   if (uj_data.trigger & 0x4) {
     PENTEST_ASM_TRIGGER_HIGH
   }
-  read_csrs[0] = abs_mmio_read32(TOP_EGRET_AES_BASE_ADDR + AES_IV_0_REG_OFFSET);
-  read_csrs[1] =
-      abs_mmio_read32(TOP_EGRET_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET);
-  read_csrs[2] = abs_mmio_read32(TOP_EGRET_HMAC_BASE_ADDR +
-                                 HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
-  read_csrs[3] = abs_mmio_read32(TOP_EGRET_KEYMGR_BASE_ADDR +
-                                 KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET);
+  read_csrs[0] = abs_mmio_read32(aes_regs + AES_IV_0_REG_OFFSET);
+  read_csrs[1] = abs_mmio_read32(hmac_regs + HMAC_DIGEST_0_REG_OFFSET);
+  read_csrs[2] = abs_mmio_read32(hmac_regs + HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
+  read_csrs[3] =
+      abs_mmio_read32(keymgr_dpe_regs + KEYMGR_DPE_SW_BINDING_7_REG_OFFSET);
   read_csrs[4] =
-      abs_mmio_read32(TOP_EGRET_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET);
+      abs_mmio_read32(keymgr_dpe_regs + KEYMGR_DPE_SALT_0_REG_OFFSET);
 
-  read_csrs[5] = abs_mmio_read32(TOP_EGRET_CSRNG_BASE_ADDR +
-                                 CSRNG_RESEED_INTERVAL_REG_OFFSET);
-  read_csrs[6] =
-      abs_mmio_read32(TOP_EGRET_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET);
-  read_csrs[7] = abs_mmio_read32(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
-                                 SRAM_CTRL_READBACK_REG_OFFSET);
-  read_csrs[8] =
-      abs_mmio_read32(TOP_EGRET_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET);
-  read_csrs[9] = abs_mmio_read32(TOP_EGRET_KEYMGR_BASE_ADDR +
-                                 KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET);
-  read_csrs[10] =
-      abs_mmio_read32(TOP_EGRET_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET);
+  read_csrs[5] = abs_mmio_read32(csrng_regs + CSRNG_RESEED_INTERVAL_REG_OFFSET);
+  read_csrs[6] = abs_mmio_read32(csrng_regs + CSRNG_CTRL_REG_OFFSET);
+  read_csrs[7] = abs_mmio_read32(sram_ret_regs + SRAM_CTRL_READBACK_REG_OFFSET);
+  read_csrs[8] = abs_mmio_read32(aes_regs + AES_CTRL_SHADOWED_REG_OFFSET);
+  read_csrs[9] = abs_mmio_read32(
+      keymgr_dpe_regs + KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET);
+  read_csrs[10] = abs_mmio_read32(edn0_regs + EDN_CTRL_REG_OFFSET);
   read_csrs[11] =
-      abs_mmio_read32(TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
+      abs_mmio_read32(alert_handler_regs +
                       ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET);
-  read_csrs[12] =
-      abs_mmio_read32(TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
-                      ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET);
+  read_csrs[12] = abs_mmio_read32(
+      alert_handler_regs + ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET);
   read_csrs[13] =
-      abs_mmio_read32(TOP_EGRET_ALERT_HANDLER_BASE_ADDR +
+      abs_mmio_read32(alert_handler_regs +
                       ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET);
   read_csrs[14] = reg_x9;
   read_csrs[15] = reg_x19;
@@ -2527,8 +2526,10 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
     flash_test_page_addr = data_region.base * FLASH_PAGE_SZ;
   }
 
-  mmio_region_t flash_test_page = mmio_region_from_addr(
-      TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
+  uint32_t flash_base =
+      dt_flash_ctrl_memory_base(kDtFlashCtrl, kDtFlashCtrlMemoryMem);
+  mmio_region_t flash_test_page =
+      mmio_region_from_addr(flash_base + (uintptr_t)flash_test_page_addr);
 
   if (!flash_data_valid) {
     // Prepare page and write reference values into it.
@@ -2656,9 +2657,11 @@ status_t handle_ibex_fi_char_flash_read_static(ujson_t *uj)
     return OK_STATUS();
   }
 
+  uint32_t flash_base =
+      dt_flash_ctrl_memory_base(kDtFlashCtrl, kDtFlashCtrlMemoryMem);
   uint32_t flash_addr = data_region.base * FLASH_PAGE_SZ;
-  mmio_region_t flash_test_page = mmio_region_from_addr(
-      TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_addr);
+  mmio_region_t flash_test_page =
+      mmio_region_from_addr((uintptr_t)(flash_base + flash_addr));
 
   if (uj_data.init) {
     dif_result_t res_en = dif_flash_ctrl_set_data_region_enablement(
@@ -2779,8 +2782,10 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
     flash_test_page_addr = data_region.base * FLASH_PAGE_SZ;
   }
 
-  mmio_region_t flash_test_page = mmio_region_from_addr(
-      TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
+  uint32_t flash_base =
+      dt_flash_ctrl_memory_base(kDtFlashCtrl, kDtFlashCtrlMemoryMem);
+  mmio_region_t flash_test_page =
+      mmio_region_from_addr((uintptr_t)(flash_base + flash_test_page_addr));
 
   // Prepare page and write reference values into it.
   uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
@@ -3741,10 +3746,10 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
 
 status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
     __attribute__((optnone)) {
+  uint32_t sram_ret_regs = dt_sram_ctrl_primary_reg_block(kDtSramCtrlRetAon);
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
-    mmio_region_t addr =
-        mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+    mmio_region_t addr = mmio_region_from_addr(sram_ret_regs);
     TRY(dif_sram_ctrl_init(addr, &ret_sram));
     TRY(sram_ctrl_testutils_wipe(&ret_sram));
     TRY(sram_ctrl_testutils_scramble(&ret_sram));
@@ -3759,9 +3764,11 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t *ret_ram = (uint32_t *)TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
-  size_t ret_ram_len =
-      TOP_EGRET_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(ret_ram[0]);
+  uint32_t *ret_ram = (uint32_t *)dt_sram_ctrl_memory_base(
+      kDtSramCtrlRetAon, kDtSramCtrlMemoryRam);
+  size_t ret_ram_len = (size_t)dt_sram_ctrl_memory_size(kDtSramCtrlRetAon,
+                                                        kDtSramCtrlMemoryRam) /
+                       sizeof(ret_ram[0]);
   size_t ret_ram_half_len = ret_ram_len / 2;
 
   // Write counter value into ret SRAM.
@@ -3850,9 +3857,9 @@ status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
 status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
-    mmio_region_t addr =
-        mmio_region_from_addr(TOP_EGRET_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
-    TRY(dif_sram_ctrl_init(addr, &ret_sram));
+    mmio_region_t sram_ret_regs = mmio_region_from_addr(
+        dt_sram_ctrl_primary_reg_block(kDtSramCtrlRetAon));
+    TRY(dif_sram_ctrl_init(sram_ret_regs, &ret_sram));
     TRY(sram_ctrl_testutils_wipe(&ret_sram));
     TRY(sram_ctrl_testutils_scramble(&ret_sram));
     sram_ret_init = true;
@@ -3869,8 +3876,9 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   pentest_clear_sensor_recov_alerts();
 
   // Get address of the ret. SRAM at the beginning of the owner section.
-  uintptr_t sram_ret_buffer_addr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                                   offsetof(retention_sram_t, owner);
+  uintptr_t sram_ret_buffer_addr =
+      dt_sram_ctrl_memory_base(kDtSramCtrlRetAon, kDtSramCtrlMemoryRam) +
+      offsetof(retention_sram_t, owner);
   mmio_region_t sram_region_ret_addr =
       mmio_region_from_addr(sram_ret_buffer_addr);
 
@@ -4834,7 +4842,8 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
   TRY(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
+      &flash,
+      mmio_region_from_addr(dt_flash_ctrl_primary_reg_block(kDtFlashCtrl))));
   TRY(flash_ctrl_testutils_wait_for_init(&flash));
 
   // Init OTP.
@@ -4863,7 +4872,7 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex)),
       &rv_core_ibex));
 
   return OK_STATUS();

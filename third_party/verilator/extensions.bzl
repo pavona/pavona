@@ -9,7 +9,7 @@ verilator = module_extension(
 )
 
 def _verilator_repos():
-    VERILATOR_VERSION = "5.046"
+    VERILATOR_VERSION = "5.052"
     http_archive(
         name = "verilator",
         urls = [
@@ -17,5 +17,5 @@ def _verilator_repos():
         ],
         strip_prefix = "verilator-" + VERILATOR_VERSION,
         build_file = "@pavona_pavona//third_party/verilator:BUILD.verilator.bazel",
-        sha256 = "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
+        sha256 = "8c8d2e11e6ad32f641dd250742a94195ddecb912e2e2dabe2f42ddbbb99c1092",
     )

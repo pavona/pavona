@@ -85,6 +85,7 @@ module top_dragonfly #(
         kmac_pkg::AppCfgACC},
   // parameters for keymgr_dpe
   parameter bit KeymgrDpeKmacEnMasking = 1,
+  parameter int KeymgrDpeNumRomDigestInputs = 2,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
@@ -1910,6 +1911,7 @@ module top_dragonfly #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[33:32]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .KmacEnMasking(KeymgrDpeKmacEnMasking),
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs),
     .RndCnstLfsrSeed(RndCnstKeymgrDpeLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKeymgrDpeLfsrPerm),
     .RndCnstRandPerm(RndCnstKeymgrDpeRandPerm),

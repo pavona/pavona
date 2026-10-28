@@ -5599,6 +5599,10 @@
     {
       name: keymgr_dpe
       type: keymgr_dpe
+      param_decl:
+      {
+        NumRomDigestInputs: "2"
+      }
       clock_srcs:
       {
         clk_i: main
@@ -5623,7 +5627,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -5635,6 +5638,15 @@
           local: "false"
           expose: "true"
           name_top: KeymgrDpeKmacEnMasking
+        }
+        {
+          name: NumRomDigestInputs
+          desc: Number of digest inputs from ROM_CTRL
+          type: int
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: KeymgrDpeNumRomDigestInputs
         }
       ]
       inter_signal_list:

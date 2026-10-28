@@ -77,22 +77,6 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-pavona_binary(
-    name = "secret_page_setup",
-    testonly = True,
-    srcs = ["secret_page_setup.c"],
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_egret:fpga_cw310_rom_with_fake_keys",
-        "//hw/top_egret:fpga_cw340_rom_with_fake_keys",
-    ],
-    deps = [
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
 [
     pavona_binary(
         name = "uncorrupted_test_slot_{}".format(slot),
@@ -171,7 +155,6 @@ pavona_binary(
             binaries = {
                 t["a"].format(c["cause"]): "fw_a",
                 t["b"].format(c["cause"]): "fw_b",
-                ":secret_page_setup": "setup",
             },
             exit_success = t["exit_success"].format(c["cause"]),
             otp = ":otp_img_flash_ecc_error",
@@ -183,9 +166,6 @@ pavona_binary(
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
-                # First run the setup program to make sure the keymgr secrets are configured.
-                # This is required to allow the ROM_EXT to run.
-                --exec="bootstrap --clear-uart=true {setup}"
                 --exec="console --non-interactive --exit-success='PASS!' --exit-failure='FAIL'"
                 # Next bootstrap the ROM_EXT alone so we can use boot services to set the
                 # primary slot.  This makes sure we boot the correct slot first.
@@ -214,7 +194,6 @@ pavona_test(
         binaries = {
             ":flash_ecc_self_corruption_slot_a_manifest_identifier": "fw_a",
             ":uncorrupted_test_slot_b": "fw_b",
-            ":secret_page_setup": "setup",
         },
         exit_failure = "PASS!",
         # Since the flash ecc exception handler is disabled in this test,
@@ -230,10 +209,6 @@ pavona_test(
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
-            # First run the setup program to make sure the keymgr secrets are configured.
-            # This is required to allow the ROM_EXT to run.
-            --exec="bootstrap --clear-uart=true {setup}"
-            --exec="console --non-interactive --exit-success='PASS!' --exit-failure='FAIL'"
             # Next bootstrap the ROM_EXT alone so we can use boot services to set the
             # primary slot.  This makes sure we boot the correct slot first.
             --exec="bootstrap --clear-uart=true {rom_ext}"

@@ -8,7 +8,7 @@
 #include "hw/top/dt/csrng.h"
 #include "hw/top/dt/edn.h"
 #include "hw/top/dt/entropy_src.h"
-#include "hw/top/dt/keymgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
 #include "hw/top/dt/kmac.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "hw/top/dt/pwrmgr.h"
@@ -20,7 +20,7 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -30,7 +30,7 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -46,7 +46,7 @@ static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
-static dif_keymgr_t kmgr;
+static dif_keymgr_dpe_t kmgr;
 static dif_acc_t acc;
 static dif_otp_ctrl_t otp;
 static dif_pwrmgr_t pwrmgr;
@@ -120,27 +120,29 @@ static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
 
 /**
  * Configure the reseed interval to a short period and
- * advance to the `kDifKeymgrStateInitialized` to request entropy from the edn.
+ * advance to the `kDifKeymgrDpeStateInitialized` to request entropy from the
+ * edn.
  */
-static void keymgr_test(const dif_keymgr_t *kmgr) {
+static void keymgr_test(const dif_keymgr_dpe_t *kmgr) {
   /**
    * Key manager can only be tested once per boot.
    */
   static bool tested = false;
-  dif_keymgr_state_t expected_stage_before = kBootStage == kBootStageOwner
-                                                 ? kDifKeymgrStateOwnerRootKey
-                                                 : kDifKeymgrStateReset;
-  dif_keymgr_state_t expected_stage_after = kBootStage == kBootStageOwner
-                                                ? kDifKeymgrStateDisabled
-                                                : kDifKeymgrStateInitialized;
+  dif_keymgr_dpe_state_t expected_stage_before =
+      kBootStage == kBootStageOwner ? kDifKeymgrDpeStateAvailable
+                                    : kDifKeymgrDpeStateReset;
+  dif_keymgr_dpe_state_t expected_stage_after =
+      kBootStage == kBootStageOwner ? kDifKeymgrDpeStateDisabled
+                                    : kDifKeymgrDpeStateAvailable;
   if (!tested) {
     LOG_INFO("%s", __func__);
-    dif_keymgr_config_t config = {.entropy_reseed_interval = 4};
-    CHECK_DIF_OK(dif_keymgr_configure(kmgr, config));
-    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_before));
-    CHECK_DIF_OK(dif_keymgr_advance_state(kmgr, NULL));
-    CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(kmgr));
-    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_after));
+    CHECK_DIF_OK(dif_keymgr_dpe_set_entropy_reseed_interval(kmgr, 4));
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_check_state(kmgr, expected_stage_before));
+    CHECK_DIF_OK(dif_keymgr_dpe_advance_state(kmgr, NULL));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(kmgr));
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_check_state(kmgr, expected_stage_after));
     tested = true;
   }
 }
@@ -217,7 +219,7 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &ibex));
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
-  CHECK_DIF_OK(dif_keymgr_init_from_dt(kDtKeymgr, &kmgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init_from_dt(kDtKeymgrDpe, &kmgr));
   CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
   CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
   CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
@@ -254,12 +256,6 @@ status_t execute_test(void) {
 
 bool test_main(void) {
   test_initialize();
-
-  // The keymgr cannot be initialized after ROM_EXT because the flash controller
-  // is locked out with the ePMP.
-  if (kBootStage != kBootStageOwner) {
-    CHECK_STATUS_OK(keymgr_testutils_init_nvm_then_reset());
-  }
 
   alert_handler_configure(&alert_handler);
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());

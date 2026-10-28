@@ -746,22 +746,22 @@
  */
 #define TOP_EGRET_KMAC_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for keymgr in top egret.
+ * Peripheral base address for keymgr_dpe in top egret.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EGRET_KEYMGR_BASE_ADDR 0x41140000
+#define TOP_EGRET_KEYMGR_DPE_BASE_ADDR 0x41140000
 
 /**
- * Peripheral size for keymgr in top egret.
+ * Peripheral size for keymgr_dpe in top egret.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EGRET_KEYMGR_BASE_ADDR and
- * `TOP_EGRET_KEYMGR_BASE_ADDR + TOP_EGRET_KEYMGR_SIZE_BYTES`.
+ * address between #TOP_EGRET_KEYMGR_DPE_BASE_ADDR and
+ * `TOP_EGRET_KEYMGR_DPE_BASE_ADDR + TOP_EGRET_KEYMGR_DPE_SIZE_BYTES`.
  */
-#define TOP_EGRET_KEYMGR_SIZE_BYTES 0x100
+#define TOP_EGRET_KEYMGR_DPE_SIZE_BYTES 0x100
 /**
  * Peripheral base address for csrng in top egret.
  *

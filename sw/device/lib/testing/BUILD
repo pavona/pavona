@@ -243,33 +243,6 @@ cc_library(
 )
 
 cc_library(
-    name = "keymgr_testutils",
-    srcs = ["keymgr_testutils.c"],
-    hdrs = ["keymgr_testutils.h"],
-    target_compatible_with = [PAVONA_CPU],
-    deps = [
-        ":entropy_testutils",
-        ":flash_ctrl_testutils",
-        ":kmac_testutils",
-        ":otp_ctrl_testutils",
-        ":rstmgr_testutils",
-        "//hw/top:keymgr_c_regs",
-        "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/arch:boot_stage",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
-)
-
-cc_library(
     name = "kmac_testutils",
     srcs = ["kmac_testutils.c"],
     hdrs = ["kmac_testutils.h"],
@@ -641,6 +614,8 @@ cc_library(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
     ],
 )
 

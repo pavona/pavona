@@ -31,7 +31,6 @@
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/entropy_src.h"  // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
-#include "hw/top/dt/keymgr.h"       // Generated
 #include "hw/top/dt/pattgen.h"      // Generated
 #include "hw/top/dt/pwm.h"          // Generated
 #include "hw/top/dt/sensor_ctrl.h"  // Generated
@@ -41,7 +40,6 @@
 
 #include "hw/top/flash_ctrl_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DRAGONFLY)
-#include "hw/top/dt/keymgr_dpe.h"  // Generated
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
@@ -57,6 +55,7 @@
 #include "hw/top/dt/gpio.h"           // Generated
 #include "hw/top/dt/hmac.h"           // Generated
 #include "hw/top/dt/i2c.h"            // Generated
+#include "hw/top/dt/keymgr_dpe.h"     // Generated
 #include "hw/top/dt/kmac.h"           // Generated
 #include "hw/top/dt/lc_ctrl.h"        // Generated
 #include "hw/top/dt/otp_ctrl.h"       // Generated
@@ -282,7 +281,7 @@ static const char *entropy_src_inst_name = "entropy_src";
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
-static const char *keymgr_inst_name = "keymgr";
+static const char *keymgr_dpe_inst_name = "keymgr_dpe";
 static const char *pattgen_inst_name = "pattgen";
 static const char *pwm_inst_name = "pwm";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
@@ -397,41 +396,11 @@ static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
         "For flash shadow_storage err exp 1 get 0");
 }
 
-/*
-// TODO(#14518) keymgr cannot read fault_status register.
-static void keymgr_fault_checker(bool enable) {
-  // Check the keymgr integrity fatal error code.
-  dif_kmac_status_t status;
-  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
-  if (enable) {
-    CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
-  } else {
-    CHECK(status.faults == 0, "Got codes 0x%x", status.faults);
-  }
-}
-*/
-
-static void keymgr_fault_checker(bool enable, const char *ip_inst,
-                                 const char *type) {
-  // TODO(#14518)
-  LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
-           kDtKeymgrAlertFatalFaultErr);
-  trivial_fault_checker(enable, ip_inst, type);
-}
-
 static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
                                    const char *type) {
   return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl);
 }
 #elif defined(OPENTITAN_IS_DRAGONFLY)
-static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
-                                     const char *type) {
-  // TODO(#14518)
-  LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
-           kDtKeymgrDpeAlertFatalFaultErr);
-  trivial_fault_checker(enable, ip_inst, type);
-}
-
 static void rom_ctrl0_fault_checker(bool enable, const char *ip_inst,
                                     const char *type) {
   return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl0);
@@ -500,6 +469,14 @@ static void kmac_fault_checker(bool enable, const char *ip_inst,
   CHECK_DIF_OK(dif_kmac_get_status(&kmac, &status));
   CHECK(status.faults == expected, "For %s got codes 0x%x, expected 0x%x",
         ip_inst, status.faults, expected);
+}
+
+static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
+                                     const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
+           kDtKeymgrDpeAlertFatalFaultErr);
+  trivial_fault_checker(enable, ip_inst, type);
 }
 
 // This discriminates between the two faults based on type.
@@ -914,11 +891,6 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       (fault_checker_t){trivial_fault_checker, i2c2_inst_name, we_check};
   static_assert(kDtI2cCount >= 3, "This test needs 3 I2C instances");
 
-  checkers[dt_keymgr_alert_to_alert_id((dt_keymgr_t)0,
-                                       kDtKeymgrAlertFatalFaultErr)] =
-      (fault_checker_t){keymgr_fault_checker, keymgr_inst_name, we_check};
-  static_assert(kDtKeymgrCount >= 1, "This test needs a keymgr");
-
   checkers[dt_pattgen_alert_to_alert_id((dt_pattgen_t)0,
                                         kDtPattgenAlertFatalFault)] =
       (fault_checker_t){trivial_fault_checker, pattgen_inst_name, we_check};
@@ -956,11 +928,6 @@ static void init_fault_checkers(fault_checker_t *checkers) {
       (fault_checker_t){trivial_fault_checker, usbdev_inst_name, we_check};
   static_assert(kDtUsbdevCount >= 1, "This test needs a USB Device");
 #elif defined(OPENTITAN_IS_DRAGONFLY)
-  checkers[dt_keymgr_dpe_alert_to_alert_id(
-      (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
-      keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
-  static_assert(kDtKeymgrDpeCount >= 1, "This test needs a keymgr_dpe");
-
   checkers[dt_sram_ctrl_alert_to_alert_id(
       kDtSramCtrlMbox, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
       sram_ctrl_mbox_fault_checker, sram_ctrl_mbox_inst_name, we_check};
@@ -972,6 +939,10 @@ static void init_fault_checkers(fault_checker_t *checkers) {
 #else
 #error "all_escalation_resets_test does not support this top"
 #endif
+  checkers[dt_keymgr_dpe_alert_to_alert_id(
+      (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
+      keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
+  static_assert(kDtKeymgrDpeCount >= 1, "This test needs a keymgr_dpe");
 
   checkers[dt_aes_alert_to_alert_id(kAesDt, kDtAesAlertFatalFault)] =
       (fault_checker_t){aes_fault_checker, aes_inst_name, we_check};

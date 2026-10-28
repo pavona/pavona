@@ -410,14 +410,14 @@ package top_egret_pkg;
   parameter int unsigned TOP_EGRET_KMAC_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for keymgr in top egret.
+   * Peripheral base address for keymgr_dpe in top egret.
    */
-  parameter int unsigned TOP_EGRET_KEYMGR_BASE_ADDR = 32'h41140000;
+  parameter int unsigned TOP_EGRET_KEYMGR_DPE_BASE_ADDR = 32'h41140000;
 
   /**
-   * Peripheral size in bytes for keymgr in top egret.
+   * Peripheral size in bytes for keymgr_dpe in top egret.
    */
-  parameter int unsigned TOP_EGRET_KEYMGR_SIZE_BYTES = 32'h100;
+  parameter int unsigned TOP_EGRET_KEYMGR_DPE_SIZE_BYTES = 32'h100;
 
   /**
    * Peripheral base address for csrng in top egret.
@@ -565,7 +565,7 @@ package top_egret_pkg;
     TopEgretAlertPeripheralAes = 30,
     TopEgretAlertPeripheralHmac = 31,
     TopEgretAlertPeripheralKmac = 32,
-    TopEgretAlertPeripheralKeymgr = 33,
+    TopEgretAlertPeripheralKeymgrDpe = 33,
     TopEgretAlertPeripheralCsrng = 34,
     TopEgretAlertPeripheralEntropySrc = 35,
     TopEgretAlertPeripheralEdn0 = 36,
@@ -627,8 +627,8 @@ package top_egret_pkg;
     TopEgretAlertIdHmacFatalFault = 46,
     TopEgretAlertIdKmacRecovOperationErr = 47,
     TopEgretAlertIdKmacFatalFaultErr = 48,
-    TopEgretAlertIdKeymgrRecovOperationErr = 49,
-    TopEgretAlertIdKeymgrFatalFaultErr = 50,
+    TopEgretAlertIdKeymgrDpeRecovOperationErr = 49,
+    TopEgretAlertIdKeymgrDpeFatalFaultErr = 50,
     TopEgretAlertIdCsrngRecovAlert = 51,
     TopEgretAlertIdCsrngFatalAlert = 52,
     TopEgretAlertIdEntropySrcRecovAlert = 53,
@@ -821,7 +821,7 @@ package top_egret_pkg;
     TopEgretPlicIrqIdKmacKmacDone = 170,
     TopEgretPlicIrqIdKmacFifoEmpty = 171,
     TopEgretPlicIrqIdKmacKmacErr = 172,
-    TopEgretPlicIrqIdKeymgrOpDone = 173,
+    TopEgretPlicIrqIdKeymgrDpeOpDone = 173,
     TopEgretPlicIrqIdCsrngCsCmdReqDone = 174,
     TopEgretPlicIrqIdCsrngCsEntropyReq = 175,
     TopEgretPlicIrqIdCsrngCsHwInstExc = 176,
@@ -1117,7 +1117,7 @@ package top_egret_pkg;
     PeripheralI2c0,
     PeripheralI2c1,
     PeripheralI2c2,
-    PeripheralKeymgr,
+    PeripheralKeymgrDpe,
     PeripheralKmac,
     PeripheralLcCtrl,
     PeripheralOtpCtrl,

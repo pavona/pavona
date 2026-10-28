@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 // UDS (Creator) attestation key diverisfier constants.
 // Note: versions are always set to 0 so these keys are always valid from the
 // perspective of the keymgr hardware.
-const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
+const sc_keymgr_dpe_diversification_t kUdsKeymgrDiversifier = {
     .salt =
         {
             0xabffa6a9,
@@ -23,7 +23,7 @@ const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
     .version = 0,
 };
 // CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
+const sc_keymgr_dpe_diversification_t kCdi0KeymgrDiversifier = {
     .salt =
         {
             0x3e5913c7,
@@ -38,7 +38,7 @@ const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
     .version = 0,
 };
 // CDI_1 (Owner) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
+const sc_keymgr_dpe_diversification_t kCdi1KeymgrDiversifier = {
     .salt =
         {
             0x2d12c2e3,
@@ -53,23 +53,20 @@ const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
     .version = 0,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyUds = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyUds = {
+    .slot = kScKeymgrDpeSlotAttestation,
     .keygen_seed_idx = kFlashInfoFieldUdsKeySeedIdx,
     .keymgr_diversifier = &kUdsKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateCreatorRootKey,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi0 = {
+    .slot = kScKeymgrDpeSlotAttestation,
     .keygen_seed_idx = kFlashInfoFieldCdi0KeySeedIdx,
     .keymgr_diversifier = &kCdi0KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
 };
 
-const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
-    .type = kScKeymgrKeyTypeAttestation,
+const sc_keymgr_dpe_ecc_key_t kDiceKeyCdi1 = {
+    .slot = kScKeymgrDpeSlotAttestation,
     .keygen_seed_idx = kFlashInfoFieldCdi1KeySeedIdx,
     .keymgr_diversifier = &kCdi1KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
 };

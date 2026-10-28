@@ -37,6 +37,10 @@
                 name:  "Secret2Key",
                 value: "<random>",
             }
+            {
+                name:  "Secret3Key",
+                value: "<random>",
+            }
         ]
         digests: [
             // This is the consistency digest used by all partitions.
@@ -769,14 +773,6 @@
                     and reset.
                     '''
                 }
-                {
-                    name: "OWNER_SW_CFG_RESERVED",
-                    size: "128",
-                    desc: '''
-                    Unused bits in the OWNER_SW_CFG OTP partition. These can be
-                    claimed by software as needed.
-                    '''
-                }
             ],
             desc: '''Software configuration partition.
             This contains data that changes software behavior in the ROM, for
@@ -1142,9 +1138,40 @@
                     size: "32"
                     iskeymgr_creator: true
                 }
+                {
+                    name: "CREATOR_SEED",
+                    inv_default: "<random>",
+                    size: "32",
+                    iskeymgr_creator: true
+                }
             ],
             desc: '''Secret partition 2.
             This contains RMA unlock token, creator root key, and creator seed.
+            '''
+        }
+        {
+            name:           "SECRET3",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            key_sel:        "Secret3Key",
+            integrity:      true,
+            bkout_type:     false,
+            zeroizable:     true,
+            skip_sw_header: true,
+            items: [
+                {
+                    name: "OWNER_SEED",
+                    inv_default: "<random>",
+                    size: "32",
+                    iskeymgr_owner: true
+                }
+            ],
+            desc: '''Secret partition 3.
+            This contains the owner seed.
             '''
         }
         {

@@ -10,16 +10,9 @@
 
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
-
-// TODO: A separate header should be made for the keymgr_dpe-based
-// implementations to make this a true multitop library.
-#if defined(HAS_KEYMGR)
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
-#elif defined(HAS_KEYMGR_DPE)
-#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,15 +58,15 @@ rom_error_t acc_boot_app_load(void);
  * @param additional_seed_idx The attestation key generation seed index to load.
  *                            The index corresponds to the seed offset in flash
  *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
- * @param key_type Keymgr key type to generate, attestation or sealing.
+ * @param slot Keymgr slot to generate from (attestation or sealing).
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_attestation_keygen(
-    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification,
+    uint32_t additional_seed_idx, sc_keymgr_dpe_slot_t slot,
+    sc_keymgr_dpe_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key);
 
 /**
@@ -82,7 +75,8 @@ rom_error_t acc_boot_attestation_keygen(
  * public key (in big endian order for inserting into a cert) and a key ID
  * (which is a SHA256 digest of the public key).
  *
- * Preconditions: keymgr has been initialized and cranked to the desired stage.
+ * Preconditions: keymgr_dpe has been initialized and cranked to the desired
+ * stage.
  *
  * @param key The description of the desired key to generate.
  * @param[out] pubkey_id The public key ID (for embedding into certificates).
@@ -90,7 +84,7 @@ rom_error_t acc_boot_attestation_keygen(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
+rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_dpe_ecc_key_t key,
                                           hmac_digest_t *pubkey_id,
                                           ecdsa_p256_public_key_t *pubkey);
 
@@ -105,16 +99,17 @@ rom_error_t acc_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
  * `acc_boot_app_load`.
  *
  * @param additional_seed The attestation key generation seed to load.
- * @param key_type ACC attestation key type to generate. "DICE" attestation
- *                 keys are based on "attestation" keys from the keymgr; "TPM"
- *                 attestation keys are based on "sealing keys from the keymgr.
+ * @param slot Key manager slot and corresponding ACC attestation key type to
+ *             generate. "DICE" attestation keys are based on "attestation" keys
+ *             from the keymgr; "TPM" attestation keys are based on "sealing
+ *             keys from the keymgr.
  * @param diversification Salt and version information for key manager.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t acc_boot_attestation_key_save(
-    uint32_t additional_seed, sc_keymgr_key_type_t key_type,
-    sc_keymgr_diversification_t diversification);
+    uint32_t additional_seed, sc_keymgr_dpe_slot_t slot,
+    sc_keymgr_dpe_diversification_t diversification);
 
 /**
  * Clears any saved attestation key from ACC's scratchpad.

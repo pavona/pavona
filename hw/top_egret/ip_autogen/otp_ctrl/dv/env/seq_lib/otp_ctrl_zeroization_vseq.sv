@@ -52,7 +52,8 @@ class otp_ctrl_zeroization_vseq extends otp_ctrl_smoke_vseq;
       HwCfg1Idx,
       Secret0Idx,
       Secret1Idx,
-      Secret2Idx
+      Secret2Idx,
+      Secret3Idx
     };
   }
 
@@ -77,6 +78,8 @@ class otp_ctrl_zeroization_vseq extends otp_ctrl_smoke_vseq;
         dai_addr inside `PART_CONTENT_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx)
         dai_addr inside `PART_CONTENT_RANGE(Secret2Idx);
+    if (part_idx == Secret3Idx)
+        dai_addr inside `PART_CONTENT_RANGE_ZER(Secret3Idx);
     solve part_idx before dai_addr;
   }
 `undef PART_CONTENT_RANGE
