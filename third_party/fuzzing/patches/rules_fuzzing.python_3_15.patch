@@ -1,0 +1,11 @@
+diff --git a/MODULE.bazel b/MODULE.bazel
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -48,6 +48,7 @@
+     "3.12",
+     "3.13",
+     "3.14",
++    "3.15",
+ ]
+
+ python = use_extension("@rules_python//python/extensions:python.bzl", "python")
