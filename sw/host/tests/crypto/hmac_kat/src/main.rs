@@ -40,7 +40,6 @@ struct HmacTestCase {
     vendor: String,
     test_case_id: usize,
     algorithm: String,
-    hash_alg: String,
     key: Vec<u8>,
     message: Vec<u8>,
     tag: Vec<u8>,
@@ -57,11 +56,11 @@ fn run_hmac_testcase(
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
-        "vendor: {}, test case: {}",
+        "vendor: {}, algorithm: {}, test case: {}",
         test_case.vendor,
+        test_case.algorithm,
         test_case.test_case_id
     );
-    assert_eq!(test_case.algorithm.as_str(), "hmac");
     CryptotestCommand::Hmac.send(spi_console)?;
 
     assert!(
@@ -77,14 +76,14 @@ fn run_hmac_testcase(
         HMAC_CMD_MAX_MESSAGE_BYTES,
     );
 
-    match test_case.hash_alg.as_str() {
-        "sha-256" => CryptotestHmacHashAlg::Sha256,
-        "sha-384" => CryptotestHmacHashAlg::Sha384,
-        "sha-512" => CryptotestHmacHashAlg::Sha512,
-        "sha3-256" => CryptotestHmacHashAlg::Sha3_256,
-        "sha3-384" => CryptotestHmacHashAlg::Sha3_384,
-        "sha3-512" => CryptotestHmacHashAlg::Sha3_512,
-        _ => panic!("Unsupported HMAC hash mode"),
+    match test_case.algorithm.as_str() {
+        "HMAC-SHA2-256" => CryptotestHmacHashAlg::Sha256,
+        "HMAC-SHA2-384" => CryptotestHmacHashAlg::Sha384,
+        "HMAC-SHA2-512" => CryptotestHmacHashAlg::Sha512,
+        "HMAC-SHA3-256" => CryptotestHmacHashAlg::Sha3_256,
+        "HMAC-SHA3-384" => CryptotestHmacHashAlg::Sha3_384,
+        "HMAC-SHA3-512" => CryptotestHmacHashAlg::Sha3_512,
+        _ => panic!("Unsupported HMAC algorithm: {}", test_case.algorithm),
     }
     .send(spi_console)?;
 

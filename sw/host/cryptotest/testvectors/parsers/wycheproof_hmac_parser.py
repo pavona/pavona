@@ -9,6 +9,16 @@ import jsonschema
 import logging
 import sys
 
+# Map hash function names to their ACVP HMAC algorithm names
+HMAC_ALGORITHMS = {
+    "sha-256": "HMAC-SHA2-256",
+    "sha-384": "HMAC-SHA2-384",
+    "sha-512": "HMAC-SHA2-512",
+    "sha3-256": "HMAC-SHA3-256",
+    "sha3-384": "HMAC-SHA3-384",
+    "sha3-512": "HMAC-SHA3-512",
+}
+
 
 def parse_test_vectors(raw_data, hash_alg):
     test_groups = raw_data["testGroups"]
@@ -20,8 +30,7 @@ def parse_test_vectors(raw_data, hash_alg):
             test_vec = {
                 "vendor": "wycheproof",
                 "test_case_id": test['tcId'],
-                "algorithm": "hmac",
-                "hash_alg": hash_alg,
+                "algorithm": HMAC_ALGORITHMS[hash_alg],
                 "key": list(bytes.fromhex(test["key"])),
                 "message": list(bytes.fromhex(test["msg"])),
                 "tag": list(bytes.fromhex(test["tag"])),

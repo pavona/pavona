@@ -19,9 +19,9 @@ from cryptotest_util import parse_rsp
 # However, the test vectors only include the longest length for each
 # hash (i.e. the entire hash is the MAC).
 LENGTH_TO_HASH = {
-    "32": "sha-256",
-    "48": "sha-384",
-    "64": "sha-512",
+    "32": "HMAC-SHA2-256",
+    "48": "HMAC-SHA2-384",
+    "64": "HMAC-SHA2-512",
 }
 
 HASH_TO_LENGTH = {
@@ -45,8 +45,7 @@ def parse_testcases(args) -> None:
         test_case = {
             "vendor": "nist",
             "test_case_id": int(test_vec["Count"]),
-            "algorithm": "hmac",
-            "hash_alg": LENGTH_TO_HASH[mac_len],
+            "algorithm": LENGTH_TO_HASH[mac_len],
             "key": list(bytes.fromhex(test_vec["Key"])),
             "message": list(bytes.fromhex(test_vec["Msg"])),
             "tag": list(bytes.fromhex(test_vec["Mac"])),
