@@ -47,8 +47,8 @@ struct HmacTestCase {
     result: bool,
 }
 
-const HMAC_CMD_MAX_MESSAGE_BYTES: usize = 256;
-const HMAC_CMD_MAX_KEY_BYTES: usize = 192;
+const HMAC_CMD_MAX_MESSAGE_BYTES: usize = 512;
+const HMAC_CMD_MAX_KEY_BYTES: usize = 512;
 
 fn run_hmac_testcase(
     test_case: &HmacTestCase,
