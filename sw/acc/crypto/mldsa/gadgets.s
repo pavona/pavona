@@ -506,17 +506,23 @@ secadd_constant_bmsk:
   bn.and  w12, w6, w10
   bn.and  w13, w7, w11
   bn.wsrr w14, URND
-  bn.and  w15, w6, w11
-  bn.xor  w15, w15, w14
-  bn.and  w16, w7, w10
-  bn.xor  w16, w16, w14
+  bn.xor  w15, w11, w14
+  bn.and  w15, w15, w6
+  bn.not  w16, w6
+  bn.and  w16, w16, w14
+  bn.xor  w15, w15, w16
   bn.xor  w12, w12, w15
-  bn.xor  w13, w13, w16
+  bn.xor  w8, w10, w14
+  bn.and  w8, w8, w7
+  bn.not  w9, w7
+  bn.and  w9, w9, w14
+  bn.xor  w8, w8, w9
+  bn.xor  w13, w13, w8
   bn.xor  w22, w4, w12
   bn.xor  w23, w5, w13
 
   /* bits 1..12 (q=0) */
-  loopi 12, 15
+  loopi 12, 21
     bn.ld   w4, 0(x10)
     bn.ld   w5, 0(x11)
     bn.xor  w8, w22, w4 /* z = c ^ sp */
@@ -527,16 +533,22 @@ secadd_constant_bmsk:
     bn.and  w12, w22, w4
     bn.and  w13, w23, w5
     bn.wsrr w14, URND
-    bn.and  w15, w22, w5
-    bn.xor  w15, w15, w14
-    bn.and  w16, w23, w4
-    bn.xor  w16, w16, w14
+    bn.xor  w15, w5, w14
+    bn.and  w15, w15, w22
+    bn.not  w16, w22
+    bn.and  w16, w16, w14
+    bn.xor  w15, w15, w16
+    bn.xor  w8, w4, w14
+    bn.and  w8, w8, w23
+    bn.not  w9, w23
+    bn.and  w9, w9, w14
+    bn.xor  w8, w8, w9
     bn.xor  w22, w12, w15
-    bn.xor  w23, w13, w16
+    bn.xor  w23, w13, w8
   endloop
 
   /* bits 13..22 (q=1) */
-  loopi 10, 21
+  loopi 10, 27
     bn.ld   w4, 0(x10)
     bn.ld   w5, 0(x11)
     bn.xor  w6, w4, w20  /* xpy = sp ^ b */
@@ -551,12 +563,18 @@ secadd_constant_bmsk:
     bn.and  w12, w6, w10
     bn.and  w13, w7, w11
     bn.wsrr w14, URND
-    bn.and  w15, w6, w11
-    bn.xor  w15, w15, w14
-    bn.and  w16, w7, w10
-    bn.xor  w16, w16, w14
+    bn.xor  w15, w11, w14
+    bn.and  w15, w15, w6
+    bn.not  w16, w6
+    bn.and  w16, w16, w14
+    bn.xor  w15, w15, w16
     bn.xor  w12, w12, w15
-    bn.xor  w13, w13, w16
+    bn.xor  w8, w10, w14
+    bn.and  w8, w8, w7
+    bn.not  w9, w7
+    bn.and  w9, w9, w14
+    bn.xor  w8, w8, w9
+    bn.xor  w13, w13, w8
     bn.xor  w22, w4, w12
     bn.xor  w23, w5, w13
   endloop
@@ -2288,26 +2306,38 @@ _mpue_squeeze:
   bn.rshi w3, w31, w1 >> 1
   bn.wsrr w6, URND
   bn.and  w4, w0, w2
-  bn.xor  w4, w4, w6
-  bn.and  w7, w0, w3
-  bn.xor  w7, w7, w6
-  bn.and  w8, w1, w2
+  bn.xor  w7, w3, w6
+  bn.and  w7, w7, w0
+  bn.not  w8, w0
+  bn.and  w8, w8, w6
   bn.xor  w7, w7, w8
+  bn.xor  w4, w4, w7
   bn.and  w5, w1, w3
-  bn.xor  w5, w5, w7 /* (w4,w5) = shares of z */
+  bn.xor  w9, w2, w6
+  bn.and  w9, w9, w1
+  bn.not  w10, w1
+  bn.and  w10, w10, w6
+  bn.xor  w9, w9, w10
+  bn.xor  w5, w5, w9 /* (w4,w5) = shares of z */
 
   /* SecAnd: u = z & (z>>2)  -> bit 4i = AND of nibble's 4 bits. */
   bn.rshi w2, w31, w4 >> 2
   bn.rshi w3, w31, w5 >> 2
   bn.wsrr w6, URND
   bn.and  w7, w4, w2
-  bn.xor  w7, w7, w6
-  bn.and  w8, w4, w3
-  bn.xor  w8, w8, w6
-  bn.and  w2, w5, w2
-  bn.xor  w8, w8, w2
+  bn.xor  w11, w3, w6
+  bn.and  w11, w11, w4
+  bn.not  w12, w4
+  bn.and  w12, w12, w6
+  bn.xor  w11, w11, w12
+  bn.xor  w7, w7, w11
+  bn.xor  w13, w2, w6
+  bn.and  w13, w13, w5
+  bn.not  w14, w5
+  bn.and  w14, w14, w6
+  bn.xor  w13, w13, w14
   bn.and  w3, w5, w3
-  bn.xor  w3, w3, w8 /* (w7,w3) = shares of u */
+  bn.xor  w3, w3, w13 /* (w7,w3) = shares of u */
   beq     x0, x0, _mpue_reject_done
 _mpue_reject_e4:
   /* reject (n >= 9) = b3 & (b0|b1|b2), at bit 4i.  Via De Morgan on m = ~n:
@@ -2318,40 +2348,58 @@ _mpue_reject_e4:
   bn.rshi w4, w31, w1 >> 1
   bn.wsrr w6, URND
   bn.and  w7, w2, w3
-  bn.xor  w7, w7, w6
-  bn.and  w8, w2, w4
-  bn.xor  w8, w8, w6
-  bn.and  w9, w1, w3
+  bn.xor  w8, w4, w6
+  bn.and  w8, w8, w2
+  bn.not  w9, w2
+  bn.and  w9, w9, w6
   bn.xor  w8, w8, w9
+  bn.xor  w7, w7, w8
+  bn.xor  w10, w3, w6
+  bn.and  w10, w10, w1
+  bn.not  w11, w1
+  bn.and  w11, w11, w6
+  bn.xor  w10, w10, w11
   bn.and  w5, w1, w4
-  bn.xor  w5, w5, w8 /* za = (w7,w5) */
+  bn.xor  w5, w5, w10 /* za = (w7,w5) */
 
   /* SecAnd: zb = za & (m>>2)  -> bit 4i = ~b0 & ~b1 & ~b2. */
   bn.rshi w3, w31, w2 >> 2
   bn.rshi w4, w31, w1 >> 2
   bn.wsrr w6, URND
   bn.and  w8, w7, w3
-  bn.xor  w8, w8, w6
-  bn.and  w9, w7, w4
-  bn.xor  w9, w9, w6
-  bn.and  w10, w5, w3
-  bn.xor  w9, w9, w10
+  bn.xor  w12, w4, w6
+  bn.and  w12, w12, w7
+  bn.not  w13, w7
+  bn.and  w13, w13, w6
+  bn.xor  w12, w12, w13
+  bn.xor  w8, w8, w12
+  bn.xor  w14, w3, w6
+  bn.and  w14, w14, w5
+  bn.not  w15, w5
+  bn.and  w15, w15, w6
+  bn.xor  w14, w14, w15
   bn.and  w11, w5, w4
-  bn.xor  w11, w11, w9 /* zb = (w8,w11) */
-  bn.not  w8, w8       /* ~zb -> bit 4i = b0|b1|b2 */
+  bn.xor  w11, w11, w14 /* zb = (w8,w11) */
+  bn.not  w8, w8        /* ~zb -> bit 4i = b0|b1|b2 */
 
   /* SecAnd: reject = (n>>3) & ~zb  -> bit 4i = b3 & (b0|b1|b2). */
   bn.rshi w3, w31, w0 >> 3
   bn.rshi w4, w31, w1 >> 3
   bn.wsrr w6, URND
   bn.and  w7, w3, w8
-  bn.xor  w7, w7, w6
-  bn.and  w9, w3, w11
-  bn.xor  w9, w9, w6
-  bn.and  w10, w4, w8
-  bn.xor  w9, w9, w10
-  bn.and  w3, w4, w11
-  bn.xor  w3, w3, w9 /* (w7,w3) = shares of reject */
+  bn.xor  w16, w11, w6
+  bn.and  w16, w16, w3
+  bn.not  w17, w3
+  bn.and  w17, w17, w6
+  bn.xor  w16, w16, w17
+  bn.xor  w7, w7, w16
+  bn.xor  w18, w8, w6
+  bn.and  w18, w18, w4
+  bn.not  w19, w4
+  bn.and  w19, w19, w6
+  bn.xor  w18, w18, w19
+  bn.and  w20, w4, w11
+  bn.xor  w3, w20, w18 /* (w7,w3) = shares of reject */
 _mpue_reject_done:
 
   /* Reveal only the per-nibble reject bits (mask off the garbage). */
