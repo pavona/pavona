@@ -28,14 +28,29 @@
         "type": "integer"
       },
       "algorithm": {
-        "description": "Should be hmac",
+        "description": "The HMAC algorithm being tested",
         "type": "string",
-        "enum": ["hmac"]
+        "enum": ["HMAC-SHA-1", "HMAC-SHA2-224", "HMAC-SHA2-256", "HMAC-SHA2-384", "HMAC-SHA2-512", "HMAC-SHA3-256", "HMAC-SHA3-384", "HMAC-SHA3-512"]
       },
-      "hash_alg": {
-        "description": "Hash algorithm",
-        "type": "string",
-        "enum": ["sha-1", "sha-224", "sha-256", "sha-384", "sha-512", "sha3-256", "sha3-384", "sha3-512"]
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "mac_len": {
+        "description": "Length of the MAC in bytes that an ACVP test asks for",
+        "type": "integer"
       },
       "key": {
         "description": "Key to use for tag generation",

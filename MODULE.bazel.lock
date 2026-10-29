@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "Bwf1v4xCyvGaqgdiA1xO1R4qzcUltEL/avacdngp4nY=",
+        "bzlTransitiveDigest": "1iC+xSIuCkwtTgoPEWZENItWemnuHMYuaVJyencjRJ4=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -344,9 +344,9 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/acvp_testvectors:BUILD.acvp_testvectors.bazel",
-              "sha256": "f5dac4d893f3660a397f4597db3a8be344137d8f06f14cd89e38feaf733f790e",
-              "strip_prefix": "ACVP-Server-1.1.0.41/gen-val/json-files",
-              "url": "https://github.com/usnistgov/ACVP-Server/archive/refs/tags/v1.1.0.41.tar.gz",
+              "sha256": "394c1b549364e5ee76e249a9ca40c59a38342d2826579d8e4b4c478e5d05485a",
+              "strip_prefix": "ACVP-Server-1.1.0.43/gen-val/json-files",
+              "url": "https://github.com/usnistgov/ACVP-Server/archive/refs/tags/v1.1.0.43.tar.gz",
               "patch_cmds": [
                 "for dir in */; do echo 'exports_files(glob([\"**\"]))' > \"${dir}BUILD.bazel\"; done"
               ]
@@ -710,7 +710,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "dSvgxdof2QWguciesfCPj1Aur877TmVpKdv8Rx5Bub0=",
+        "bzlTransitiveDigest": "43wYR4/M+eLBl6Fyey2YdKl4ZQrCghSGxqGlUfyf670=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -736,40 +736,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-4ecdsatestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-4ecdsatestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_sha2_fips_180_4": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "strip_prefix": "shabytetestvectors",
-              "sha256": "929ef80b7b3418aca026643f6f248815913b60e01741a44bba9e118067f4c9b8",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/shabytetestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_sha3_fips_202": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "cd07701af2e47f5cc889d642528b4bf11f8b6eb55797c7307a96828ed8d8fc8c",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/sha-3bytetestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_shake_fips_202": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "debfebc3157b3ceea002b84ca38476420389a3bf7e97dc5f53ea4689a16de4c7",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/shakebytetestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/shakebytetestvectors.zip"
               ]
             }
           },
@@ -814,17 +780,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-3rsatestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_hmac_fips_198_1": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip"
               ]
             }
           }

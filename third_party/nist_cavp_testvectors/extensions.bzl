@@ -38,34 +38,6 @@ def _nist_cavp_repos():
         ],
     )
     http_archive(
-        name = "nist_cavp_sha2_fips_180_4",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        strip_prefix = "shabytetestvectors",
-        sha256 = "929ef80b7b3418aca026643f6f248815913b60e01741a44bba9e118067f4c9b8",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/shabytetestvectors.zip",
-        ],
-    )
-    http_archive(
-        name = "nist_cavp_sha3_fips_202",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "cd07701af2e47f5cc889d642528b4bf11f8b6eb55797c7307a96828ed8d8fc8c",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/sha-3bytetestvectors.zip",
-        ],
-    )
-    http_archive(
-        name = "nist_cavp_shake_fips_202",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "debfebc3157b3ceea002b84ca38476420389a3bf7e97dc5f53ea4689a16de4c7",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/shakebytetestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/shakebytetestvectors.zip",
-        ],
-    )
-    http_archive(
         name = "nist_cavp_aes_kat",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "a203b16c9246b2ebae31dee5de21a606be80cf78ceabaca37150236fa098eb60",
@@ -99,14 +71,5 @@ def _nist_cavp_repos():
         urls = [
             "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
             "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-3rsatestvectors.zip",
-        ],
-    )
-    http_archive(
-        name = "nist_cavp_hmac_fips_198_1",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip",
         ],
     )

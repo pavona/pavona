@@ -125,6 +125,11 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   if (salt.data == NULL && salt.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // The salt is the HMAC key.
+  if (launder32(salt.len) > kOtcryptoHmacMaxKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(salt.len, kOtcryptoHmacMaxKeyBytes);
 
   // Check the private key checksum.
   if (integrity_blinded_key_check(ikm) != kHardenedBoolTrue) {
@@ -162,8 +167,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   // it with a string of `hashLen` zeroes as specified in RFC 5869.
   size_t salt_bytelen =
       (salt.len == 0) ? digest_words * sizeof(uint32_t) : salt.len;
-  size_t salt_wordlen = ceil_div(salt_bytelen, sizeof(uint32_t));
-  uint32_t salt_aligned_data[salt_wordlen];
+  uint32_t salt_aligned_data[kOtcryptoHmacMaxKeyWords];
   memset(salt_aligned_data, 0, sizeof(salt_aligned_data));
   if (salt.len > 0) {
     memcpy(salt_aligned_data, salt.data, salt.len);
@@ -196,13 +200,14 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   };
   size_t keyblob_wordlen = 0;
   HARDENED_TRY(keyblob_num_words(salt_key_config, &keyblob_wordlen));
-  uint32_t salt_keyblob[keyblob_wordlen];
+  uint32_t salt_keyblob[2 * ARRAYSIZE(salt_aligned_data)];
+  HARDENED_CHECK_LE(keyblob_wordlen, ARRAYSIZE(salt_keyblob));
   TRY(keyblob_from_key_and_mask(salt_aligned_data, salt_mask, salt_key_config,
                                 salt_keyblob));
   otcrypto_blinded_key_t salt_key = {
       .config = salt_key_config,
       .keyblob = salt_keyblob,
-      .keyblob_length = sizeof(salt_keyblob),
+      .keyblob_length = keyblob_wordlen * sizeof(uint32_t),
   };
   salt_key.checksum = integrity_blinded_checksum(&salt_key);
 

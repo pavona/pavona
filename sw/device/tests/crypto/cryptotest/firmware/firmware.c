@@ -48,6 +48,7 @@
 // Scratch buffers for crypto tests.
 static union {
   hash_test_scratch_t hash;
+  hmac_test_scratch_t hmac;
   mlkem_test_scratch_t mlkem;
   mldsa_test_scratch_t mldsa;
   sphincsplus_test_scratch_t sphincsplus;
@@ -83,8 +84,11 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandHash:
         RESP_ERR(uj, handle_hash(uj, &cryptotest_scratch.hash));
         break;
+      case kCryptotestCommandHashMct:
+        RESP_ERR(uj, handle_hash_mct(uj, &cryptotest_scratch.hash));
+        break;
       case kCryptotestCommandHmac:
-        RESP_ERR(uj, handle_hmac(uj));
+        RESP_ERR(uj, handle_hmac(uj, &cryptotest_scratch.hmac));
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));

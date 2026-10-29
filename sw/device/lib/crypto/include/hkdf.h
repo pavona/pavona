@@ -38,7 +38,8 @@ extern "C" {
  * struct will be populated by the key derivation function.
  *
  * @param ikm Blinded input key material.
- * @param salt Salt value (optional, may be empty).
+ * @param salt Salt value (optional, may be empty, at most
+ * `kOtcryptoHmacMaxKeyBytes` long).
  * @param info Context-specific string (optional, may be empty).
  * @param[out] okm Blinded output keying material.
  * @return Result of the key derivation operation.
@@ -64,7 +65,8 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
  * the chosen hash mode (e.g. 512 bits for SHA-256).
  *
  * @param ikm Blinded input key material.
- * @param salt Salt value (optional, may be empty).
+ * @param salt Salt value (optional, may be empty, at most
+ * `kOtcryptoHmacMaxKeyBytes` long).
  * @param[out] prk Extracted pseudo-random key.
  * @return Result of the key derivation operation.
  */

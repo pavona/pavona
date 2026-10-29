@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, ensure};
 use arrayvec::ArrayVec;
 use clap::Parser;
-use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
 
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex, read_vectors};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::hmac_commands::{
     CryptotestHmacHashAlg, CryptotestHmacKey, CryptotestHmacMessage, CryptotestHmacTag,
@@ -33,35 +34,45 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     hmac_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct HmacTestCase {
     vendor: String,
-    test_case_id: usize,
-    algorithm: String,
-    hash_alg: String,
+    test_case_id: u64,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     key: Vec<u8>,
     message: Vec<u8>,
+    #[serde(default)]
     tag: Vec<u8>,
-    result: bool,
+    /// Length of the MAC in bytes that an ACVP test asks for.
+    #[serde(default)]
+    mac_len: usize,
+    /// Absent where the outcome is the answer, as in an ACVP prompt.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
-const HMAC_CMD_MAX_MESSAGE_BYTES: usize = 256;
-const HMAC_CMD_MAX_KEY_BYTES: usize = 192;
+const HMAC_CMD_MAX_MESSAGE_BYTES: usize = 512;
+const HMAC_CMD_MAX_KEY_BYTES: usize = 512;
 
 fn run_hmac_testcase(
     test_case: &HmacTestCase,
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
     fail_counter: &mut u32,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
-        "vendor: {}, test case: {}",
+        "vendor: {}, algorithm: {}, test case: {}",
         test_case.vendor,
+        test_case.acvp.algorithm,
         test_case.test_case_id
     );
-    assert_eq!(test_case.algorithm.as_str(), "hmac");
     CryptotestCommand::Hmac.send(spi_console)?;
 
     assert!(
@@ -77,14 +88,14 @@ fn run_hmac_testcase(
         HMAC_CMD_MAX_MESSAGE_BYTES,
     );
 
-    match test_case.hash_alg.as_str() {
-        "sha-256" => CryptotestHmacHashAlg::Sha256,
-        "sha-384" => CryptotestHmacHashAlg::Sha384,
-        "sha-512" => CryptotestHmacHashAlg::Sha512,
-        "sha3-256" => CryptotestHmacHashAlg::Sha3_256,
-        "sha3-384" => CryptotestHmacHashAlg::Sha3_384,
-        "sha3-512" => CryptotestHmacHashAlg::Sha3_512,
-        _ => panic!("Unsupported HMAC hash mode"),
+    match test_case.acvp.algorithm.as_str() {
+        "HMAC-SHA2-256" => CryptotestHmacHashAlg::Sha256,
+        "HMAC-SHA2-384" => CryptotestHmacHashAlg::Sha384,
+        "HMAC-SHA2-512" => CryptotestHmacHashAlg::Sha512,
+        "HMAC-SHA3-256" => CryptotestHmacHashAlg::Sha3_256,
+        "HMAC-SHA3-384" => CryptotestHmacHashAlg::Sha3_384,
+        "HMAC-SHA3-512" => CryptotestHmacHashAlg::Sha3_512,
+        _ => panic!("Unsupported HMAC algorithm: {}", test_case.acvp.algorithm),
     }
     .send(spi_console)?;
 
@@ -101,25 +112,43 @@ fn run_hmac_testcase(
     .send(spi_console)?;
 
     let hmac_tag = CryptotestHmacTag::recv(spi_console, opts.timeout, false, false)?;
-    let success = if test_case.tag.len() > hmac_tag.tag_len {
-        // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
-        // the beginning bytes match.
-        false
-    } else {
-        // Some of the NIST test cases only specify the beginning bytes of the expected tag, so we
-        // only check up to what the test specifies.
-        test_case.tag[..] == hmac_tag.tag[..test_case.tag.len()]
-    };
-    if test_case.result != success {
-        log::info!(
-            "FAILED test #{}: expected = {}, actual = {}",
-            test_case.test_case_id,
-            test_case.result,
-            success
-        );
+    if let Some(want) = test_case.result {
+        let success = if test_case.tag.len() > hmac_tag.tag_len {
+            // If we got a shorter tag back then the test asks for, we can't accept the tag, even
+            // if the beginning bytes match.
+            false
+        } else {
+            // Some of the NIST test cases only specify the beginning bytes of the expected tag,
+            // so we only check up to what the test specifies.
+            test_case.tag[..] == hmac_tag.tag[..test_case.tag.len()]
+        };
+        if want != success {
+            log::info!(
+                "FAILED test #{}: expected = {}, actual = {}",
+                test_case.test_case_id,
+                want,
+                success
+            );
+            *fail_counter += 1;
+        }
     }
-    if success != test_case.result {
-        *fail_counter += 1;
+
+    if test_case.vendor == "acvp" {
+        // The registrations claim only full-length MACs, which is what the
+        // cryptolib computes. NIST's sample vector sets ask for truncated MACs,
+        // so the harness truncates the MAC for vectors that come with answers.
+        ensure!(
+            test_case.mac_len == hmac_tag.tag_len
+                || (test_case.mac_len < hmac_tag.tag_len && test_case.result.is_some()),
+            "{} test #{} asks for a {}-byte MAC, which the registration does not claim",
+            test_case.acvp.algorithm,
+            test_case.test_case_id,
+            test_case.mac_len,
+        );
+        let mut fields = Fields::new();
+        let mac = &hmac_tag.tag[..test_case.mac_len];
+        fields.insert("mac".to_string(), json!(hex(mac)));
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
     }
     Ok(())
 }
@@ -129,25 +158,28 @@ fn test_hmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
-    let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
-    let test_vector_files = &opts.hmac_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let hmac_tests: Vec<HmacTestCase> = serde_json::from_str(&raw_json)?;
+    let cases: Vec<HmacTestCase> = read_vectors(opts.acvp.vectors(&opts.hmac_json))?;
 
-        for hmac_test in &hmac_tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_hmac_testcase(hmac_test, opts, &spi_console_device, &mut fail_counter)?;
-        }
+    let mut fail_counter = 0u32;
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_hmac_testcase(
+            case,
+            opts,
+            &spi_console_device,
+            &mut fail_counter,
+            &mut responses,
+        )?;
     }
     assert_eq!(
-        0, fail_counter,
+        0,
+        fail_counter,
         "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        fail_counter,
+        cases.len()
     );
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

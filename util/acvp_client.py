@@ -31,11 +31,39 @@ PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
+    ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),
+    ("HMAC-SHA2-384", ""): ("hmac_sha384", "hmac"),
+    ("HMAC-SHA2-512", ""): ("hmac_sha512", "hmac"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("SHA2-256", ""): ("sha256", "sha2"),
+    ("SHA2-384", ""): ("sha384", "sha2"),
+    ("SHA2-512", ""): ("sha512", "sha2"),
+    ("SHA3-224", ""): ("sha3_224", "sha3"),
+    ("SHA3-256", ""): ("sha3_256", "sha3"),
+    ("SHA3-384", ""): ("sha3_384", "sha3"),
+    ("SHA3-512", ""): ("sha3_512", "sha3"),
+    ("SHAKE-128", ""): ("shake128", "shake"),
+    ("SHAKE-256", ""): ("shake256", "shake"),
+}
+
+# Harnesses whose parser and schema are named differently.
+PARSER_NAMES = {
+    "hmac_sha256": "hmac",
+    "hmac_sha384": "hmac",
+    "hmac_sha512": "hmac",
+    "sha256": "hash",
+    "sha384": "hash",
+    "sha512": "hash",
+    "sha3_224": "hash",
+    "sha3_256": "hash",
+    "sha3_384": "hash",
+    "sha3_512": "hash",
+    "shake128": "hash",
+    "shake256": "hash",
 }
 
 
@@ -83,21 +111,22 @@ def convert(prompt, answers, out_dir, skip_unsupported):
               "harness answers this algorithm and mode", file=sys.stderr)
         return SKIPPED, None
     harness, test_type = VECTOR_SETS[key]
+    parser = PARSER_NAMES.get(harness, harness)
     out = out_dir / f"acvp_{harness}_{test_type}_{vector_set['vsId']}.json"
 
     args = [
-        "run", f"{PARSERS}:nist_acvp_{harness}_parser", "--",
+        "run", f"{PARSERS}:nist_acvp_{parser}_parser", "--",
         "--src", str(prompt),
         "--dst", str(out),
         "--test-type", test_type,
-        "--schema", str(REPO / SCHEMAS / f"{harness}_schema.json"),
+        "--schema", str(REPO / SCHEMAS / f"{parser}_schema.json"),
     ]
     # The answers, when the session supplied them, go onto the test cases.
     expected = answers.get(vector_set["vsId"])
     if expected:
         args += ["--expected", str(expected)]
-    # Only the AES-KWP and ML-DSA parsers take --skip-unsupported.
-    if skip_unsupported and harness in ("aes_kwp", "mldsa"):
+    # Only the AES-KWP, hash, HMAC and ML-DSA parsers take --skip-unsupported.
+    if skip_unsupported and parser in ("aes_kwp", "hash", "hmac", "mldsa"):
         args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None

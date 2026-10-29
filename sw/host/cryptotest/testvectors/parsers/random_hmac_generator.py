@@ -19,6 +19,18 @@ DEFAULT_KEY_LENGTH = 256  # bits
 MIN_KEY_LENGTH = 64  # bits
 MAX_KEY_LENGTH = 2048  # bits
 
+# Map hash function names to their ACVP HMAC algorithm names
+HMAC_ALGORITHMS = {
+    "sha-1": "HMAC-SHA-1",
+    "sha-224": "HMAC-SHA2-224",
+    "sha-256": "HMAC-SHA2-256",
+    "sha-384": "HMAC-SHA2-384",
+    "sha-512": "HMAC-SHA2-512",
+    "sha3-256": "HMAC-SHA3-256",
+    "sha3-384": "HMAC-SHA3-384",
+    "sha3-512": "HMAC-SHA3-512",
+}
+
 
 def generate_test_vectors(args):
     test_vectors = []
@@ -81,8 +93,7 @@ def generate_test_vectors(args):
         test_vectors.append({
             "vendor": "random",
             "test_case_id": count,
-            "algorithm": "hmac",
-            "hash_alg": args.hash_alg,
+            "algorithm": HMAC_ALGORITHMS[args.hash_alg],
             "key": list(key),
             "message": list(msg),
             "tag": list(tag),

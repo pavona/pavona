@@ -11,8 +11,8 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'h', 'c')
 
-#define HMAC_CMD_MAX_MESSAGE_BYTES 256
-#define HMAC_CMD_MAX_KEY_BYTES 192
+#define HMAC_CMD_MAX_MESSAGE_BYTES 512
+#define HMAC_CMD_MAX_KEY_BYTES 512
 #define HMAC_CMD_MAX_TAG_BYTES 64
 
 // clang-format off

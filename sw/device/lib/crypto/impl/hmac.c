@@ -52,7 +52,8 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
                                    hmac_key_t *hmac_key) {
   // HMAC HWIP does not support masking, so we need to unmask the key.
   size_t unmasked_key_len = keyblob_share_num_words(key->config);
-  uint32_t unmasked_key[unmasked_key_len];
+  uint32_t unmasked_key[kOtcryptoHmacMaxKeyWords];
+  HARDENED_CHECK_LE(unmasked_key_len, ARRAYSIZE(unmasked_key));
   HARDENED_TRY(keyblob_key_unmask(key, unmasked_key_len, unmasked_key));
 
   // Pre-populate with 0s, in order to pad keys smaller than the internal
@@ -123,6 +124,11 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  if (launder32(key->config.key_length) > kOtcryptoHmacMaxKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(key->config.key_length, kOtcryptoHmacMaxKeyBytes);
 
   // The underlying HMAC hardware is unmasked, and does not have sideload
   // support.

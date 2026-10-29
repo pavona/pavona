@@ -262,62 +262,100 @@ HMAC_RANDOM_COUNT = 64
 ]
 
 ################################################################################
-# SHA2, SHA3 - NIST CAVP KAT
+# SHA2, SHA3, SHAKE - NIST ACVP
 ################################################################################
 
 [
     run_binary(
-        name = "nist_cavp_{}_{}_{}_json".format(
-            src_repo,
-            algorithm.lower(),
-            msg_type.lower(),
-        ),
+        name = "acvp_sha2_{}_json".format(digest_len),
         srcs = [
-            "@nist_cavp_{}//:{}{}.rsp".format(src_repo, algorithm, msg_type),
             "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHA2-{}-1.0:expectedResults.json".format(digest_len),
+            "@acvp_testvectors//SHA2-{}-1.0:prompt.json".format(digest_len),
         ],
-        outs = [":nist_{}_{}.json".format(
-            algorithm.lower(),
-            msg_type.lower(),
-        )],
+        outs = [":acvp_sha2_{}.json".format(digest_len)],
         args = [
             "--src",
-            "$(location @nist_cavp_{}//:{}{}.rsp)".format(src_repo, algorithm, msg_type),
+            "$(location @acvp_testvectors//SHA2-{}-1.0:prompt.json)".format(digest_len),
             "--dst",
-            "$(location :nist_{}_{}.json)".format(
-                algorithm.lower(),
-                msg_type.lower(),
-            ),
+            "$(location :acvp_sha2_{}.json)".format(digest_len),
             "--schema",
             "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
-            "--algorithm",
-            algorithm,
+            "--expected",
+            "$(location @acvp_testvectors//SHA2-{}-1.0:expectedResults.json)".format(digest_len),
+            "--test-type",
+            "sha2",
+            "--skip-unsupported",
         ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hash_parser",
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
     )
-    for algorithm, src_repo, extra_msg_types in [
-        ("SHA256", "sha2_fips_180_4", []),
-        ("SHA384", "sha2_fips_180_4", []),
-        ("SHA512", "sha2_fips_180_4", []),
-        ("SHA3_224", "sha3_fips_202", []),
-        ("SHA3_256", "sha3_fips_202", []),
-        ("SHA3_384", "sha3_fips_202", []),
-        ("SHA3_512", "sha3_fips_202", []),
-        (
-            "SHAKE128",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
-        (
-            "SHAKE256",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
+    for digest_len in [
+        "256",
+        "384",
+        "512",
     ]
-    for msg_type in [
-        "ShortMsg",
-        "LongMsg",
-    ] + extra_msg_types
+]
+
+[
+    run_binary(
+        name = "acvp_sha3_{}_json".format(digest_len),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHA3-{}-2.0:expectedResults.json".format(digest_len),
+            "@acvp_testvectors//SHA3-{}-2.0:prompt.json".format(digest_len),
+        ],
+        outs = [":acvp_sha3_{}.json".format(digest_len)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//SHA3-{}-2.0:prompt.json)".format(digest_len),
+            "--dst",
+            "$(location :acvp_sha3_{}.json)".format(digest_len),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//SHA3-{}-2.0:expectedResults.json)".format(digest_len),
+            "--test-type",
+            "sha3",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
+    )
+    for digest_len in [
+        "224",
+        "256",
+        "384",
+        "512",
+    ]
+]
+
+[
+    run_binary(
+        name = "acvp_shake_{}_json".format(security),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+            "@acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json".format(security),
+            "@acvp_testvectors//SHAKE-{}-FIPS202:prompt.json".format(security),
+        ],
+        outs = [":acvp_shake_{}.json".format(security)],
+        args = [
+            "--src",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:prompt.json)".format(security),
+            "--dst",
+            "$(location :acvp_shake_{}.json)".format(security),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--expected",
+            "$(location @acvp_testvectors//SHAKE-{}-FIPS202:expectedResults.json)".format(security),
+            "--test-type",
+            "shake",
+            "--skip-unsupported",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hash_parser",
+    )
+    for security in [
+        "128",
+        "256",
+    ]
 ]
 
 ################################################################################
@@ -385,28 +423,32 @@ run_binary(
 
 [
     run_binary(
-        name = "nist_cavp_hmac_{}_fips_198_1_json".format(hash_alg),
+        name = "acvp_hmac_sha2_{}_json".format(digest_len),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
-            "@nist_cavp_hmac_fips_198_1//:HMAC.rsp",
+            "@acvp_testvectors//HMAC-SHA2-{}-2.0:expectedResults.json".format(digest_len),
+            "@acvp_testvectors//HMAC-SHA2-{}-2.0:prompt.json".format(digest_len),
         ],
-        outs = ["nist_cavp_hmac_{}_fips_198_1.json".format(hash_alg)],
+        outs = [":acvp_hmac_sha2_{}.json".format(digest_len)],
         args = [
             "--src",
-            "$(location @nist_cavp_hmac_fips_198_1//:HMAC.rsp)",
+            "$(location @acvp_testvectors//HMAC-SHA2-{}-2.0:prompt.json)".format(digest_len),
             "--dst",
-            "$(location :nist_cavp_hmac_{}_fips_198_1.json)".format(hash_alg),
+            "$(location :acvp_hmac_sha2_{}.json)".format(digest_len),
             "--schema",
             "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
-            "--hash",
-            hash_alg,
+            "--expected",
+            "$(location @acvp_testvectors//HMAC-SHA2-{}-2.0:expectedResults.json)".format(digest_len),
+            "--test-type",
+            "hmac",
+            "--skip-unsupported",
         ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hmac_parser",
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hmac_parser",
     )
-    for hash_alg in [
-        "sha256",
-        "sha384",
-        "sha512",
+    for digest_len in [
+        "256",
+        "384",
+        "512",
     ]
 ]
 
