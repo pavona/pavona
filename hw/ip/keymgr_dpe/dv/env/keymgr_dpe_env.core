@@ -24,6 +24,10 @@ filesets:
       - seq_lib/keymgr_dpe_base_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_dpe_common_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_dpe_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_dpe_random_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_dpe_sync_async_fault_cross_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_dpe_sideload_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_dpe_hwsw_invalid_input_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

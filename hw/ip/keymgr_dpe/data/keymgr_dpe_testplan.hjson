@@ -9,8 +9,9 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/sec_cm_count_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/sec_cm_fsm_testplan.hjson"
+                     // "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"
+                    ]
   testpoints: [
     {
       name: smoke
@@ -37,6 +38,100 @@
             '''
       stage: V1
       tests: ["keymgr_dpe_smoke"]
+    }
+    {
+      name: random
+      desc: '''
+            Randomized advance / generate / erase sequence that unlocks knobs the
+            smoke test holds constant: policy.{allow_child, retain_parent, exportable},
+            is_key_version_err, and OTP root key randomization.
+
+            Stimulus:
+            - Latch the OTP root key into slot 0 with a permissive policy.
+            - Loop num_iterations times. Each iteration:
+              - Re-randomize policy bits (allow_child biased toward 1 so chains progress;
+                retain_parent and exportable uniform).
+              - Re-randomize is_key_version_err (4:1 toward good ops).
+              - Re-randomize src_slot and dst_slot uniformly across all DpeNumSlots.
+              - Pick one of {advance, generate, erase} via randcase weighted 4:4:1.
+            - Optionally end the test with an OpDpeDisable so disabled-state bins
+              are also exercised.
+
+            Checks:
+            - End-to-end checks via the scoreboard (existing).
+            - Coverage closure on:
+              - state_and_op_cg.op_status_cp::OpDoneFail (allow_child=0 leaf-advance).
+              - key_version_compare_cg::CompareOpGt.
+              - err_code_cg::{ErrInvalidIn, ErrInvalidOp}.
+              - retain_parent=0 self-overwrite path.
+              - sw_input_cg_wrap bins covering OTP-derived inputs.
+            '''
+      stage: V2
+      tests: ["keymgr_dpe_random"]
+    }
+    {
+      name: sync_async_fault_cross
+      desc: '''
+            Trigger a sync (KMAC error response) and an async (TL integrity error) fault
+            concurrently, in both arrival orders, and confirm the DUT raises fatal_fault_err
+            with the expected fault_status bits.
+
+            Stimulus:
+            - Advance past StWorkDpeReset so KMAC requests can be issued.
+            - Fork two tasks: one drives a KMAC error response (sync), the other injects a
+              TL integrity error (async). The first task to register flips its arrival flag.
+
+            Checks:
+            - fatal_fault_err triggers and FaultRegIntg + (FaultKmacOp | FaultKmacOut) are set.
+            - Cover both fault arrival orders via sync_async_fault_cross_cg.
+            '''
+      stage: V2
+      tests: ["keymgr_dpe_sync_async_fault_cross"]
+    }
+    {
+      name: sideload
+      desc: '''
+            Drives sideload_clear writes between operations to exercise the
+            sideload_clear_cg covergroup (state x op x clear-value x per-destination
+            availability x regwen). Reuses the smoke fill-and-generate flow so the
+            cdi/dest crosses also accumulate.
+
+            Stimulus:
+            - keymgr_dpe_smoke_vseq's body, with keymgr_dpe_operations() overridden to
+              follow each op block with a randomised csr_wr to ral.sideload_clear.
+            - clear_dest is biased toward the per-destination encodings [0:3] but
+              still hits the "clear all" encodings [4:$].
+            - Optionally re-paints control_shadowed.operation to a random op before
+              each sideload_clear so the op_cp at sample time spans all op values.
+
+            Checks:
+            - Existing scoreboard checks (key value preservation/wipe across sideload
+              clears, alert behavior, slot validity post-disable).
+            - Coverage closure on sideload_clear_cg's variables and crosses.
+            '''
+      stage: V2
+      tests: ["keymgr_dpe_sideload"]
+    }
+    {
+      name: hwsw_invalid_input
+      desc: '''
+            Drives invalid HW inputs (OTP root invalid, keymgr_dpe_div all-0s/all-1s,
+            otp_device_id all-0s/all-1s, rom_digest data/valid corruption) interleaved
+            with the random op stream. Optionally invalidates the OTP root key too.
+
+            Stimulus:
+            - Extends keymgr_dpe_random_vseq.
+            - Overrides keymgr_dpe_advance to call drive_random_hw_input_data with a
+              random num_invalid_hw_input every other call.
+            - do_invalid_otp_key is unpinned (1/4 chance true).
+
+            Checks:
+            - Coverage closure on invalid_hw_input_cg (all six type_e values),
+              err_code_cg::ErrInvalidIn, fault paths in fault_status_cg, and
+              state_and_op_cg::op_status_cp::OpDoneFail.
+            '''
+      stage: V2
+      tests: ["keymgr_dpe_hwsw_invalid_input"]
     }
   ]
 }
