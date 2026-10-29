@@ -339,11 +339,9 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
 }
 
 status_t aes_end(aes_block_t *iv) {
-  uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
-  ctrl_reg = bitfield_bit32_write(ctrl_reg,
-                                  AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
-  abs_mmio_write32_shadowed(aes_base() + AES_CTRL_SHADOWED_REG_OFFSET,
-                            ctrl_reg);
+  // Wait for the AES block to be idle before reading the final IV and/or
+  // updating the control register.
+  HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
   if (iv != NULL) {
     // Read back the current IV from the hardware.
@@ -352,6 +350,16 @@ status_t aes_end(aes_block_t *iv) {
       iv->data[i] = abs_mmio_read32(iv_offset + i * sizeof(uint32_t));
     }
   }
+
+  // Update the control register. This may clear the key, IV and input data
+  // registers.
+  uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg,
+                                  AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
+  abs_mmio_write32_shadowed(aes_base() + AES_CTRL_SHADOWED_REG_OFFSET,
+                            ctrl_reg);
+
+  HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
   uint32_t trigger_reg = 0;
   trigger_reg = bitfield_bit32_write(

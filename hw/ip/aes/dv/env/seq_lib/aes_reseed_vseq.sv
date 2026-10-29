@@ -205,9 +205,11 @@ class aes_reseed_vseq extends aes_base_vseq;
         sideload_setup_done = 0;
         while (!sideload_setup_done) begin
           csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-          // Make sure sideload is disabled.
+          // Make sure sideload is disabled. Writing the main control register may trigger the
+          // clearing of key, IV and input data registers.
           set_sideload(1'b0);
           sideload_enabled = 1'b0;
+          csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
           // Wait for sideload key to be valid before enabling sideload.
           sideload_valid = 0;
           `DV_SPINWAIT_EXIT(
