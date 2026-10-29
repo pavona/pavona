@@ -19,6 +19,17 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Maximum HMAC key length in bytes.
+   */
+  kOtcryptoHmacMaxKeyBytes = 512,
+  /**
+   * Maximum HMAC key length in 32-bit words.
+   */
+  kOtcryptoHmacMaxKeyWords = kOtcryptoHmacMaxKeyBytes / sizeof(uint32_t),
+};
+
 /**
  * Generic hmac context.
  *
@@ -41,9 +52,10 @@ typedef struct otcrypto_hmac_context {
  *
  * This function computes the HMAC function on the `input_message` using the
  * `key` and returns a `tag`. The key should be at least as long as the digest
- * for the chosen hash function. The hash function is determined by the key
- * mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3) are
- * not supported and will result in errors.
+ * for the chosen hash function, and must be at most `kOtcryptoHmacMaxKeyBytes`
+ * long. The hash function is determined by the key mode. Only SHA-2 hash
+ * functions are supported. Other modes (e.g. SHA-3) are not supported and will
+ * result in errors.
  *
  * The caller should allocate the following amount of space for the `tag`
  * buffer, depending on which hash algorithm is used:
@@ -69,9 +81,10 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * Performs the INIT operation for HMAC.
  *
  * Initializes the HMAC context. The key should be at least as long as the
- * digest for the chosen hash function. The hash function is determined by the
- * key mode. Only SHA-2 hash functions are are supported. Other modes (e.g.
- * SHA-3) are not supported and will result in errors.
+ * digest for the chosen hash function, and must be at most
+ * `kOtcryptoHmacMaxKeyBytes` long. The hash function is determined by the key
+ * mode. Only SHA-2 hash functions are are supported. Other modes (e.g. SHA-3)
+ * are not supported and will result in errors.
  *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
