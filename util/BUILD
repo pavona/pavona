@@ -63,6 +63,7 @@ py_binary(
     srcs = ["regtool.py"],
     imports = ["."],
     deps = [
+        ":copyright_merge",
         ":version_file",
         "//util/design/mubi:prim_mubi",
         "//util/reggen",
@@ -158,6 +159,12 @@ py_binary(
 py_library(
     name = "autogen_banner",
     srcs = ["autogen_banner.py"],
+    imports = ["."],
+)
+
+py_library(
+    name = "copyright_merge",
+    srcs = ["copyright_merge.py"],
     imports = ["."],
 )
 
