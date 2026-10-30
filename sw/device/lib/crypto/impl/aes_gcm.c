@@ -42,6 +42,8 @@ static_assert(sizeof(aes_gcm_context_t) % sizeof(uint32_t) == 0,
               "size for use with `hardened_memcpy`.");
 enum {
   kAesGcmContextNumWords = sizeof(aes_gcm_context_t) / sizeof(uint32_t),
+  /** Maximum AES key length (256 bits) in 32-bit words. */
+  kAesGcmMaxKeyWords = 256 / 32,
 };
 
 /**
@@ -117,7 +119,8 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
     HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolFalse);
 
     // Generate a fresh mask the size of one share.
-    uint32_t mask[internal_ctx->key.key_len];
+    HARDENED_CHECK_LE(internal_ctx->key.key_len, kAesGcmMaxKeyWords);
+    uint32_t mask[kAesGcmMaxKeyWords];
     hardened_memshred(mask, internal_ctx->key.key_len);
 
     // XOR each share with the mask.
