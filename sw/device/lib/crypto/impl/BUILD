@@ -122,6 +122,7 @@ cc_library(
         ":keyblob",
         ":status",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
