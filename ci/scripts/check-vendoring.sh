@@ -7,6 +7,10 @@
 
 set -e
 
+source ci/scripts/lib/snapshot.sh
+
+before=$(snapshot)
+
 # Here we look for all *.vendor.hjson files in the repo and re-vendor them.
 #
 # We exclude the following:
@@ -20,7 +24,9 @@ find . \
   exit 1
 }
 
-git diff --exit-code || {
+if is_clean "$before"; then
+  exit 0
+else
   echo >&2 "::error::Vendored repositories not up-to-date. Run util/vendor.py to fix."
   exit 1
-}
+fi
