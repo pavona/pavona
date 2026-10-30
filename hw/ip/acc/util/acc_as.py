@@ -1414,5 +1414,10 @@ def main(argv: List[str]) -> int:
             return run_binutils_as(transformed, other_args)
 
 
+def assemble(args: List[str]) -> int:
+    args.insert(0, __file__)
+    return main(args)
+
+
 if __name__ == '__main__':
     sys.exit(main(sys.argv))
