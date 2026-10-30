@@ -161,14 +161,14 @@ status_t ed25519_sign_hash_start(
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if ACC is busy.
  *
- * @param message Message to sign (word-aligned).
+ * @param message Message to sign.
  * @param message_len Length of the message in bytes.
  * @param hash_h SHA-512 hash of the Ed25519 private key to sign with.
  * @param[out] session_token ACC session token for the operation.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t ed25519_sign_pure_start(const uint32_t *message, size_t message_len,
+status_t ed25519_sign_pure_start(const uint8_t *message, size_t message_len,
                                  const uint32_t hash_h[kEd25519HashWords],
                                  uint32_t *session_token);
 
