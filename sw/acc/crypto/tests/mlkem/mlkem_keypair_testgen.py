@@ -7,23 +7,24 @@
 import argparse
 import random
 from typing import TextIO
-from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
+from Crypto.PublicKey import MLKEM
 
 from shared.testgen import write_testcase
 
 N = 256
 
 INSTANCE_FOR_PARAMS = {
-    'mlkem512': ML_KEM_512,
-    'mlkem768': ML_KEM_768,
-    'mlkem1024': ML_KEM_1024,
+    'mlkem512': MLKEM.ML_KEM_512,
+    'mlkem768': MLKEM.ML_KEM_768,
+    'mlkem1024': MLKEM.ML_KEM_1024,
 }
 
 
-def gen_keypair_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO):
+def gen_keypair_test(param_set, hardened: bool, mode_symbol: str, tc_file: TextIO):
     # Generate a random seed and expected keys.
     coins = random.randbytes(64)
-    ek, dk = mlkem.key_derive(coins)
+    key = MLKEM.construct(param_set=param_set, seed=coins)
+    ek, dk = key.ek, key.expanded_dk
 
     if hardened:
         # Mask d.
@@ -76,7 +77,7 @@ if __name__ == '__main__':
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
-    mlkem = INSTANCE_FOR_PARAMS[args.params]
+    param_set = INSTANCE_FOR_PARAMS[args.params]
     mode_symbol = 'MODE_KEYGEN_' + args.params.removeprefix('mlkem')
     with args.testcase:
-        gen_keypair_test(mlkem, args.hardened, mode_symbol, args.testcase)
+        gen_keypair_test(param_set, args.hardened, mode_symbol, args.testcase)

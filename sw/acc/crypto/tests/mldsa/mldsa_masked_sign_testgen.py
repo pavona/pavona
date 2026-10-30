@@ -9,14 +9,15 @@ import hashlib
 import json
 import random
 from typing import TextIO
-from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
+from Crypto.PublicKey import MLDSA
+from Crypto.Signature import mldsa
 
 from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
-    'mldsa44': ML_DSA_44,
-    'mldsa65': ML_DSA_65,
-    'mldsa87': ML_DSA_87,
+    'mldsa44': MLDSA.ML_DSA_44,
+    'mldsa65': MLDSA.ML_DSA_65,
+    'mldsa87': MLDSA.ML_DSA_87,
 }
 
 L_K_ETA = {
@@ -73,7 +74,7 @@ def s1s2_bitsliced_shares(packed_polys: bytes, polyeta_bytes: int, eta: int,
 
 
 def gen_sign_test(
-        mldsa, ell, k, eta, nshares: int, mode_symbol: str,
+        param_set, ell, k, eta, nshares: int, mode_symbol: str,
         tc_file: TextIO, vector=None):
     if vector is not None:
         # Curated bench vector (empty context, as produced by mldsa-sign-bench).
@@ -85,7 +86,8 @@ def gen_sign_test(
         sig = bytes.fromhex(vector['sig'])
     else:
         seed = random.randbytes(32)
-        pk, sk = mldsa._keygen_internal(seed)
+        key = MLDSA.construct(param_set=param_set, seed=seed)
+        sk = key.sk
 
         msglen = random.randrange(MIN_MSG_LEN, MAX_MSG_LEN + 1)
         ctxlen = random.randrange(MIN_CTX_LEN, MAX_CTX_LEN + 1)
@@ -93,7 +95,7 @@ def gen_sign_test(
         ctx = random.randbytes(ctxlen)
 
         rnd = bytes([0] * 32)
-        sig = mldsa.sign(sk, msg, ctx=ctx, deterministic=True)
+        sig = mldsa.new(key, ctx, deterministic=True).sign(msg)
 
     K = sk[32:64]
     tr = sk[64:128]
@@ -175,11 +177,7 @@ if __name__ == '__main__':
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
-    mldsa = INSTANCE_FOR_PARAMS[args.params]
-    # dilithium_py binds random_bytes to os.urandom at instance creation;
-    # redirect to seeded random so sk is reproducible across testgen runs.
-    if args.seed is not None:
-        mldsa.random_bytes = lambda n: random.randbytes(n)
+    param_set = INSTANCE_FOR_PARAMS[args.params]
     ell, k, eta = L_K_ETA[args.params]
     vector = None
     if args.from_vector is not None:
@@ -187,5 +185,5 @@ if __name__ == '__main__':
     # run_mldsa dispatches on this mode symbol (e.g. mldsa44 -> MODE_SIGN_44).
     mode_symbol = 'MODE_SIGN_' + args.params.removeprefix('mldsa')
     with args.testcase:
-        gen_sign_test(mldsa, ell, k, eta, args.nshares, mode_symbol,
+        gen_sign_test(param_set, ell, k, eta, args.nshares, mode_symbol,
                       args.testcase, vector=vector)
