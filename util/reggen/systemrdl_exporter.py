@@ -6,7 +6,7 @@
 """Generate a SystemRDL description of the block"""
 
 from dataclasses import dataclass
-from typing import TextIO
+from typing import ClassVar, TextIO
 
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
@@ -34,7 +34,7 @@ class HWAccess2Systemrdl:
     # Maps reggen hardware access property to SystemRDL properties. Each line in this table is
     # a set of RDL properties where:
     #    hw: Hardware read and write access
-    MAP = {
+    MAP: ClassVar[dict[HwAccess, dict[str, object]]] = {
         HwAccess.HRO: {"hw": AccessType.r},
         HwAccess.HRW: {"hw": AccessType.rw},
         HwAccess.HWO: {"hw": AccessType.w},
@@ -54,7 +54,7 @@ class SWAccess2Systemrdl:
     #   sw: Software read and write access.
     #   onread: Side effect when software reads.
     #   onwrite: Side effect when software writes.
-    MAP = {
+    MAP: ClassVar[dict[str, dict[str, object]]] = {
         "ro": {"sw": AccessType.r},
         "rw": {"sw": AccessType.rw},
         "wo": {"sw": AccessType.w},

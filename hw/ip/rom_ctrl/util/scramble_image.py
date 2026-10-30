@@ -9,7 +9,7 @@ from enum import Enum
 import sys
 from typing import Dict, IO, Optional, Tuple
 
-import hjson  # type: ignore
+import hjson
 from Crypto.Hash import cSHAKE256
 
 from mem import MemChunk, MemFile

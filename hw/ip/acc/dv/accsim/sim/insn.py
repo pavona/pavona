@@ -700,7 +700,7 @@ class BNADD(ACCInsn):
 
         if DEBUG_ARITH:
             eprint(f"bn.add 0x{format(a, '064x')} + 0x{format(b, '064x')} = "
-                   f"{format(a+b, '064x')} = {format(masked_result, '064x')}")
+                   f"{format(a + b, '064x')} = {format(masked_result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(masked_result)
         state.set_flags(self.flag_group, flags)
@@ -752,7 +752,7 @@ class BNADDI(ACCInsn):
         mask256 = (1 << 256) - 1
         masked_result = full_result & mask256
         if DEBUG_ARITH:
-            eprint(f"bn.addi {format(a, '064x')} + {b} = {format(a+b, '064x')} = "
+            eprint(f"bn.addi {format(a, '064x')} + {b} = {format(a + b, '064x')} = "
                    f"{format(masked_result, '064x')}")
         carry_flag = bool((full_result >> 256) & 1)
         flags = FlagReg.mlz_for_result(carry_flag, masked_result)
@@ -784,7 +784,7 @@ class BNADDM(ACCInsn):
 
         if DEBUG_ARITH:
             eprint(f"bn.addm 0x{format(a, '064x')} + 0x{format(b, '064x')} = "
-                   f"{format(a+b, '064x')} = {format(result, '064x')}")
+                   f"{format(a + b, '064x')} = {format(result, '064x')}")
             if result >= mod_val:
                 eprint("incomplete reduction")
 
@@ -1211,7 +1211,7 @@ class BNSUB(ACCInsn):
 
         if DEBUG_ARITH:
             eprint(f"bn.sub 0x{format(a, '064x')} - 0x{format(b, '064x')} = "
-                   f"{format(a-b, '064x')} = {format(masked_result, '064x')}")
+                   f"{format(a - b, '064x')} = {format(masked_result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(masked_result)
         state.set_flags(self.flag_group, flags)
@@ -1291,7 +1291,7 @@ class BNSUBM(ACCInsn):
 
         if DEBUG_ARITH:
             eprint(f"bn.subm 0x{format(a, '064x')} - 0x{format(b, '064x')} = "
-                   f"{format(a-b, '064x')} = {format(result, '064x')}")
+                   f"{format(a - b, '064x')} = {format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
@@ -1353,7 +1353,7 @@ class BNAND(ACCInsn):
         result = a & b_shifted
 
         if DEBUG_ARITH:
-            eprint(f"bn.and {format(a,'064x')} & {format(b_shifted, '064x')} = "
+            eprint(f"bn.and {format(a, '064x')} & {format(b_shifted, '064x')} = "
                    f"{format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
@@ -1380,7 +1380,7 @@ class BNOR(ACCInsn):
         result = a | b_shifted
 
         if DEBUG_ARITH:
-            eprint(f"bn.or {format(a,'064x')} & {format(b_shifted, '064x')} = "
+            eprint(f"bn.or {format(a, '064x')} & {format(b_shifted, '064x')} = "
                    f"{format(result, '064x')}")
 
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
@@ -1427,7 +1427,7 @@ class BNXOR(ACCInsn):
         result = a ^ b_shifted
         if DEBUG_ARITH:
             eprint(f"bn.xor 0x{format(a, '064x')} ^ 0x{format(b_shifted, '064x')} = "
-                   f"{format(a^b, '064x')} = {format(result, '064x')}")
+                   f"{format(a ^ b, '064x')} = {format(result, '064x')}")
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
         state.set_mlz_flags(self.flag_group, result)
 
@@ -1896,7 +1896,7 @@ class BNWSRR(ACCInsn):
             # returns false. If a digest value is available, it returns True.
             if not state.kmac._masked_mode:
                 state.stop_at_end_of_cycle(ErrBits.KMAC_RECOV_ERROR)
-                return
+                return None
 
             while not state.wsrs.KMAC_DIGEST1.request_value_share1():
                 # There's a pending KMAC request. Stall for a cycle.
@@ -1971,6 +1971,7 @@ class BNWSRW(ACCInsn):
         if DEBUG_KMAC or DEBUG_ARITH:
             eprint(f"write WSR: {format(val, '064x')}")
         state.wsrs.write_at_idx(self.wsr, val)
+        return None
 
 
 class BNTRN(ACCInsn):
@@ -2015,7 +2016,7 @@ class BNTRN(ACCInsn):
 
         result = result & ((1 << 256) - 1)
         if (DEBUG_ARITH):
-            eprint(f"trn: {format(a,'064x')}, {format(b,'064x')}, {format(result, '064x')}")
+            eprint(f"trn: {format(a, '064x')}, {format(b, '064x')}, {format(result, '064x')}")
         state.wdrs.get_reg(self.wrd).write_unsigned(result)
 
 

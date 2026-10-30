@@ -9,7 +9,7 @@ from typing import TextIO
 
 from reggen.ip_block import IpBlock
 from reggen.html_helpers import render_td
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 
 
 def genout(outfile: TextIO, msg: str) -> None:
