@@ -122,6 +122,7 @@ cc_library(
     srcs = ["hash.c"],
     hdrs = ["hash.h"],
     deps = [
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",

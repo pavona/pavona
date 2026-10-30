@@ -427,8 +427,6 @@ use_repo(
     "nist_cavp_hmac_fips_198_1",
     "nist_cavp_rsa_fips_186_3",
     "nist_cavp_sha2_fips_180_4",
-    "nist_cavp_sha3_fips_202",
-    "nist_cavp_shake_fips_202",
 )
 
 wycheproof = use_extension("//third_party/wycheproof:extensions.bzl", "wycheproof")
