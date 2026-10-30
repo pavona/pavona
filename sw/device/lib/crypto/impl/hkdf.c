@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/include/hkdf.h"
 
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -177,15 +178,6 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   // We therefore need to unmask the key and package the salt in a blinded key
   // struct.
 
-  // Unmask the input key.
-  uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm->config)];
-  HARDENED_TRY(
-      keyblob_key_unmask(ikm, ARRAYSIZE(unmasked_ikm_data), unmasked_ikm_data));
-  otcrypto_const_byte_buf_t unmasked_ikm = {
-      .data = (unsigned char *)unmasked_ikm_data,
-      .len = ikm->config.key_length,
-  };
-
   // Package the salt value in a blinded key, using an all-zero mask because
   // the salt is not actually secret.
   uint32_t salt_mask[ARRAYSIZE(salt_aligned_data)];
@@ -211,10 +203,35 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   };
   salt_key.checksum = integrity_blinded_checksum(&salt_key);
 
-  // Call HMAC(salt, IKM).
+  // Call HMAC(salt, IKM), unmasking the input key one chunk at a time.
+  otcrypto_hmac_context_t ctx;
+  HARDENED_TRY(otcrypto_hmac_init(&ctx, &salt_key));
+  uint32_t *ikm_share0;
+  uint32_t *ikm_share1;
+  HARDENED_TRY(keyblob_to_shares(ikm, &ikm_share0, &ikm_share1));
+  uint32_t ikm_chunk_data[kHmacMaxBlockWords];
+  size_t ikm_chunks = ceil_div(ikm->config.key_length, sizeof(ikm_chunk_data));
+  for (size_t i = 0; launder32(i) < ikm_chunks; i++) {
+    size_t offset = i * sizeof(ikm_chunk_data);
+    size_t chunk_bytes = ikm->config.key_length - offset;
+    if (chunk_bytes > sizeof(ikm_chunk_data)) {
+      chunk_bytes = sizeof(ikm_chunk_data);
+    }
+    size_t chunk_words = ceil_div(chunk_bytes, sizeof(uint32_t));
+    size_t offset_words = offset / sizeof(uint32_t);
+    for (size_t j = 0; j < chunk_words; j++) {
+      ikm_chunk_data[j] =
+          ikm_share0[offset_words + j] ^ ikm_share1[offset_words + j];
+    }
+    otcrypto_const_byte_buf_t ikm_chunk = {
+        .data = (unsigned char *)ikm_chunk_data,
+        .len = chunk_bytes,
+    };
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, ikm_chunk));
+  }
   uint32_t tag_data[digest_words];
   otcrypto_word32_buf_t tag = {.data = tag_data, .len = ARRAYSIZE(tag_data)};
-  HARDENED_TRY(otcrypto_hmac(&salt_key, unmasked_ikm, tag));
+  HARDENED_TRY(otcrypto_hmac_final(&ctx, tag));
 
   // Construct the blinded keyblob for PRK (with an all-zero mask for now
   // because HMAC is unhardened anyway).
