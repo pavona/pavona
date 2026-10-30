@@ -54,7 +54,7 @@ def mk_linker_script() -> Iterator[str]:
         except RuntimeError as err:
             sys.stderr.write(
                 'Failed to interpolate linker script: {}\n'.format(err))
-            return 1
+            sys.exit(1)
 
         yield ld_out
 

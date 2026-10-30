@@ -51,7 +51,7 @@ py_library(
     deps = [
         ":bits",
         ":lib",
-        ":signal",
+        ":reggen_signal",
     ],
 )
 
@@ -117,7 +117,7 @@ py_library(
         ":access",
         ":bits",
         ":lib",
-        ":signal",
+        ":reggen_signal",
     ],
 )
 
@@ -150,7 +150,7 @@ py_library(
         ":memory",
         ":params",
         ":reg_block",
-        ":signal",
+        ":reggen_signal",
         requirement("hjson"),
         requirement("semantic_version"),
     ],
@@ -185,8 +185,8 @@ py_library(
         ":memory",
         ":multi_register",
         ":params",
+        ":reggen_signal",
         ":register",
-        ":signal",
         ":window",
         requirement("semantic_version"),
     ],
@@ -220,8 +220,8 @@ py_library(
 )
 
 py_library(
-    name = "signal",
-    srcs = ["signal.py"],
+    name = "reggen_signal",
+    srcs = ["reggen_signal.py"],
     deps = [
         ":bits",
         ":lib",
@@ -257,8 +257,8 @@ py_library(
         ":ip_block",
         ":multi_register",
         ":params",
+        ":reggen_signal",
         ":register",
-        ":signal",
         ":window",
     ],
 )
@@ -350,8 +350,8 @@ py_library(
         ":ip_block",
         ":multi_register",
         ":params",
+        ":reggen_signal",
         ":register",
-        ":signal",
         ":window",
     ],
 )
@@ -364,8 +364,8 @@ py_library(
         ":ip_block",
         ":multi_register",
         ":params",
+        ":reggen_signal",
         ":register",
-        ":signal",
         ":window",
         "//util:version_file",
     ],
@@ -426,7 +426,7 @@ py_library(
     name = "md_helpers",
     srcs = ["md_helpers.py"],
     deps = [
-        ":signal",
+        ":reggen_signal",
         requirement("tabulate"),
     ],
 )

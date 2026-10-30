@@ -20,7 +20,7 @@ from reggen.lib import (check_bool, check_int, check_list,
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 from semantic_version import Version
 from basegen.lib import cast_hjson_values
 from basegen.validate import create_validator, IP_BLOCK_VALIDATOR

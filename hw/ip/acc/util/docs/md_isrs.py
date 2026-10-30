@@ -80,7 +80,7 @@ def print_isr(indent: str, isr: Isr, add_anchors: bool) -> None:
         bit_lines = []
         for idx, doc in isr.bits.items():
             idx_formatted = idx.replace("-", ":")
-            doc_raw = doc["doc"] if isinstance(doc, dict) else doc
+            doc_raw = doc["doc"] if isinstance(doc, dict) else str(doc)
             doc_no_newlines = doc_raw.replace("\n", " ").strip()
 
             bit_lines += ['<tr>']

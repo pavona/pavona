@@ -16,7 +16,7 @@ from reggen.ip_block import IpBlock
 from reggen.params import LocalParam
 from reggen.register import Register
 from reggen.multi_register import MultiRegister
-from reggen.signal import Signal
+from reggen.reggen_signal import Signal
 from reggen.window import Window
 
 

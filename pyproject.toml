@@ -60,8 +60,8 @@ dependencies = [
   # Linters
   "flake8 ~= 7.1",
   "isort ~= 5.10",
-  "mypy == 0.991",
-  "yapf==0.32.0",
+  "mypy == 2.4.0",
+  "yapf==0.43.0",
   "ruff>=0.9.6",
 
   # Type stubs for mypy checking.
