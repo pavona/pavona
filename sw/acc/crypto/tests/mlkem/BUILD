@@ -48,7 +48,7 @@ py_binary(
     ],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("kyber-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -126,7 +126,7 @@ py_binary(
     ],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("kyber-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -164,7 +164,7 @@ py_binary(
     ],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("kyber-py"),
+        requirement("pycryptodome"),
     ],
 )
 

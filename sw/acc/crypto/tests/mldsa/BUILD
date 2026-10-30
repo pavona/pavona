@@ -64,7 +64,7 @@ py_binary(
     imports = ["../../../../../hw/ip/acc/util"],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("dilithium-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -98,7 +98,7 @@ py_binary(
     imports = ["../../../../../hw/ip/acc/util"],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("dilithium-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -138,7 +138,7 @@ py_binary(
     imports = ["../../../../../hw/ip/acc/util"],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("dilithium-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -213,7 +213,7 @@ py_binary(
     imports = ["../../../../../hw/ip/acc/util"],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("dilithium-py"),
+        requirement("pycryptodome"),
     ],
 )
 
@@ -290,7 +290,7 @@ py_binary(
     imports = ["../../../../../hw/ip/acc/util"],
     deps = [
         "//hw/ip/acc/util/shared:testgen",
-        requirement("dilithium-py"),
+        requirement("pycryptodome"),
     ],
 )
 

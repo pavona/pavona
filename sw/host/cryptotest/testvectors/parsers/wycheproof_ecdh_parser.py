@@ -10,6 +10,7 @@ import logging
 import sys
 
 from Crypto.PublicKey import ECC
+from Crypto.Util.number import long_to_bytes
 
 # Mapping from the curve names used by Wycheproof to those used by cryptotest
 EC_NAME_MAPPING = {
@@ -68,8 +69,8 @@ def parse_test_vectors(raw_data):
                         f"Skipped tcId {test['tcId']}: Curve in DER did not match test vector."
                     )
                     continue
-                test_vec["qx"] = list(public_key.pointQ.x.to_bytes())
-                test_vec["qy"] = list(public_key.pointQ.y.to_bytes())
+                test_vec["qx"] = list(long_to_bytes(public_key.pointQ.x))
+                test_vec["qy"] = list(long_to_bytes(public_key.pointQ.y))
             else:
                 logging.info(
                     f"Skipped tcId {test['tcId']}: unsupported encoding '{group['encoding']}'."

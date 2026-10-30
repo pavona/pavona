@@ -8,14 +8,15 @@ import argparse
 import hashlib
 import random
 from typing import TextIO
-from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
+from Crypto.PublicKey import MLDSA
+from Crypto.Signature import mldsa
 
 from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
-    'mldsa44': ML_DSA_44,
-    'mldsa65': ML_DSA_65,
-    'mldsa87': ML_DSA_87,
+    'mldsa44': MLDSA.ML_DSA_44,
+    'mldsa65': MLDSA.ML_DSA_65,
+    'mldsa87': MLDSA.ML_DSA_87,
 }
 
 MIN_MSG_LEN = 0
@@ -25,9 +26,10 @@ MIN_CTX_LEN = 0
 MAX_CTX_LEN = 255
 
 
-def gen_verify_test(mldsa, mode_symbol: str, tc_file: TextIO):
+def gen_verify_test(param_set, mode_symbol: str, tc_file: TextIO):
     # Generate a random key pair.
-    pk, sk = mldsa.keygen()
+    key = MLDSA.generate(param_set=param_set, randfunc=random.randbytes)
+    pk = key.pk
 
     # Generate a random message and context.
     msglen = random.randrange(MIN_MSG_LEN, MAX_MSG_LEN + 1)
@@ -36,7 +38,7 @@ def gen_verify_test(mldsa, mode_symbol: str, tc_file: TextIO):
     ctx = random.randbytes(ctxlen)
 
     # Sign the message.
-    sig = mldsa.sign(sk, msg, ctx=ctx)
+    sig = mldsa.new(key, ctx, randfunc=random.randbytes).sign(msg)
 
     # External mu: tr = SHAKE256(pk); the kernel verifies against this mu.
     tr = hashlib.shake_256(pk).digest(64)
@@ -76,8 +78,8 @@ if __name__ == '__main__':
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
-    mldsa = INSTANCE_FOR_PARAMS[args.params]
+    param_set = INSTANCE_FOR_PARAMS[args.params]
     # run_mldsa dispatches on this mode symbol (e.g. mldsa44 -> MODE_VERIFY_44).
     mode_symbol = 'MODE_VERIFY_' + args.params.removeprefix('mldsa')
     with args.testcase:
-        gen_verify_test(mldsa, mode_symbol, args.testcase)
+        gen_verify_test(param_set, mode_symbol, args.testcase)

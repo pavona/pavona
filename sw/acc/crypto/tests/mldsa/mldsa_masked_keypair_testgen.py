@@ -6,14 +6,14 @@
 import argparse
 import random
 from typing import TextIO
-from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
+from Crypto.PublicKey import MLDSA
 
 from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
-    'mldsa44': ML_DSA_44,
-    'mldsa65': ML_DSA_65,
-    'mldsa87': ML_DSA_87,
+    'mldsa44': MLDSA.ML_DSA_44,
+    'mldsa65': MLDSA.ML_DSA_65,
+    'mldsa87': MLDSA.ML_DSA_87,
 }
 
 # (k, l, eta) per parameter set.
@@ -48,9 +48,10 @@ def bitslice(coeffs: list, kbits: int) -> bytes:
     return bytes(out)
 
 
-def gen_masked_keypair_test(mldsa, k, ell, eta, nshares, tc_file: TextIO):
+def gen_masked_keypair_test(param_set, k, ell, eta, nshares, tc_file: TextIO):
     zeta = random.randbytes(32)
-    pk, sk = mldsa._keygen_internal(zeta)
+    key = MLDSA.construct(param_set=param_set, seed=zeta)
+    pk, sk = key.pk, key.sk
     K = sk[32:64]
     tr = sk[64:128]
 
@@ -110,8 +111,8 @@ if __name__ == '__main__':
         random.seed(args.seed)
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}')
-    mldsa = INSTANCE_FOR_PARAMS[args.params]
+    param_set = INSTANCE_FOR_PARAMS[args.params]
     k, ell, eta = KLE_FOR_PARAMS[args.params]
     with args.testcase:
-        gen_masked_keypair_test(mldsa, k, ell, eta, args.nshares,
+        gen_masked_keypair_test(param_set, k, ell, eta, args.nshares,
                                 args.testcase)

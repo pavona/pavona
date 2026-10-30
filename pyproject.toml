@@ -20,7 +20,7 @@ dependencies = [
   "mako ~= 1.2",
   "ninja ~= 1.11.1.1",
   "pluralizer==1.2.0",
-  "pycryptodome ~= 3.19",
+  "pycryptodome ~= 4.2",
   "pyelftools==0.29",
   "pytest-timeout ~= 2.1",
   "pytest ~= 7.2",

@@ -7,14 +7,20 @@
 import argparse
 import random
 from typing import TextIO
-from kyber_py.ml_kem import ML_KEM_512, ML_KEM_768, ML_KEM_1024
+from Crypto.PublicKey import MLKEM
 
 from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
-    'mlkem512': ML_KEM_512,
-    'mlkem768': ML_KEM_768,
-    'mlkem1024': ML_KEM_1024,
+    'mlkem512': MLKEM.ML_KEM_512,
+    'mlkem768': MLKEM.ML_KEM_768,
+    'mlkem1024': MLKEM.ML_KEM_1024,
+}
+
+K_FOR_PARAMS = {
+    'mlkem512': 2,
+    'mlkem768': 3,
+    'mlkem1024': 4,
 }
 
 Q = 3329
@@ -22,12 +28,13 @@ N = 256
 NSHARES = 2
 
 
-def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
-                    invalid=False):
+def gen_decaps_test(param_set, k: int, hardened: bool, mode_symbol: str,
+                    tc_file: TextIO, invalid=False):
     # Generate a random key pair.
-    ek, dk = mlkem.keygen()
+    key = MLKEM.generate(param_set=param_set, randfunc=random.randbytes)
+    dk = key.expanded_dk
     # Encapsulate a shared secret.
-    ss, ct = mlkem.encaps(ek)
+    ss, ct = key._encaps(random.randbytes(32))
 
     if invalid:
         # Pick a random index in the ciphertext and modify a random byte.
@@ -35,15 +42,15 @@ def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
         ct = ct[:idx] + bytes([ct[idx] ^ 1]) + ct[idx + 1:]
 
     # Decapsulate (if invalid, output is garbage as specified by FIPS 203).
-    ss = mlkem.decaps(dk, ct)
+    ss = key._decaps(ct)
 
     # Generate arithmetic shares for dk.
     if not hardened:
         dk_input = dk
     else:
         skpv = []
-        dk_int = int.from_bytes(dk[0:384 * mlkem.k], byteorder="little")
-        for k in range(mlkem.k):
+        dk_int = int.from_bytes(dk[0:384 * k], byteorder="little")
+        for _ in range(k):
             tv = []
             for i in range(N):
                 t = dk_int & 0xFFF
@@ -53,8 +60,8 @@ def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
 
         t = [0] * N
         dk_bytes = bytes()
-        for k in range(mlkem.k):
-            sk = skpv[k].copy()
+        for poly in range(k):
+            sk = skpv[poly].copy()
             for _ in range(NSHARES - 1):
                 for coeff in range(N):
                     t[coeff] = random.randint(0, Q - 1)
@@ -64,7 +71,7 @@ def gen_decaps_test(mlkem, hardened: bool, mode_symbol: str, tc_file: TextIO,
             sk_int = sum(sk[coeff] << (coeff * 12) for coeff in range(N))
             dk_bytes += int.to_bytes(sk_int, byteorder="little", length=384)
 
-        dk_bytes += dk[mlkem.k * 384:-32]
+        dk_bytes += dk[k * 384:-32]
 
         # Mask z.
         z_int = int.from_bytes(dk[-32:], byteorder='little')
@@ -109,10 +116,9 @@ if __name__ == '__main__':
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
-    mlkem = INSTANCE_FOR_PARAMS[args.params]
-    # Draw the key pair and the encapsulation coins from the seeded generator so
-    # the test data is deterministic.
-    mlkem.random_bytes = random.randbytes
+    param_set = INSTANCE_FOR_PARAMS[args.params]
+    k = K_FOR_PARAMS[args.params]
     mode_symbol = 'MODE_DECAP_' + args.params.removeprefix('mlkem')
     with args.testcase:
-        gen_decaps_test(mlkem, args.hardened, mode_symbol, args.testcase, args.invalid)
+        gen_decaps_test(param_set, k, args.hardened, mode_symbol, args.testcase,
+                        args.invalid)

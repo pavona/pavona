@@ -9,14 +9,15 @@ import hashlib
 import json
 import random
 from typing import TextIO
-from dilithium_py.ml_dsa import ML_DSA_44, ML_DSA_65, ML_DSA_87
+from Crypto.PublicKey import MLDSA
+from Crypto.Signature import mldsa
 
 from shared.testgen import write_testcase
 
 INSTANCE_FOR_PARAMS = {
-    'mldsa44': ML_DSA_44,
-    'mldsa65': ML_DSA_65,
-    'mldsa87': ML_DSA_87,
+    'mldsa44': MLDSA.ML_DSA_44,
+    'mldsa65': MLDSA.ML_DSA_65,
+    'mldsa87': MLDSA.ML_DSA_87,
 }
 
 MIN_MSG_LEN = 0
@@ -26,7 +27,7 @@ MIN_CTX_LEN = 0
 MAX_CTX_LEN = 255
 
 
-def gen_sign_test(mldsa, mode_symbol: str, tc_file: TextIO, vector=None):
+def gen_sign_test(param_set, mode_symbol: str, tc_file: TextIO, vector=None):
     if vector is not None:
         # Curated bench vector (empty context, as produced by mldsa-sign-bench).
         sk = bytes.fromhex(vector['sk'])
@@ -36,7 +37,8 @@ def gen_sign_test(mldsa, mode_symbol: str, tc_file: TextIO, vector=None):
         sig = bytes.fromhex(vector['sig'])
     else:
         # Generate a random key pair.
-        pk, sk = mldsa.keygen()
+        key = MLDSA.generate(param_set=param_set, randfunc=random.randbytes)
+        sk = key.sk
 
         # Generate a random message and context.
         msglen = random.randrange(MIN_MSG_LEN, MAX_MSG_LEN + 1)
@@ -46,7 +48,7 @@ def gen_sign_test(mldsa, mode_symbol: str, tc_file: TextIO, vector=None):
 
         # Sign the message using deterministic signing.
         rnd = bytes([0] * 32)
-        sig = mldsa.sign(sk, msg, ctx=ctx, deterministic=True)
+        sig = mldsa.new(key, ctx, deterministic=True).sign(msg)
 
     # External mu: tr = sk[64:128]; the kernel signs from this mu.
     tr = sk[64:128]
@@ -86,11 +88,11 @@ if __name__ == '__main__':
     if args.params not in INSTANCE_FOR_PARAMS:
         raise ValueError(f'Invalid parameters: {args.params}. Expected one of '
                          f'{", ".join(INSTANCE_FOR_PARAMS.keys())}')
-    mldsa = INSTANCE_FOR_PARAMS[args.params]
+    param_set = INSTANCE_FOR_PARAMS[args.params]
     vector = None
     if args.from_vector is not None:
         vector = json.load(open(args.from_vector))[args.index]
     # run_mldsa dispatches on this mode symbol (e.g. mldsa44 -> MODE_SIGN_44).
     mode_symbol = 'MODE_SIGN_' + args.params.removeprefix('mldsa')
     with args.testcase:
-        gen_sign_test(mldsa, mode_symbol, args.testcase, vector=vector)
+        gen_sign_test(param_set, mode_symbol, args.testcase, vector=vector)
