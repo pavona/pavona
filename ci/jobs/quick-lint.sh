@@ -14,6 +14,9 @@
 set -e
 
 source ci/scripts/lib/section.sh
+source ci/scripts/lib/snapshot.sh
+
+before=$(snapshot)
 
 case $# in
     0)
@@ -27,7 +30,6 @@ case $# in
         echo >&2 "Usage: quick-lint.sh [<tgt-branch>]"
         exit 1
 esac
-
 
 section "Display environment information"
 ci/scripts/show-env.sh
@@ -100,3 +102,9 @@ section_end
 section "Lock files"
 ci/scripts/check-lock-files.sh
 section_end
+
+if is_clean "$before"; then
+  exit 0
+else
+  exit 1
+fi
