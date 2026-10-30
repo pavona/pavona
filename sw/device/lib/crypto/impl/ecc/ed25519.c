@@ -111,8 +111,9 @@ static status_t set_context(const uint32_t context[kEd25519ContextWords],
   // to prevent read errors.
   size_t padded_words =
       ceil_div(context_length, kAccWideWordNumBytes) * kAccWideWordNumWords;
-  uint32_t padded_ctx[padded_words];
-  memset(padded_ctx, 0, sizeof(padded_ctx));
+  HARDENED_CHECK_LE(padded_words, kEd25519ContextWords);
+  uint32_t padded_ctx[kEd25519ContextWords];
+  memset(padded_ctx, 0, padded_words * sizeof(uint32_t));
   memcpy(padded_ctx, context, context_length);
   HARDENED_TRY(acc_dmem_write(padded_words, padded_ctx, kAccVarEd25519Ctx));
 
@@ -181,8 +182,9 @@ static status_t ed25519_sign_pure_write_chunk(const uint8_t *chunk,
                                               size_t chunk_len) {
   size_t padded_words =
       ceil_div(chunk_len, kAccWideWordNumBytes) * kAccWideWordNumWords;
-  uint32_t padded[padded_words];
-  memset(padded, 0, sizeof(padded));
+  HARDENED_CHECK_LE(padded_words, kEd25519MaxChunkBytes / sizeof(uint32_t));
+  uint32_t padded[kEd25519MaxChunkBytes / sizeof(uint32_t)];
+  memset(padded, 0, padded_words * sizeof(uint32_t));
   memcpy(padded, chunk, chunk_len);
   HARDENED_TRY(acc_dmem_write(padded_words, padded, kAccVarEd25519Message));
   uint32_t len_word = (uint32_t)chunk_len;
@@ -222,10 +224,10 @@ static status_t ed25519_sign_pure_write_chunk(const uint8_t *chunk,
  * than kEd25519MaxChunkBytes.
  * The two UPDATE steps are identical.
  */
-status_t ed25519_sign_pure_start(const uint32_t *message, size_t message_len,
+status_t ed25519_sign_pure_start(const uint8_t *message, size_t message_len,
                                  const uint32_t hash_h[kEd25519HashWords],
                                  uint32_t *session_token) {
-  const uint8_t *msg = (const uint8_t *)message;
+  const uint8_t *msg = message;
 
   // Load the Ed25519 app. Fails if ACC is non-idle.
   HARDENED_TRY(acc_load_app(kAccAppEd25519));

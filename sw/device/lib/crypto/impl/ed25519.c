@@ -155,6 +155,10 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(input_message.len, kEd25519PreHashBytes);
+    if (launder32(context.len) > kEd25519ContextBytes) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_LE(context.len, kEd25519ContextBytes);
   } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
     HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
     if (launder32(context.len) != 0) {
@@ -186,26 +190,23 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
   uint32_t hash_h[kEd25519HashWords];
   HARDENED_TRY(construct_hash_h(hash_h, private_key));
 
-  // Copy the input message into a 32-bit aligned buffer.
-  size_t input_message_wordlen = ceil_div(input_message.len, sizeof(uint32_t));
-  uint32_t input_message_aligned[input_message_wordlen];
-  memset(input_message_aligned, 0, sizeof(input_message_aligned));
-  memcpy(input_message_aligned, input_message.data, input_message.len);
-
   // Start the asynchronous signature-generation routine.
   if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
     HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeHashEddsa);
+    // Copy the input message into a 32-bit aligned buffer.
+    uint32_t input_message_aligned[kEd25519PreHashWords];
+    memcpy(input_message_aligned, input_message.data, kEd25519PreHashBytes);
     // Copy the context into a 32-bit aligned buffer.
     size_t context_wordlen = ceil_div(context.len, sizeof(uint32_t));
-    uint32_t context_aligned[context_wordlen];
+    uint32_t context_aligned[kEd25519ContextWords];
     // TODO(#17711) Change to `hardened_memcpy`.
-    memset(context_aligned, 0, sizeof(context_aligned));
+    memset(context_aligned, 0, context_wordlen * sizeof(uint32_t));
     memcpy(context_aligned, context.data, context.len);
     return ed25519_sign_hash_start(input_message_aligned, hash_h,
                                    context_aligned, context.len, session_token);
   } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
     HARDENED_CHECK_EQ(sign_mode, kOtcryptoEddsaSignModeEddsa);
-    return ed25519_sign_pure_start(input_message_aligned, input_message.len,
+    return ed25519_sign_pure_start(input_message.data, input_message.len,
                                    hash_h, session_token);
   }
   return OTCRYPTO_BAD_ARGS;
