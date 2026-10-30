@@ -452,6 +452,34 @@ run_binary(
     ]
 ]
 
+################################################################################
+# KDA HKDF - NIST ACVP
+################################################################################
+
+run_binary(
+    name = "acvp_kda_hkdf_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:hkdf_schema.json",
+        "@acvp_testvectors//KDA-HKDF-Sp800-56Cr1:expectedResults.json",
+        "@acvp_testvectors//KDA-HKDF-Sp800-56Cr1:prompt.json",
+    ],
+    outs = [":acvp_kda_hkdf.json"],
+    args = [
+        "--src",
+        "$(location @acvp_testvectors//KDA-HKDF-Sp800-56Cr1:prompt.json)",
+        "--dst",
+        "$(location :acvp_kda_hkdf.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:hkdf_schema.json)",
+        "--expected",
+        "$(location @acvp_testvectors//KDA-HKDF-Sp800-56Cr1:expectedResults.json)",
+        "--test-type",
+        "hkdf",
+        "--skip-unsupported",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_hkdf_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
