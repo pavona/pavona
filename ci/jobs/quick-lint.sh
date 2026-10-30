@@ -13,6 +13,8 @@
 
 set -e
 
+source ci/scripts/lib/section.sh
+
 case $# in
     0)
         tgt_branch=main
@@ -26,20 +28,6 @@ case $# in
         exit 1
 esac
 
-
-section() {
-    if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
-        echo "::group::$1"
-    else
-        echo -e "\n### $1"
-    fi
-}
-
-section_end() {
-    if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
-        echo "::endgroup::"
-    fi
-}
 
 section "Display environment information"
 ci/scripts/show-env.sh
