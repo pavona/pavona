@@ -20,6 +20,7 @@ extern "C" {
     value(_, Ecdh) \
     value(_, Hash) \
     value(_, HashMct) \
+    value(_, Hkdf) \
     value(_, Hmac) \
     value(_, Kmac) \
     value(_, Mldsa) \
