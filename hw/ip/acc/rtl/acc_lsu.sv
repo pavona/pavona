@@ -62,7 +62,7 @@ module acc_lsu
     // loop can be unrolled. Due to the use of '==' any X or Z in addr will result in an X result
     // for the comparison (so mask will remain 0).
     for (int i = 0; i < BaseWordsPerWLen; i++) begin
-      if (addr == i) begin
+      if (addr == (BaseWordAddrW-2)'(i)) begin
         mask[i*BaseIntgWidth+:BaseIntgWidth] = '1;
       end
     end
@@ -78,7 +78,7 @@ module acc_lsu
     mask = '0;
 
     for (int i = 0; i < BaseWordsPerWLen; i++) begin
-      if (addr == i) begin
+      if (addr == (BaseWordAddrW-2)'(i)) begin
         mask[i] = 1'b1;
       end
     end
