@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
 
@@ -84,16 +85,16 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
     case kRsaSignaturePaddingPss: {
       HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
       // Generate a random salt value whose length matches the digest length.
-      uint32_t salt[message_digest.len];
+      uint32_t salt[kHmacMaxDigestWords];
       HARDENED_TRY(entropy_complex_check());
       HARDENED_TRY(entropy_csrng_uninstantiate());
       HARDENED_TRY(entropy_csrng_instantiate(
           /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
       HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, salt,
-                                          ARRAYSIZE(salt),
+                                          message_digest.len,
                                           /*fips_check=*/kHardenedBoolTrue));
       HARDENED_TRY(entropy_csrng_uninstantiate());
-      return rsa_padding_pss_encode(message_digest, salt, ARRAYSIZE(salt),
+      return rsa_padding_pss_encode(message_digest, salt, message_digest.len,
                                     encoded_message_len, encoded_message);
     }
     default:

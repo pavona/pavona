@@ -210,14 +210,16 @@ status_t rsa_padding_pkcs1v15_verify(
     const otcrypto_hash_digest_t message_digest,
     const uint32_t *encoded_message, const size_t encoded_message_len,
     hardened_bool_t *result) {
+  HARDENED_CHECK_LE(encoded_message_len, kRsa4096NumWords);
+
   // Re-encode the message.
-  uint32_t expected_encoded_message[encoded_message_len];
+  uint32_t expected_encoded_message[kRsa4096NumWords];
   HARDENED_TRY(rsa_padding_pkcs1v15_encode(message_digest, encoded_message_len,
                                            expected_encoded_message));
 
   // Compare with the expected value.
   *result = hardened_memeq(encoded_message, expected_encoded_message,
-                           ARRAYSIZE(expected_encoded_message));
+                           encoded_message_len);
   return OTCRYPTO_OK;
 }
 
@@ -333,7 +335,9 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
 
-  uint8_t hash_input[seed_len + sizeof(uint32_t)];
+  HARDENED_CHECK_LE(seed_len, kRsa4096NumBytes);
+  size_t hash_input_len = seed_len + sizeof(uint32_t);
+  uint8_t hash_input[kRsa4096NumBytes + sizeof(uint32_t)];
   memcpy(hash_input, seed, seed_len);
   uint32_t i = 0;
   while (0 < mask_len) {
@@ -341,12 +345,12 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
     memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
     if (mask_len < digest_bytelen) {
       // Digest won't fit in mask (last iteration). Use a temporary buffer.
-      uint32_t digest[digest_wordlen];
-      HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), digest));
+      uint32_t digest[kHmacMaxDigestWords];
+      HARDENED_TRY(hash(hash_mode, hash_input, hash_input_len, digest));
       hardened_memcpy(mask, digest, ceil_div(mask_len, sizeof(uint32_t)));
       mask_len = 0;
     } else {
-      HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), mask));
+      HARDENED_TRY(hash(hash_mode, hash_input, hash_input_len, mask));
       mask_len -= digest_bytelen;
     }
     mask += digest_wordlen;
@@ -391,8 +395,10 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 uint32_t *h) {
   // Create a buffer for M' = (0x0000000000000000 || digest || salt).
+  HARDENED_CHECK_LE(message_digest.len, kHmacMaxDigestWords);
+  HARDENED_CHECK_LE(salt_len, kHmacMaxDigestWords);
   size_t m_prime_wordlen = 2 + message_digest.len + salt_len;
-  uint32_t m_prime[m_prime_wordlen];
+  uint32_t m_prime[2 + 2 * kHmacMaxDigestWords];
   m_prime[0] = 0;
   m_prime[1] = 0;
   uint32_t *digest_dst = &m_prime[2];
@@ -403,8 +409,8 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
   }
 
   // Construct H = Hash(M').
-  return hash(message_digest.mode, (unsigned char *)m_prime, sizeof(m_prime),
-              h);
+  return hash(message_digest.mode, (unsigned char *)m_prime,
+              m_prime_wordlen * sizeof(uint32_t), h);
 }
 
 status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
@@ -419,14 +425,18 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  HARDENED_CHECK_LE(message_digest.len, kHmacMaxDigestWords);
+  HARDENED_CHECK_LE(encoded_message_len, kRsa4096NumWords);
+
   // Construct H = Hash(0x0000000000000000 || digest || salt).
-  uint32_t h[message_digest.len];
+  uint32_t h[kHmacMaxDigestWords];
   HARDENED_TRY(pss_construct_h(message_digest, salt, salt_len, h));
 
   // Construct DB = 00...00 || 0x01 || salt.
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
-  uint32_t db[ceil_div(db_bytelen, sizeof(uint32_t))];
-  memset(db, 0, sizeof(db));
+  size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
+  uint32_t db[kRsa4096NumWords];
+  memset(db, 0, db_wordlen * sizeof(uint32_t));
   unsigned char *db_bytes = (unsigned char *)db;
   db_bytes[db_bytelen - 1 - salt_bytelen] = 0x01;
   if (salt_bytelen > 0) {
@@ -434,12 +444,12 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   }
 
   // Compute the mask.
-  uint32_t mask[ARRAYSIZE(db)];
-  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, sizeof(h),
+  uint32_t mask[kRsa4096NumWords];
+  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, digest_bytelen,
                     db_bytelen, mask));
 
   // Compute maskedDB = DB ^ mask.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  for (size_t i = 0; i < db_wordlen; i++) {
     db[i] ^= mask[i];
   }
 
@@ -451,8 +461,8 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
   // Compute the final encoded message and reverse the byte-order.
   //   EM = maskedDB || H || 0xbc
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
-  hardened_memcpy(encoded_message, db, ARRAYSIZE(db));
-  memcpy(encoded_message_bytes + db_bytelen, h, sizeof(h));
+  hardened_memcpy(encoded_message, db, db_wordlen);
+  memcpy(encoded_message_bytes + db_bytelen, h, digest_bytelen);
   encoded_message_bytes[encoded_message_bytelen - 1] = 0xbc;
   reverse_bytes(encoded_message_len, encoded_message);
   return OTCRYPTO_OK;
@@ -473,6 +483,9 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  HARDENED_CHECK_LE(message_digest.len, kHmacMaxDigestWords);
+  HARDENED_CHECK_LE(encoded_message_len, kRsa4096NumWords);
+
   // Reverse the byte-order.
   reverse_bytes(encoded_message_len, encoded_message);
 
@@ -485,15 +498,18 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
 
   // Extract the masked "DB" value. Zero the last bytes if needed.
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
-  uint32_t db[ceil_div(db_bytelen, sizeof(uint32_t))];
+  size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
+  size_t db_padded_bytelen = db_wordlen * sizeof(uint32_t);
+  uint32_t db[kRsa4096NumWords];
   memcpy(db, encoded_message_bytes, db_bytelen);
-  if (sizeof(db) > db_bytelen) {
-    memset(((unsigned char *)db) + db_bytelen, 0, sizeof(db) - db_bytelen);
+  if (db_padded_bytelen > db_bytelen) {
+    memset(((unsigned char *)db) + db_bytelen, 0,
+           db_padded_bytelen - db_bytelen);
   }
 
   // Extract H.
-  uint32_t h[message_digest.len];
-  memcpy(h, encoded_message_bytes + db_bytelen, sizeof(h));
+  uint32_t h[kHmacMaxDigestWords];
+  memcpy(h, encoded_message_bytes + db_bytelen, digest_bytelen);
 
   // Ensure the most significant bit of maskedDB is 0.
   // Corresponds to RFC 8017, section 9.1.2 step 6 (emBits is modLen - 1).
@@ -505,15 +521,16 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
 
   // Compute the mask = MGF(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
-  uint32_t mask[ARRAYSIZE(db)];
-  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, sizeof(h),
+  uint32_t mask[kRsa4096NumWords];
+  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, digest_bytelen,
                     db_bytelen, mask));
-  if (sizeof(mask) > db_bytelen) {
-    memset(((unsigned char *)mask) + db_bytelen, 0, sizeof(mask) - db_bytelen);
+  if (db_padded_bytelen > db_bytelen) {
+    memset(((unsigned char *)mask) + db_bytelen, 0,
+           db_padded_bytelen - db_bytelen);
   }
 
   // Unmask the "DB" value.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  for (size_t i = 0; i < db_wordlen; i++) {
     db[i] ^= mask[i];
   }
 
@@ -526,27 +543,28 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   // enough trailing bytes to fill the last word, so that we can use
   // `hardened_memeq` here.
   size_t padding_bytelen = db_bytelen - salt_bytelen;
-  uint32_t exp_padding[ceil_div(padding_bytelen, sizeof(uint32_t))];
+  size_t padding_wordlen = ceil_div(padding_bytelen, sizeof(uint32_t));
+  uint32_t exp_padding[kRsa4096NumWords];
   unsigned char *exp_padding_bytes = (unsigned char *)exp_padding;
   memset(exp_padding, 0, padding_bytelen - 1);
   exp_padding_bytes[padding_bytelen - 1] = 0x01;
   memcpy(exp_padding_bytes + padding_bytelen, db_bytes + padding_bytelen,
-         sizeof(exp_padding) - padding_bytelen);
-  hardened_bool_t padding_eq =
-      hardened_memeq(db, exp_padding, ARRAYSIZE(exp_padding));
+         padding_wordlen * sizeof(uint32_t) - padding_bytelen);
+  hardened_bool_t padding_eq = hardened_memeq(db, exp_padding, padding_wordlen);
   if (padding_eq != kHardenedBoolTrue) {
     *result = kHardenedBoolFalse;
     return OTCRYPTO_OK;
   }
 
   // Extract the salt.
-  uint32_t salt[message_digest.len];
-  memcpy(salt, db_bytes + db_bytelen - salt_bytelen, sizeof(salt));
+  uint32_t salt[kHmacMaxDigestWords];
+  memcpy(salt, db_bytes + db_bytelen - salt_bytelen, salt_bytelen);
 
   // Construct the expected value of H and compare.
-  uint32_t exp_h[message_digest.len];
-  HARDENED_TRY(pss_construct_h(message_digest, salt, ARRAYSIZE(salt), exp_h));
-  *result = hardened_memeq(h, exp_h, ARRAYSIZE(exp_h));
+  uint32_t exp_h[kHmacMaxDigestWords];
+  HARDENED_TRY(
+      pss_construct_h(message_digest, salt, message_digest.len, exp_h));
+  *result = hardened_memeq(h, exp_h, message_digest.len);
   return OTCRYPTO_OK;
 }
 
@@ -587,16 +605,18 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   size_t digest_wordlen = 0;
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
 
+  HARDENED_CHECK_LE(encoded_message_len, kRsa4096NumWords);
+
   // Hash the label (step 2a).
-  uint32_t lhash[digest_wordlen];
+  uint32_t lhash[kHmacMaxDigestWords];
   HARDENED_TRY(hash(hash_mode, label, label_bytelen, lhash));
 
   // Generate a random string the same length as a hash digest (step 2d).
-  uint32_t seed[digest_wordlen];
+  uint32_t seed[kHmacMaxDigestWords];
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),
+  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, digest_wordlen,
                                       /*fips_check=*/kHardenedBoolTrue));
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
@@ -604,16 +624,15 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
-  size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
-  uint32_t db[db_wordlen];
+  uint32_t db[kRsa4096NumWords];
   HARDENED_TRY(
-      mgf1(hash_mode, (unsigned char *)seed, sizeof(seed), db_bytelen, db));
+      mgf1(hash_mode, (unsigned char *)seed, digest_bytelen, db_bytelen, db));
 
   // Construct maskedDB = dbMask XOR (lhash || PS || 0x01 || M), where PS is
   // all-zero (step 2f). By computing the mask first, we can simply XOR with
   // lhash, 0x01, and M, skipping PS because XOR with zero is the identity
   // function.
-  for (size_t i = 0; i < ARRAYSIZE(lhash); i++) {
+  for (size_t i = 0; i < digest_wordlen; i++) {
     db[i] ^= lhash[i];
   }
   size_t message_start_idx = db_bytelen - message_bytelen;
@@ -624,20 +643,20 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   }
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 2g).
-  uint32_t seed_mask[digest_wordlen];
+  uint32_t seed_mask[kHmacMaxDigestWords];
   HARDENED_TRY(mgf1(hash_mode, (unsigned char *)db, db_bytelen, digest_bytelen,
                     seed_mask));
 
   // Construct maskedSeed = seed XOR seedMask (step 2h).
-  for (size_t i = 0; i < ARRAYSIZE(seed); i++) {
+  for (size_t i = 0; i < digest_wordlen; i++) {
     seed[i] ^= seed_mask[i];
   }
 
   // Construct EM = 0x00 || maskedSeed || maskedDB (step 2i).
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
   encoded_message_bytes[0] = 0x00;
-  memcpy(encoded_message_bytes + 1, seed, sizeof(seed));
-  memcpy(encoded_message_bytes + 1 + sizeof(seed), db, db_bytelen);
+  memcpy(encoded_message_bytes + 1, seed, digest_bytelen);
+  memcpy(encoded_message_bytes + 1 + digest_bytelen, db, db_bytelen);
 
   // Reverse the byte-order.
   reverse_bytes(encoded_message_len, encoded_message);
@@ -658,50 +677,52 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   size_t digest_wordlen = 0;
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
 
+  HARDENED_CHECK_LE(encoded_message_len, kRsa4096NumWords);
+
   // Extract maskedSeed from the encoded message (RFC 8017, section 7.1.2, step
   // 3b).
-  uint32_t seed[digest_wordlen];
+  size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
+  uint32_t seed[kHmacMaxDigestWords];
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
-  memcpy(seed, encoded_message_bytes + 1, sizeof(seed));
+  memcpy(seed, encoded_message_bytes + 1, digest_bytelen);
 
   // Extract maskedDB from the encoded message (RFC 8017, section 7.1.2, step
   // 3b).
-  size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   size_t db_bytelen = encoded_message_bytelen - digest_bytelen - 1;
   size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
-  uint32_t db[db_wordlen];
-  memcpy(db, encoded_message_bytes + 1 + sizeof(seed), db_bytelen);
+  uint32_t db[kRsa4096NumWords];
+  memcpy(db, encoded_message_bytes + 1 + digest_bytelen, db_bytelen);
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 3c).
-  uint32_t seed_mask[digest_wordlen];
+  uint32_t seed_mask[kHmacMaxDigestWords];
   HARDENED_TRY(mgf1(hash_mode, (unsigned char *)db, db_bytelen, digest_bytelen,
                     seed_mask));
 
   // Construct seed = maskedSeed XOR seedMask (step 3d).
-  for (size_t i = 0; i < ARRAYSIZE(seed); i++) {
+  for (size_t i = 0; i < digest_wordlen; i++) {
     seed[i] ^= seed_mask[i];
   }
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 3e).
-  uint32_t db_mask[db_wordlen];
-  HARDENED_TRY(mgf1(hash_mode, (unsigned char *)seed, sizeof(seed), db_bytelen,
-                    db_mask));
+  uint32_t db_mask[kRsa4096NumWords];
+  HARDENED_TRY(mgf1(hash_mode, (unsigned char *)seed, digest_bytelen,
+                    db_bytelen, db_mask));
 
   // Zero trailing bytes of DB and dbMask if needed.
-  size_t num_trailing_bytes = sizeof(db) - db_bytelen;
+  size_t num_trailing_bytes = db_wordlen * sizeof(uint32_t) - db_bytelen;
   if (num_trailing_bytes > 0) {
     memset(((unsigned char *)db) + db_bytelen, 0, num_trailing_bytes);
     memset(((unsigned char *)db_mask) + db_bytelen, 0, num_trailing_bytes);
   }
 
   // Construct DB = dbMask XOR maskedDB.
-  for (size_t i = 0; i < ARRAYSIZE(db); i++) {
+  for (size_t i = 0; i < db_wordlen; i++) {
     db[i] ^= db_mask[i];
   }
 
   // Hash the label (step 3a).
-  uint32_t lhash[digest_wordlen];
+  uint32_t lhash[kHmacMaxDigestWords];
   HARDENED_TRY(hash(hash_mode, label, label_bytelen, lhash));
 
   // Note: as we compare parts of the encoded message to their expected values,
