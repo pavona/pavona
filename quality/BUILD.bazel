@@ -161,7 +161,7 @@ test_suite(
 )
 
 # Format all `BUILD` and `.bzl` files in the project.
-# See `.gitmodules` > `rules-lint-ignored` for ignoring files.
+# See `.gitattributes` > `rules-lint-ignored` for ignoring files.
 alias(
     name = "buildifier_fix",
     actual = ":format_Starlark_with_buildifier",

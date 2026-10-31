@@ -13,6 +13,11 @@
 
 set -e
 
+source ci/scripts/lib/section.sh
+source ci/scripts/lib/snapshot.sh
+
+before=$(snapshot)
+
 case $# in
     0)
         tgt_branch=main
@@ -25,21 +30,6 @@ case $# in
         echo >&2 "Usage: quick-lint.sh [<tgt-branch>]"
         exit 1
 esac
-
-
-section() {
-    if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
-        echo "::group::$1"
-    else
-        echo -e "\n### $1"
-    fi
-}
-
-section_end() {
-    if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
-        echo "::endgroup::"
-    fi
-}
 
 section "Display environment information"
 ci/scripts/show-env.sh
@@ -116,3 +106,13 @@ section_end
 section "Lock files"
 ci/scripts/check-lock-files.sh
 section_end
+
+section "Check licenses are all okay"
+ci/scripts/check-dependency-licenses.sh
+section_end
+
+if is_clean "$before"; then
+  exit 0
+else
+  exit 1
+fi

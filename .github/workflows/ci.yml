@@ -2,26 +2,21 @@
 # Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 name: CI
 on:
   pull_request:
   workflow_call:
-
 permissions:
   contents: read
   # Needed for workload identity federation
   id-token: write
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 env:
   VIVADO_VERSION: "2024.1"
   # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
   TOOLCHAIN_VERSION: 20220210-1
-
 jobs:
   quick_lint:
     name: Lint (quick)
@@ -49,102 +44,8 @@ jobs:
         with:
           install-verible: true
           install-slang: true
-      - name: Countermeasures implemented (egret)
-        run: ./ci/scripts/check-countermeasures.sh egret
-      - name: Countermeasures implemented (scafi_deprecated)
-        run: ./ci/scripts/check-countermeasures.sh scafi_deprecated
-      - name: Bazel test suite tags
-        run: ./ci/scripts/check_bazel_test_suites.py
-      # See #21973: disabled until Verilator tags are fixed.
-      # - name: Check Bazel tags
-      #   run: ./ci/scripts/check-bazel-tags.sh
-      #   continue-on-error: true
-      - name: Banned Bazel rules
-        run: ./ci/scripts/check-bazel-banned-rules.sh
-      - name: Bazel target names
-        run: ./ci/scripts/check_bazel_target_names.py
-      - name: DV software images
-        run: ./ci/scripts/check_dv_sw_images.sh
-      - name: Unrunnable tests
-        run: ./ci/scripts/check-unrunnable-tests.sh
-      - name: Build documentation
-        run: ./ci/scripts/build-docs.sh
-      - name: Generated files
-        run: ./ci/scripts/check-generated.sh
-        env:
-          OT_DESTRUCTIVE: 1 # Required by the script to clean up.
-      - name: Check sim_cfg files
-        run: ./ci/scripts/check-sim-cfgs.py
-      - name: ACC assembly lint
-        run: ./bazelisk.sh test //quality:acc_lint
-      - name: Vendored files
-        run: ./ci/scripts/check-vendoring.sh
-      - name: Verible RTL egret
-        run: ./ci/scripts/verible-lint.sh rtl egret
-      - name: Verible DV egret
-        run: ./ci/scripts/verible-lint.sh dv egret
-      - name: Verible FPV egret
-        run: ./ci/scripts/verible-lint.sh fpv egret
-      - name: Verible RTL dragonfly
-        run: ./ci/scripts/verible-lint.sh rtl dragonfly
-      - name: Verible DV dragonfly
-        run: ./ci/scripts/verible-lint.sh dv dragonfly
-      - name: Verible FPV dragonfly
-        run: ./ci/scripts/verible-lint.sh fpv dragonfly
-      - name: Slang RTL egret
-        run: ./ci/scripts/slang-lint.sh egret
-      - name: Slang RTL dragonfly
-        run: ./ci/scripts/slang-lint.sh dragonfly
-      - name: Validate alert classification for Egret
-        run: ./ci/scripts/validate_alert_classification.py egret hw/top_egret/ip_autogen/alert_handler/data/top_egret_alert_handler.ipconfig.hjson "$(realpath hw/top_egret/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
-      - name: Validate alert classification for Dragonfly
-        run: ./ci/scripts/validate_alert_classification.py dragonfly hw/top_dragonfly/ip_autogen/alert_handler/data/top_dragonfly_alert_handler.ipconfig.hjson "$(realpath hw/top_dragonfly/data/otp/otp_ctrl_img_owner_sw_cfg.hjson)"
-
-  dependency-licenses:
-    name: Check software dependency licenses
-    runs-on:
-      group: pavona-basic
-    needs: quick_lint
-    steps:
-      - uses: actions/checkout@v7
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-      - name: Check Python licenses
-        run: |
-          ALLOWED=(
-            'apache'
-            'Apache-2.0'
-            'Apache Software License'
-            'BSD'
-            'BSD-3-Clause'
-            'BSD License'
-            'Freeware'
-            'GNU Lesser General Public License v2 or later (LGPLv2+)'
-            'GNU Lesser General Public License v3 (LGPLv3)'
-            'GNU Library or Lesser General Public License (LGPL)'
-            'MIT'
-            'MIT License'
-            'Mozilla Public License 2.0 (MPL 2.0)'
-            'MPL-2.0 AND MIT'
-            'Public Domain'
-            'Python Software Foundation License'
-            'UNKNOWN'
-          )
-          ALLOWED_SEMI=${ALLOWED[0]}
-          for lic in "${ALLOWED[@]}"; do
-              ALLOWED_SEMI="$ALLOWED_SEMI;$lic"
-          done;
-          pip-licenses --allow-only "$ALLOWED_SEMI"
-      - name: Install cargo
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-          echo "~/.cargo/bin" >> "$GITHUB_PATH"
-      - name: Check Rust licenses
-        run: |
-          cargo install cargo-deny --version 0.18.4
-          cargo deny --all-features --manifest-path third_party/rust/Cargo.toml check licenses
-          cargo deny --all-features --manifest-path third_party/tock/Cargo.toml check licenses
-
+      - name: Slow Lint
+        run: ./ci/jobs/slow-lint.sh
   verible_lint:
     name: Verible lint
     permissions:
@@ -194,7 +95,6 @@ jobs:
         with:
           name: verible-linter
           path: 'verible-verilog-lint.log'
-
   acc_standalone_tests:
     name: Run ACC smoke Test
     needs: quick_lint
@@ -219,7 +119,6 @@ jobs:
         run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke_pqc:run_smoke_test
       - name: Assemble & link code snippets
         run: make -C hw/ip/acc/util asm-check
-
   acc_crypto_tests:
     name: Run ACC crypto tests
     needs: quick_lint
@@ -238,7 +137,6 @@ jobs:
           # from timing out tests.
           ./bazelisk.sh test --test_output=errors --test_tag_filters=-nightly \
             --local_test_jobs=8 --test_timeout=3600 //sw/acc/crypto/...
-
   verilator_egret:
     name: Egret Verilator Tests
     runs-on:
@@ -256,7 +154,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_egret-test-results
-
   verilator_dragonfly:
     name: Dragonfly Verilator tests
     runs-on:
@@ -275,7 +172,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: verilator_dragonfly-test-results
-
   chip_egret_cw310:
     name: Egret for CW310
     needs: quick_lint
@@ -284,7 +180,6 @@ jobs:
     with:
       top_name: egret
       design_suffix: cw310_hyperdebug
-
   chip_egret_cw340_pqc:
     name: Egret for CW340 (PQC)
     needs: quick_lint
@@ -293,7 +188,6 @@ jobs:
     with:
       top_name: egret
       design_suffix: cw340_pqc
-
   # CW310 FPGA jobs
   execute_tests_cw310:
     name: Egret CW310 Tests
@@ -302,7 +196,6 @@ jobs:
     secrets: inherit
     with:
       bitstream: chip_egret_cw310_hyperdebug
-
   # CW340 FPGA jobs
   execute_tests_cw340:
     name: Egret CW340 Tests
@@ -312,7 +205,6 @@ jobs:
     secrets: inherit
     with:
       bitstream: chip_egret_cw340
-
   sw_build_test:
     name: Build and test software (Egret)
     runs-on:
@@ -337,7 +229,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: sw_build_test-test-results
-
   df_sw_build_test:
     name: Build and test software (Dragonfly)
     runs-on:
@@ -362,7 +253,6 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: sw_build_test-test-results
-
   qemu_smoketest:
     name: QEMU smoketest
     runs-on:
@@ -378,26 +268,26 @@ jobs:
         run: |
           ./bazelisk.sh test //sw/device/tests:rom_exit_immediately_sim_qemu_base
 
-  # We would like to gate PR on quick lint and merge queue on bitstream caching.
-  # GitHub requires a single job name to be used for branch protection rule, so we use 2 jobs with
-  # conditional names so the non-skipped ones woud be called "Merge blocker".
-  #
-  # TODO: Enable these once `cache_bitstreams` is re-enabled.
-  #
-  #  merge_blocker_pr:
-  #    name: Merge blocker${{ github.event_name != 'pull_request' && ' (skipped)' || '' }}
-  #    runs-on: ubuntu-latest
-  #    needs: quick_lint
-  #    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-  #    steps:
-  #      - name: Complete
-  #        run: ${{ needs.quick_lint.result == 'success' }}
-  #
-  #  merge_blocker_merge:
-  #    name: Merge blocker${{ github.event_name != 'merge_group' && ' (skipped)' || '' }}
-  #    runs-on: ubuntu-latest
-  #    needs: cache_bitstreams
-  #    if: ${{ !cancelled() && github.event_name == 'merge_group' }}
-  #    steps:
-  #      - name: Complete
-  #        run: ${{ needs.cache_bitstreams.result == 'success' }}
+# We would like to gate PR on quick lint and merge queue on bitstream caching.
+# GitHub requires a single job name to be used for branch protection rule, so we use 2 jobs with
+# conditional names so the non-skipped ones woud be called "Merge blocker".
+#
+# TODO: Enable these once `cache_bitstreams` is re-enabled.
+#
+#  merge_blocker_pr:
+#    name: Merge blocker${{ github.event_name != 'pull_request' && ' (skipped)' || '' }}
+#    runs-on: ubuntu-latest
+#    needs: quick_lint
+#    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+#    steps:
+#      - name: Complete
+#        run: ${{ needs.quick_lint.result == 'success' }}
+#
+#  merge_blocker_merge:
+#    name: Merge blocker${{ github.event_name != 'merge_group' && ' (skipped)' || '' }}
+#    runs-on: ubuntu-latest
+#    needs: cache_bitstreams
+#    if: ${{ !cancelled() && github.event_name == 'merge_group' }}
+#    steps:
+#      - name: Complete
+#        run: ${{ needs.cache_bitstreams.result == 'success' }}

@@ -1,5 +1,6 @@
 # Hugo and fusesoc generate a build/ directory
 build
+build-site
 hw/ip/prim/util/vendor/google_verible_verilog_syntax_py
 sw/vendor/google_googletest
 util/lowrisc_misc-linters
