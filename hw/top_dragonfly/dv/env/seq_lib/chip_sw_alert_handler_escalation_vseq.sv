@@ -54,7 +54,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
       {DecLcStateNumRep{DecLcStEscalate}},
       cfg.sw_test_timeout_ns);
 
-    // TODO(#462): The following code was removed because keymgr_dpe does not have prev_key,
+    // TODO: The following code was removed because keymgr_dpe does not have prev_key,
     // curr_key, so a similar check might be necessary for keymgr_dpe.
     // logic [1023:0] curr_key, prev_key;
     // prev_key = curr_key;

@@ -881,7 +881,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
-      // TODO(opentitan-integrated/issues/251):
+      // TODO:
       // This is not the final parameterization for Dragonfly.
       base_addrs: {
         rom:  {hart: "0x00020000"},

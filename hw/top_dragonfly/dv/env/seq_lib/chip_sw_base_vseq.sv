@@ -182,7 +182,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
-    // TODO(opentitan-integrated/issues/251):
+    // TODO:
     // We need to add support for loading a "real" ROM image below.
     // The DV environment already sets the ROM to valid random values as part of
     // random_rom_init_with_digest().
@@ -204,7 +204,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
       if (cfg.use_spi_load_bootstrap) begin
-        // TODO(opentitan-integrated/issues/332): re-implement bootstrap to use the CTN SRAM.
+        // TODO: re-implement bootstrap to use the CTN SRAM.
         `uvm_fatal(`gfn, "Bootstrap is currently not supported yet by this platform.")
       end
     end

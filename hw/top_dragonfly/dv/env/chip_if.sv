@@ -855,7 +855,7 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
-  // TODO(#462): Decide if we need this probing function (only used in alert handler escalation
+  // TODO: Decide if we need this probing function (only used in alert handler escalation
   // sequence)
   // Signal probe function for keymgr key state.
   // `ifdef GATE_LEVEL

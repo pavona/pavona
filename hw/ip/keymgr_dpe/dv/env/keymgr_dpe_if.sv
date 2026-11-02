@@ -448,7 +448,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
         release tb.dut.u_sideload_ctrl.valids;
       end
       FaultKeyIntgError: begin
-        // TODO(opentitan-integrated/issues/669):
+        // TODO:
         // re-evaluate this key logic, as key_state_q does not exist
         // in keymgr_dpe
 
