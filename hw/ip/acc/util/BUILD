@@ -44,6 +44,16 @@ py_binary(
     ],
 )
 
+py_library(
+    name = "acc_ld_lib",
+    srcs = ["acc_ld.py"],
+    deps = [
+        "//hw/ip/acc/util/shared:mem_layout",
+        "//hw/ip/acc/util/shared:toolchain",
+        requirement("mako"),
+    ],
+)
+
 py_binary(
     name = "acc_objdump",
     srcs = ["acc_objdump.py"],
