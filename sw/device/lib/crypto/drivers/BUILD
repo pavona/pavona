@@ -15,6 +15,7 @@ load(
 )
 load(
     "//rules/pavona:defs.bzl",
+    "DRAGONFLY_TEST_ENVS",
     "EGRET_TEST_ENVS",
     "fpga_params",
     "pavona_test",
@@ -77,6 +78,33 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+pavona_test(
+    name = "aes_gcm_test",
+    srcs = ["aes_gcm_test.c"],
+    exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
+        EGRET_TEST_ENVS,
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        ":aes",
+        ":aes_gcm",
+        ":entropy",
+        "//hw/top:aes_c_regs",
+        "//hw/top/dt:aes",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/crypto:aes_gcm_hw_testvectors",
     ],
 )
 

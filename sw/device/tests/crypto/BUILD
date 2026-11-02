@@ -208,6 +208,14 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "aes_gcm_hw_testvectors",
+    hdrs = ["aes_gcm_hw_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/drivers:aes_gcm",
+    ],
+)
+
 pavona_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
