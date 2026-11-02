@@ -203,7 +203,7 @@
             resval: "0"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO
       }
       { name: "INBOUND_BASE_ADDRESS"
         desc: '''Base address of SRAM region, which is used to back up the inbound mailbox data.
@@ -449,7 +449,7 @@
             hwaccess: "hrw"
           }
         ]
-        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO(#477)
+        tags: ["excl:CsrAllTests:CsrExclAll"] // TODO
       }
       { window: {
           name: "WDATA"

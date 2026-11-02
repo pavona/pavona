@@ -857,7 +857,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
             // when advance from StWorkDpeReset to StWorkDpeAvailable
             // we don't know how long it will take, it's ok
             // when status is WIP or success
-            // TODO(#667) - need to restructure SCB so that reading a WIP status
+            // TODO - need to restructure SCB so that reading a WIP status
             // doesn't cause an error
             // when current_op_status is equal to OpDoneSuccess
             if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
@@ -935,7 +935,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       "debug": begin
-        // TODO(#667)
+        // TODO
         // re-enable do_read_check for debug register. It currently causes a read error
         do_read_check = 1'b0;
         // do nothing
@@ -1486,7 +1486,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // And we will check that hw key is wiped no matter whether InvalidOp is set or not.
         csr_rd(.ptr(ral.working_state), .value(current_design_state), .backdoor(1'b1));
 
-        // TODO(opentitan-integrated/issues/667):
+        // TODO:
         // re-evaluate wipe_hw_keys() function for the state StInit
         // which is no longer valid for keymgr_dpe
 

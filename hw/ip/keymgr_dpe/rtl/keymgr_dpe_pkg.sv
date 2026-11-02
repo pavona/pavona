@@ -77,7 +77,7 @@ package keymgr_dpe_pkg;
     StWorkDpeInvalid
   } keymgr_dpe_exposed_working_state_e;
 
-  // TODO(#354): Define further policy bits and extend this struct
+  // TODO: Define further policy bits and extend this struct
   typedef struct packed {
     logic retain_parent;
     logic exportable;

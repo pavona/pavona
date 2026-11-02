@@ -11,7 +11,7 @@ module keymgr_dpe_ctrl
   import keymgr_pkg::*;
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
-// TODO(#384): Bring back KmacEnMasking parameter
+// TODO: Bring back KmacEnMasking parameter
 (
   input clk_i,
   input rst_ni,
@@ -90,7 +90,7 @@ module keymgr_dpe_ctrl
   localparam int EntropyRndWidth = prim_util_pkg::vbits(EntropyRounds);
 
   keymgr_dpe_working_state_e state_q, state_d;
-  // TODO(#384): Revisit SW-visible state mapping
+  // TODO: Revisit SW-visible state mapping
   always_comb begin
     unique case (state_q)
       StCtrlDpeReset,
@@ -261,11 +261,11 @@ module keymgr_dpe_ctrl
                           {EntropyRounds{entropy_i[i]}};
   end
 
-  // TODO(#384): Enable ECC so that we have key integrity
+  // TODO: Enable ECC so that we have key integrity
   //SEC_CM: CTRL.KEY.INTEGRITY
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      // TODO(#384): Check writing '0 to policy bits is OK
+      // TODO: Check writing '0 to policy bits is OK
       key_slots_q <= '0;
     end else begin
       key_slots_q <= key_slots_d;
@@ -398,7 +398,7 @@ module keymgr_dpe_ctrl
   logic invalid_erase;
   logic invalid_gen;
   logic invalid_load;
-  // TODO(#384): Make sure that:
+  // TODO: Make sure that:
   // 1) inv_state is correctly computed
   // 2) inv_state is correctly consumed by FSM
   logic inv_state;
@@ -407,7 +407,7 @@ module keymgr_dpe_ctrl
   // SEC_CM: CTRL.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_working_state_e, StCtrlDpeReset)
 
-  // TODO(#384): This FSM currently lacks `invalid_op` signal that indicates that SW requested
+  // TODO: This FSM currently lacks `invalid_op` signal that indicates that SW requested
   // operation is invalid (i.e. not permitted in given state). Hence, this needs to be defined and
   // FSM transitions need to be revisited.
   always_comb begin
@@ -532,7 +532,7 @@ module keymgr_dpe_ctrl
         end
       end
 
-      // TODO(#384): Revisit wiping behavior in the middle of ongoing transaction
+      // TODO: Revisit wiping behavior in the middle of ongoing transaction
       // In previous keymgr (not to be confused with this keymgr_dpe), the wipe state immediately
       // clears out the key state, but waits for any ongoing transaction to finish before going to
       // disabled state. For compatibility, we might want to do the same here, and let transaction
@@ -555,7 +555,7 @@ module keymgr_dpe_ctrl
         prng_en_dis_inv_set = 1'b1;
       end
 
-      // TODO(#384): Revisit allowing transactions during Disabled and Invalid.
+      // TODO: Revisit allowing transactions during Disabled and Invalid.
       // In previous keymgr, in Disabled or Invalid states, SW can still request advance/generation
       // operations (even though technically that should not happen). This causes keymgr to issue
       // further KMAC transactions. Need to decide if we want to keep this behavior.
@@ -712,11 +712,11 @@ module keymgr_dpe_ctrl
     .ctrl_fsm_err_i(state_intg_err_q | state_intg_err_d),
     .data_fsm_err_i(data_fsm_err),
     .op_fsm_err_i(op_fsm_err),
-    // TODO(#384): Implement ECC protection for key slot, and connect the error signal here
+    // TODO: Implement ECC protection for key slot, and connect the error signal here
     .ecc_err_i(1'b0),
-    // TODO(#384): Implement redundant check for state change
+    // TODO: Implement redundant check for state change
     .state_change_err_i(1'b0),
-    // TODO(#384): Implement redundant check for (state, operation) pair
+    // TODO: Implement redundant check for (state, operation) pair
     .op_state_cmd_err_i(1'b0),
     .cnt_err_i(cnt_err),
     .reseed_cnt_err_i,
@@ -737,7 +737,7 @@ module keymgr_dpe_ctrl
   // Assertions
   /////////////////////////////////
 
-  // TODO(#384): Revisit assertions.
+  // TODO: Revisit assertions.
   // 1) Can these assertions be rewritten for keymgr_dpe context?
   // 2) Which of these should be removed because they are obsolete.
   // 3) Which new assertions should be added for keymgr_dpe?

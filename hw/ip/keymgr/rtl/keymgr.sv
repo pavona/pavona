@@ -425,7 +425,7 @@ module keymgr
                                    otp_key_i.creator_seed_valid};
     assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
   end
-  // TODO(opentitan-integrated/issues/251):
+  // TODO:
   // replace below code with commented code once SW and DV model can handle multiple
   // // ROM_CTRL digests.
   // logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;

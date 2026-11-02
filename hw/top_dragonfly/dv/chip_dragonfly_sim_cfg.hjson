@@ -487,7 +487,7 @@
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
       reseed: 6
     }
-    // TODO(#501): Re-evaluate or fix for new pinmux(less) configurations
+    // TODO: Re-evaluate or fix for new pinmux(less) configurations
     // {
     //   name: chip_sw_sleep_pin_mio_dio_val
     //   uvm_test_seq: chip_sw_sleep_pin_mio_dio_val_vseq
@@ -1159,7 +1159,7 @@
       sw_images: ["//sw/device/tests:hmac_enc_idle_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    // TODO(#462): Bring back top-level keymgr tests
+    // TODO: Bring back top-level keymgr tests
     // after adapting them to keymgr_dpe.
     {
       name: chip_sw_keymgr_dpe_key_derivation
