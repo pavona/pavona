@@ -60,6 +60,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "aes_gcm",
+    srcs = ["aes_gcm.c"],
+    hdrs = ["aes_gcm.h"],
+    deps = [
+        ":aes",
+        ":entropy",
+        ":rv_core_ibex",
+        "//hw/top:aes_c_regs",
+        "//hw/top/dt:aes",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
 pavona_test(
     name = "aes_test",
     srcs = ["aes_test.c"],
