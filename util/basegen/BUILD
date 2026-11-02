@@ -55,6 +55,10 @@ py_test(
         "//hw/top_dragonfly/data:top_dragonfly.hjson",
         "//hw/top_egret/data:top_egret.hjson",
 
+        # seed configurations
+        "//hw/top_dragonfly/data:top_dragonfly_seed.testing.hjson",
+        "//hw/top_egret/data:top_egret_seed.testing.hjson",
+
         # IP descriptions
         "//hw/ip:block_descriptions",
 
