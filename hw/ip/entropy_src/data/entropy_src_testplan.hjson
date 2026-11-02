@@ -141,7 +141,7 @@
             and windowed functionality and different high/low thresholds and watermarks.
             '''
       stage: V3
-      tests: ["entropy_src_rng_with_xht_rsps"], // TODO(#16276): Complete XHT verification
+      tests: ["entropy_src_rng_with_xht_rsps"], // TODO(lowrisc/opentitan#16276): Complete XHT verification
     }
   ]
   covergroups: [

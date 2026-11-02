@@ -900,7 +900,7 @@ module csrng_core import csrng_pkg::*; #(
   // parse the command bus
   assign acmd_hold = acmd_sop ? acmd_e'(acmd_bus[CmdWidth-1:0]) : acmd_q;
 
-  // TODO(#28153) rewrite as an always_comb block
+  // TODO(lowrisc/opentitan#28153) rewrite as an always_comb block
   assign acmd_d =
          (!cs_enable_fo[32]) ? INV :
          acmd_sop ? acmd_e'(acmd_bus[CmdWidth-1:0]) :

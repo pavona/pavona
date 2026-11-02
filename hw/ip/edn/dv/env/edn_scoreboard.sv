@@ -768,7 +768,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
     // remaining items if they aren't.  For queues that don't have to empty at the end of each test, describe
     // why.
 
-    // TODO(#18857): Uncomment the following line once items from `cs_cmd_fifo` get processed.
+    // TODO(lowrisc/opentitan#18857): Uncomment the following line once items from `cs_cmd_fifo` get
+    // processed.
     // `DV_EOT_PRINT_TLM_FIFO_CONTENTS(cs_cmd_item_t, cs_cmd_fifo)
 
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(genbits_item_t, genbits_fifo)

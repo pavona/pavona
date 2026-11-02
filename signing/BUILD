@@ -31,7 +31,7 @@ config_setting(
     },
 )
 
-# TODO(#24641): Simplify key selection after eliminating RSA keys.
+# TODO(lowrisc/opentitan#24641): Simplify key selection after eliminating RSA keys.
 # The currently released ROM_EXT binary for ES silicon (version 0.4) supports
 # only RSA keys.  The next release will eliminate RSA keys in favor of ECDSA
 # keys.  In order to allow current users to continue to build RSA-signed

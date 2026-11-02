@@ -39,7 +39,7 @@ load("//rules/pavona:util.bzl", "flatten")
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
+# TODO(lowrisc/opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
 # use open source test code. Specifically, this enables defining an
 # `pavona_test` in the `manufacturer_test_hooks` repository without the
@@ -840,7 +840,7 @@ pavona_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    # TODO(#16374): test doesn't make progress after enabling PWM
+    # TODO(lowrisc/opentitan#16374): test doesn't make progress after enabling PWM
     verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
@@ -1180,7 +1180,7 @@ pavona_test(
             "//hw/top_egret:silicon_creator": None,
         },
     ),
-    # TODO(#13611): Splice ast_init in FPGA/Verilator.
+    # TODO(lowrisc/opentitan#13611): Splice ast_init in FPGA/Verilator.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top/dt:clkmgr",
@@ -4656,7 +4656,7 @@ pavona_test(
             DRAGONFLY_TEST_ENVS,
             EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         ),
-        # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
+        # TODO (lowrisc/opentitan#26100): QEMU's `flashgen.py` script does not like this test.
         ["//hw/top_egret:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
@@ -6803,7 +6803,7 @@ pavona_test(
     fpga = fpga_params(
         needs_jtag = True,
         otp = "//hw/top_egret/data/otp:img_test_unlocked0",
-        # TODO(#22823): Remove "broken" tag once the test is fixed.
+        # TODO(lowrisc/opentitan#22823): Remove "broken" tag once the test is fixed.
         tags = ["broken"],
         test_cmd = """
             --bootstrap="{firmware}"

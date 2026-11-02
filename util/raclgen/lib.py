@@ -49,7 +49,7 @@ def _read_hjson(filename: str) -> Dict[str, object]:
 def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config = _read_hjson(config_path)
 
-    # TODO(#25690) Further sanity checks on the parsed RACL config
+    # TODO(lowrisc/opentitan#25690) Further sanity checks on the parsed RACL config
     validation_errors = all_validation_errors(racl_config, RACL_VALIDATOR, "racl")
     error = len(validation_errors)
     if error:

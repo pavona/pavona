@@ -103,7 +103,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
              "wait for initial test state",
              5_000_000)
 
-    // TODO(lowRISC/opentitan:#13373): Revisit pad assignments.
+    // TODO(lowrisc/opentitan#13373): Revisit pad assignments.
     // pinmux_wkup_vif (at Iob7) is re-used for PinZ3WakeupOut
     // due to lack of unused pins. Disable the default drive
     // to this pin.

@@ -119,7 +119,8 @@ uint8_t batch_messages[kNumBatchOpsMax][kMessageLength];
  * Blocks until KMAC is idle.
  */
 static void kmac_block_until_idle(void) {
-  // TODO(#7842): Remove when `dif_kmac_get_status()` is implemented.
+  // TODO(lowrisc/opentitan#7842): Remove when `dif_kmac_get_status()` is
+  // implemented.
   uint32_t reg;
   do {
     reg = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
@@ -130,7 +131,8 @@ static void kmac_block_until_idle(void) {
  * Resets KMAC to idle state.
  */
 static void kmac_reset(void) {
-  // TODO(#7842): Remove when `dif_kmac_reset()` is implemented.
+  // TODO(lowrisc/opentitan#7842): Remove when `dif_kmac_reset()` is
+  // implemented.
   mmio_region_write32(
       kmac.base_addr, KMAC_CMD_REG_OFFSET,
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_DONE));
@@ -294,7 +296,8 @@ static void kmac_msg_proc(void) {
  * valid and can be read by software.
  */
 static void kmac_msg_done(void) {
-  // TODO(#7841, #7842): Remove when we finalize the way we capture traces.
+  // TODO(lowrisc/opentitan#7841, lowrisc/opentitan#7842): Remove when we
+  // finalize the way we capture traces.
   uint32_t reg;
   do {
     reg = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);

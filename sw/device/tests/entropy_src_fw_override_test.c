@@ -144,9 +144,9 @@ static bool fw_ov_insert_wait_enabled = false;
 /**
  * Determine whether the observe FIFO has overflowed.
  *
- * TODO(#21279) Normally, one would rely on the FW_OV_RD_FIFO_OVERFLOW
- * register but due to an RTL bug, the overflow bit is pulsed
- * instead of latched so we cannot rely on it. Instead, rely
+ * TODO(lowrisc/opentitan#21279) Normally, one would rely on the
+ * FW_OV_RD_FIFO_OVERFLOW register but due to an RTL bug, the overflow bit is
+ * pulsed instead of latched so we cannot rely on it. Instead, rely
  * on OBSERVE_FIFO_DEPTH and assume that if the FIFO is full
  * then it has overflowed.
  */

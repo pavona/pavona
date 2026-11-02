@@ -62,7 +62,7 @@
         interpreted as "On", disabling debug access.
         '''
       stage: V2S
-      tests: [] # TODO(#27435)
+      tests: [] # TODO(lowrisc/opentitan#27435)
     }
     {
       name: sec_cm_lc_dft_en_intersig_mubi

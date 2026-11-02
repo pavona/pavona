@@ -615,7 +615,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             // Zero the checked segment counters on every SW_RST. The backdoor read of the active
             // state races the reset, and a segment driven but never seen on the bus would leave
             // the two counts different for the rest of the test.
-            // TODO(#18886)
+            // TODO(lowrisc/opentitan#18886)
             // As described above, consider improving segment_cnt check for tests with resets
             in_tx_seg_cnt = 0;
             checked_tx_seg_cnt = 0;

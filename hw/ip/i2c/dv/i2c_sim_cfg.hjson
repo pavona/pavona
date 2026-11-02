@@ -69,7 +69,7 @@
       uvm_test_seq: i2c_host_override_vseq
     }
 
-    // TODO(#21887) Removed pending DV fixes after removal
+    // TODO(lowrisc/opentitan#21887) Removed pending DV fixes after removal
     // of double-counted 't_f'
     // {
     //   name: i2c_host_rx_oversample
@@ -307,7 +307,7 @@
       name : host_sanity
       tests: ["i2c_host_smoke", "i2c_host_override", "i2c_host_perf",
               "i2c_host_fifo_watermark", "i2c_host_fifo_overflow", "i2c_host_fifo_reset_fmt",
-              // TODO(#21887)
+              // TODO(lowrisc/opentitan#21887)
               // "i2c_host_rx_oversample",
               "i2c_host_stretch_timeout",
               "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_stretch_timeout",

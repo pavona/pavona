@@ -23,8 +23,8 @@ class dv_base_reg extends uvm_reg;
   // This should be set if the register can be affected by a write even if that write also causes an
   // error (because of an invalid mask, for example).
   //
-  // TODO: This is really here as a workaround for a minor RTL bug, tracked in issue #24053. Once
-  //       that issue is closed, remove this flag again.
+  // TODO: This is really here as a workaround for a minor RTL bug, tracked in issue
+  //       lowrisc/opentitan#24053. Once that issue is closed, remove this flag again.
   bit writes_ignore_errors;
 
   // This is used for get_alias_name

@@ -43,8 +43,8 @@ package soc_dbg_ctrl_pkg;
     prim_mubi_pkg::mubi4_t relocked;
   } soc_dbg_policy_t;
 
-  // TODO(#25880): This parameter is intended for DV so should be moved into a DV package file once
-  // that exists.
+  // TODO(lowrisc/opentitan#25880): This parameter is intended for DV so should be moved into a DV
+  // package file once that exists.
   //
   // Valid CAT 3 policy for DV purposes
   parameter soc_dbg_policy_t SOC_DBG_POLICY_CAT3_VALID = '{

@@ -73,8 +73,8 @@ status_t hash_rom(void) {
            rom_chip_info->scm_revision.scm_revision_low);
   LOG_INFO("version = %08x", rom_chip_info->version);
 
-  // TODO(#18868) Add checks for the chip_info values we expect to see in the
-  // released ROM binary.
+  // TODO(lowrisc/opentitan#18868) Add checks for the chip_info values we expect
+  // to see in the released ROM binary.
 
   if (kDeviceType == kDeviceSimDV) {
     TRY_CHECK_ARRAYS_EQ(rom_hash.digest, kSimDvGoldenRomHash,

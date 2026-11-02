@@ -75,7 +75,7 @@ typedef struct kmac_blinded_key {
  * configured at session level. This functions serves as a temporary
  * solution by setting default values to this configuration.
  * TODO: Define config struct and pass it as argument.
- * TODO: see #14832
+ * TODO: see lowrisc/opentitan#14832
  *
  * Warning: This function sets `entropy_ready`, which triggers kmac_entropy's
  * FSM to jump to next step. Therefore, the caller of this function should make

@@ -72,7 +72,7 @@ key_ecdsa = rule(
         "config": attr.string_dict(
             doc = "The config properties of the key.  Currently, there are no properties for ECDSA keys.",
         ),
-        # TODO(cfrantz, moidx, #22155): To support signing with opentitantool or
+        # TODO(cfrantz, moidx, lowrisc/opentitan#22155): To support signing with opentitantool or
         # hsmtool, the `method` should be replaced with a `token` and `profile`
         # similar to the `keyset` rule.  The `token` is used to get access to
         # the appropriate PKCS11 resources (shared libs, config files, etc) and

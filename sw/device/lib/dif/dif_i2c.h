@@ -43,8 +43,8 @@ typedef enum dif_i2c_speed {
   kDifI2cSpeedFastPlus,
 } dif_i2c_speed_t;
 
-// TODO(#23786) The i2c IP has a parameter (InputDelayCycles), use this when
-// topgen supports exposing it in the headers.
+// TODO(lowrisc/opentitan#23786) The i2c IP has a parameter (InputDelayCycles),
+// use this when topgen supports exposing it in the headers.
 enum {
   /**
    * Input Delay Cycles; for clock stretching detection to work, the SCL high

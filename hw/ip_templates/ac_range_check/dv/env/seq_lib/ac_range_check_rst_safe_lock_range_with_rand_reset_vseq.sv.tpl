@@ -191,7 +191,7 @@ task ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq::main_thre
       `uvm_info(`gfn, $sformatf("Range index %0d unlocked", i), UVM_MEDIUM)
     end
 
-    // TODO(#27352): Move this sampling to the scoreboard after its
+    // TODO(lowrisc/opentitan#27352): Move this sampling to the scoreboard after its
     // range_regwen write handling has been corrected.
     if (cfg.en_cov) begin
       cov.sample_range_lock_cg(i, lock_cfg.enable[i], lock_cfg.lock_mask[i]);

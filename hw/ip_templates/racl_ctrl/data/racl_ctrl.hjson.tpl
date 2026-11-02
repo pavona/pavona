@@ -34,7 +34,7 @@
   ],
   // In order to not disturb the racl_ctrl address map, we place the alert test and interrupt
   // registers manually at a safe offset after the main CSRs.
-  // TODO(#26748) Add tooling support to avoid manual placement of alert/interrupt registers
+  // TODO(lowrisc/opentitan#26748) Add tooling support to avoid manual placement of alert/interrupt registers
   no_auto_intr_regs: "True",
   no_auto_alert_regs: "True",
   interrupt_list: [

@@ -438,7 +438,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   function int calc_extht_test(queue_of_rng_val_t window);
-    // TODO(#16276)
+    // TODO(lowrisc/opentitan#16276)
     int result = 0;
     return result;
   endfunction
@@ -957,8 +957,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int           alert_threshold;
     bit           main_sm_exp_alert_cond;
 
-    // TODO (#18889): If an alert is anticipated, we should check that (if necessary) this seed is
-    // stopped and no others are allowed to progress.
+    // TODO (lowrisc/opentitan#18889): If an alert is anticipated, we should check that (if
+    // necessary) this seed is stopped and no others are allowed to progress.
     alert_threshold = `gmv(ral.alert_threshold.alert_threshold);
 
     fmt = "Predicting alert status with %0d new failures this window";
@@ -2735,7 +2735,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // matches the RNG data and that the window boundaries (as seen on the XHT bus) appear
           // at the correct times.
           //
-          // TODO(#16276): perform a more complete check of the other XHT outputs.
+          // TODO(lowrisc/opentitan#16276): perform a more complete check of the other XHT outputs.
           //
           forever begin : sample_loop
             // Wait either for the next xht_item, or wait at most two clocks

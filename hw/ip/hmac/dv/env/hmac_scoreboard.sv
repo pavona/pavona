@@ -469,7 +469,8 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
           end
         end else begin
           // Predict intermediate digest values when S&R has been triggered
-          // TODO (#23240): modify the C model to be able to provide intermediate digest
+          // TODO (lowrisc/opentitan#23240): modify the C model to be able to provide intermediate
+          // digest
           // if (hmac_stopped) predict_digest(msg_q);
           // And remove lines, when C model will support intermediate hash. For the moment don't
           // compare digest. Only the final digest will be compared in case of S&R, this is enough

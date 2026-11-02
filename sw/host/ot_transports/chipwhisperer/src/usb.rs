@@ -502,7 +502,7 @@ impl<B: Board> Backend<B> {
 
     /// Enable or disable the CDCE906 PLL chip.
     pub fn pll_enable(&self, enable: bool) -> Result<()> {
-        // TODO(#12872): Define constants.
+        // TODO(lowrisc/opentitan#12872): Define constants.
         let mut reg = self.pll_read(12)?;
         if enable {
             reg &= !(1 << 6);
@@ -581,7 +581,7 @@ impl<B: Board> Backend<B> {
             vals,
             vals.fvco / u32::from(vals.outdiv) - target_freq
         );
-        // TODO(#12872): Define constants.
+        // TODO(lowrisc/opentitan#12872): Define constants.
         let offset = 3 * pll_num;
         self.pll_write(1 + offset, (vals.denominator & 0xff).try_into()?)?;
         self.pll_write(2 + offset, (vals.numerator & 0xff).try_into()?)?;
@@ -627,7 +627,7 @@ impl<B: Board> Backend<B> {
             }
         };
 
-        // TODO(#12872): Define constants.
+        // TODO(lowrisc/opentitan#12872): Define constants.
         let mut data = 0;
         if enable {
             data |= 1 << 3;
@@ -641,7 +641,7 @@ impl<B: Board> Backend<B> {
 
     /// Save PLL settings to EEPROM, making them power-on defaults.
     pub fn pll_write_defaults(&self) -> Result<()> {
-        // TODO(#12872): Define constants.
+        // TODO(lowrisc/opentitan#12872): Define constants.
         let data = self.pll_read(26)?;
         self.pll_write(26, data | (1 << 7))?;
 
