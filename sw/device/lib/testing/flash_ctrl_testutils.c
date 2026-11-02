@@ -175,7 +175,7 @@ status_t flash_ctrl_testutils_write(
     uint32_t partition_id, const uint32_t *data,
     dif_flash_ctrl_partition_type_t partition_type, uint32_t word_count) {
   // Cannot program partial words.
-  // TODO: #13773 for more details.
+  // TODO: lowrisc/opentitan#13773 for more details.
   // When 13773 is supported, programs to non-scrambled or ecc enabled
   // pages can support byte writes.  While programs to scrambled or ecc
   // enabled pages can support only flash item writes.

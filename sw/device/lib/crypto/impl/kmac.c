@@ -19,7 +19,7 @@ otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t customization_string,
                                 size_t required_output_len,
                                 otcrypto_word32_buf_t tag) {
-  // TODO (#16410) Revisit/complete error checks
+  // TODO (lowrisc/opentitan#16410) Revisit/complete error checks
 
   // Check for null pointers.
   if (key == NULL || key->keyblob == NULL || tag.data == NULL) {

@@ -75,7 +75,8 @@ extern "C++" {
  * This macro is based off of a well-known preprocessor trick. This
  * StackOverflow post expains the trick in detail:
  * https://stackoverflow.com/questions/2308243/macro-returning-the-number-of-arguments-it-is-given-in-c
- * TODO #2026: a dummy token is required for this to work correctly.
+ * TODO lowrisc/opentitan#2026: a dummy token is required for this to work
+ * correctly.
  *
  * @param dummy a dummy token that is required to be passed for the calculation
  *              to work correctly.

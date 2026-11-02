@@ -252,7 +252,7 @@ module prim_reg_cdc_arb #(
     `ifdef FPV_ON
     `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> ##[0:20] src_update_o,
             clk_src_i, !rst_src_ni)
-      // TODO: #14913 check if we can add additional sim assertions.
+      // TODO: lowrisc/opentitan#14913 check if we can add additional sim assertions.
     `endif
 
     `ifdef FPV_ON
@@ -274,7 +274,7 @@ module prim_reg_cdc_arb #(
       // pragma coverage on
 
       // once hardware makes an update request, we must eventually see an update pulse
-      // TODO: #14913 check if we can add additional sim assertions.
+      // TODO: lowrisc/opentitan#14913 check if we can add additional sim assertions.
       `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
               clk_src_i, !rst_src_ni)
     `endif

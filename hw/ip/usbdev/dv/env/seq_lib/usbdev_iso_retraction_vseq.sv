@@ -29,11 +29,11 @@ class usbdev_iso_retraction_vseq extends usbdev_base_vseq;
   task host_side();
     int prev_seq = -1;
     do begin
-      // TODO: experiment/justify. See #23932.
+      // TODO: experiment/justify. See lowrisc/opentitan#23932.
       int unsigned delay = $urandom_range(1, max_delay - min_delay);
       usb20_item reply;
       // Randomized delay, to ensure that we miss some of the packets.
-      // TODO: we should really be using the host clock here; see #23932.
+      // TODO: we should really be using the host clock here; see lowrisc/opentitan#23932.
       cfg.clk_rst_vif.wait_clks(delay);
       // Isochronous packets are not ACKnowledged.
       retrieve_in_packet(ep_default, reply, .ack(1'b0));
@@ -112,7 +112,7 @@ class usbdev_iso_retraction_vseq extends usbdev_base_vseq;
       `DV_CHECK_GE(buf_num, 0, "No buffer available")
 
       // Repeat the sequence number throughout the buffer to create a longer packet.
-      // TODO: investigate whether there's any benefit to varying this. See #23932.
+      // TODO: investigate whether there's any benefit to varying this. See lowrisc/opentitan#23932.
       nwords = MaxPktSizeByte / 4;
       repeat (nwords) begin
         bit [31:0] pkt_seq = seq;

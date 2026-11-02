@@ -235,6 +235,6 @@ module prim_reg_cdc #(
   // configuration for the main clock and the slow aon clock in our FPV tool setup).
   `ifdef FPV_ON
   `ASSERT(HungHandShake_A, $rose(src_req) |-> ##[0:40] src_ack, clk_src_i, !rst_src_ni)
-    // TODO: #14913 check if we can add additional sim assertions.
+    // TODO: lowrisc/opentitan#14913 check if we can add additional sim assertions.
   `endif
 endmodule // prim_subreg_cdc

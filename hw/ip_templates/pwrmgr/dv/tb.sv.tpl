@@ -102,7 +102,7 @@ module tb;
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
 % if wait_for_external_reset:
-    // TODO(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
+    // TODO(lowrisc/opentitan#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
     .ext_rst_ack_i(int_reset_req),
 % endif
     .rstreqs_i (pwrmgr_if.rstreqs_i),

@@ -295,7 +295,7 @@ ROM_EXT_FEATURES = [
         name = "rom_ext_{}_slot_{}".format(variation_name, slot),
         testonly = True,
         collect_code_coverage = 0,
-        # TODO(#22780): Integrate real keys for A1 flows.
+        # TODO(lowrisc/opentitan#22780): Integrate real keys for A1 flows.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
             "//hw/top_egret:fpga_cw310",

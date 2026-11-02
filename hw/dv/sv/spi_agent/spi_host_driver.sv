@@ -94,9 +94,9 @@ class spi_host_driver extends spi_driver;
         SpiTransSckNoCsb: drive_sck_no_csb_item();
         SpiTransCsbNoSck: drive_csb_no_sck_item();
         SpiTransIncompleteOpcode: begin
-          // TODO(#15721), need to have at least 3 spi_clk when CSB is active, otherwise,
-          // this incomplete req may have bad side effect due to `sys_csb_deasserted_pulse_i`
-          // isn't set correctly
+          // TODO(lowrisc/opentitan#15721), need to have at least 3 spi_clk when CSB is active,
+          // otherwise, this incomplete req may have bad side effect due to
+          // `sys_csb_deasserted_pulse_i` isn't set correctly
           int num_bits = $urandom_range(3, 7);
           // invoke `drive_normal_item` to send less than 8 bits data as incompleted opcode
           drive_normal_item(.partial_byte(1), .num_bits(num_bits));

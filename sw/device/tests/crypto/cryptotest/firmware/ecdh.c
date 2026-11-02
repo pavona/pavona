@@ -103,7 +103,8 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   }
 
   // Construct the private key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
+  // TODO(lowrisc/opentitan#20762): once key-import exists for ECDH, use that
+  // instead.
   uint32_t private_keyblob[kP256MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
   memcpy(private_keyblob, d.d0, d.d0_len);
@@ -124,7 +125,8 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Construct the public key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
+  // TODO(lowrisc/opentitan#20762): once key-import exists for ECDH, use that
+  // instead.
   uint32_t public_key_buf[kP256CoordinateWords * 2];
   memset(public_key_buf, 0, sizeof(public_key_buf));
   memcpy(public_key_buf, qx.coordinate, qx.coordinate_len);
@@ -225,7 +227,8 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   }
 
   // Construct the private key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
+  // TODO(lowrisc/opentitan#20762): once key-import exists for ECDH, use that
+  // instead.
   // Note: the test harness does not produce the extra masking bytes; leave
   // them zeroed.
   uint32_t private_keyblob[kP384MaskedPrivateKeyWords * 2];
@@ -248,7 +251,8 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Construct the public key object.
-  // TODO(#20762): once key-import exists for ECDH, use that instead.
+  // TODO(lowrisc/opentitan#20762): once key-import exists for ECDH, use that
+  // instead.
   uint32_t public_key_buf[kP384CoordinateWords * 2];
   memset(public_key_buf, 0, sizeof(public_key_buf));
   memcpy(public_key_buf, qx.coordinate, qx.coordinate_len);

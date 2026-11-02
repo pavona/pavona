@@ -57,9 +57,11 @@ class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
             //   block will end, causing this block to get disabled.
             begin
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(edges_until_sw_rst,
-                edges_until_sw_rst inside { [40 : 120] };) // TODO(#18886) Examine txn len for range
+                edges_until_sw_rst inside { [40 : 120] };)
+              // TODO(lowrisc/opentitan#18886) Examine txn len for range
               while (edges_until_sw_rst > 0) begin
-                // TODO(#18886) The below statement assumes CSB[0], future work may break this.
+                // TODO(lowrisc/opentitan#18886) The below statement assumes CSB[0], future work may
+                // break this.
                 cfg.m_spi_agent_cfg.wait_sck_edge(DrivingEdge, 2'b00);
                 edges_until_sw_rst--;
               end

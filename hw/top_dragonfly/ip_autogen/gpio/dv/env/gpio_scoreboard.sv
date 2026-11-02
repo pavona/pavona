@@ -211,35 +211,35 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
         if (csr.get_name() == "inp_prd_cnt_val_0") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_1") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_2") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_3") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_4") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_5") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_6") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         if (csr.get_name() == "inp_prd_cnt_val_7") begin
-          // TODO(#26544): Check values read from all input period counters.
+          // TODO(lowrisc/opentitan#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
         // If do_read_check, is set, then check mirrored_value against item.d_data
@@ -553,28 +553,28 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         "ctrl_en_input_filter": begin
         end
         "inp_prd_cnt_ctrl_0": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_1": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_2": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_3": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_4": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_5": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_6": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         "inp_prd_cnt_ctrl_7": begin
-          // TODO(#26544): Model input period counters in scoreboard.
+          // TODO(lowrisc/opentitan#26544): Model input period counters in scoreboard.
         end
         default: begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))

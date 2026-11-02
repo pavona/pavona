@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from LintParser import LintParser
 
-# TODO(#9079): this script will be removed long term once the
+# TODO(lowrisc/opentitan#9079): this script will be removed long term once the
 # parser has been merged with the Dvsim core code.
 
 

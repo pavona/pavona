@@ -104,7 +104,8 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
   }
 
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
-  // TODO(#6112): Consider using a canonical reference for alignment operations.
+  // TODO(lowrisc/opentitan#6112): Consider using a canonical reference for
+  // alignment operations.
   const uint32_t num_128bit_blocks = (len + 3) / 4;
   return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){

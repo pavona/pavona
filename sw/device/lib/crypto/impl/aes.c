@@ -228,7 +228,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_CHECK_LT(index, num_full_blocks);
     // No need to worry about padding, just copy the data into the output
     // block.
-    // TODO(#17711) Change to `hardened_memcpy`.
+    // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
     memcpy(block->data, &input.data[index * kAesBlockNumBytes],
            kAesBlockNumBytes);
     return OTCRYPTO_OK;
@@ -373,7 +373,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
     hardened_memshred(block_out.data, ARRAYSIZE(block_out.data));
     HARDENED_TRY(aes_update(&block_out, &block_in));
-    // TODO(#17711) Change to `hardened_memcpy`.
+    // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
     memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
            block_out.data, kAesBlockNumBytes);
   }
@@ -384,7 +384,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   // input).
   for (i = block_offset; launder32(i) > 0; --i) {
     HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
-    // TODO(#17711) Change to `hardened_memcpy`.
+    // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
     memcpy(&cipher_output.data[(input_nblocks - i) * kAesBlockNumBytes],
            block_out.data, kAesBlockNumBytes);
   }

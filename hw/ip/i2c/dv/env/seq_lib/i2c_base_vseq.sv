@@ -853,7 +853,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     `DV_CHECK(min_num_transfers <= max_num_transfers)
 
     // Randomize the number of transfers in the transaction.
-    // TODO(#23920) Consider re-implementing to avoid waiver.
+    // TODO(lowrisc/opentitan#23920) Consider re-implementing to avoid waiver.
     num_transfers = $dist_normal( // verilog_lint: waive invalid-system-task-function
       /* seed */ seed,
       /* mean */ int'(num_data_total * real'(cfg.rs_pct / 100.0)),
@@ -972,7 +972,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // different to how it is used elsewhere. In fact, the i2c_item type would be better renamed
   // to a i2c_transfer_item, as really this is the level of abstraction it operates at.
   // The 3 fields above are not used, except for controlling the i2c_driver.
-  // #TODO Move to agent sequence ideally. (also see #14825)
+  // #TODO Move to agent sequence ideally. (also see lowrisc/opentitan#14825)
   //
   virtual function void convert_i2c_txn_to_drv_q(i2c_transaction txn, ref i2c_item drv_q[$]);
 

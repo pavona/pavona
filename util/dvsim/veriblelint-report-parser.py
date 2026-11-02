@@ -12,7 +12,7 @@ from pathlib import Path
 from LintParser import LintParser
 
 
-# TODO(#9079): this script will be removed long term once the
+# TODO(lowrisc/opentitan#9079): this script will be removed long term once the
 # parser has been merged with the Dvsim core code.
 def main():
     parser = argparse.ArgumentParser(
@@ -60,7 +60,7 @@ def main():
             # TODO(https://github.com/olofk/edalize/issues/90):
             # this is a workaround until we actually have native Edalize
             # support for JasperGold and "formal" targets
-            # TODO(#10071) remove countermeasure waiver.
+            # TODO(lowrisc/opentitan#10071) remove countermeasure waiver.
             ("flow_warning",
              r"^(?!WARNING: Unknown item formal in section Target)"
              r"(?!WARNING: Countermeasure.*)"

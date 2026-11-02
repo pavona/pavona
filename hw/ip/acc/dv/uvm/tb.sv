@@ -289,7 +289,8 @@ module tb;
   // This check is very slightly weakened from "should match on every cycle" because there is a
   // minor corner case where it can appear to become StatusLocked for a single cycle before jumping
   // to StatusBusySecWipeInt for a while before it eventually becomes StatusLocked again.
-  // TODO(#23903): This is probably not the behaviour we want, but would need an RTL fix.
+  // TODO(lowrisc/opentitan#23903): This is probably not the behaviour we want, but would need an
+  // RTL fix.
 
   logic status_mismatch_d, status_mismatch_q;
   assign status_mismatch_d = dut.u_reg.u_status.q != model_if.status;
@@ -310,7 +311,7 @@ module tb;
   `ASSERT(MatchingReqRND_A, dut.u_acc_core.edn_rnd_req_o == edn_rnd_req_model, clk, !rst_n)
   // Disable checking URND in the case of Locked status since it's modelling is not exactly accurate
   // for that state.
-  // TODO (#15710): Fix modelling of URND in the locked state.
+  // TODO (lowrisc/opentitan#15710): Fix modelling of URND in the locked state.
   `ASSERT(MatchingReqURND_A, dut.u_acc_core.edn_urnd_req_o == edn_urnd_req_model,
     clk, !rst_n || model_if.status == acc_pkg::StatusLocked)
 

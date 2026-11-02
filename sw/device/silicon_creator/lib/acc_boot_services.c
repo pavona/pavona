@@ -128,7 +128,8 @@ rom_error_t acc_boot_attestation_keygen(
   HARDENED_RETURN_IF_ERROR(sc_acc_execute());
   SEC_MMIO_WRITE_INCREMENT(kScAccSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_acc`).
+  // TODO(lowrisc/opentitan#20023): Check the instruction count register (see
+  // `mod_exp_acc`).
 
   // Retrieve the public key.
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256PublicKeyCoordWords,
@@ -210,7 +211,8 @@ rom_error_t acc_boot_attestation_key_save(
   HARDENED_RETURN_IF_ERROR(sc_acc_execute());
   SEC_MMIO_WRITE_INCREMENT(kScAccSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_acc`).
+  // TODO(lowrisc/opentitan#20023): Check the instruction count register (see
+  // `mod_exp_acc`).
 
   return kErrorOk;
 }
@@ -251,7 +253,8 @@ rom_error_t acc_boot_attestation_endorse(const hmac_digest_t *digest,
   HARDENED_RETURN_IF_ERROR(sc_acc_execute());
   SEC_MMIO_WRITE_INCREMENT(kScAccSecMmioExecute);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_acc`).
+  // TODO(lowrisc/opentitan#20023): Check the instruction count register (see
+  // `mod_exp_acc`).
 
   // Retrieve the signature (in two parts, r and s).
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(kEcdsaP256SignatureComponentWords,
@@ -304,7 +307,8 @@ rom_error_t acc_boot_sigverify_finish(uint32_t *recovered_r) {
   HARDENED_RETURN_IF_ERROR(sc_acc_dmem_read(1, kAccVarBootOk, &ok));
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
-  // TODO(#20023): Check the instruction count register (see `mod_exp_acc`).
+  // TODO(lowrisc/opentitan#20023): Check the instruction count register (see
+  // `mod_exp_acc`).
 
   // Read the recovered `r` value from DMEM.
   return sc_acc_dmem_read(kEcdsaP256SignatureComponentWords, kAccVarBootXr,

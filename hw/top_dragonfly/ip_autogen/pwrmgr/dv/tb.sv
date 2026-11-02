@@ -97,7 +97,7 @@ module tb;
 
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
-    // TODO(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
+    // TODO(lowrisc/opentitan#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
     .ext_rst_ack_i(int_reset_req),
     .rstreqs_i (pwrmgr_if.rstreqs_i),
     .ndmreset_req_i(pwrmgr_if.cpu_i.ndmreset_req),

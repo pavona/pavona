@@ -95,9 +95,9 @@ class usbdev_aon_wake_vseq extends usbdev_link_suspend_vseq;
           // and/or reported event.
           cfg.clk_rst_vif.wait_clks($urandom_range(1, 2000));
 
-          // TODO: Draft PR #19270 contends that perhaps this is undesirable behavior, but the
-          // pull-up presently will be re-enabled if VBUS is reinstated. Firmware may detect and
-          // prevent this if required.
+          // TODO: Draft PR lowrisc/opentitan#19270 contends that perhaps this is undesirable
+          // behavior, but the pull-up presently will be re-enabled if VBUS is reinstated. Firmware
+          // may detect and prevent this if required.
         end else begin
           // If VBUS remains deasserted, the pull-up enable shall remain deasserted by the DUT too.
           if (phy_pinflip) exp_dn_pullup = 1'b0;

@@ -8,7 +8,8 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
   // VARIABLES //
   ///////////////
 
-  // TODO(#23920) Figure out a better way to calculate this based on testbench clock frequency
+  // TODO(lowrisc/opentitan#23920) Figure out a better way to calculate this based on testbench
+  // clock frequency
   int clock_period_nanos = 41;
   int i2c_clock_period_nanos = 1000;
   int rise_fall_nanos = 10;

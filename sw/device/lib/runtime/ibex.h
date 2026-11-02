@@ -210,8 +210,8 @@ inline uint64_t ibex_timeout_elapsed(const ibex_timeout_t *timeout) {
  * @param expr An expression that is evaluated multiple times until true.
  * @param timeout_usec Timeout in microseconds.
  */
-// TODO(#17495) Remove this macro and rename `IBEX_TRY_SPIN_FOR` when all the
-// test are refactored.
+// TODO(lowrisc/opentitan#17495) Remove this macro and rename
+// `IBEX_TRY_SPIN_FOR` when all the test are refactored.
 #define IBEX_SPIN_FOR(expr, timeout_usec)                                 \
   do {                                                                    \
     const ibex_timeout_t timeout_ = ibex_timeout_init(timeout_usec);      \

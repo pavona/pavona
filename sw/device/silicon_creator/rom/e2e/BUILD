@@ -127,7 +127,7 @@ pavona_test(
 ]
 
 [
-    # TODO(#19923): This target has been temporarily added until the original
+    # TODO(lowrisc/opentitan#19923): This target has been temporarily added until the original
     # target and its dependencies are migrated to the new build and test rules.
     pavona_binary(
         name = "new_empty_test_slot_{}".format(slot),

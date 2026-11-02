@@ -250,7 +250,7 @@ package dv_utils_pkg;
           "/usr/bin/readelf -s --wide %0s | grep \"\\s%0s$\" | awk \'{print $2\" \"$3}\' > %0s",
           elf_file, escaped_symbol, out_file);
 
-      // TODO #3838: shell pipes are bad 'mkay?
+      // TODO lowrisc/opentitan#3838: shell pipes are bad 'mkay?
       ret = $system(cmd);
       `DV_CHECK_EQ_FATAL(ret, 0, $sformatf("Command \"%0s\" failed with exit code %0d", cmd, ret),
                          $sformatf("%m"))

@@ -149,7 +149,7 @@ otp_json_rot_keys = rule(
 )
 
 def _otp_json_immutable_rom_ext_impl(ctx):
-    # TODO(#23425): refactor how the ELF file containing the immutable section
+    # TODO(lowrisc/opentitan#23425): refactor how the ELF file containing the immutable section
     # is extracted since there could be multiple ELFs if the ROM_EXT input
     # target is the output of an `pavona_binary` rule.
     rom_ext_deps = ctx.attr.rom_ext[DefaultInfo].files.to_list()

@@ -260,7 +260,7 @@ static const entropy_complex_config_t kEntropyComplexConfigIdContinuous = {
             .single_bit_mode = kMultiBitBool4False,
             .fips_test_window_size = 0x200,
             .alert_threshold = 2,
-            // TODO(#19392): Figure out appropriate thresholds.
+            // TODO(lowrisc/opentitan#19392): Figure out appropriate thresholds.
             .repcnt_threshold = 0xffff,
             .repcnts_threshold = 0xffff,
             .adaptp_hi_threshold = 0xffff,
@@ -1071,7 +1071,8 @@ status_t entropy_csrng_update(const entropy_seed_material_t *seed_material) {
 status_t entropy_csrng_generate_start(
     const entropy_seed_material_t *seed_material, size_t len) {
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
-  // TODO(#6112): Consider using a canonical reference for alignment operations.
+  // TODO(lowrisc/opentitan#6112): Consider using a canonical reference for
+  // alignment operations.
   const uint32_t num_128bit_blocks = ceil_div(len, 4);
   return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){

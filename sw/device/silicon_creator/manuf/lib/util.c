@@ -47,8 +47,9 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 
   // Create a temporary uint32_t buffer and copy the result from there to the
   // uint64_t buffer.
-  // TODO(#16556): this is a workaround to avoid violating strict-aliasing; if
-  // we pass -fno-strict-aliasing, then we can cast `hashed_token` to `uint32_t
+  // TODO(lowrisc/opentitan#16556): this is a workaround to avoid violating
+  // strict-aliasing; if we pass -fno-strict-aliasing, then we can cast
+  // `hashed_token` to `uint32_t
   // *` instead.
   size_t token_num_words = token_size_bytes / sizeof(uint32_t);
   if (token_size_bytes % sizeof(uint32_t) != 0) {

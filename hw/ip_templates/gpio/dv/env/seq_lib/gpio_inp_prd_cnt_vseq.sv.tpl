@@ -113,7 +113,7 @@ class ${vseq_name} extends gpio_base_vseq;
     test_continuous_two_patterns(.prescaler(0), .cycles_between_first_1(1),
                                  .cycles_between_second_1(2), .exp_val(2));
 
-    // TODO(#26544): Test many more random patterns with different settings.
+    // TODO(lowrisc/opentitan#26544): Test many more random patterns with different settings.
   endtask
 
 endclass

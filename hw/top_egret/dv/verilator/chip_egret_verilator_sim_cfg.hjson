@@ -147,7 +147,7 @@
       name: rv_plic_smoketest
       sw_images: ["//sw/device/tests:rv_plic_smoketest:1"]
     }
-    // TODO(#6656): AST is not instantiated in chip_egret_verilator.
+    // TODO(lowrisc/opentitan#6656): AST is not instantiated in chip_egret_verilator.
     // {
     //   name: pwrmgr_smoketest
     //   sw_images: ["//sw/device/tests:pwrmgr_smoketest:1"]

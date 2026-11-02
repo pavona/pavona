@@ -26,7 +26,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // both may access the same csr `CFG`, have this to avoid accessing it at the same time.
   semaphore           spi_cfg_sema = new(1);
 
-  // TODO(#15543) SW can only configure addr_4b after reset
+  // TODO(lowrisc/opentitan#15543) SW can only configure addr_4b after reset
   bit                 do_addr_4b_cfg;
 
   // when asserted this will reinitialise the scoreboard's memory models

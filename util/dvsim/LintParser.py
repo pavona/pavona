@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Tuple
 
 
-# TODO(#9079): this class will be refactored so that it can be integrated into
+# TODO(lowrisc/opentitan#9079): this class will be refactored so that it can be integrated into
 # the Dvsim core code.
 class LintParser():
 

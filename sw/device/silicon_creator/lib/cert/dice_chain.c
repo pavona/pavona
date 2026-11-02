@@ -474,7 +474,8 @@ rom_error_t dice_chain_attestation_owner(
     dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kDicePageDataSize;
-    // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
+    // TODO(lowrisc/opentitan#19596): add owner configuration block measurement
+    // to CDI_1 cert.
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
         (hmac_digest_t *)bl0_measurement, owner_measurement, owner_history_hash,
         owner_manifest->security_version, key_domain, &dice_chain.key_ids,

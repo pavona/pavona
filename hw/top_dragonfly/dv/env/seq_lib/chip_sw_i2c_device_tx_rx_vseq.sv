@@ -229,7 +229,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
 
   // This function is duplicated from the block level i2c_base_vseq
-  // TODO(#23920) Find a unified home for this logic, which will probably be inside the i2c agent.
+  // TODO(lowrisc/opentitan#23920) Find a unified home for this logic, which will probably be inside
+  // the i2c agent.
   //
   virtual function void convert_i2c_txn_to_drv_q(i2c_transaction txn, ref i2c_item drv_q[$]);
 

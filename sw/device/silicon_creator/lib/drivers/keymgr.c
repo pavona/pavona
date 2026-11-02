@@ -281,8 +281,8 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
   }
 
   // Spin for 100 microseconds.
-  // TODO(#20024): this value seems to work for tests, but it would be good to
-  // run a more principled analysis.
+  // TODO(lowrisc/opentitan#20024): this value seems to work for tests, but it
+  // would be good to run a more principled analysis.
   busy_spin_micros(100);
 
   // Stop continuous clearing.

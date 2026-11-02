@@ -81,14 +81,15 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     pinmux_hw_debug_en == 1'b1;
   }
 
-  // TODO(#23096): Currently, the dft enable (used when late debug is enable is false) is hard-coded
-  //               to match lc_hw_debug_en. This eventually needs to be separately controlled.
+  // TODO(lowrisc/opentitan#23096): Currently, the dft enable (used when late debug is enable is
+  //                               false) is hard-coded to match lc_hw_debug_en. This eventually
+  //                               needs to be separately controlled.
   constraint lc_dft_en_c {
     lc_dft_en == lc_hw_debug_en;
   }
 
-  // TODO(#23096): We don't currently test the situation where late debug enable is false. We
-  // should.
+  // TODO(lowrisc/opentitan#23096): We don't currently test the situation where late debug enable is
+  // false. We should.
   constraint late_debug_enable_c {
     late_debug_enable == 1;
   }

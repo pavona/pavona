@@ -807,7 +807,7 @@ void streams_service(usbdpi_ctx_t *ctx) {
     } break;
 
     case HS_ERROR:
-      // TODO: report failure (#17259)
+      // TODO: report failure (lowrisc/opentitan#17259)
       assert(!"Unexpected behavior in streaming test");
       ctx->hostSt = HS_NEXTFRAME;
       break;
