@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -12,6 +12,18 @@ exports_files(["run_smoke_test.sh"])
 
 py_binary(
     name = "acc_as",
+    srcs = ["acc_as.py"],
+    deps = [
+        "//hw/ip/acc/util/shared:bit_ranges",
+        "//hw/ip/acc/util/shared:encoding",
+        "//hw/ip/acc/util/shared:insn_yaml",
+        "//hw/ip/acc/util/shared:operand",
+        "//hw/ip/acc/util/shared:toolchain",
+    ],
+)
+
+py_library(
+    name = "acc_as_lib",
     srcs = ["acc_as.py"],
     deps = [
         "//hw/ip/acc/util/shared:bit_ranges",
