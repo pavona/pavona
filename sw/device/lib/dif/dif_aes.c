@@ -312,8 +312,20 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data) {
 
 dif_result_t dif_aes_set_gcm_phase(const dif_aes_t *aes, uint32_t phase,
                                    size_t num_valid_bytes) {
-  if (aes == NULL) {
+  if (aes == NULL || num_valid_bytes == 0 || num_valid_bytes > 16) {
     return kDifBadArg;
+  }
+
+  switch (phase) {
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_INIT:
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_RESTORE:
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD:
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT:
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_SAVE:
+    case AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TAG:
+      break;
+    default:
+      return kDifBadArg;
   }
 
   if (!aes_idle(aes)) {
