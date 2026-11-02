@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''Run tests to make sure the simulator works as expected
+"""Run tests to make sure the simulator works as expected
 
 We expect tests below ./simple. Each test is defined by two files (in the same
 directory as each other). The code for the test is in a single assembly file,
 called <name>.s, and the expected results are in a file called <name>.exp.
 
-'''
+"""
 
 import os
 import py
@@ -19,14 +19,14 @@ from testutil import asm_and_link_one_file, SIM_DIR
 from shared.reg_dump import parse_reg_dump
 
 
-def find_simple_tests() -> List[Tuple[str, str]]:
-    '''Find all tests below ./simple (relative to this file)
+def find_simple_tests() -> List[Tuple[Path, Path]]:
+    """Find all tests below ./simple (relative to this file)
 
     Returns (asm, expected) pairs, with the paths to the assembly file and
     expected values.
 
-    '''
-    root = os.path.join(os.path.dirname(__file__), 'simple')
+    """
+    root = os.path.join(os.path.dirname(__file__), "simple")
     ret = []
     for subdir, _, files in os.walk(root):
         # We're interested in pairs foo.s / foo.exp, which contain the assembly
@@ -36,10 +36,10 @@ def find_simple_tests() -> List[Tuple[str, str]]:
 
         for filename in files:
             basename, ext = os.path.splitext(filename)
-            if ext == '.s':
+            if ext == ".s":
                 assert basename not in asm_files
                 asm_files[basename] = filename
-            elif ext == '.exp':
+            elif ext == ".exp":
                 assert basename not in exp_files
                 exp_files[basename] = filename
             else:
@@ -53,22 +53,28 @@ def find_simple_tests() -> List[Tuple[str, str]]:
         for basename, asm_file in asm_files.items():
             exp_file = exp_files.get(basename)
             if exp_file is None:
-                raise RuntimeError('In the directory {!r}, there is {}, but '
-                                   'no {}.exp, which should contain expected '
-                                   'values.'
-                                   .format(dirname, asm_file, basename))
+                raise RuntimeError(
+                    "In the directory {!r}, there is {}, but "
+                    "no {}.exp, which should contain expected "
+                    "values.".format(dirname, asm_file, basename)
+                )
 
-            ret.append((os.path.join(dirname, asm_file),
-                        os.path.join(dirname, exp_file)))
+            ret.append(
+                (
+                    Path(os.path.join(dirname, asm_file)),
+                    Path(os.path.join(dirname, exp_file)),
+                )
+            )
 
         # We've checked that every .s file has a matching .exp. Check the other
         # way around too.
         for basename, exp_file in exp_files.items():
             if basename not in asm_files:
-                raise RuntimeError('In the directory {!r}, there is {}, but '
-                                   'no {}.s, which should contain the program '
-                                   'that generates the expected values.'
-                                   .format(dirname, exp_file, basename))
+                raise RuntimeError(
+                    "In the directory {!r}, there is {}, but "
+                    "no {}.s, which should contain the program "
+                    "that generates the expected values.".format(dirname, exp_file, basename)
+                )
 
         assert len(exp_files) == len(asm_files)
 

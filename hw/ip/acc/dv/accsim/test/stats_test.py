@@ -15,7 +15,7 @@ def _run_sim_for_stats(sim: StandaloneSim) -> ExecutionStats:
     sim.run(verbose=False, dump_file=None)
 
     # Ensure that the execution was successful.
-    assert sim.state.ext_regs.read('ERR_BITS', False) == 0
+    assert sim.state.ext_regs.read("ERR_BITS", False) == 0
 
     assert sim.stats
     return sim.stats
