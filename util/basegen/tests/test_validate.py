@@ -7,7 +7,8 @@ from jsonschema.exceptions import ValidationError
 from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 
 from basegen.validate import (validate_schema, all_validation_errors,
-                              TOPCFG_VALIDATOR, IP_BLOCK_VALIDATOR,
+                              TOPCFG_VALIDATOR, SEEDCFG_VALIDATOR,
+                              IP_BLOCK_VALIDATOR,
                               XBAR_VALIDATOR,
                               TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR,
                               RACL_VALIDATOR, RACL_MAPPING_VALIDATOR,
@@ -29,6 +30,12 @@ KNOWN_GOOD_TOPCFGS = tuple(
     import_hjson(topcfg)
     for topcfg in REPO_TOP.glob("hw/top_*/data/top_*.hjson")
     if "seed" not in topcfg.name
+)
+
+# test_seedcfg_validation
+KNOWN_GOOD_SEEDCFGS = tuple(
+    import_hjson(seedcfg)
+    for seedcfg in REPO_TOP.glob("hw/top_*/data/top_*_seed.*.hjson")
 )
 
 # test_ip_block_validation
@@ -131,6 +138,13 @@ def test_topcfg_validation():
             continue
         raise Exception("top config validation (direct) incorrectly approved"
                         f" bad config!\n\t{bad}")
+
+
+def test_seedcfg_validation():
+    _validate_good_and_bad_inputs(KNOWN_GOOD_SEEDCFGS,
+                                  BAD_INPUTS,
+                                  SEEDCFG_VALIDATOR,
+                                  "topgen seed configuration")
 
 
 def test_ip_block_validation():
