@@ -297,7 +297,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
               UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
-    // TODO(#667) - need to restructure SCB so that reading a WIP status doesn't cause error
+    // TODO - need to restructure SCB so that reading a WIP status doesn't cause error
     // for now set the minimum spinwait_delay_ns to 2 to ensure this false error doesn't happen
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(2, 100)));

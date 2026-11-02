@@ -293,7 +293,7 @@ module keymgr_dpe
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
     .load_key_lock_i(reg2hw.load_key_lock.q),
-    // TODO(#384): Add assertions to check that we are not losing some bits by casting
+    // TODO: Add assertions to check that we are not losing some bits by casting
     // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q)),
     .slot_dst_sel_i(keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q)),
@@ -587,7 +587,7 @@ module keymgr_dpe
     .prng_en_o(data_lfsr_en),
     .adv_data_i(adv_matrix[active_key_slot.boot_stage]),
     // Keymgr DPE does not have id generation, so assign '0 to `id_data_i`
-    // TODO(#384): instead of '0, assign some random netlist constant here.
+    // TODO: instead of '0, assign some random netlist constant here.
     .id_data_i('0),
     .gen_data_i(gen_in),
     .inputs_invalid_i(invalid_data),
