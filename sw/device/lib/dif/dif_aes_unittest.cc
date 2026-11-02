@@ -253,6 +253,7 @@ TEST_F(GcmTest, start) {
   });
   ExpectAuxConfig({});
   EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
   ExpectGcmPhase(AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_INIT, 16);
   ExpectKey(kKey, 8);
   ExpectIv(kIv);
@@ -876,6 +877,19 @@ TEST_F(DifBadArgError, LoadIV) {
 TEST_F(DifBadArgError, SetGcmPhase) {
   EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
       nullptr, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 16));
+  // Invalid phase tests: zero, two phases at once, invalid phase
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(&aes_, 0, 16));
+  EXPECT_DIF_BADARG(
+      dif_aes_set_gcm_phase(&aes_,
+                            AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD |
+                                AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                            16));
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(&aes_, 0x40, 16));
+  // The number of valid bytes must be 1 to 16.
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
+      &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 0));
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
+      &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 17));
 }
 
 TEST_F(DifBadArgError, LoadGcmTagLen) {
