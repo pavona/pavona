@@ -260,7 +260,7 @@ class i2c_reference_model extends uvm_component;
         target_addr1 = get_field_val(ral.target_id.address1, data);
         // If we write new addresses into the DUT, also update the agent's configuration
         // with the same value(s).
-        // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
+        // TODO(lowrisc/opentitan#23920) Remove knowledge of the DUT Addresses from the i2c_agent
         cfg.m_i2c_agent_cfg.target_addr0 = get_field_val(ral.target_id.address0, data);
         cfg.m_i2c_agent_cfg.target_addr1 = get_field_val(ral.target_id.address1, data);
       end

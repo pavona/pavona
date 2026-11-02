@@ -412,7 +412,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       if (exp_oe && exp_out !== 1'bz) begin
         exp_strength = {mio_pad_attr[i].drive_strength[0] ? "St" : "Pu", $sformatf("%0d", exp_out)};
         `DV_CHECK_EQ(exp_out, cfg.chip_vif.mios_if.pins[i], msg)
-// TODO(#18988): this driving strength comparison fails on VCS. Re-enable
+// TODO(lowrisc/opentitan#18988): this driving strength comparison fails on VCS. Re-enable
 // once this mismatch has been root-caused and fixed.
 `ifdef XCELIUM
         `DV_CHECK_STREQ(exp_strength, obs_strength, msg)
@@ -421,7 +421,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         if (mio_pad_attr[i].pull_en) begin
           exp_strength = $sformatf("We%0d", mio_pad_attr[i].pull_select);
           `DV_CHECK_EQ(mio_pad_attr[i].pull_select, cfg.chip_vif.mios_if.pins[i], msg)
-// TODO(#18988): this driving strength comparison fails on VCS. Re-enable
+// TODO(lowrisc/opentitan#18988): this driving strength comparison fails on VCS. Re-enable
 // once this mismatch has been root-caused and fixed.
 `ifdef XCELIUM
           `DV_CHECK_STREQ(exp_strength, obs_strength, msg)

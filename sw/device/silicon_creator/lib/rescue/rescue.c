@@ -65,8 +65,8 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
       state->mode == kRescueModeFirmwareSlotB ? kFlashBankSize : 0;
   if (state->flash_offset == 0) {
-    // TODO(#24428): Make sure we interact correctly with owner flash region
-    // configuration.
+    // TODO(lowrisc/opentitan#24428): Make sure we interact correctly with owner
+    // flash region configuration.
     flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
         .read = kMultiBitBool4True,
         .write = kMultiBitBool4True,

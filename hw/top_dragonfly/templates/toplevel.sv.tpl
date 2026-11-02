@@ -348,7 +348,7 @@ module top_${top["name"]} #(
 % for m in top["module"]:
   % if m.get("template_type") == "otp_ctrl":
   // OTP HW_CFG Broadcast signals.
-  // TODO(#6713): The actual struct breakout and mapping currently needs to
+  // TODO(lowrisc/opentitan#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
@@ -758,8 +758,8 @@ has_params, param_items = lib.get_params(top, m)
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
-  // TODO(#26288) : EnCsrngSwAppReadSize should not be present in Dragonfly; presently, this signal
-  // must be used to avoid a lint error.
+  // TODO(lowrisc/opentitan#26288) : EnCsrngSwAppReadSize should not be present in Dragonfly;
+  // presently, this signal must be used to avoid a lint error.
   logic unused_en_csrng;
   assign unused_en_csrng = ^otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
 

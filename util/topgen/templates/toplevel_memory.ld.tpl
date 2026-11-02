@@ -7,7 +7,7 @@
 /*${gencmd_out}
  */
 <%!
-# TODO(#4709): Remove this function, once the old way of defining memories has been deprecated.
+# TODO(lowrisc/opentitan#4709): Remove this function, once the old way of defining memories has been deprecated.
 def memory_to_flags(memory):
     memory_type = memory["type"]
     memory_access = memory.get("swaccess", "rw")

@@ -798,7 +798,7 @@
         'pinmux_aon.dft_jtag',
 
         // OTP HW_CFG Broadcast signals.
-        // TODO(#6713): The actual struct breakout and mapping currently needs to
+        // TODO(lowrisc/opentitan#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
         'sram_ctrl_main.otp_en_sram_ifetch'
     ],

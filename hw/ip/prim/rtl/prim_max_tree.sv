@@ -140,7 +140,8 @@ module prim_max_tree #(
   //VCS coverage on
   // pragma coverage on
 
-  // TODO(10588): Below syntax is not supported in xcelium, track xcelium cases #46591452.
+  // TODO(lowrisc/opentitan#10588): Below syntax is not supported in xcelium, track xcelium cases
+  // #46591452.
   // `ASSERT(ValidInImpliesValidOut_A, |valid_i <-> max_valid_o)
   `ASSERT(ValidInImpliesValidOut_A, |valid_i === max_valid_o)
   `ASSERT(MaxComputation_A, max_valid_o |-> max_value_o == max_value_exp)

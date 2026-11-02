@@ -273,10 +273,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
     _sram_bkdr_write32(addr, data, RamCtn0, cfg.num_ram_ctn_tiles, 0, '0, '0, flip_bits);
   endfunction
 
-  // TODO(#26486): This code just mimics the behavior of _sram_bkdr_write32 in a manner that permits
-  // sw_symbol_backdoor_write support, this being essential for a lot of the top-level DV tests,
-  // but it all of this functionality could surely be implemented much more cleanly and in a better
-  // place such as `sram_ctrl_bkdr_util` (or similar), which knows about scrambling and integrity.
+  // TODO(lowrisc/opentitan#26486): This code just mimics the behavior of _sram_bkdr_write32 in a
+  // manner that permits sw_symbol_backdoor_write support, this being essential for a lot of the
+  // top-level DV tests, but it all of this functionality could surely be implemented much more
+  // cleanly and in a better place such as `sram_ctrl_bkdr_util` (or similar), which knows about
+  // scrambling and integrity.
   //
   // scrambled address may cross the tile, this function will find out what tile the address is
   // located and backdoor write to it.
@@ -763,12 +764,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                 symbol, mem.name(), addr, mem_addr, size, addr_mask, data), UVM_LOW)
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
-      // TODO(#26486): Move this specialization to an extended class called rom_ctrl_bkdr_util.
+      // TODO(lowrisc/opentitan#26486): Move this specialization to an extended class called
+      // rom_ctrl_bkdr_util.
       if (mem inside {Rom0, Rom1}) begin
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        // TODO(#26486): The ROM utils _do_ have their configurations stored internally.
+        // TODO(lowrisc/opentitan#26486): The ROM utils _do_ have their configurations stored
+        // internally.
         if (mem == Rom0) begin
           rom.update_rom_digest(RndCnstRomCtrl0ScrKey, RndCnstRomCtrl0ScrNonce);
         end else begin
@@ -813,14 +816,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // General-use function to backdoor write a byte of data to any selected memory type
   //
-  // TODO(#26486): Add support for tiled RAM memories.
+  // TODO(lowrisc/opentitan#26486): Add support for tiled RAM memories.
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
     byte prev_data;
-    // TODO(#26486): Tidy this up properly! There should be no need for special cases based on
-    // memory-type here. sram_ctrl instances should just transparently perform the scrambling on
-    // read/write operations as the RTL logic does on bus accesses.
+    // TODO(lowrisc/opentitan#26486): Tidy this up properly! There should be no need for special
+    // cases based on memory-type here. sram_ctrl instances should just transparently perform the
+    // scrambling on read/write operations as the RTL logic does on bus accesses.
     //
     // Similarly, any memory type that may be tiled should hide the fact that it _is_ tiled from
     // uses of read/write functions.
@@ -837,11 +840,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // General-use function to backdoor read a byte of data from any selected memory type
   //
-  // TODO(#26486): Add support for tiled RAM memories.
+  // TODO(lowrisc/opentitan#26486): Add support for tiled RAM memories.
   virtual function void mem_bkdr_read8(input chip_mem_e mem,
                                        input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                        output byte data);
-    // TODO(#26486): We cannot read from a number of the memories.
+    // TODO(lowrisc/opentitan#26486): We cannot read from a number of the memories.
     `DV_CHECK_FATAL(mem inside {Rom0, [RamMain0:RamMain15], [RamRet0:RamRet15], [RamCtn0:RamCtn15]},
                     "Currently unable to read from %s memory", mem.name())
     data = cfg.mem_bkdr_util_h[mem].read8(addr);

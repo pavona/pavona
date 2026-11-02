@@ -31,7 +31,7 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(MetaStableFlop=~"*.u_spi_tpm.u_wrfifo.fifo_wptr*")} \
   -comment {when csb de-asserted, SCK should be quiescent. If not, the behavior is unpredictable}
 
-# TODO(#15886): Find better env setup to define the relation between CSb and
+# TODO(lowrisc/opentitan#15886): Find better env setup to define the relation between CSb and
 #               all SCK generated clocks.
 # CSb to RX/TX FIFOs pointers E_RST_METASTABILITY
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \

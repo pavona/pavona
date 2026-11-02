@@ -18,7 +18,8 @@ class pattgen_channel_cfg extends uvm_object;
   rand bit [5:0]     len;
   rand bit [9:0]     reps;
 
-  // TODO(#23219): Remove this when the scoreboard supports the inactive_level feature.
+  // TODO(lowrisc/opentitan#23219): Remove this when the scoreboard supports the inactive_level
+  // feature.
   constraint inactive_level_disabled_c {
     inactive_level_pcl == 1'b0;
     inactive_level_pda == 1'b0;

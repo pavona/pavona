@@ -535,7 +535,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
    * Initialization.
    ****************************************************************************/
   // Load ACC attestation keygen program.
-  // TODO(#21550): this should already be loaded by the ROM.
+  // TODO(lowrisc/opentitan#21550): this should already be loaded by the ROM.
   TRY(acc_boot_app_load());
 
   // Configure certificate flash info page permissions.

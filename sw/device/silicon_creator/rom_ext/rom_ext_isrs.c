@@ -14,7 +14,8 @@ static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
   CSR_READ(CSR_REG_MCAUSE, &mcause);
 
-  // TODO(opentitan#22947): Remove this debug print prior to a formal release.
+  // TODO(lowrisc/opentitan#22947): Remove this debug print prior to a formal
+  // release.
   uint32_t mepc, mtval;
   CSR_READ(CSR_REG_MEPC, &mepc);
   CSR_READ(CSR_REG_MTVAL, &mtval);

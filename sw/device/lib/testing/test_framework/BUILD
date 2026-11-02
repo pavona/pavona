@@ -137,7 +137,7 @@ ld_library(
     ],
 )
 
-# TODO(#12905): Use a slightly hollowed out version of the silicon_creator
+# TODO(lowrisc/opentitan#12905): Use a slightly hollowed out version of the silicon_creator
 # manifest_def implementation when building the test_framework for the
 # scafi_deprecated top level.
 cc_library(

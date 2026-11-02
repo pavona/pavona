@@ -55,7 +55,7 @@
                 "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
 
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                // TODO #5484, comment these 2 lines out because spi host memory is dummy
+                // TODO lowrisc/opentitan#5484, comment these 2 lines out because spi host memory is dummy
                 // "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 // xbar tests
                 "{proj_root}/hw/ip/tlul/generic_dv/xbar_tests.hjson",

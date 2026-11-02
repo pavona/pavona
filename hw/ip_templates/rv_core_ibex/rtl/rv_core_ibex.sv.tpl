@@ -453,7 +453,7 @@ module ${module_instance_name}
     .ICache                      ( ICache                   ),
     // Our automatic SEC_CM label check doesn't look at vendored code so the SEC_CM labels need
     // to be mentioned here. The real locations can be found by grepping the vendored code.
-    // TODO(#10071): this should be fixed.
+    // TODO(lowrisc/opentitan#10071): this should be fixed.
     // SEC_CM: ICACHE.MEM.INTEGRITY
     .ICacheECC                   ( ICacheECC                ),
     // SEC_CM: ICACHE.MEM.SCRAMBLE, SCRAMBLE.KEY.SIDELOAD

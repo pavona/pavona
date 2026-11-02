@@ -714,10 +714,11 @@ task hmac_base_vseq::sar_different_context();
           trigger_process();
           // Wait for hash to be done so the digest is updated.
           csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-          // Check message length -> TODO (#23562) move to the SCB when removing sar_skip_ctxt
+          // Check message length -> TODO (lowrisc/opentitan#23562) move to the SCB when removing
+          // sar_skip_ctxt
           csr_rd_msg_length(msg_length_rd);
           // Check if reset hasn't been triggered before doing this check
-          // TODO (#25809) remove this from the seq when reset handled properly
+          // TODO (lowrisc/opentitan#25809) remove this from the seq when reset handled properly
           if (cfg.under_reset) begin
             return;
           end else begin

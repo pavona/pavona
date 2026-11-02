@@ -168,7 +168,7 @@ class MsgBuckets():
         mb.merge(other)
         return mb
 
-    # TODO(#9079): remove the method below once the log parsing has been
+    # TODO(lowrisc/opentitan#9079): remove the method below once the log parsing has been
     # merged into the Dvsim core code.
     def load_hjson(self, result_path: Path) -> None:
         '''Clear internal data structure and initialize with values in Hjson'''

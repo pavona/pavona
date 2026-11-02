@@ -18,8 +18,8 @@ function hmac_stress_reset_vseq::new(string name="");
 endfunction : new
 
 task hmac_stress_reset_vseq::body();
-  // TODO (#25809) - The S&R is causing troubles with this test, this flag will be removed later
-  // when reset is handled properly.
+  // TODO (lowrisc/opentitan#25809) - The S&R is causing troubles with this test, this flag will be
+  // removed later when reset is handled properly.
   cfg.save_and_restore_pct = 0;
 
   for (int i = 1; i <= num_trans; i++) begin

@@ -24,7 +24,7 @@
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
  *
- * TODO(#17727): in some places the ACC assembler support for .equ directives
+ * TODO(lowrisc/opentitan#17727): in some places the ACC assembler support for .equ directives
  * is lacking, so they cannot be used in bignum instructions or pseudo-ops such
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.

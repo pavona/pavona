@@ -145,8 +145,9 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; (
   // There are two cases in which we don't need the update unit:
   // 1) Generate commands with pdata equal to all-zero
   // 2) The (rather trivial) uninstantiate command
-  // TODO(#28153) Clarify what the exact condition for skipping the initial update() call on
-  // GENerate commands is (pdata/adata being an all-zero vector or pdata/adata LENGTH being zero).
+  // TODO(lowrisc/opentitan#28153) Clarify what the exact condition for skipping the initial
+  // update() call on GENerate commands is (pdata/adata being an all-zero vector or pdata/adata
+  // LENGTH being zero).
   assign bypass_upd = ((req_data.cmd == GEN) && (req_data.pdata == '0)) || (req_data.cmd == UNI);
 
   // Small FSM required to wait for a finished transaction on both the update unit

@@ -16,7 +16,7 @@
   build_opts: ["-i {cdc_root}/tools/{tool}/run-cdc.tcl"]
 
   // CDC-specific report parsing script that is called after running the tool
-  // TODO(#24207): Implement this for MeridianCDC, then uncomment the lines below.
+  // TODO(lowrisc/opentitan#24207): Implement this for MeridianCDC, then uncomment the lines below.
   // report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py"
   // report_opts: ["--repdir {build_dir} ",
   //               "--outfile {build_dir}/results.hjson"]

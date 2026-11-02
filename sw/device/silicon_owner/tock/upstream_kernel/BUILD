@@ -30,7 +30,7 @@ rust_binary(
     crate_features = ["fpga_cw310"],
     rustc_flags = [
         "-g",
-        # TODO(opentitan#19491): determine the appropriate set of linker flags.
+        # TODO(lowrisc/opentitan#19491): determine the appropriate set of linker flags.
         #"-Clinker=rust-lld",
         #"-Clinker-flavor=ld.lld",
         #"-Crelocation-model=static",

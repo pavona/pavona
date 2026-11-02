@@ -29,7 +29,8 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
   }
 }
 
-// TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
+// TODO(lowrisc/opentitan#21204): Refactor to use `manifest_check` from
+// `lib/manifest.h`.
 OT_WARN_UNUSED_RESULT
 static inline rom_error_t manifest_check_rom_ext(const manifest_t *manifest) {
   // Major version must be `kManifestVersionMajor2`.

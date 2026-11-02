@@ -63,7 +63,7 @@ mapping:
   "lowrisc:prim:xor2"         : "lowrisc:prim_generic:xor2"
   "lowrisc:prim:flop_no_rst"  : "lowrisc:prim_generic:flop_no_rst"
   # Flash is a good canditate to be removed from the prims and become a macro like OTP.
-  # TODO(#27042): When this is done, it should be removed from this mapping.
+  # TODO(lowrisc/opentitan#27042): When this is done, it should be removed from this mapping.
   "lowrisc:prim:flash": "lowrisc:prim_generic:flash"
 
 targets:

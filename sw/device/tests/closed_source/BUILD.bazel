@@ -173,7 +173,7 @@ pavona_test(
 # repository) without having to specify which test hooks library should be
 # executed with the test on the command line.
 #
-# TODO(lowRISC:opentitan#13180): see description in `sw/device/tests/BUILD`.
+# TODO(lowrisc/opentitan#13180): see description in `sw/device/tests/BUILD`.
 #
 # To run the example test below using the default location:
 # `bazel test @manufacturer_test_hooks//:statically_hooked_opensource_test`

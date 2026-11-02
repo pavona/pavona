@@ -1517,9 +1517,9 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
         }
 
         if (got_signal) {
-          // TODO: Issue #18562 VBUS Disconnection leaves pull ups asserted
-          // by the USB AON Wake module, so disconnect them here before
-          // potential confusion results.
+          // TODO: Issue lowrisc/opentitan#18562 VBUS Disconnection leaves pull
+          // ups asserted by the USB AON Wake module, so disconnect them here
+          // before potential confusion results.
           if (ctx->wake_status.disconnected) {
             bool sense;
 

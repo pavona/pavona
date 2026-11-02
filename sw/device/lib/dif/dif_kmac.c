@@ -804,7 +804,7 @@ dif_result_t dif_kmac_end(const dif_kmac_t *kmac,
     if (is_state_squeeze(kmac)) {
       break;
     }
-    // TODO(#6248): check for error.
+    // TODO(lowrisc/opentitan#6248): check for error.
   }
 
   // Issue done command.

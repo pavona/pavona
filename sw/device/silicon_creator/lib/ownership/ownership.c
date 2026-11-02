@@ -252,7 +252,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   HARDENED_RETURN_IF_ERROR(sku_creator_owner_init(bootdata));
 
   rom_error_t error = kErrorOwnershipNoOwner;
-  // TODO(#22386): Harden this switch/case statement.
+  // TODO(lowrisc/opentitan#22386): Harden this switch/case statement.
   switch (bootdata->ownership_state) {
     case kOwnershipStateLockedOwner:
       error = locked_owner_init(bootdata, config, keyring);

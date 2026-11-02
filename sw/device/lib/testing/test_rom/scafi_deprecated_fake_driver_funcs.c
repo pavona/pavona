@@ -7,9 +7,10 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
-// TODO(#12905): This file includes fake definitions for the functions that are
-// used by the silicon_creator bootstrap implementation and to set reset_reason
-// but missing in the Scafi_Deprecated top level due to hardware limitations.
+// TODO(lowrisc/opentitan#12905): This file includes fake definitions for the
+// functions that are used by the silicon_creator bootstrap implementation and
+// to set reset_reason but missing in the Scafi_Deprecated top level due to
+// hardware limitations.
 
 #ifndef OPENTITAN_IS_SCAFI_DEPRECATED
 #error "This file should be compiled only for the Scafi_Deprecated top level"

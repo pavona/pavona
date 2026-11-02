@@ -398,7 +398,7 @@ static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
 }
 
 /*
-// TODO(#14518) keymgr cannot read fault_status register.
+// TODO(lowrisc/opentitan#14518) keymgr cannot read fault_status register.
 static void keymgr_fault_checker(bool enable) {
   // Check the keymgr integrity fatal error code.
   dif_kmac_status_t status;
@@ -413,7 +413,7 @@ static void keymgr_fault_checker(bool enable) {
 
 static void keymgr_fault_checker(bool enable, const char *ip_inst,
                                  const char *type) {
-  // TODO(#14518)
+  // TODO(lowrisc/opentitan#14518)
   LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
            kDtKeymgrAlertFatalFaultErr);
   trivial_fault_checker(enable, ip_inst, type);
@@ -426,7 +426,7 @@ static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
 #elif defined(OPENTITAN_IS_DRAGONFLY)
 static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
-  // TODO(#14518)
+  // TODO(lowrisc/opentitan#14518)
   LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
            kDtKeymgrDpeAlertFatalFaultErr);
   trivial_fault_checker(enable, ip_inst, type);
@@ -471,7 +471,7 @@ static void clkmgr_fault_checker(bool enable, const char *ip_inst,
 }
 
 /*
-// TODO(#14518) hmac cannot read fault_status register.
+// TODO(lowrisc/opentitan#14518) hmac cannot read fault_status register.
 static void hmac_fault_checker(bool enable) {
   // Check the hmac integrity fatal error code.
   dif_kmac_status_t status;
@@ -486,7 +486,7 @@ static void hmac_fault_checker(bool enable) {
 
 static void hmac_fault_checker(bool enable, const char *ip_inst,
                                const char *type) {
-  // TODO(#14518)
+  // TODO(lowrisc/opentitan#14518)
   LOG_INFO("Expected alert %d hmac fault check is yet unimplemented",
            kDtHmacAlertFatalFault);
   trivial_fault_checker(enable, ip_inst, type);
@@ -524,7 +524,7 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst,
 }
 
 /*
-// TODO(#14518) acc cannot read fault_status register.
+// TODO(lowrisc/opentitan#14518) acc cannot read fault_status register.
 static void acc_ctrl_fault_checker(bool enable) {
   // Check the acc integrity fatal error code.
   dif_acc_err_bits_t codes;
@@ -540,7 +540,7 @@ static void acc_ctrl_fault_checker(bool enable) {
 
 static void acc_fault_checker(bool enable, const char *ip_inst,
                               const char *type) {
-  // TODO(#14518)
+  // TODO(lowrisc/opentitan#14518)
   LOG_INFO("Expected alert %d acc fault check is yet unimplemented",
            kDtAccAlertFatal);
   trivial_fault_checker(enable, ip_inst, type);

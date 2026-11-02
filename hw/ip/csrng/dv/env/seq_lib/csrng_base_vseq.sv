@@ -41,7 +41,8 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   virtual task dut_shutdown();
     // check for pending csrng operations and wait for them to complete
-    // TODO(#19031): Remove this task once scoreboard checks that its queues are empty.
+    // TODO(lowrisc/opentitan#19031): Remove this task once scoreboard checks that its queues are
+    // empty.
   endtask
 
   // setup basic csrng features
@@ -70,7 +71,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     cov_vif.cg_err_code_sample(.err_code(32'b0));
     csr_spinwait_or_edn_rst_n(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
     if (edn_under_reset()) return;
-    // TODO(#22219): Move this check to the scoreboard.
+    // TODO(lowrisc/opentitan#22219): Move this check to the scoreboard.
     csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(exp_sts));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
@@ -124,7 +125,7 @@ class csrng_base_vseq extends cip_base_vseq #(
         // Wait for ack
         if (edn_rst_as_ack) cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack_or_rst_n();
         else cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
-        // TODO(#22219): Move this check to the scoreboard.
+        // TODO(lowrisc/opentitan#22219): Move this check to the scoreboard.
         `DV_CHECK(cfg.m_edn_agent_cfg[app].vif.mon_cb.cmd_rsp.csrng_rsp_sts == exp_sts);
       end
     end

@@ -75,7 +75,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   obj->cert_body_p = buf;
 
   // Sanity check on the certificate body size.
-  // TODO(24281): add sanity check on CWT certificate body size.
+  // TODO(lowrisc/opentitan#24281): add sanity check on CWT certificate body
+  // size.
   if (obj_type == kPersoObjectTypeX509Cert) {
     size_t decoded_cert_size =
         cert_x509_asn1_decode_size_header(obj->cert_body_p);

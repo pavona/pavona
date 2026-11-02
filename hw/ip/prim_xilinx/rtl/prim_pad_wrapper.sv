@@ -82,11 +82,11 @@ module prim_pad_wrapper
     assign oe_n     = ~oe_i | (out & attr_i.virt_od_en);
 
     // Input buffer with input disable
-    // TODO(#23094): This should be implemented with an instance of `IOBUF_DCIEN` (for pads in
-    // high-performance banks) or `IOBUF_INTERMDISABLE` (for pads in high-range banks).  This module
-    // currently doesn't know which bank the pad is in, so the logic below instead emulates this
-    // behavior (disabled inputs get internally driven to 1 for 7 Series devices) without really
-    // disabling the input driver.
+    // TODO(lowrisc/opentitan#23094): This should be implemented with an instance of `IOBUF_DCIEN`
+    // (for pads in high-performance banks) or `IOBUF_INTERMDISABLE` (for pads in high-range banks).
+    // This module currently doesn't know which bank the pad is in, so the logic below instead
+    // emulates this behavior (disabled inputs get internally driven to 1 for 7 Series devices)
+    // without really disabling the input driver.
     logic in;
     IOBUF u_iobuf (
       .T  ( oe_n     ),

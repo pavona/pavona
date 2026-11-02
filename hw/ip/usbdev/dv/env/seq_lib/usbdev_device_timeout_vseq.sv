@@ -132,8 +132,9 @@ class usbdev_device_timeout_vseq extends usbdev_base_vseq;
             // IN side toggle becomes set in response to SETUP token packet.
             exp_in_toggle = 1'b1;
           end
-          // TODO: This relies upon a proposed RTL change #23717 which deasserts 'sending' in the
-          // event of rollback, unless it's another IN request to the same endpoint.
+          // TODO: This relies upon a proposed RTL change lowrisc/opentitan#23717 which deasserts
+          // 'sending' in the event of rollback, unless it's another IN request to the same
+          // endpoint.
           exp_sending = (response == ResponseIN);
           delay = 1;
         end

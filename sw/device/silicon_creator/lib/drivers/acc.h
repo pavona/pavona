@@ -43,7 +43,7 @@ enum {
 /**
  * ACC commands
  *
- * TODO(#16754): replace these with constants from acc_regs.h
+ * TODO(lowrisc/opentitan#16754): replace these with constants from acc_regs.h
  */
 typedef enum sc_acc_cmd {
   kScAccCmdExecute = 0xd8,
@@ -54,7 +54,7 @@ typedef enum sc_acc_cmd {
 /**
  * ACC status
  *
- * TODO(#16754): replace these with constants from acc_regs.h
+ * TODO(lowrisc/opentitan#16754): replace these with constants from acc_regs.h
  */
 typedef enum sc_acc_status {
   kScAccStatusIdle = 0x00,

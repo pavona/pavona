@@ -115,7 +115,7 @@ class csrng_monitor extends dv_base_monitor #(
       @(cfg.vif.cmd_push_if.mon_cb);
       if ((cfg.vif.cmd_push_if.mon_cb.valid) && (cfg.vif.cmd_push_if.mon_cb.ready)) begin
         // TODO: sample any covergroups
-        // TODO: Implement suggestion in PR #5456
+        // TODO: Implement suggestion in PR lowrisc/opentitan#5456
         cs_item = csrng_item::type_id::create("cs_item");
         cs_item.acmd = acmd_e'(cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0]);
         cs_item.clen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[7:4];
