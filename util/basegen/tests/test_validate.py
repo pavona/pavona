@@ -8,7 +8,7 @@ from referencing.jsonschema import SchemaRegistry, SchemaResource, DRAFT202012
 
 from basegen.validate import (validate_schema, all_validation_errors,
                               TOPCFG_VALIDATOR, SEEDCFG_VALIDATOR,
-                              IP_BLOCK_VALIDATOR,
+                              IP_BLOCK_VALIDATOR, ALIAS_VALIDATOR,
                               XBAR_VALIDATOR,
                               TPL_PARAM_VALIDATOR, IP_CONFIG_VALIDATOR,
                               RACL_VALIDATOR, RACL_MAPPING_VALIDATOR,
@@ -44,6 +44,14 @@ KNOWN_GOOD_IPDESCS = tuple(
     for ipdesc in REPO_TOP.glob("hw/ip/*/data/*.hjson")
     if (ipdesc.stem == ipdesc.parents[1].name
         and ipdesc.stem != "tlul"))  # tlul is not an IP
+
+# test_alias_validation
+KNOWN_GOOD_ALIASCFGS = (
+    {"alias_impl": "",  # there are no examples in the repo
+     "alias_target": "",
+     "registers": [],
+     "bus_interfaces": []},
+)
 
 # test_xbarcfg_validation
 KNOWN_GOOD_XBARCFGS = tuple(
@@ -152,6 +160,13 @@ def test_ip_block_validation():
                                   BAD_INPUTS,
                                   IP_BLOCK_VALIDATOR,
                                   "IP block description")
+
+
+def test_alias_validation():
+    _validate_good_and_bad_inputs(KNOWN_GOOD_ALIASCFGS,
+                                  BAD_INPUTS,
+                                  ALIAS_VALIDATOR,
+                                  "block alias configuration")
 
 
 def test_xbarcfg_validation():
