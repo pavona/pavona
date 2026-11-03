@@ -446,7 +446,7 @@
     - to: [grd]
       from: [csr]
     - to: [csr]
-      from: [csr,grs1]
+      from: [csr, grs1]
     - test:
         - csr == 0x7d9
       to: [kmac_core]

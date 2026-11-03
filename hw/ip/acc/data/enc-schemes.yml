@@ -9,7 +9,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-
 # Instruction encoding schemes for ACC
 #
 # These are used by the instructions in insns.yml. A scheme defines the mapping
@@ -266,7 +265,6 @@ bnan:
       bits: 19-15
       value: bxxxxx
 
-
 # Used for bn.mulv instruction (no lane index)
 bnmulv:
   parents:
@@ -276,7 +274,6 @@ bnmulv:
   fields:
     mode: 25 # Mode: pairwise or lane mode
     type: 31-26
-
 
 # Used for bn.mulv.l instruction (with lane index)
 bnmulvl:
@@ -290,7 +287,6 @@ bnmulvl:
     mode: 25 # Mode: pairwise or lane mode
     type: 31-26
 
-
 bntrn:
   parents:
     - custom6
@@ -300,8 +296,7 @@ bntrn:
     fixed_top:
       bits: 31-28
       value: bxxxx
-    type: 27-25  # trn1 or trn1 and .2Q, .4D, .8S or .16H
-
+    type: 27-25 # trn1 or trn1 and .2Q, .4D, .8S or .16H
 
 # Used for the wide reg/reg ALU instructions.
 bnaf:

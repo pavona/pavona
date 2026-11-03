@@ -16,16 +16,16 @@ runs:
     - name: Check if running on Ubuntu Linux
       shell: bash
       run: |
-          source /etc/os-release
-          case "$ID" in
-            ubuntu) echo 'Running on Ubuntu Linux'; exit 0 ;;
-                 *) echo 'Not running on Ubuntu Linux'; exit 1 ;;
-          esac
+        source /etc/os-release
+        case "$ID" in
+          ubuntu) echo 'Running on Ubuntu Linux'; exit 0 ;;
+               *) echo 'Not running on Ubuntu Linux'; exit 1 ;;
+        esac
     - name: Install dependencies
       shell: bash
       run: |
-          sudo apt-get update -qq
-          sudo apt-get -y install --no-install-recommends git python3 python3-click python3-unidiff
+        sudo apt-get update -qq
+        sudo apt-get -y install --no-install-recommends git python3 python3-click python3-unidiff
     - name: Install Verible
       uses: chipsalliance/verible-actions-common/install-verible@5430dd21cbfbb02b904f4d4474139e4d12a90ef8
       with:
@@ -34,9 +34,9 @@ runs:
     - name: Download reviewdog source code
       shell: bash
       run: |
-          git clone https://github.com/reviewdog/reviewdog
-          cd reviewdog
-          git checkout df70ed74df59de7ebfd9276afabd62ea2de4d7dd # v0.21.0
+        git clone https://github.com/reviewdog/reviewdog
+        cd reviewdog
+        git checkout df70ed74df59de7ebfd9276afabd62ea2de4d7dd # v0.21.0
     - name: Install go (for reviewdog)
       uses: actions/setup-go@v6
       with:
@@ -44,10 +44,10 @@ runs:
     - name: Build reviewdog
       shell: bash
       run: |
-          cd reviewdog
-          go version
-          sudo go build -o /usr/local/bin/ ./cmd/reviewdog
+        cd reviewdog
+        go version
+        sudo go build -o /usr/local/bin/ ./cmd/reviewdog
     - name: Check reviewdog version
       shell: bash
       run: |
-          reviewdog --version
+        reviewdog --version

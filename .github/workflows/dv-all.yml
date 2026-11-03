@@ -29,7 +29,7 @@ on:
         type: string
       timeout-minutes:
         type: number
-        default: 1440  # 24 hours
+        default: 1440 # 24 hours
       dashboard-private:
         type: string
         default: ""
@@ -46,31 +46,31 @@ jobs:
       group: ${{ inputs.runner }}
     timeout-minutes: ${{ inputs.timeout-minutes }}
     steps:
-    - uses: actions/checkout@v7
-      with:
-        fetch-depth: 0
-    # TODO: Filter DV jobs based on changed paths (`if-changed`).
-    - name: Prepare environment
-      id: prepare-env
-      uses: ./.github/actions/prepare-env
-      with:
-        service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-        ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-        ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-        vcs-version: ${{ inputs.vcs-version }}
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      # TODO: Filter DV jobs based on changed paths (`if-changed`).
+      - name: Prepare environment
+        id: prepare-env
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+          ts-oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          ts-oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          vcs-version: ${{ inputs.vcs-version }}
 
-    - name: All
-      if: ${{ success() || failure() }}
-      uses: ./.github/actions/dvsim
-      with:
-        run-type: ${{ inputs.run-type }}
-        sim-name: ${{ inputs.run-type }}-dv-all
-        hjson: hw/dv/all_sim_cfgs.hjson
-        item: ${{ inputs.item }}
-        coverage: ${{ inputs.coverage }}
-        concurrent-jobs: ${{ inputs.concurrent-jobs }}
-        dashboard-private: ${{ inputs.dashboard-private }}
-        dashboard-public: ${{ inputs.dashboard-public }}
-        reseed-source: ${{ inputs.reseed-source }}
-        dashboard-upload-key: ${{ secrets.DASHBOARD_UPLOAD_KEY }}
-        public-upload-key: ${{ secrets.PUBLIC_UPLOAD_KEY }}
+      - name: All
+        if: ${{ success() || failure() }}
+        uses: ./.github/actions/dvsim
+        with:
+          run-type: ${{ inputs.run-type }}
+          sim-name: ${{ inputs.run-type }}-dv-all
+          hjson: hw/dv/all_sim_cfgs.hjson
+          item: ${{ inputs.item }}
+          coverage: ${{ inputs.coverage }}
+          concurrent-jobs: ${{ inputs.concurrent-jobs }}
+          dashboard-private: ${{ inputs.dashboard-private }}
+          dashboard-public: ${{ inputs.dashboard-public }}
+          reseed-source: ${{ inputs.reseed-source }}
+          dashboard-upload-key: ${{ secrets.DASHBOARD_UPLOAD_KEY }}
+          public-upload-key: ${{ secrets.PUBLIC_UPLOAD_KEY }}

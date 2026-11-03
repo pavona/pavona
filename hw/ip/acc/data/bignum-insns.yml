@@ -9,7 +9,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-
 # Definitions for the big number group of instructions. See insns.yml
 # for the detailed format.
 
@@ -206,7 +205,6 @@
       wrs1: wrs1
       funct3: b101
       wrd: wrd
-
 
 - mnemonic: bn.trn
   synopsis: Partial transpose
@@ -1089,7 +1087,6 @@
       dpp: grs2_inc
       funct3: b101
 
-
 - mnemonic: bn.ld
   synopsis: Load Word
   operands:
@@ -1351,7 +1348,8 @@
     - *mulqacc-wrs2
     - *mulqacc-wrd
     - name: type
-      type: enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
+      type: >-
+        enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
                  .16h.even.acc, .8s.even.acc, .16h.odd.acc, .8s.odd.acc,
                  .16h.even.acc.z, .8s.even.acc.z, .16h.odd.acc.z, .8s.odd.acc.z,
                  "", "", "", "",
@@ -1475,7 +1473,8 @@
       type: uimm4
       doc: Index of the element within `<lane_reg>` to multiply by.
     - name: type
-      type: enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
+      type: >-
+        enum(.16h.even, .8s.even, .16h.odd, .8s.odd,
                  .16h.even.acc, .8s.even.acc, .16h.odd.acc, .8s.odd.acc,
                  .16h.even.acc.z, .8s.even.acc.z, .16h.odd.acc.z, .8s.odd.acc.z,
                  "", "", "", "",
