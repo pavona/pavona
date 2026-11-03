@@ -110,6 +110,11 @@ alias(
     actual = "@buildifier_prebuilt//:buildifier",
 )
 
+alias(
+    name = "yamlfmt",
+    actual = "@aspect_rules_lint//format:yamlfmt",
+)
+
 # Run all formatters.
 format_multirun(
     name = "format",
@@ -117,6 +122,7 @@ format_multirun(
     cc = ":clang-format",
     rust = ":rustfmt",
     starlark = ":buildifier",
+    yaml = ":yamlfmt",
 )
 
 # Check all formatting.
@@ -129,6 +135,7 @@ format_test(
     rust = ":rustfmt",
     starlark = ":buildifier",
     workspace = "//:MODULE.bazel",
+    yaml = ":yamlfmt",
 )
 
 # Run all clang formatters (C and C++).
