@@ -81,16 +81,12 @@ section "Validate testplans with schema."
 ci/scripts/validate_testplans.sh
 section_end
 
-section "Use clang-format to check C/C++ coding style"
-./bazelisk.sh test //quality:clang_format_check
+section "Check code formatting"
+./bazelisk.sh test //quality:format_check
 section_end
 
 section "Check formatting on header guards"
 ci/scripts/include-guard.sh $tgt_branch
-section_end
-
-section "Use rustfmt to check Rust coding style"
-./bazelisk.sh test //quality:rustfmt_check
 section_end
 
 section "Use buildifier to check Bazel coding style"
