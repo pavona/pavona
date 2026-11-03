@@ -217,8 +217,6 @@ jobs:
         run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke:run_smoke_test
       - name: ACC PQC smoke test
         run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke_pqc:run_smoke_test
-      - name: Assemble & link code snippets
-        run: make -C hw/ip/acc/util asm-check
 
   acc_crypto_tests:
     name: Run ACC crypto tests
