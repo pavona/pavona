@@ -30,10 +30,3 @@ $(lint-stamps): $(build-dir)/%.stamp: % $(py-libs) | $(build-dir)
 
 .PHONY: lint
 lint: $(lint-stamps)
-
-.PHONY: test
-test: llvm
-	RV32_TOOL_GCC=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/clang) \
-		RV32_TOOL_AS=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/clang) \
-		RV32_TOOL_LD=../../../../../bazel-$(reponame)/$$($(bazel) cquery --output=files @llvm_toolchain_llvm//:bin/ld.lld) \
-		pytest test

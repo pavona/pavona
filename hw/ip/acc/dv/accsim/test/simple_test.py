@@ -11,12 +11,14 @@ called <name>.s, and the expected results are in a file called <name>.exp.
 """
 
 import os
-import py
-import subprocess
-from typing import Any, List, Tuple
+import tempfile
+import unittest
+from pathlib import Path
+from typing import Callable, List, Tuple
 
-from testutil import asm_and_link_one_file, SIM_DIR
 from shared.reg_dump import parse_reg_dump
+from standalone import SimOptions, standlone_sim
+from testutil import asm_and_link_one_file
 
 
 def find_simple_tests() -> List[Tuple[Path, Path]]:
@@ -81,34 +83,58 @@ def find_simple_tests() -> List[Tuple[Path, Path]]:
     return ret
 
 
-def test_count(tmpdir: py.path.local,
-               asm_file: str,
-               expected_file: str) -> None:
+class TestSimpleCases(unittest.TestCase):
+    pass
+
+
+def test_count(tmpdir: Path, asm_file: str, expected_file: str) -> None:
     # Start by assembling and linking the input file
-    elf_file = asm_and_link_one_file(asm_file, tmpdir)
+    elf_file = asm_and_link_one_file(str(asm_file), tmpdir)
 
     # Run the simulation. We can just pass a list of commands to stdin, and
     # don't need to do anything clever to track what's going on.
-    cmd = [os.path.join(SIM_DIR, 'standalone.py'),
-           '--dump-regs', '-', elf_file]
-    sim_proc = subprocess.run(cmd, check=True,
-                              stdout=subprocess.PIPE, universal_newlines=True)
 
-    regs_seen = parse_reg_dump(sim_proc.stdout)
-    with open(expected_file) as exp_file:
-        regs_expected = parse_reg_dump(exp_file.read())
+    with tempfile.NamedTemporaryFile(mode="w+") as tmpfile:
+        sim_options = SimOptions(
+            dump_regs=tmpfile,
+            elf=Path(elf_file),
+        )
+        standalone_result = standlone_sim(sim_options)
+        assert standalone_result == 0, "Failed to run the simulation"
+        # reset the tmpfile pointer to the beginning of the file
+        tmpfile.seek(0)
+        reg_dump = tmpfile.read()
+        regs_seen = parse_reg_dump(reg_dump)
+        with open(expected_file) as exp_file:
+            regs_expected = parse_reg_dump(exp_file.read())
 
-    # If a register does not appear in the expected registers, then its value
-    # is not constrained; set the expected value to match the actual value.
-    for reg in regs_seen:
-        if reg not in regs_expected:
-            regs_expected[reg] = regs_seen[reg]
+        # If a register does not appear in the expected registers, then its value
+        # is not constrained; set the expected value to match the actual value.
+        for reg in regs_seen:
+            if reg not in regs_expected:
+                regs_expected[reg] = regs_seen[reg]
 
-    assert regs_expected == regs_seen
+        assert regs_expected == regs_seen, (
+            f"Expected Regs != Seen Regs.\nRegs expected: {regs_expected}\nRegs Seen: {regs_seen}"
+        )
+        tmpfile.close()
 
 
-def pytest_generate_tests(metafunc: Any) -> None:
-    if metafunc.function is test_count:
-        tests = find_simple_tests()
-        test_ids = [os.path.basename(e[0]) for e in tests]
-        metafunc.parametrize("asm_file,expected_file", tests, ids=test_ids)
+def _create_test(asm_file: Path, expected_file: Path) -> Callable[[unittest.TestCase], None]:
+    def test(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            return test_count(Path(tmpdir), str(asm_file), str(expected_file))
+
+    test.__name__ = f"test_{asm_file.stem}"
+    return test
+
+
+if __name__ == "__main__":
+    tests = find_simple_tests()
+    for test in tests:
+        setattr(
+            TestSimpleCases,
+            f"test_{test[0].stem}",
+            _create_test(test[0], test[1]),
+        )
+    unittest.main()
