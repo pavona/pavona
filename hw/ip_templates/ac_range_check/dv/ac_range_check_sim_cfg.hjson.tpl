@@ -27,11 +27,11 @@
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
-                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson", // TODO MVy needed?
                 "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_stress_tests.hjson"]
 
@@ -55,6 +55,12 @@
 
   // List of test specifications.
   tests: [
+    {
+      // Preserve the common test's checking policy. The shared TL-error checker remains active,
+      // but this register-only workload does not exercise the block's range-filter datapath.
+      name: ac_range_check_rst_safe_tl_errors
+      run_opts: ["+en_scb=0"]
+    }
     {
       name: ac_range_check_rst_safe_smoke
       uvm_test: ${module_instance_name}_rst_safe_base_test

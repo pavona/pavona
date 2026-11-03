@@ -8,6 +8,7 @@ package ac_range_check_test_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import ac_range_check_ral_pkg::*;
   import ac_range_check_env_pkg::*;
 
   // Macro includes
@@ -21,5 +22,6 @@ package ac_range_check_test_pkg;
   // Package sources
   `include "ac_range_check_base_test.sv"
   `include "ac_range_check_rst_safe_base_test.sv"
+  `include "ac_range_check_rst_safe_common_test.sv"
 
 endpackage
