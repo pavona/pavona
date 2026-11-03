@@ -86,24 +86,33 @@ KNOWN_GOOD_MAPPINGS = tuple(
 )
 
 
-NESTED_SCHEMAS = (
-    {
+TEST_SCHEMAS = (
+    {  # tests that $ref within is resolved properly
         "$id": "urn:test_basegen:parent",
         "title": "Parent",
         "description": "This schema references another schema.",
         "properties": {
             "my_child": {"$ref": "urn:test_basegen:child"}}},
+
     {
         "$id": "urn:test_basegen:child",
         "title": "Child of parent",
         "required": ["foo"],
         "properties": {
-            "foo": {"type": "integer"}}}
+            "foo": {"type": "integer"}}},
+
+    {  # tests that unevaluatedProperties allows inherited ones and no extras
+        "$id": "urn:test_basegen:inherits",
+        "$ref": "urn:test_basegen:parent",
+        "unevaluatedProperties": False,
+        "properties": {
+            "allowed_property": {}}},
 )
-_PARENT, _CHILD = NESTED_SCHEMAS
+_PARENT, _CHILD, _INHERITS = TEST_SCHEMAS
 TEST_REGISTRY = SchemaRegistry().with_resources((
     (_PARENT["$id"], SchemaResource(_PARENT, DRAFT202012)),
-    (_CHILD["$id"], SchemaResource(_CHILD, DRAFT202012))
+    (_CHILD["$id"], SchemaResource(_CHILD, DRAFT202012)),
+    (_INHERITS["$id"], SchemaResource(_INHERITS, DRAFT202012)),
 )).crawl()
 
 # test_document_schema
@@ -116,6 +125,12 @@ DOC_KEY = TEST_DIR / "doc_key.md"
 GOOD_PARENTS = ({}, {"my_child": {"foo": 3}})
 BAD_PARENTS = ({"my_child": {}},
                {"my_child": {"foo": "3"}})
+
+# test_unevaluated_properties
+GOOD_INHERITS = GOOD_PARENTS + (
+    {"allowed_property": 1}, {"allowed_property": 1, "my_child": {"foo": 2}})
+BAD_INHERITS = BAD_PARENTS + (
+    {"bar": "baz"}, {"allowed_property": True, "extra_property": True})
 
 
 def _validate_good_and_bad_inputs(good_inps, bad_inps, validator, desc=""):
@@ -238,6 +253,14 @@ def test_nested_schemas():
                                   BAD_PARENTS,
                                   validator,
                                   "schema which references another schema")
+
+
+def test_unevaluated_properties():
+    validator = create_validator("urn:test_basegen:inherits", TEST_REGISTRY)
+    _validate_good_and_bad_inputs(GOOD_INHERITS,
+                                  BAD_INHERITS,
+                                  validator,
+                                  "schema with `unevaluatedProperties: false`")
 
 
 def test_all_validation_errors():
