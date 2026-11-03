@@ -49,7 +49,7 @@ jobs:
   execute_nightly_tests_egret_cw340:
     name: Egret CW340 Nightly Tests
     needs:
-      - on-demand 
+      - on-demand
       - chip_egret_cw340
     if: success() || failure()
     uses: ./.github/workflows/egret-cw340-nightly.yml

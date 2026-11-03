@@ -19,15 +19,15 @@ PointerAlignment: Right
 # The version of clang-format that we use does not regroup include statements,
 # but this is something we could do in future.
 IncludeCategories:
-- # System Headers: #include <*>
-  Regex: '^<.*>$'
-  Priority: 1
-- # Generated Register Headers: #include "*_regs.h"
-  Regex: '_regs\.h"$'
-  Priority: 3
-- # Generated System Headers: #include "hw/**/autogen/*.h"
-  Regex: 'autogen'
-  Priority: 3
-- # All Other Headers
-  Regex: '.*'
-  Priority: 2
+  - # System Headers: #include <*>
+    Regex: '^<.*>$'
+    Priority: 1
+  - # Generated Register Headers: #include "*_regs.h"
+    Regex: '_regs\.h"$'
+    Priority: 3
+  - # Generated System Headers: #include "hw/**/autogen/*.h"
+    Regex: 'autogen'
+    Priority: 3
+  - # All Other Headers
+    Regex: '.*'
+    Priority: 2

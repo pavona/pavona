@@ -247,22 +247,22 @@ runs:
     - name: Run FPGA set-pll and clear bitstream
       if: inputs.fpga == 'cw310' || inputs.fpga == 'cw340'
       run: |
-         # Run set-pll command for FPGA.
-         ./bazelisk.sh run //sw/host/opentitantool -- --interface=${{ inputs.fpga }} --logging debug fpga set-pll || true
-         # Clear FPGA bitstream.
-         ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${{ inputs.fpga }} fpga clear-bitstream
+        # Run set-pll command for FPGA.
+        ./bazelisk.sh run //sw/host/opentitantool -- --interface=${{ inputs.fpga }} --logging debug fpga set-pll || true
+        # Clear FPGA bitstream.
+        ./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${{ inputs.fpga }} fpga clear-bitstream
       shell: bash
 
     # Setup Vivado, if requested.
     - name: Vivado setup
       if: inputs.vivado-version != ''
       run: |
-         # Install dependencies
-         sudo apt install -y libudev-dev jq
-         # Link ld to what Xilinx expects
-         sudo ln /lib64/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
-         # Add Vivado binary directory to path
-         echo "/tools/Xilinx/Vivado/${{ inputs.vivado-version }}/bin" >> $GITHUB_PATH
+        # Install dependencies
+        sudo apt install -y libudev-dev jq
+        # Link ld to what Xilinx expects
+        sudo ln /lib64/ld-linux-x86-64.so.2 /lib64/ld-lsb-x86-64.so.3
+        # Add Vivado binary directory to path
+        echo "/tools/Xilinx/Vivado/${{ inputs.vivado-version }}/bin" >> $GITHUB_PATH
       shell: bash
     - name: Set environment variable for license server
       if: inputs.vivado-version != ''
@@ -274,7 +274,6 @@ runs:
           echo "XILINXD_LICENSE_FILE=${{ inputs.xilinx-license-port }}@${LICENSE_HOST}" >> $GITHUB_ENV
         fi
       shell: bash
-
 
     # Setup Synopsys VCS, if requested
     - name: VCS Setup

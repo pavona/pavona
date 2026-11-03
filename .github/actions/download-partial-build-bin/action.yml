@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 name: Download partial build-bin artifacts
-description:  Download partial build-bin and merge them
+description: Download partial build-bin and merge them
 
 inputs:
   job-patterns:
