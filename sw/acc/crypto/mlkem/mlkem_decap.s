@@ -93,7 +93,7 @@ crypto_kem_dec:
  *
  * clobbered registers: x2 to x19, x21 to x31,
  *                      w0 to w15, w17 to w30, acc, mod, acch
- * clobbered flag groups: FG0
+ * clobbered flag groups: FG0, FG1
  */
 
 .globl crypto_kem_dec_hardened
@@ -386,23 +386,17 @@ _kem_dec_sk_ok:
   bn.xor  w1, w1, w1
   bn.addi w1, w1, 1
   bn.cmp  w0, w1
-  csrrw   x28, fg0, x0
-  srli    x28, x28, 3 /* Extract z flag. */
-  beq     x28, x0, _fail
-  add     x5, x5, x0 /* Select the true key. */
-  beq     x0, x0, _end
-_fail:
-  add     x5, x7, x0 /* Select the false key. */
-  beq     x0, x0, _end
-_end:
-  /* Copy the selected key one share at a time, whitening after each share so
-   * that the two shares never meet in w0 or on the store data path. */
-  bn.ld   w0, 0(x5)
+  /* Select the key one share at a time; FG0.Z set selects the true key. */
+  bn.ld   w1, 0(x5)
+  bn.ld   w2, 0(x7)
+  bn.sel  w0, w1, w2, FG0.Z
   bn.sd   w0, 0(x6)
-  bn.xor  w0, w31, w31 /* Whitening. */
-  bn.ld   w0, 32(x5)
+  bn.xor  w0, w31, w31, FG1 /* Whitening. */
+  bn.ld   w3, 32(x5)
+  bn.ld   w4, 32(x7)
+  bn.sel  w0, w3, w4, FG0.Z
   bn.sd   w0, 32(x6)
-  bn.xor  w0, w31, w31 /* Whitening. */
+  bn.xor  w0, w31, w31 /* Whitening; also overwrites FG0. */
   ret
 #endif
 
