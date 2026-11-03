@@ -669,12 +669,24 @@ def _copy_files_to_run_dir(files: list[str], run_dir: Path, exec_root: Path) -> 
     also copy the equivalent .elf file.
     """
 
+    # Bazel can list the same file twice: once for each set of build settings
+    # it was built with. When Bazel takes a build from its cache instead of
+    # running it again, it only puts the files the build requested into its
+    # bazel-out folder. The second copy of the file was only used to make
+    # other files, so it is never stored, and copying it fails. Both copies
+    # have the same name and the same contents, so copy only the one that is
+    # in bazel-out.
+    srcs_by_name: dict[str, list[Path]] = {}
     for f in [Path(f) for f in files]:
         src = f if f.is_absolute() else exec_root / f
-        shutil.copyfile(src, run_dir / f.name)
+        srcs_by_name.setdefault(f.name, []).append(src)
+
+    for name, srcs in srcs_by_name.items():
+        src = next((s for s in srcs if s.exists()), srcs[0])
+        shutil.copyfile(src, run_dir / name)
         # If we are copying a .bin file, and the corresponding .elf file exists, also copy that
         maybe_elf = src.with_suffix(".elf")
-        if f.suffix == ".bin" and maybe_elf.exists():
+        if src.suffix == ".bin" and maybe_elf.exists():
             shutil.copy(maybe_elf, run_dir)
 
 
