@@ -41,7 +41,7 @@
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
@@ -120,8 +120,8 @@ OTTF_DEFINE_TEST_CONFIG(
 /**
  * Keymgr binding values.
  */
-static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_dpe_binding_value_t sealing_binding_value = {.data = {0}};
 
 /**
  * Certificate data.
@@ -217,11 +217,11 @@ static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
   PERSO_TLV_SET_FIELD(Objh, Type, tlv_header, kPersoObjectTypePersoSha256Hash);
   PERSO_TLV_SET_FIELD(
       Objh, Size, tlv_header,
-      sizeof(perso_tlv_object_header_t) + sizeof(keymgr_binding_value_t));
+      sizeof(perso_tlv_object_header_t) + sizeof(keymgr_dpe_binding_value_t));
   TRY(perso_tlv_push_to_perso_blob(
       &tlv_header, sizeof(perso_tlv_object_header_t), perso_blob_to_host));
   TRY(perso_tlv_push_to_perso_blob(boot_measurements.rom_ext.data,
-                                   sizeof(keymgr_binding_value_t),
+                                   sizeof(keymgr_dpe_binding_value_t),
                                    perso_blob_to_host));
   perso_blob_to_host->num_objs++;
   return OK_STATUS();
@@ -557,11 +557,37 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(entropy_complex_init());
   TRY(kmac_keymgr_configure());
 
-  // Advance keymgr to CreatorRootKey state.
-  TRY(sc_keymgr_state_check(kScKeymgrStateReset));
-  sc_keymgr_advance_state();
-  TRY(sc_keymgr_state_check(kScKeymgrStateInit));
-  sc_keymgr_advance_state();
+  // ROM sets the SW binding values for the Silicon Creator Root Key (which are
+  // consumed by the *second* advance below) but does not initialize the key
+  // manager. Advance from reset to OTPRootKey (pre-UDS).
+  //
+  // Notes:
+  // - `allow_child` is ignored by the hardware and set to false here by
+  //   convention, even though the UDS is its logical successor.
+  // - Any slot could be used for the OTPRootKey, but we use the sealing slot
+  //   (slot 0) by convention.
+  TRY(sc_keymgr_dpe_state_check(kScKeymgrDpeStateReset));
+  sc_keymgr_dpe_advance_state(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                              /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                              /*allow_child=*/kHardenedBoolFalse,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
+  TRY(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
+
+  // At this point, the key manager is initialized with the OTP Root Secret,
+  // but has not yet generated UDS using the other hardware/software
+  // diversification.
+  //
+  // Now, advance again to derive the Silicon Creator Root secret (UDS). We set
+  // `retain_parent` so that we can generate the sealing and attestation CDI
+  // chains in separate slots.
+  sc_keymgr_dpe_advance_state(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                              /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                              /*allow_child=*/kHardenedBoolTrue,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolTrue,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
 
   // Measure OTP partitions.
   //
@@ -594,7 +620,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   memcpy(&uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(acc_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
-                                    kDiceKeyUds.type,
+                                    kDiceKeyUds.slot,
                                     *kDiceKeyUds.keymgr_diversifier));
 
   // Build the certificate in a temp buffer, use all_certs for that.
@@ -615,12 +641,36 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // can initialize and seal the ownership block.
   ownership_seal_init();
 
+  // Wait for software binding and max version registers to be available before
+  // proceeding.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_owner_int_binding();
-  TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
-                                  &attestation_binding_value,
-                                  /*max_key_version=*/0));
+  // Derive Siilcon Creator Identity (CDI_0) attestation secret.
+  TRY(sc_keymgr_dpe_advance(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                            /*dst_slot=*/kScKeymgrDpeSlotAttestation,
+                            /*allow_child=*/kHardenedBoolTrue,
+                            /*exportable=*/kHardenedBoolFalse,
+                            /*retain_parent=*/kHardenedBoolFalse,
+                            /*sw_binding_only=*/kHardenedBoolFalse,
+                            /*binding=*/&attestation_binding_value,
+                            /*max_key_version=*/0));
+  // Wait for software binding and max version registers to be available again.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  // Derive Siilcon Creator Identity (CDI_0) sealing secret.
+  TRY(sc_keymgr_dpe_advance(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                            /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                            /*allow_child=*/kHardenedBoolTrue,
+                            /*exportable=*/kHardenedBoolFalse,
+                            /*retain_parent=*/kHardenedBoolFalse,
+                            /*sw_binding_only=*/kHardenedBoolFalse,
+                            /*binding=*/&sealing_binding_value,
+                            /*max_key_version=*/0));
+
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                     &curr_pubkey));
   TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &curr_pubkey,
@@ -632,12 +682,36 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                                         kDiceCertFormat, all_certs,
                                         curr_cert_size, &perso_blob_to_host));
 
+  // Wait for software binding and max version registers to be available before
+  // proceeding.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
   compute_keymgr_owner_binding();
-  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
-                              &attestation_binding_value,
-                              /*max_key_version=*/0));
+  // Derive Silicon Owner Identity (CDI_1) attestation secret.
+  TRY(sc_keymgr_dpe_advance(/*src_slot=*/kScKeymgrDpeSlotAttestation,
+                            /*dst_slot=*/kScKeymgrDpeSlotAttestation,
+                            /*allow_child=*/kHardenedBoolTrue,
+                            /*exportable=*/kHardenedBoolFalse,
+                            /*retain_parent=*/kHardenedBoolFalse,
+                            /*sw_binding_only=*/kHardenedBoolFalse,
+                            /*binding=*/&attestation_binding_value,
+                            /*max_key_version=*/0));
+  // Wait for software binding and max version registers to be available again.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  // Derive Silicon Owner Identity (CDI_1) sealing secret.
+  TRY(sc_keymgr_dpe_advance(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                            /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                            /*allow_child=*/kHardenedBoolTrue,
+                            /*exportable=*/kHardenedBoolFalse,
+                            /*retain_parent=*/kHardenedBoolFalse,
+                            /*sw_binding_only=*/kHardenedBoolFalse,
+                            /*binding=*/&sealing_binding_value,
+                            /*max_key_version=*/0));
+
   TRY(acc_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                     &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, &kZeroDigest, 0,

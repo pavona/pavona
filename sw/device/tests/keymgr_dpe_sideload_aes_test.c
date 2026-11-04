@@ -2,20 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/aes.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/kmac.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/kmac_regs.h"  // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 #define TIMEOUT (1000 * 1000)
 
@@ -33,7 +35,7 @@ static const uint32_t kPlainText[] = {
 // this constant.
 static volatile const uint8_t kAESDigest[16] = {0};
 
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -42,10 +44,11 @@ OTTF_DEFINE_TEST_CONFIG();
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_kmac_init(
+      mmio_region_from_addr(dt_kmac_primary_reg_block(kDtKmac)), &kmac));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
 }
 
 status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
@@ -86,13 +89,14 @@ status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
 
 void aes_test(void) {
   // Generate sideload key for AES interface at current keymgr state.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
+  sideload_params.key_dest = kDifKeymgrDpeKeyDestAes;
+  sideload_params.sideload_key = true;
 
   // Get the maximum key version supported by the keymgr in its current state.
   uint32_t max_key_version;
   CHECK_STATUS_OK(
-      keymgr_testutils_max_key_version_get(&keymgr, &max_key_version));
+      keymgr_dpe_testutils_max_key_version_get(&keymgr_dpe, &max_key_version));
 
   if (sideload_params.version > max_key_version) {
     LOG_INFO("Key version %d is greater than the maximum key version %d",
@@ -102,17 +106,14 @@ void aes_test(void) {
     sideload_params.version = max_key_version;
   }
 
-  const char *state_name;
-  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
-
+  dif_keymgr_dpe_output_t ignored;
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
+      keymgr_dpe_testutils_generate(&keymgr_dpe, &sideload_params, &ignored));
 
   // Initialize AES.
   dif_aes_t aes;
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_init(
+      mmio_region_from_addr(dt_aes_primary_reg_block(kDtAes)), &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   dif_aes_data_t in_data_plain;
@@ -153,14 +154,14 @@ void aes_test(void) {
 
   // Clear the key in the keymgr and decrypt the ciphertext again.
   LOG_INFO("Clearing the sideloaded key.");
-  CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(&keymgr, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(&keymgr_dpe,
+                                                         kDifToggleEnabled));
 
   // Disable "clear the key" toggle, so that the sideload key port is stable.
   // Otherwise, the sideload port is continuously overwritten by fresh
   // randomness every clock cycle.
-  CHECK_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(&keymgr, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(&keymgr_dpe,
+                                                         kDifToggleDisabled));
 
   // Decrypt again after clearing the sideload key and verify that output is not
   // the same as previous.
@@ -171,8 +172,8 @@ void aes_test(void) {
   // Generate the same key again and check that encryption result is identical
   // as the first.
   CHECK_STATUS_OK(
-      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
+      keymgr_dpe_testutils_generate(&keymgr_dpe, &sideload_params, &ignored));
+  LOG_INFO("Keymgr generated HW output for Aes.");
 
   dif_aes_data_t out_data_second_cipher;
   CHECK_STATUS_OK(aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt,
@@ -187,7 +188,7 @@ bool test_main(void) {
   init_peripheral_handles();
 
   // Configure the keymgr to generate an AES key.
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
   // Run the AES test.
   aes_test();

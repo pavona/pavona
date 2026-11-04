@@ -2,31 +2,28 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top/dt/otp_ctrl.h"  // Generated
-#include "hw/top/dt/pinmux.h"    // Generated
+#include "hw/top/dt/keymgr_dpe.h"  // Generated
+#include "hw/top/dt/otp_ctrl.h"    // Generated
+#include "hw/top/dt/pinmux.h"      // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 #include "hw/top/pinmux_regs.h"
 
 #if defined(OPENTITAN_IS_EGRET)
 #include "hw/top/dt/adc_ctrl.h"     // Generated
 #include "hw/top/dt/flash_ctrl.h"   // Generated
-#include "hw/top/dt/keymgr.h"       // Generated
 #include "hw/top/dt/sysrst_ctrl.h"  // Generated
 
 #include "hw/top/adc_ctrl_regs.h"
 #include "hw/top/flash_ctrl_regs.h"
-#include "hw/top/keymgr_regs.h"
 #include "hw/top/sysrst_ctrl_regs.h"
 #elif defined(OPENTITAN_IS_DRAGONFLY)
-#include "hw/top/dt/keymgr_dpe.h"  // Generated
-
-#include "hw/top/keymgr_dpe_regs.h"
 #else
 #error Unsupported top
 #endif
@@ -118,6 +115,13 @@ static void check_test_reg(test_register_t *regs, size_t reg_count) {
 bool test_main(void) {
   test_register_t regs[] = {
       {
+          .name = "KEYMGR_DPE",
+          .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
+          .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
+          .write_val = 0x1600ABBA,
+          .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
+      },
+      {
           .name = "OTP_CTRL",
           .base = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl),
           .offset = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
@@ -150,14 +154,6 @@ bool test_main(void) {
 
       },
       {
-          .name = "KEYMGR",
-          .base = dt_keymgr_primary_reg_block(kDtKeymgr),
-          .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
-          .write_val = 0x1600ABBA,
-          .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
-
-      },
-      {
           .name = "FLASH_CTRL",
           .base = dt_flash_ctrl_primary_reg_block(kDtFlashCtrl),
           .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
@@ -165,13 +161,6 @@ bool test_main(void) {
           .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
       },
 #elif defined(OPENTITAN_IS_DRAGONFLY)
-      {
-          .name = "KEYMGR_DPE",
-          .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
-          .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
-          .write_val = 0x1600ABBA,
-          .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
-      },
 #else
 #error Unsupported top
 #endif

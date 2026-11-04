@@ -319,6 +319,18 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_secret3",
+    partitions = [
+        otp_partition(
+            name = "SECRET3",
+            items = {},
+            lock = True,
+        ),
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
+otp_json(
     name = "otp_json_fixed_secret2",
     partitions = [
         otp_partition(

@@ -5,7 +5,11 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_KEYBLOB_H_
 
+#ifdef HAS_KEYMGR_DPE
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#else
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#endif
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 

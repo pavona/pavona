@@ -8,8 +8,9 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/kmac.h"
 #include "sw/device/lib/crypto/include/sha3.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -345,14 +346,9 @@ static status_t run_test_vector(void) {
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
-  dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
+  dif_keymgr_dpe_t keymgr_dpe;
+  CHECK_STATUS_OK(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
-  const char *state_name;
-  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
-
-  LOG_INFO("Keymgr entered %s State", state_name);
   LOG_INFO("Testing cryptolib KMAC driver with sideloaded key.");
 
   // Initialize the core with default parameters

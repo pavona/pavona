@@ -130,13 +130,6 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ("i2c1", top::I2C1_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
         #[cfg(feature = "egret")]
         ("i2c2", top::I2C2_BASE_ADDR, dif::I2C_INTR_ENABLE_REG_OFFSET),
-        #[cfg(feature = "egret")]
-        (
-            "keymgr",
-            top::KEYMGR_BASE_ADDR,
-            dif::KEYMGR_INTR_ENABLE_REG_OFFSET,
-        ),
-        #[cfg(feature = "dragonfly")]
         (
             "keymgr_dpe",
             top::KEYMGR_DPE_BASE_ADDR,

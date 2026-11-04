@@ -337,34 +337,23 @@ cc_test(
 )
 
 cc_library(
-    name = "keymgr",
-    srcs = ["keymgr.c"],
-    hdrs = ["keymgr.h"],
+    name = "keymgr_dpe",
+    srcs = ["keymgr_dpe.c"],
+    hdrs = ["keymgr_dpe.h"],
     deps = [
-        "//hw/top:keymgr_c_regs",
-        "//hw/top/dt:keymgr",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//hw/top/dt:keymgr_dpe",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
 
-cc_test(
-    name = "keymgr_unittest",
-    srcs = ["keymgr_unittest.cc"],
-    deps = [
-        ":keymgr",
-        "//hw/top/dt",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
-    ],
-)
-
 otp_image(
-    name = "otp_img_keymgr_functest",
+    name = "otp_img_keymgr_dpe_functest",
     src = pavona_select_top(
         {
             "egret": "//hw/top_egret/data/otp:otp_json_rma",
@@ -390,76 +379,12 @@ otp_image(
 )
 
 pavona_test(
-    name = "keymgr_functest",
-    srcs = ["keymgr_functest.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EGRET_TEST_ENVS,
-        {
-            "//hw/top_egret:fpga_cw310_test_rom": None,
-            "//hw/top_egret:silicon_creator": None,
-            # FIXME broken in sival ROM_EXT, remove these lines when fixed. See #21706.
-            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
-            "//hw/top_egret:fpga_cw340_sival_rom_ext": "broken",
-        },
-    ),
-    qemu = qemu_params(
-        globals = {
-            # Test uses rstmgr, keep running on fatal resets:
-            "ot-rstmgr.fatal_reset": 0,
-        },
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-        otp = ":otp_img_keymgr_functest",
-    ),
-    deps = [
-        ":keymgr",
-        ":kmac",
-        ":lifecycle",
-        ":retention_sram",
-        "//hw/top:kmac_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
-    name = "keymgr_dpe",
-    srcs = ["keymgr_dpe.c"],
-    hdrs = ["keymgr_dpe.h"],
-    deps = [
-        "//hw/top:keymgr_dpe_c_regs",
-        "//hw/top/dt:keymgr_dpe",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-pavona_test(
     name = "keymgr_dpe_functest",
     srcs = ["keymgr_dpe_functest.c"],
-    exec_env = DRAGONFLY_TEST_ENVS,
+    exec_env = dicts.add(DRAGONFLY_TEST_ENVS, EGRET_TEST_ENVS),
     verilator = verilator_params(
         timeout = "long",
-        otp = ":otp_img_keymgr_functest",
+        otp = ":otp_img_keymgr_dpe_functest",
     ),
     deps = [
         ":keymgr_dpe",
@@ -476,7 +401,7 @@ pavona_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:keymgr_dpe_binding",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],

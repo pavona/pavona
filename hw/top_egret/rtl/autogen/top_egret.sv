@@ -98,9 +98,9 @@ module top_egret #(
   parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
       '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgACC},
-  // parameters for keymgr
-  parameter bit KeymgrUseOtpSeedsInsteadOfFlash = 0,
-  parameter bit KeymgrKmacEnMasking = 1,
+  // parameters for keymgr_dpe
+  parameter bit KeymgrDpeKmacEnMasking = 1,
+  parameter int KeymgrDpeNumRomDigestInputs = 1,
   // parameters for csrng
   parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
@@ -421,7 +421,7 @@ module top_egret #(
   // aes
   // hmac
   // kmac
-  // keymgr
+  // keymgr_dpe
   // csrng
   // entropy_src
   // edn0
@@ -574,7 +574,7 @@ module top_egret #(
   logic intr_kmac_kmac_done;
   logic intr_kmac_fifo_empty;
   logic intr_kmac_kmac_err;
-  logic intr_keymgr_op_done;
+  logic intr_keymgr_dpe_op_done;
   logic intr_csrng_cs_cmd_req_done;
   logic intr_csrng_cs_entropy_req;
   logic intr_csrng_cs_hw_inst_exc;
@@ -609,7 +609,6 @@ module top_egret #(
   entropy_src_pkg::entropy_src_hw_if_rsp_t       csrng_entropy_src_hw_if_rsp;
   entropy_src_pkg::cs_aes_halt_req_t       csrng_cs_aes_halt_req;
   entropy_src_pkg::cs_aes_halt_rsp_t       csrng_cs_aes_halt_rsp;
-  flash_ctrl_pkg::keymgr_flash_t       flash_ctrl_keymgr;
   otp_ctrl_pkg::flash_otp_key_req_t       flash_ctrl_otp_req;
   otp_ctrl_pkg::flash_otp_key_rsp_t       flash_ctrl_otp_rsp;
   lc_ctrl_pkg::lc_flash_rma_seed_t       flash_ctrl_rma_seed;
@@ -628,7 +627,7 @@ module top_egret #(
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
-  rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
+  rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_dpe_rom_digest;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
   lc_ctrl_pkg::lc_tx_t [1:0] lc_ctrl_lc_flash_rma_ack;
   logic       usbdev_usb_dp_pullup;
@@ -646,9 +645,9 @@ module top_egret #(
   otp_ctrl_pkg::acc_otp_key_req_t       otp_ctrl_acc_otp_key_req;
   otp_ctrl_pkg::acc_otp_key_rsp_t       otp_ctrl_acc_otp_key_rsp;
   otp_ctrl_pkg::otp_keymgr_key_t       otp_ctrl_otp_keymgr_key;
-  keymgr_pkg::hw_key_req_t       keymgr_aes_key;
-  keymgr_pkg::hw_key_req_t       keymgr_kmac_key;
-  keymgr_pkg::acc_key_req_t       keymgr_acc_key;
+  keymgr_pkg::hw_key_req_t       keymgr_dpe_aes_key;
+  keymgr_pkg::hw_key_req_t       keymgr_dpe_kmac_key;
+  keymgr_pkg::acc_key_req_t       keymgr_dpe_acc_key;
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
@@ -744,8 +743,8 @@ module top_egret #(
   tlul_pkg::tl_d2h_t       rv_plic_tl_rsp;
   tlul_pkg::tl_h2d_t       acc_tl_req;
   tlul_pkg::tl_d2h_t       acc_tl_rsp;
-  tlul_pkg::tl_h2d_t       keymgr_tl_req;
-  tlul_pkg::tl_d2h_t       keymgr_tl_rsp;
+  tlul_pkg::tl_h2d_t       keymgr_dpe_tl_req;
+  tlul_pkg::tl_d2h_t       keymgr_dpe_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_cfg_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_cfg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_main_regs_tl_req;
@@ -817,7 +816,7 @@ module top_egret #(
   prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
-  otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
+  otp_ctrl_pkg::otp_device_id_t       keymgr_dpe_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
 
@@ -838,6 +837,7 @@ module top_egret #(
 
   assign unused_otp_ctrl_sram_otp_key_rsp3 = otp_ctrl_sram_otp_key_rsp[3];
   assign otp_ctrl_sram_otp_key_req[3] = '0;
+  assign keymgr_dpe_rom_digest[1] = rom_ctrl_pkg::KEYMGR_DATA_DEFAULT;
 
 
   // OTP HW_CFG* Broadcast signals.
@@ -853,7 +853,7 @@ module top_egret #(
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
-  assign keymgr_otp_device_id =
+  assign keymgr_dpe_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
 
   logic unused_otp_broadcast_bits;
@@ -1507,6 +1507,7 @@ module top_egret #(
     .RndCnstScrmblKey0(RndCnstOtpCtrlScrmblKey0),
     .RndCnstScrmblKey1(RndCnstOtpCtrlScrmblKey1),
     .RndCnstScrmblKey2(RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(RndCnstOtpCtrlScrmblKey3),
     .RndCnstDigestConst0(RndCnstOtpCtrlDigestConst0),
     .RndCnstDigestConst1(RndCnstOtpCtrlDigestConst1),
     .RndCnstDigestConst2(RndCnstOtpCtrlDigestConst2),
@@ -2314,7 +2315,7 @@ module top_egret #(
       .rma_ack_o(lc_ctrl_lc_flash_rma_ack[0]),
       .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
-      .keymgr_o(flash_ctrl_keymgr),
+      .keymgr_o(),
       .flash_macro_o(flash_ctrl_flash_macro_req),
       .flash_macro_i(flash_ctrl_flash_macro_rsp),
       .flash_macro_status_i(flash_ctrl_flash_macro_status),
@@ -2478,7 +2479,7 @@ module top_egret #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(lc_ctrl_lc_flash_rma_ack[1]),
-      .keymgr_key_i(keymgr_acc_key),
+      .keymgr_key_i(keymgr_dpe_acc_key),
       .tl_i(acc_tl_req),
       .tl_o(acc_tl_rsp),
 
@@ -2515,7 +2516,7 @@ module top_egret #(
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[5]),
       .edn_i(edn0_edn_rsp[5]),
-      .keymgr_key_i(keymgr_aes_key),
+      .keymgr_key_i(keymgr_dpe_aes_key),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
 
@@ -2573,7 +2574,7 @@ module top_egret #(
       .alert_rx_i  ( alert_rx[48:47] ),
 
       // Inter-module signals
-      .keymgr_key_i(keymgr_kmac_key),
+      .keymgr_key_i(keymgr_dpe_kmac_key),
       .app_i(kmac_app_req),
       .app_o(kmac_app_rsp),
       .entropy_o(edn0_edn_req[3]),
@@ -2591,29 +2592,25 @@ module top_egret #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
-  keymgr #(
+  keymgr_dpe #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[50:49]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .UseOtpSeedsInsteadOfFlash(KeymgrUseOtpSeedsInsteadOfFlash),
-    .KmacEnMasking(KeymgrKmacEnMasking),
-    .RndCnstLfsrSeed(RndCnstKeymgrLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstKeymgrLfsrPerm),
-    .RndCnstRandPerm(RndCnstKeymgrRandPerm),
-    .RndCnstRevisionSeed(RndCnstKeymgrRevisionSeed),
-    .RndCnstCreatorIdentitySeed(RndCnstKeymgrCreatorIdentitySeed),
-    .RndCnstOwnerIntIdentitySeed(RndCnstKeymgrOwnerIntIdentitySeed),
-    .RndCnstOwnerIdentitySeed(RndCnstKeymgrOwnerIdentitySeed),
-    .RndCnstSoftOutputSeed(RndCnstKeymgrSoftOutputSeed),
-    .RndCnstHardOutputSeed(RndCnstKeymgrHardOutputSeed),
-    .RndCnstAesSeed(RndCnstKeymgrAesSeed),
-    .RndCnstKmacSeed(RndCnstKeymgrKmacSeed),
-    .RndCnstAccSeed(RndCnstKeymgrAccSeed),
-    .RndCnstCdi(RndCnstKeymgrCdi),
-    .RndCnstNoneSeed(RndCnstKeymgrNoneSeed)
-  ) u_keymgr (
+    .KmacEnMasking(KeymgrDpeKmacEnMasking),
+    .NumRomDigestInputs(KeymgrDpeNumRomDigestInputs),
+    .RndCnstLfsrSeed(RndCnstKeymgrDpeLfsrSeed),
+    .RndCnstLfsrPerm(RndCnstKeymgrDpeLfsrPerm),
+    .RndCnstRandPerm(RndCnstKeymgrDpeRandPerm),
+    .RndCnstRevisionSeed(RndCnstKeymgrDpeRevisionSeed),
+    .RndCnstSoftOutputSeed(RndCnstKeymgrDpeSoftOutputSeed),
+    .RndCnstHardOutputSeed(RndCnstKeymgrDpeHardOutputSeed),
+    .RndCnstAesSeed(RndCnstKeymgrDpeAesSeed),
+    .RndCnstKmacSeed(RndCnstKeymgrDpeKmacSeed),
+    .RndCnstAccSeed(RndCnstKeymgrDpeAccSeed),
+    .RndCnstNoneSeed(RndCnstKeymgrDpeNoneSeed)
+  ) u_keymgr_dpe (
 
       // Interrupt
-      .intr_op_done_o (intr_keymgr_op_done),
+      .intr_op_done_o (intr_keymgr_dpe_op_done),
       // alert_handler[49]: recov_operation_err
       // alert_handler[50]: fatal_fault_err
       .alert_tx_o  ( alert_tx[50:49] ),
@@ -2622,20 +2619,19 @@ module top_egret #(
       // Inter-module signals
       .edn_o(edn0_edn_req[0]),
       .edn_i(edn0_edn_rsp[0]),
-      .aes_key_o(keymgr_aes_key),
-      .kmac_key_o(keymgr_kmac_key),
-      .acc_key_o(keymgr_acc_key),
+      .aes_key_o(keymgr_dpe_aes_key),
+      .kmac_key_o(keymgr_dpe_kmac_key),
+      .acc_key_o(keymgr_dpe_acc_key),
       .kmac_data_o(kmac_app_req[0]),
       .kmac_data_i(kmac_app_rsp[0]),
       .otp_key_i(otp_ctrl_otp_keymgr_key),
-      .otp_device_id_i(keymgr_otp_device_id),
-      .flash_i(flash_ctrl_keymgr),
+      .otp_device_id_i(keymgr_dpe_otp_device_id),
       .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
       .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
-      .rom_digest_i(rom_ctrl_keymgr_data),
+      .rom_digest_i(keymgr_dpe_rom_digest),
       .kmac_en_masking_i(kmac_en_masking),
-      .tl_i(keymgr_tl_req),
-      .tl_o(keymgr_tl_rsp),
+      .tl_i(keymgr_dpe_tl_req),
+      .tl_o(keymgr_dpe_tl_rsp),
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_secure),
@@ -2835,7 +2831,7 @@ module top_egret #(
       // Inter-module signals
       .rom_cfg_i(ast_rom_cfg),
       .pwrmgr_data_o(rom_ctrl_pwrmgr_data),
-      .keymgr_data_o(rom_ctrl_keymgr_data),
+      .keymgr_data_o(keymgr_dpe_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
       .kmac_data_i(kmac_app_rsp[2]),
       .regs_tl_i(rom_ctrl_regs_tl_req),
@@ -2955,7 +2951,7 @@ module top_egret #(
       intr_csrng_cs_hw_inst_exc, // IDs [176 +: 1]
       intr_csrng_cs_entropy_req, // IDs [175 +: 1]
       intr_csrng_cs_cmd_req_done, // IDs [174 +: 1]
-      intr_keymgr_op_done, // IDs [173 +: 1]
+      intr_keymgr_dpe_op_done, // IDs [173 +: 1]
       intr_kmac_kmac_err, // IDs [172 +: 1]
       intr_kmac_fifo_empty, // IDs [171 +: 1]
       intr_kmac_kmac_done, // IDs [170 +: 1]
@@ -3205,9 +3201,9 @@ module top_egret #(
     .tl_acc_o(acc_tl_req),
     .tl_acc_i(acc_tl_rsp),
 
-    // port: tl_keymgr
-    .tl_keymgr_o(keymgr_tl_req),
-    .tl_keymgr_i(keymgr_tl_rsp),
+    // port: tl_keymgr_dpe
+    .tl_keymgr_dpe_o(keymgr_dpe_tl_req),
+    .tl_keymgr_dpe_i(keymgr_dpe_tl_rsp),
 
     // port: tl_rv_core_ibex__cfg
     .tl_rv_core_ibex__cfg_o(rv_core_ibex_cfg_tl_d_req),

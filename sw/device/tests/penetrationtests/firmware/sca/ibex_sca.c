@@ -9,11 +9,10 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_aes.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_kmac.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -25,8 +24,7 @@
 #include "hw/top/acc_regs.h"  // Generated.
 #include "hw/top_egret/sw/autogen/top_egret.h"
 
-static dif_keymgr_t keymgr;
-static dif_kmac_t kmac;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_acc_t acc;
@@ -464,36 +462,39 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
   TRY(ujson_deserialize_ibex_sca_salt_t(uj, &uj_data));
 
   if (!key_manager_init) {
-    // Initialize keymgr and advance to CreatorRootKey state.
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
+    // Initialize keymgr and advance to OTPRootKey stage.
+    TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, kDifKeymgrDpeSlotSealing));
+
+    // Advance to CreatorRootKey state.
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kCreatorParams));
 
     // Generate identity at CreatorRootKey (to follow same sequence and reuse
-    // chip_sw_keymgr_key_derivation_vseq.sv).
-    TRY(keymgr_testutils_generate_identity(
-        &keymgr,
-        (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
+    // chip_sw_keymgr_dpe_key_derivation_vseq.sv).
+    dif_keymgr_dpe_output_t key;
+    TRY(keymgr_dpe_testutils_generate(
+        &keymgr_dpe,
+        &(dif_keymgr_dpe_generate_params_t){.slot_src_sel =
+                                                kDifKeymgrDpeSlotSealing},
+        &key));
 
     // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntParams));
+    TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                         kDifKeymgrDpeStateAvailable));
     key_manager_init = true;
   }
 
   // Set the salt based on the input.
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyVersionedParams;
+  dif_keymgr_dpe_output_t key;
   for (int i = 0; i < 8; i++) {
     sideload_params.salt[i] = uj_data.salt[i];
   }
 
   // Trigger keymanager to create a new key based on the provided salt.
   pentest_set_trigger_high();
-  TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
+  TRY(keymgr_dpe_testutils_generate(&keymgr_dpe, &sideload_params, &key));
   pentest_set_trigger_low();
-
-  // Read back generated key provided at the software interface.
-  dif_keymgr_output_t key;
-  TRY(dif_keymgr_read_output(&keymgr, &key));
 
   // Acknowledge test.
   ibex_sca_key_t uj_key;

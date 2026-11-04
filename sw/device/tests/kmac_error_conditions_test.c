@@ -6,20 +6,20 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top/keymgr_regs.h"  // Generated.
-#include "hw/top/kmac_regs.h"    // Generated.
+#include "hw/top/keymgr_dpe_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"        // Generated.
 
 static dif_kmac_t kmac;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 
 static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
 
@@ -88,7 +88,7 @@ static const kmac_test_t kKmacTestVector = {
  */
 status_t setup_keymgr(void) {
   // Initialize keymgr and advance to the state specified by the loaded ROM.
-  TRY(keymgr_testutils_initialize(&keymgr, &kmac));
+  TRY(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
   return OK_STATUS();
 }
@@ -638,21 +638,22 @@ status_t test_err_sw_issued_cmd_in_app(void) {
 
   // Instrument key manager to use the KMAC app interface.
   uint32_t reg_control =
-      bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
-                             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC);
+      bitfield_field32_write(0, KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                             KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC);
   reg_control = bitfield_field32_write(
-      reg_control, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
-      KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
-  mmio_region_write32_shadowed(keymgr.base_addr,
-                               KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg_control);
+      reg_control, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
+  mmio_region_write32_shadowed(keymgr_dpe.base_addr,
+                               KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
+                               reg_control);
 
   // Test whether ErrSwIssuedCmdInAppActive can be triggered by writing START
   // command. Setup the START KMAC command.
   uint32_t cmd_start =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
   // Start the key manager operation.
-  mmio_region_write32(keymgr.base_addr, KEYMGR_START_REG_OFFSET,
-                      1 << KEYMGR_START_EN_BIT);
+  mmio_region_write32(keymgr_dpe.base_addr, KEYMGR_DPE_START_REG_OFFSET,
+                      1 << KEYMGR_DPE_START_EN_BIT);
   // Do not wait until operation has finished. Directly issue the command to
   // trigger the ErrSwIssuedCmdInAppActive error.
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_start);
@@ -676,17 +677,18 @@ status_t test_err_sw_pushed_msg_fifo(void) {
 
   // Instrument key manager to use the KMAC app interface.
   uint32_t reg_control =
-      bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
-                             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC);
+      bitfield_field32_write(0, KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                             KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC);
   reg_control = bitfield_field32_write(
-      reg_control, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,
-      KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
-  mmio_region_write32_shadowed(keymgr.base_addr,
-                               KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg_control);
+      reg_control, KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_FIELD,
+      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT);
+  mmio_region_write32_shadowed(keymgr_dpe.base_addr,
+                               KEYMGR_DPE_CONTROL_SHADOWED_REG_OFFSET,
+                               reg_control);
 
   // Start the key manager operation.
-  mmio_region_write32(keymgr.base_addr, KEYMGR_START_REG_OFFSET,
-                      1 << KEYMGR_START_EN_BIT);
+  mmio_region_write32(keymgr_dpe.base_addr, KEYMGR_DPE_START_REG_OFFSET,
+                      1 << KEYMGR_DPE_START_EN_BIT);
   // Write to message FIFO while app interface operation is ongoing.
   mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, 0xff);
 

@@ -26,7 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
+#include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 
 #include "hw/top/keymgr_dpe_regs.h"
 #include "hw/top/kmac_regs.h"
@@ -53,7 +53,7 @@ enum {
 /**
  * Software binding value associated with the ROM. Programmed by the ROM.
  */
-const keymgr_binding_value_t kBindingValueRom = {
+const keymgr_dpe_binding_value_t kBindingValueRom = {
     .data = {0x7c9b2405, 0x1841a738, 0xdb24005d, 0x4dbd6a17, 0x362f1673,
              0x1d8ede70, 0x0104d346, 0x1a0806c2},
 };
@@ -61,7 +61,7 @@ const keymgr_binding_value_t kBindingValueRom = {
 /**
  * Software binding value associated with the ROM_EXT. Programmed by ROM.
  */
-const keymgr_binding_value_t kBindingValueRomExt = {
+const keymgr_dpe_binding_value_t kBindingValueRomExt = {
     .data = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2, 0xb8a8379d,
              0x426dc745, 0x19f5cff7, 0x4ec9c6d6},
 };
@@ -69,7 +69,7 @@ const keymgr_binding_value_t kBindingValueRomExt = {
 /**
  * Software binding value associated with BL0. Programmed by ROM_EXT.
  */
-const keymgr_binding_value_t kBindingValueBl0 = {
+const keymgr_dpe_binding_value_t kBindingValueBl0 = {
     .data = {0xe4987b39, 0x3f83d390, 0xc2f3bbaf, 0x3195dbfa, 0x23fb480c,
              0xb012ae5e, 0xf1394d28, 0x1940ceeb},
 };
@@ -109,31 +109,31 @@ static bool check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
 }
 
 /** Key manager configuration steps performed in ROM. */
-rom_error_t keymgr_rom_test(void) {
+rom_error_t keymgr_dpe_rom_test(void) {
   uint32_t keymgr_dpe_base =
       dt_keymgr_dpe_reg_block(kDtKeymgrDpe, kDtKeymgrDpeRegBlockCore);
-  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateReset));
+  ASSERT_OK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateReset));
   sec_mmio_check_values(/*rnd_offset=*/0);
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 1,
         "Keymgr SW binding should be unlocked in Reset state.");
 
   const uint16_t kEntropyReseedInterval = 0x1234;
-  sc_keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioEntropyReseedIntervalSet);
+  sc_keymgr_dpe_entropy_reseed_interval_set(kEntropyReseedInterval);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioEntropyReseedIntervalSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to OTPRootKey state.
-  sc_keymgr_advance_state(/*src_slot=*/0,
-                          /*dest_slot=*/0,
-                          /*allow_child=*/kHardenedBoolFalse,
-                          /*exportable=*/kHardenedBoolFalse,
-                          /*retain_parent=*/kHardenedBoolFalse,
-                          /*sw_binding_only=*/kHardenedBoolFalse);
-  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateAvailable));
+  sc_keymgr_dpe_advance_state(/*src_slot=*/0,
+                              /*dest_slot=*/0,
+                              /*allow_child=*/kHardenedBoolFalse,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
+  ASSERT_OK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
   LOG_INFO("Keymgr State: OTPRootKey");
-  sc_keymgr_sw_binding_unlock_wait();
-  sc_keymgr_max_ver_unlock_wait();
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 1,
         "Keymgr SW binding should be unlocked in OTPRootKey state.");
@@ -143,25 +143,25 @@ rom_error_t keymgr_rom_test(void) {
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER) {
     // Test ROM does not set the binding / max key registers, like the ROM does.
-    sc_keymgr_sw_binding_set(&kBindingValueRom);
-    sc_keymgr_max_ver_set(kMaxVerRom);
-    SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
-                             kScKeymgrSecMmioMaxVerSet);
+    sc_keymgr_dpe_sw_binding_set(&kBindingValueRom);
+    sc_keymgr_dpe_max_ver_set(kMaxVerRom);
+    SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                             kScKeymgrDpeSecMmioMaxVerSet);
   }
 
   // Advance keymgr to CreatorRootKey state.
-  sc_keymgr_advance_state(/*src_slot=*/0,
-                          /*dest_slot=*/0,
-                          /*allow_child=*/kHardenedBoolTrue,
-                          /*exportable=*/kHardenedBoolFalse,
-                          /*retain_parent=*/kHardenedBoolFalse,
-                          /*sw_binding_only=*/kHardenedBoolFalse);
+  sc_keymgr_dpe_advance_state(/*src_slot=*/0,
+                              /*dest_slot=*/0,
+                              /*allow_child=*/kHardenedBoolTrue,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
   // The software binding and max key version register locks are reset after
   // advancing the key manager, so we need to call this function to update
   // sec_mmio expectation table.
-  sc_keymgr_sw_binding_unlock_wait();
-  sc_keymgr_max_ver_unlock_wait();
-  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateAvailable));
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  ASSERT_OK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
   LOG_INFO("Keymgr State: CreatorRootKey");
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 1,
@@ -174,24 +174,24 @@ rom_error_t keymgr_rom_test(void) {
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to OwnerIntermediateKey state.
-  sc_keymgr_sw_binding_set(&kBindingValueRomExt);
-  sc_keymgr_max_ver_set(kMaxVerRomExt);
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
-                           kScKeymgrSecMmioMaxVerSet);
+  sc_keymgr_dpe_sw_binding_set(&kBindingValueRomExt);
+  sc_keymgr_dpe_max_ver_set(kMaxVerRomExt);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 0,
         "Keymgr SW binding should be locked before transitioning to "
         "OwnerIntermediateKey state.");
-  sc_keymgr_advance_state(/*src_slot=*/0,
-                          /*dest_slot=*/0,
-                          /*allow_child=*/kHardenedBoolTrue,
-                          /*exportable=*/kHardenedBoolFalse,
-                          /*retain_parent=*/kHardenedBoolFalse,
-                          /*sw_binding_only=*/kHardenedBoolFalse);
-  sc_keymgr_sw_binding_unlock_wait();
-  sc_keymgr_max_ver_unlock_wait();
-  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateAvailable));
+  sc_keymgr_dpe_advance_state(/*src_slot=*/0,
+                              /*dest_slot=*/0,
+                              /*allow_child=*/kHardenedBoolTrue,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  ASSERT_OK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
   LOG_INFO("Keymgr State: OwnerIntermediateKey");
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 1,
@@ -207,32 +207,32 @@ rom_error_t keymgr_rom_test(void) {
 }
 
 /** Key manager configuration steps performed in ROM_EXT. */
-rom_error_t keymgr_rom_ext_test(void) {
+rom_error_t keymgr_dpe_rom_ext_test(void) {
   uint32_t keymgr_dpe_base =
       dt_keymgr_dpe_reg_block(kDtKeymgrDpe, kDtKeymgrDpeRegBlockCore);
   // The software binding register lock is reset after advancing the key
   // manager, so we need to call this function to update sec_mmio expectation
   // table.
-  sc_keymgr_sw_binding_unlock_wait();
+  sc_keymgr_dpe_sw_binding_unlock_wait();
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to OwnerKey state.
-  sc_keymgr_sw_binding_set(&kBindingValueBl0);
+  sc_keymgr_dpe_sw_binding_set(&kBindingValueBl0);
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 0,
         "Keymgr SW binding should be locked before transitioning to "
         "OwnerKey state.");
-  sc_keymgr_max_ver_set(kMaxVerBl0);
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
-                           kScKeymgrSecMmioMaxVerSet);
+  sc_keymgr_dpe_max_ver_set(kMaxVerBl0);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-  sc_keymgr_advance_state(/*src_slot=*/0,
-                          /*dest_slot=*/0,
-                          /*allow_child=*/kHardenedBoolTrue,
-                          /*exportable=*/kHardenedBoolFalse,
-                          /*retain_parent=*/kHardenedBoolFalse,
-                          /*sw_binding_only=*/kHardenedBoolFalse);
-  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateAvailable));
+  sc_keymgr_dpe_advance_state(/*src_slot=*/0,
+                              /*dest_slot=*/0,
+                              /*allow_child=*/kHardenedBoolTrue,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
+  ASSERT_OK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
   LOG_INFO("Keymgr State: OwnerKey");
   CHECK(abs_mmio_read32(keymgr_dpe_base +
                         KEYMGR_DPE_SW_BINDING_REGWEN_REG_OFFSET) == 1,
@@ -243,9 +243,9 @@ rom_error_t keymgr_rom_ext_test(void) {
   return kErrorOk;
 }
 
-rom_error_t keymgr_disable_test(void) {
-  sc_keymgr_disable();
-  CHECK(sc_keymgr_state_check(kScKeymgrStateDisabled) == kErrorOk,
+rom_error_t keymgr_dpe_disable_test(void) {
+  sc_keymgr_dpe_disable();
+  CHECK(sc_keymgr_dpe_state_check(kScKeymgrDpeStateDisabled) == kErrorOk,
         "Keymgr should be in the disabled state.");
   return kErrorOk;
 }
@@ -277,9 +277,9 @@ bool test_main(void) {
     sec_mmio_init();
     kmac_keymgr_configure();
 
-    EXECUTE_TEST(result, keymgr_rom_test);
-    EXECUTE_TEST(result, keymgr_rom_ext_test);
-    EXECUTE_TEST(result, keymgr_disable_test);
+    EXECUTE_TEST(result, keymgr_dpe_rom_test);
+    EXECUTE_TEST(result, keymgr_dpe_rom_ext_test);
+    EXECUTE_TEST(result, keymgr_dpe_disable_test);
     return status_ok(result);
   }
   return false;

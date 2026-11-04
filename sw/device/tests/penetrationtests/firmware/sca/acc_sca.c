@@ -8,13 +8,13 @@
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -30,8 +30,7 @@
 #define BYTES_IN_WDR 32
 
 static dif_acc_t acc;
-static dif_keymgr_t keymgr;
-static dif_kmac_t kmac;
+static dif_keymgr_dpe_t keymgr_dpe;
 
 enum {
   kKeySideloadNumIt = 16,
@@ -474,7 +473,8 @@ status_t handle_acc_pentest_init(ujson_t *uj) {
   pentest_setup_device(uj, false, true);
 
   // Init the ACC core.
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(dt_acc_primary_reg_block(kDtAcc)),
+                   &acc));
 
   // Load p256 keygen from seed app into ACC.
   if (acc_load_app(kAccAppP256KeyFromSeed).value != OTCRYPTO_OK.value) {
@@ -491,20 +491,23 @@ status_t handle_acc_pentest_init(ujson_t *uj) {
 
 status_t handle_acc_pentest_init_keymgr(ujson_t *uj) {
   if (kBootStage != kBootStageOwner) {
-    TRY(keymgr_testutils_startup(&keymgr, &kmac));
+    TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, kDifKeymgrDpeSlot0));
     // Advance to OwnerIntermediateKey state.
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_check_state(&keymgr,
-                                     kDifKeymgrStateOwnerIntermediateKey));
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntParams));
+    TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                         kDifKeymgrDpeStateAvailable));
     LOG_INFO("Keymgr entered OwnerIntKey State");
   } else {
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR),
-                        &keymgr));
-    TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+    TRY(dif_keymgr_dpe_init(
+        mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+        &keymgr_dpe));
+    TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                         kDifKeymgrDpeStateAvailable));
   }
 
   dif_acc_t acc;
-  TRY(dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
+  TRY(dif_acc_init(mmio_region_from_addr(dt_acc_primary_reg_block(kDtAcc)),
+                   &acc));
 
   return OK_STATUS();
 }
@@ -671,13 +674,13 @@ status_t handle_acc_sca_key_sideload_fvsr(ujson_t *uj) {
   TRY(ujson_deserialize_penetrationtest_acc_sca_fixed_seed_t(uj, &uj_data));
 
   // Key generation parameters.
-  dif_keymgr_versioned_key_params_t sideload_params[kKeySideloadNumIt];
+  dif_keymgr_dpe_generate_params_t sideload_params[kKeySideloadNumIt];
 
   // Generate FvsR values.
   bool sample_fixed = true;
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
     sideload_params[it].version = 0x0;
-    sideload_params[it].dest = kDifKeymgrVersionedKeyDestAcc;
+    sideload_params[it].key_dest = kDifKeymgrDpeKeyDestAcc;
     memset(sideload_params[it].salt, 0, sizeof(sideload_params[it].salt));
     if (sample_fixed) {
       sideload_params[it].salt[0] = uj_data.fixed_seed;
@@ -694,8 +697,10 @@ status_t handle_acc_sca_key_sideload_fvsr(ujson_t *uj) {
   uint32_t key_l[kKeySideloadNumIt], key_h[kKeySideloadNumIt];
 
   // SCA code target.
+  dif_keymgr_dpe_output_t ignored;
   for (size_t it = 0; it < kKeySideloadNumIt; it++) {
-    TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params[it]));
+    TRY(keymgr_dpe_testutils_generate(&keymgr_dpe, &sideload_params[it],
+                                      &ignored));
 
     TRY(dif_acc_set_ctrl_software_errs_fatal(&acc, /*enable=*/false));
 

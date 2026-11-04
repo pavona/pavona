@@ -100,6 +100,7 @@ module tb;
     .RndCnstScrmblKey0(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey0),
     .RndCnstScrmblKey1(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey1),
     .RndCnstScrmblKey2(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey3),
     .RndCnstDigestConst0(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst0),
     .RndCnstDigestConst1(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst1),
     .RndCnstDigestConst2(top_egret_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst2),

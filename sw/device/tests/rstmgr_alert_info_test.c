@@ -41,7 +41,7 @@
 #include "hw/top/dt/flash_ctrl.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #endif  // OPENTITAN_IS_EGRET
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
@@ -765,17 +765,6 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
-
-#ifdef OPENTITAN_IS_EGRET
-    // If not running rom_ext we need to initialize the info FLASH partitions
-    // storing the Creator and Owner secrets to avoid getting the flash
-    // controller into a fatal error state.
-    if (kBootStage != kBootStageOwner) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
-    }
-    CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
-#endif  // OPENTITAN_IS_EGRET
 
     global_test_round = kRound1;
     prgm_alert_handler_round1();

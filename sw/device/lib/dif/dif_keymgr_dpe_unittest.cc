@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 
 #include <array>
 
@@ -12,9 +12,9 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_test_base.h"
 
-#include "hw/top/keymgr_regs.h"  // Generated
+#include "hw/top/keymgr_dpe_regs.h"  // Generated
 
-namespace dif_keymgr_unittest {
+namespace dif_keymgr_dpe_unittest {
 namespace {
 
 /**
@@ -114,7 +114,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 /**
  * Base class for the rest of the tests in this file, provides a
- * `dif_keymgr_t` instance and some methods for common expectations.
+ * `dif_keymgr_dpe_t` instance and some methods for common expectations.
  */
 class DifKeymgrInitialized : public DifKeymgrTest {
  protected:
@@ -173,7 +173,7 @@ class DifKeymgrInitialized : public DifKeymgrTest {
   struct OperationStartParams {
     uint32_t dest_sel;
     uint32_t operation;
-    dif_keymgr_cdi_type_t cdi_type;
+    dif_keymgr_dpe_cdi_type_t cdi_type;
   };
 
   /**
@@ -202,29 +202,30 @@ class DifKeymgrInitialized : public DifKeymgrTest {
   }
 
   /**
-   * Initialized `dif_keymgr_t` used in tests.
+   * Initialized `dif_keymgr_dpe_t` used in tests.
    */
-  const dif_keymgr_t keymgr_ = {.base_addr = dev().region()};
+  const dif_keymgr_dpe_t keymgr_dpe_ = {.base_addr = dev().region()};
 };
 
 class ConfigureTest : public DifKeymgrInitialized {};
 
 TEST_F(ConfigureTest, BadArgs) {
-  EXPECT_DIF_BADARG(dif_keymgr_configure(nullptr, {}));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_configure(nullptr, {}));
 }
 
 TEST_F(ConfigureTest, Configure) {
-  constexpr dif_keymgr_config_t kConfig = {.entropy_reseed_interval = 0xA5A5};
+  constexpr dif_keymgr_dpe_config_t kConfig = {.entropy_reseed_interval =
+                                                   0xA5A5};
 
   EXPECT_WRITE32_SHADOWED(KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                           kConfig.entropy_reseed_interval);
 
-  EXPECT_DIF_OK(dif_keymgr_configure(&keymgr_, kConfig));
+  EXPECT_DIF_OK(dif_keymgr_dpe_configure(&keymgr_dpe_, kConfig));
 }
 
 class AdvanceStateTest : public DifKeymgrInitialized {
  protected:
-  dif_keymgr_state_params_t kStateParams{
+  dif_keymgr_dpe_state_params_t kStateParams{
       .binding_value = {0xFF, 0xC3, 0xB9, 0xA5, 0x00, 0x3C, 0x46, 0x5A},
       .max_key_version = 0xA5A5A5A5,
   };
@@ -267,8 +268,8 @@ class AdvanceStateTest : public DifKeymgrInitialized {
 };
 
 TEST_F(AdvanceStateTest, BadArgsNoKeymgr) {
-  EXPECT_DIF_BADARG(dif_keymgr_advance_state(nullptr, &kStateParams));
-  EXPECT_DIF_BADARG(dif_keymgr_advance_state(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_advance_state(nullptr, &kStateParams));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_advance_state(nullptr, nullptr));
 }
 
 class AdvanceToOperational : public AdvanceStateTest,
@@ -277,7 +278,7 @@ class AdvanceToOperational : public AdvanceStateTest,
 TEST_P(AdvanceToOperational, BadArgsToOperationalWithoutParams) {
   ExpectIdleAtState(GetParam());
 
-  EXPECT_DIF_BADARG(dif_keymgr_advance_state(&keymgr_, nullptr));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_advance_state(&keymgr_dpe_, nullptr));
 }
 
 INSTANTIATE_TEST_SUITE_P(AdvanceToOperational, AdvanceToOperational,
@@ -289,7 +290,7 @@ class AdvanceToNonOperational : public AdvanceStateTest,
 TEST_P(AdvanceToNonOperational, BadArgsToNonOperationalWithParams) {
   ExpectIdleAtState(GetParam());
 
-  EXPECT_DIF_BADARG(dif_keymgr_advance_state(&keymgr_, &kStateParams));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -299,20 +300,23 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(AdvanceStateTest, LockedBusy) {
   ExpectBusy();
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams),
+            kDifLocked);
 }
 
 TEST_F(AdvanceStateTest, LockedConfig) {
   ExpectLockedConfig();
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams),
+            kDifLocked);
 }
 
 TEST_P(AdvanceToOperational, LockedBinding) {
   ExpectIdleAtState(GetParam());
   EXPECT_READ32(KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams),
+            kDifLocked);
 }
 
 TEST_P(AdvanceToOperational, LockedMaxKeyVersion) {
@@ -324,7 +328,8 @@ TEST_P(AdvanceToOperational, LockedMaxKeyVersion) {
                 }});
   EXPECT_READ32(GetMaxKeyVersionRegInfo(GetParam()).wen_offset, 0);
 
-  EXPECT_EQ(dif_keymgr_advance_state(&keymgr_, &kStateParams), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams),
+            kDifLocked);
 }
 
 TEST_P(AdvanceToOperational, Success) {
@@ -353,7 +358,7 @@ TEST_P(AdvanceToOperational, Success) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_advance_state(&keymgr_, &kStateParams));
+  EXPECT_DIF_OK(dif_keymgr_dpe_advance_state(&keymgr_dpe_, &kStateParams));
 }
 
 TEST_P(AdvanceToNonOperational, Success) {
@@ -363,22 +368,24 @@ TEST_P(AdvanceToNonOperational, Success) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_advance_state(&keymgr_, nullptr));
+  EXPECT_DIF_OK(dif_keymgr_dpe_advance_state(&keymgr_dpe_, nullptr));
 }
 
 class DisableTest : public DifKeymgrInitialized {};
 
-TEST_F(DisableTest, BadArgs) { EXPECT_DIF_BADARG(dif_keymgr_disable(nullptr)); }
+TEST_F(DisableTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_disable(nullptr));
+}
 
 TEST_F(DisableTest, LockedBusy) {
   ExpectBusy();
-  EXPECT_EQ(dif_keymgr_disable(&keymgr_), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_disable(&keymgr_dpe_), kDifLocked);
 }
 
 TEST_F(DisableTest, LockedConfig) {
   ExpectLockedConfig();
 
-  EXPECT_EQ(dif_keymgr_disable(&keymgr_), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_disable(&keymgr_dpe_), kDifLocked);
 }
 
 TEST_F(DisableTest, Disable) {
@@ -388,15 +395,15 @@ TEST_F(DisableTest, Disable) {
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_disable(&keymgr_));
+  EXPECT_DIF_OK(dif_keymgr_dpe_disable(&keymgr_dpe_));
 }
 
 TEST_P(BadArgsTwo, GetStatusCodes) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
   auto status_codes =
-      GetGoodBadPtrArg<dif_keymgr_status_codes_t>(std::get<1>(GetParam()));
+      GetGoodBadPtrArg<dif_keymgr_dpe_status_codes_t>(std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_get_status_codes(keymgr, status_codes));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_get_status_codes(keymgr_dpe, status_codes));
 }
 
 struct GetStatusCodesTestCase {
@@ -405,9 +412,9 @@ struct GetStatusCodesTestCase {
    */
   std::vector<mock_mmio::BitField> reg_val;
   /**
-   * Expected output of `dif_keymgr_get_status_codes()`.
+   * Expected output of `dif_keymgr_dpe_get_status_codes()`.
    */
-  dif_keymgr_status_codes_t exp_val;
+  dif_keymgr_dpe_status_codes_t exp_val;
 };
 
 class GetStatusCodesNoError
@@ -427,8 +434,8 @@ TEST_P(GetStatusCodesNoError, Success) {
     EXPECT_WRITE32(KEYMGR_ERR_CODE_REG_OFFSET, 5);
   }
 
-  dif_keymgr_status_codes_t act_val;
-  EXPECT_DIF_OK(dif_keymgr_get_status_codes(&keymgr_, &act_val));
+  dif_keymgr_dpe_status_codes_t act_val;
+  EXPECT_DIF_OK(dif_keymgr_dpe_get_status_codes(&keymgr_dpe_, &act_val));
   EXPECT_EQ(GetParam().exp_val, act_val);
 }
 
@@ -478,8 +485,8 @@ TEST_P(GetStatusCodesWithError, Success) {
   EXPECT_READ32(KEYMGR_ERR_CODE_REG_OFFSET, GetParam().reg_val);
   EXPECT_WRITE32(KEYMGR_ERR_CODE_REG_OFFSET, GetParam().reg_val);
 
-  dif_keymgr_status_codes_t act_val;
-  EXPECT_DIF_OK(dif_keymgr_get_status_codes(&keymgr_, &act_val));
+  dif_keymgr_dpe_status_codes_t act_val;
+  EXPECT_DIF_OK(dif_keymgr_dpe_get_status_codes(&keymgr_dpe_, &act_val));
   EXPECT_EQ(GetParam().exp_val, act_val);
 }
 
@@ -519,10 +526,11 @@ INSTANTIATE_TEST_SUITE_P(
 class GetStateTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, GetState) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
-  auto state = GetGoodBadPtrArg<dif_keymgr_state_t>(std::get<1>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
+  auto state =
+      GetGoodBadPtrArg<dif_keymgr_dpe_state_t>(std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_get_state(keymgr, state));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_get_state(keymgr_dpe, state));
 }
 
 struct GetStateTestCase {
@@ -531,9 +539,9 @@ struct GetStateTestCase {
    */
   std::vector<mock_mmio::BitField> reg_val;
   /**
-   * Expected output of `dif_keymgr_get_state()`.
+   * Expected output of `dif_keymgr_dpe_get_state()`.
    */
-  dif_keymgr_state_t exp_output;
+  dif_keymgr_dpe_state_t exp_output;
 };
 
 class GetState : public GetStateTest,
@@ -542,8 +550,8 @@ class GetState : public GetStateTest,
 TEST_P(GetState, Success) {
   EXPECT_READ32(KEYMGR_WORKING_STATE_REG_OFFSET, GetParam().reg_val);
 
-  dif_keymgr_state_t state;
-  EXPECT_DIF_OK(dif_keymgr_get_state(&keymgr_, &state));
+  dif_keymgr_dpe_state_t state;
+  EXPECT_DIF_OK(dif_keymgr_dpe_get_state(&keymgr_dpe_, &state));
   EXPECT_EQ(state, GetParam().exp_output);
 }
 
@@ -605,26 +613,28 @@ TEST_F(GetStateTest, UnexpectedState) {
   EXPECT_READ32(KEYMGR_WORKING_STATE_REG_OFFSET,
                 KEYMGR_WORKING_STATE_STATE_MASK);
 
-  dif_keymgr_state_t state;
-  EXPECT_EQ(dif_keymgr_get_state(&keymgr_, &state), kDifError);
+  dif_keymgr_dpe_state_t state;
+  EXPECT_EQ(dif_keymgr_dpe_get_state(&keymgr_dpe_, &state), kDifError);
 }
 
 class GenerateIdentityTest : public DifKeymgrInitialized {};
 
 TEST_F(GenerateIdentityTest, BadArgs) {
-  EXPECT_DIF_BADARG(dif_keymgr_generate_identity_seed(nullptr, {}));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_generate_identity_seed(nullptr, {}));
 }
 
 TEST_F(GenerateIdentityTest, LockedBusy) {
   ExpectBusy();
 
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_, {}), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_generate_identity_seed(&keymgr_dpe_, {}),
+            kDifLocked);
 }
 
 TEST_F(GenerateIdentityTest, LockedConfig) {
   ExpectLockedConfig();
 
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_, {}), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_generate_identity_seed(&keymgr_dpe_, {}),
+            kDifLocked);
 }
 
 TEST_F(GenerateIdentityTest, GenerateSealing) {
@@ -635,8 +645,8 @@ TEST_F(GenerateIdentityTest, GenerateSealing) {
       .cdi_type = kDifKeymgrSealingCdi,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(
-      &keymgr_, {.cdi_type = kDifKeymgrSealingCdi}));
+  EXPECT_DIF_OK(dif_keymgr_dpe_generate_identity_seed(
+      &keymgr_dpe_, {.cdi_type = kDifKeymgrSealingCdi}));
 }
 
 TEST_F(GenerateIdentityTest, GenerateAttestation) {
@@ -647,37 +657,40 @@ TEST_F(GenerateIdentityTest, GenerateAttestation) {
       .cdi_type = kDifKeymgrAttestationCdi,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(
-      &keymgr_, {.cdi_type = kDifKeymgrAttestationCdi}));
+  EXPECT_DIF_OK(dif_keymgr_dpe_generate_identity_seed(
+      &keymgr_dpe_, {.cdi_type = kDifKeymgrAttestationCdi}));
 }
 
 class GenerateVersionedKeyTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, GenerateVersionedKey) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
-  auto dest = GetGoodBadEnumArg<dif_keymgr_versioned_key_dest_t>(
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
+  auto dest = GetGoodBadEnumArg<dif_keymgr_dpe_versioned_key_dest_t>(
       std::get<1>(GetParam()), kDifKeymgrVersionedKeyDestLast);
 
-  EXPECT_DIF_BADARG(dif_keymgr_generate_versioned_key(keymgr, {.dest = dest}));
+  EXPECT_DIF_BADARG(
+      dif_keymgr_dpe_generate_versioned_key(keymgr_dpe, {.dest = dest}));
 }
 
 TEST_F(GenerateVersionedKeyTest, LockedBusy) {
   ExpectBusy();
 
-  EXPECT_EQ(dif_keymgr_generate_versioned_key(&keymgr_, {}), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_generate_versioned_key(&keymgr_dpe_, {}),
+            kDifLocked);
 }
 
 TEST_F(GenerateVersionedKeyTest, LockedConfig) {
   ExpectLockedConfig();
 
-  EXPECT_EQ(dif_keymgr_generate_versioned_key(&keymgr_, {}), kDifLocked);
+  EXPECT_EQ(dif_keymgr_dpe_generate_versioned_key(&keymgr_dpe_, {}),
+            kDifLocked);
 }
 
 struct GenerateVersionedKeyTestCase {
   /**
    * Destination of the generated key.
    */
-  dif_keymgr_versioned_key_dest_t dest;
+  dif_keymgr_dpe_versioned_key_dest_t dest;
   /**
    * Expected DEST_SEL value to be written to the CONTROL register.
    */
@@ -689,7 +702,7 @@ struct GenerateVersionedKeyTestCase {
   /**
    * Expected CDI_SEL value to be written to the CONTROL register.
    */
-  dif_keymgr_cdi_type_t cdi_type;
+  dif_keymgr_dpe_cdi_type_t cdi_type;
 };
 
 class GenerateVersionedKey
@@ -697,7 +710,7 @@ class GenerateVersionedKey
       public testing::WithParamInterface<GenerateVersionedKeyTestCase> {};
 
 TEST_P(GenerateVersionedKey, Success) {
-  dif_keymgr_versioned_key_params_t params{
+  dif_keymgr_dpe_versioned_key_params_t params{
       .dest = GetParam().dest,
       .salt = {0x5A, 0x46, 0x3C, 0x00, 0xA5, 0xB9, 0xC3, 0xFF},
       .version = 0xA5A5A5A5,
@@ -714,7 +727,7 @@ TEST_P(GenerateVersionedKey, Success) {
       .operation = GetParam().exp_operation,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_generate_versioned_key(&keymgr_, params));
+  EXPECT_DIF_OK(dif_keymgr_dpe_generate_versioned_key(&keymgr_dpe_, params));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -766,18 +779,20 @@ INSTANTIATE_TEST_SUITE_P(
 class SideloadClearTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, GetBadArg) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
   auto state = GetGoodBadPtrArg<dif_toggle_t>(std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_sideload_clear_get_enabled(keymgr, state));
+  EXPECT_DIF_BADARG(
+      dif_keymgr_dpe_sideload_clear_get_enabled(keymgr_dpe, state));
 }
 
 TEST_P(BadArgsTwo, SetBadArg) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
   auto state = GetGoodBadEnumArg<dif_toggle_t>(std::get<1>(GetParam()),
                                                kDifToggleEnabled);
 
-  EXPECT_DIF_BADARG(dif_keymgr_sideload_clear_set_enabled(keymgr, state));
+  EXPECT_DIF_BADARG(
+      dif_keymgr_dpe_sideload_clear_set_enabled(keymgr_dpe, state));
 }
 
 TEST_F(SideloadClearTest, Set) {
@@ -786,16 +801,16 @@ TEST_F(SideloadClearTest, Set) {
                      .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
                      .value = kDifKeyMgrSideLoadClearAll,
                  }});
-  EXPECT_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleEnabled));
+  EXPECT_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(&keymgr_dpe_,
+                                                          kDifToggleEnabled));
 
   EXPECT_WRITE32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
                  {{
                      .offset = KEYMGR_SIDELOAD_CLEAR_VAL_OFFSET,
                      .value = kDifKeyMgrSideLoadClearNone,
                  }});
-  EXPECT_DIF_OK(
-      dif_keymgr_sideload_clear_set_enabled(&keymgr_, kDifToggleDisabled));
+  EXPECT_DIF_OK(dif_keymgr_dpe_sideload_clear_set_enabled(&keymgr_dpe_,
+                                                          kDifToggleDisabled));
 }
 
 TEST_F(SideloadClearTest, Get) {
@@ -805,7 +820,8 @@ TEST_F(SideloadClearTest, Get) {
                     .value = kDifKeyMgrSideLoadClearAll,
                 }});
   dif_toggle_t state = kDifToggleDisabled;
-  EXPECT_DIF_OK(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state));
+  EXPECT_DIF_OK(
+      dif_keymgr_dpe_sideload_clear_get_enabled(&keymgr_dpe_, &state));
   EXPECT_EQ(state, kDifToggleEnabled);
 
   EXPECT_READ32(KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
@@ -814,17 +830,19 @@ TEST_F(SideloadClearTest, Get) {
                     .value = kDifKeyMgrSideLoadClearNone,
                 }});
   state = kDifToggleEnabled;
-  EXPECT_DIF_OK(dif_keymgr_sideload_clear_get_enabled(&keymgr_, &state));
+  EXPECT_DIF_OK(
+      dif_keymgr_dpe_sideload_clear_get_enabled(&keymgr_dpe_, &state));
   EXPECT_EQ(state, kDifToggleDisabled);
 }
 
 class ReadOutputTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, ReadOutput) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
-  auto output = GetGoodBadPtrArg<dif_keymgr_output_t>(std::get<1>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
+  auto output =
+      GetGoodBadPtrArg<dif_keymgr_dpe_output_t>(std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_read_output(keymgr, output));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_read_output(keymgr_dpe, output));
 }
 
 TEST_F(ReadOutputTest, Read) {
@@ -843,8 +861,8 @@ TEST_F(ReadOutputTest, Read) {
     }
   }
 
-  dif_keymgr_output_t output;
-  EXPECT_DIF_OK(dif_keymgr_read_output(&keymgr_, &output));
+  dif_keymgr_dpe_output_t output;
+  EXPECT_DIF_OK(dif_keymgr_dpe_read_output(&keymgr_dpe_, &output));
   for (size_t i = 0; i < kNumShares; ++i) {
     EXPECT_THAT(kExpected[i], ::testing::ElementsAreArray(output.value[i]));
   }
@@ -853,11 +871,11 @@ TEST_F(ReadOutputTest, Read) {
 class ReadBindingTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, ReadBinding) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
   auto output =
-      GetGoodBadPtrArg<dif_keymgr_binding_value_t>(std::get<1>(GetParam()));
+      GetGoodBadPtrArg<dif_keymgr_dpe_binding_value_t>(std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_read_binding(keymgr, output));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_read_binding(keymgr_dpe, output));
 }
 
 TEST_F(ReadBindingTest, Read) {
@@ -876,8 +894,8 @@ TEST_F(ReadBindingTest, Read) {
     }
   }
 
-  dif_keymgr_binding_value_t output;
-  EXPECT_DIF_OK(dif_keymgr_read_binding(&keymgr_, &output));
+  dif_keymgr_dpe_binding_value_t output;
+  EXPECT_DIF_OK(dif_keymgr_dpe_read_binding(&keymgr_dpe_, &output));
   EXPECT_THAT(kExpected[0], ::testing::ElementsAreArray(output.sealing));
   EXPECT_THAT(kExpected[1], ::testing::ElementsAreArray(output.attestation));
 }
@@ -885,11 +903,11 @@ TEST_F(ReadBindingTest, Read) {
 class ReadMaxKeyVersionTest : public DifKeymgrInitialized {};
 
 TEST_P(BadArgsTwo, ReadMaxKeyVersion) {
-  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
-  auto version =
-      GetGoodBadPtrArg<dif_keymgr_max_key_version_t>(std::get<1>(GetParam()));
+  auto keymgr_dpe = GetGoodBadPtrArg<dif_keymgr_dpe_t>(std::get<0>(GetParam()));
+  auto version = GetGoodBadPtrArg<dif_keymgr_dpe_max_key_version_t>(
+      std::get<1>(GetParam()));
 
-  EXPECT_DIF_BADARG(dif_keymgr_read_max_key_version(keymgr, version));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_read_max_key_version(keymgr_dpe, version));
 }
 
 TEST_F(ReadMaxKeyVersionTest, Read) {
@@ -897,11 +915,11 @@ TEST_F(ReadMaxKeyVersionTest, Read) {
   EXPECT_READ32(KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, 0x874d53e);
   EXPECT_READ32(KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, 0x874df4a);
 
-  dif_keymgr_max_key_version_t versions;
-  EXPECT_DIF_OK(dif_keymgr_read_max_key_version(&keymgr_, &versions));
+  dif_keymgr_dpe_max_key_version_t versions;
+  EXPECT_DIF_OK(dif_keymgr_dpe_read_max_key_version(&keymgr_dpe_, &versions));
   EXPECT_THAT(0xa093ed64, versions.creator_max_key_version);
   EXPECT_THAT(0x874d53e, versions.owner_int_max_key_version);
   EXPECT_THAT(0x874df4a, versions.owner_max_key_version);
 }
 }  // namespace
-}  // namespace dif_keymgr_unittest
+}  // namespace dif_keymgr_dpe_unittest

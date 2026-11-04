@@ -4,15 +4,16 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/acc_fi.h"
 
+#include "hw/top/dt/keymgr_dpe.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
-#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_acc.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -20,13 +21,12 @@
 #include "sw/device/tests/penetrationtests/json/acc_fi_commands.h"
 
 #include "hw/top/acc_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
 static dif_acc_t acc;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 
 // Indicates whether the load_integrity test is already initialized.
 static bool load_integrity_init;
@@ -88,8 +88,8 @@ static const uint32_t ref_values[32] = {
     0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
     0xFEEDFACE, 0xFEEEFEEE};
 
-static const dif_keymgr_versioned_key_params_t kKeyVersionedParamsACCFI = {
-    .dest = kDifKeymgrVersionedKeyDestSw,
+static const dif_keymgr_dpe_generate_params_t kKeyParamsACCFI = {
+    .key_dest = kDifKeymgrDpeKeyDestNone,
     .salt =  // the salt doesn't really matter here.
     {
         0xb6521d8f,
@@ -102,6 +102,7 @@ static const dif_keymgr_versioned_key_params_t kKeyVersionedParamsACCFI = {
         0xde919d54,
     },
     .version = 0x0,  // specify a low enough version to work with the ROM EXT.
+    .slot_src_sel = kDifKeymgrDpeSlotSealing,
 };
 
 /**
@@ -1342,15 +1343,15 @@ status_t handle_acc_fi_init(ujson_t *uj) {
 }
 
 status_t handle_acc_fi_init_keymgr(ujson_t *uj) {
-  dif_kmac_t kmac;
-  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR),
-                      &keymgr));
-  TRY(keymgr_testutils_initialize(&keymgr, &kmac));
+  TRY(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
+  TRY(keymgr_dpe_testutils_initialize(&keymgr_dpe));
 
-  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParamsACCFI;
-  sideload_params.dest = kDifKeymgrVersionedKeyDestAcc;
-  TRY(keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
+  dif_keymgr_dpe_generate_params_t sideload_params = kKeyParamsACCFI;
+  dif_keymgr_dpe_output_t ignored;
+  sideload_params.key_dest = kDifKeymgrDpeKeyDestAcc;
+  TRY(keymgr_dpe_testutils_generate(&keymgr_dpe, &sideload_params, &ignored));
   return OK_STATUS();
 }
 

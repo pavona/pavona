@@ -2,18 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/alert_handler.h"
+#include "hw/top/dt/clkmgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "hw/top/dt/rstmgr.h"
+#include "hw/top/dt/rv_core_ibex.h"
+#include "hw/top/dt/uart.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -21,12 +27,11 @@
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
 #include "hw/top/rv_core_ibex_regs.h"   // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_clkmgr_t clkmgr;
-static dif_keymgr_t keymgr;
+static dif_keymgr_dpe_t keymgr_dpe;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_rv_core_ibex_t rv_core_ibex;
@@ -73,24 +78,28 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  */
 static void init_peripheral_handles(void) {
   CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
+      mmio_region_from_addr(dt_clkmgr_primary_reg_block(kDtClkmgrAon)),
+      &clkmgr));
 
   CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
+      mmio_region_from_addr(dt_rstmgr_primary_reg_block(kDtRstmgrAon)),
+      &rstmgr));
 
   CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
+      mmio_region_from_addr(
+          dt_alert_handler_primary_reg_block(kDtAlertHandler)),
       &alert_handler));
 
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EGRET_RV_CORE_IBEX_CFG_BASE_ADDR),
+      mmio_region_from_addr(dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex)),
       &rv_core_ibex));
 
-  CHECK_DIF_OK(
-      dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR), &uart));
+  CHECK_DIF_OK(dif_uart_init(
+      mmio_region_from_addr(dt_uart_primary_reg_block(kDtUart0)), &uart));
 
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &keymgr));
+  CHECK_DIF_OK(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &keymgr_dpe));
 }
 
 /**
@@ -166,7 +175,7 @@ bool test_main(void) {
     config_alert_handler();
 
     // Initialize keymgr with otp contents
-    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, NULL));
+    CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(&keymgr_dpe, NULL));
 
     // DO NOT REMOVE, DV sync message
     LOG_INFO("Keymgr entered Init State");

@@ -91,7 +91,8 @@ package otp_ctrl_env_pkg;
     HwCfg1Offset,
     Secret0Offset,
     Secret1Offset,
-    Secret2Offset
+    Secret2Offset,
+    Secret3Offset
   };
 
   // start address of special locations, either digest or zeroized field
@@ -105,7 +106,8 @@ package otp_ctrl_env_pkg;
     HwCfg1Offset + HwCfg1Size - 8,
     Secret0Offset + Secret0Size - 8,
     Secret1Offset + Secret1Size - 8,
-    Secret2Offset + Secret2Size - 8
+    Secret2Offset + Secret2Size - 8,
+    Secret3Offset + Secret3Size - 16
   };
 
   // lc partition does not have digest
@@ -119,7 +121,8 @@ package otp_ctrl_env_pkg;
     HwCfg1DigestOffset >> 2,
     Secret0DigestOffset >> 2,
     Secret1DigestOffset >> 2,
-    Secret2DigestOffset >> 2
+    Secret2DigestOffset >> 2,
+    Secret3DigestOffset >> 2
   };
 
   // lc partition is not zeroizable
@@ -133,7 +136,8 @@ package otp_ctrl_env_pkg;
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
-    -1 // This partition has no zeroized field.
+    -1, // This partition has no zeroized field.
+    Secret3ZerOffset >> 2
   };
 
   // types
@@ -168,6 +172,7 @@ package otp_ctrl_env_pkg;
     OtpPartitionSecret0Idx,
     OtpPartitionSecret1Idx,
     OtpPartitionSecret2Idx,
+    OtpPartitionSecret3Idx,
     OtpPartitionLifeCycleIdx
   } otp_partition_e;
 

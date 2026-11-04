@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -166,22 +169,21 @@ static status_t test_setup(void) {
   // keymgr testutils set this up using software entropy, so there is no need
   // to initialize the entropy complex first. However, this is of course not
   // the expected setup in production.
-  dif_keymgr_t keymgr;
-  dif_kmac_t kmac;
-  dif_keymgr_state_t keymgr_state;
-  TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+  dif_keymgr_dpe_t keymgr_dpe;
+  TRY(keymgr_dpe_testutils_startup(&keymgr_dpe, kDifKeymgrDpeSlot0));
 
-  if (keymgr_state == kDifKeymgrStateCreatorRootKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
-  } else if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
-    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  if (kBootStage == kBootStageRom || kBootStage == kBootStageRomExt) {
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kCreatorParams));
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntParams));
+  } else if (kBootStage == kBootStageOwner) {
+    TRY(keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerRootKeyParams));
   }
 
-  TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+  TRY(keymgr_dpe_testutils_check_state(&keymgr_dpe,
+                                       kDifKeymgrDpeStateAvailable));
 
   // Initialize entropy complex for cryptolib, which the key manager uses to
-  // clear sideloaded keys. The `keymgr_testutils_startup` function restarts
+  // clear sideloaded keys. The `keymgr_dpe_testutils_startup` function restarts
   // the device, so this should happen afterwards.
   return entropy_complex_init();
 }

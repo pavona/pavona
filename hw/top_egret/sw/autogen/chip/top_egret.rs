@@ -582,19 +582,19 @@ pub const KMAC_BASE_ADDR: usize = 0x41120000;
 /// `KMAC_BASE_ADDR + KMAC_SIZE_BYTES`.
 pub const KMAC_SIZE_BYTES: usize = 0x1000;
 
-/// Peripheral base address for keymgr in top egret.
+/// Peripheral base address for keymgr_dpe in top egret.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const KEYMGR_BASE_ADDR: usize = 0x41140000;
+pub const KEYMGR_DPE_BASE_ADDR: usize = 0x41140000;
 
-/// Peripheral size for keymgr in top egret.
+/// Peripheral size for keymgr_dpe in top egret.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #KEYMGR_BASE_ADDR and
-/// `KEYMGR_BASE_ADDR + KEYMGR_SIZE_BYTES`.
-pub const KEYMGR_SIZE_BYTES: usize = 0x100;
+/// address between #KEYMGR_DPE_BASE_ADDR and
+/// `KEYMGR_DPE_BASE_ADDR + KEYMGR_DPE_SIZE_BYTES`.
+pub const KEYMGR_DPE_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for csrng in top egret.
 ///
@@ -777,8 +777,8 @@ pub enum PlicPeripheral {
     Hmac = 24,
     /// kmac
     Kmac = 25,
-    /// keymgr
-    Keymgr = 26,
+    /// keymgr_dpe
+    KeymgrDpe = 26,
     /// csrng
     Csrng = 27,
     /// entropy_src
@@ -819,7 +819,7 @@ impl TryFrom<u32> for PlicPeripheral {
             23 => Ok(Self::Acc),
             24 => Ok(Self::Hmac),
             25 => Ok(Self::Kmac),
-            26 => Ok(Self::Keymgr),
+            26 => Ok(Self::KeymgrDpe),
             27 => Ok(Self::Csrng),
             28 => Ok(Self::EntropySrc),
             29 => Ok(Self::Edn0),
@@ -1182,8 +1182,8 @@ pub enum PlicIrqId {
     KmacFifoEmpty = 171,
     /// kmac_kmac_err
     KmacKmacErr = 172,
-    /// keymgr_op_done
-    KeymgrOpDone = 173,
+    /// keymgr_dpe_op_done
+    KeymgrDpeOpDone = 173,
     /// csrng_cs_cmd_req_done
     CsrngCsCmdReqDone = 174,
     /// csrng_cs_entropy_req
@@ -1387,7 +1387,7 @@ impl TryFrom<u32> for PlicIrqId {
             170 => Ok(Self::KmacKmacDone),
             171 => Ok(Self::KmacFifoEmpty),
             172 => Ok(Self::KmacKmacErr),
-            173 => Ok(Self::KeymgrOpDone),
+            173 => Ok(Self::KeymgrDpeOpDone),
             174 => Ok(Self::CsrngCsCmdReqDone),
             175 => Ok(Self::CsrngCsEntropyReq),
             176 => Ok(Self::CsrngCsHwInstExc),
@@ -1767,8 +1767,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 186] = [
     PlicPeripheral::Kmac,
     // KmacKmacErr -> PlicPeripheral::Kmac
     PlicPeripheral::Kmac,
-    // KeymgrOpDone -> PlicPeripheral::Keymgr
-    PlicPeripheral::Keymgr,
+    // KeymgrDpeOpDone -> PlicPeripheral::KeymgrDpe
+    PlicPeripheral::KeymgrDpe,
     // CsrngCsCmdReqDone -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
     // CsrngCsEntropyReq -> PlicPeripheral::Csrng
@@ -1870,8 +1870,8 @@ pub enum AlertPeripheral {
     Hmac = 32,
     /// kmac
     Kmac = 33,
-    /// keymgr
-    Keymgr = 34,
+    /// keymgr_dpe
+    KeymgrDpe = 34,
     /// csrng
     Csrng = 35,
     /// entropy_src
@@ -1993,10 +1993,10 @@ pub enum AlertId {
     KmacRecovOperationErr = 47,
     /// kmac_fatal_fault_err
     KmacFatalFaultErr = 48,
-    /// keymgr_recov_operation_err
-    KeymgrRecovOperationErr = 49,
-    /// keymgr_fatal_fault_err
-    KeymgrFatalFaultErr = 50,
+    /// keymgr_dpe_recov_operation_err
+    KeymgrDpeRecovOperationErr = 49,
+    /// keymgr_dpe_fatal_fault_err
+    KeymgrDpeFatalFaultErr = 50,
     /// csrng_recov_alert
     CsrngRecovAlert = 51,
     /// csrng_fatal_alert
@@ -2080,8 +2080,8 @@ impl TryFrom<u32> for AlertId {
             46 => Ok(Self::HmacFatalFault),
             47 => Ok(Self::KmacRecovOperationErr),
             48 => Ok(Self::KmacFatalFaultErr),
-            49 => Ok(Self::KeymgrRecovOperationErr),
-            50 => Ok(Self::KeymgrFatalFaultErr),
+            49 => Ok(Self::KeymgrDpeRecovOperationErr),
+            50 => Ok(Self::KeymgrDpeFatalFaultErr),
             51 => Ok(Self::CsrngRecovAlert),
             52 => Ok(Self::CsrngFatalAlert),
             53 => Ok(Self::EntropySrcRecovAlert),
@@ -2204,10 +2204,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 65] = [
     AlertPeripheral::Kmac,
     // KmacFatalFaultErr -> AlertPeripheral::Kmac
     AlertPeripheral::Kmac,
-    // KeymgrRecovOperationErr -> AlertPeripheral::Keymgr
-    AlertPeripheral::Keymgr,
-    // KeymgrFatalFaultErr -> AlertPeripheral::Keymgr
-    AlertPeripheral::Keymgr,
+    // KeymgrDpeRecovOperationErr -> AlertPeripheral::KeymgrDpe
+    AlertPeripheral::KeymgrDpe,
+    // KeymgrDpeFatalFaultErr -> AlertPeripheral::KeymgrDpe
+    AlertPeripheral::KeymgrDpe,
     // CsrngRecovAlert -> AlertPeripheral::Csrng
     AlertPeripheral::Csrng,
     // CsrngFatalAlert -> AlertPeripheral::Csrng

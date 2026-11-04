@@ -279,44 +279,92 @@ rom_error_t dice_chain_attestation_silicon(void) {
 
   // Set keymgr reseed interval. Start with the maximum value to avoid
   // entropy complex contention during the boot process.
-  const uint16_t kScKeymgrEntropyReseedInterval = UINT16_MAX;
-  sc_keymgr_entropy_reseed_interval_set(kScKeymgrEntropyReseedInterval);
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioEntropyReseedIntervalSet);
+  const uint16_t kScKeymgrDpeEntropyReseedInterval = UINT16_MAX;
+  sc_keymgr_dpe_entropy_reseed_interval_set(kScKeymgrDpeEntropyReseedInterval);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioEntropyReseedIntervalSet);
 
-  // ROM sets the SW binding values for the first key stage (CreatorRootKey) but
-  // does not initialize the key manager. Advance key manager state twice to
-  // transition to the CreatorRootKey state.
-  RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
-  sc_keymgr_advance_state();
-  RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateInit));
+  // ROM sets the SW binding values for the Silicon Creator Root Key (which are
+  // consumed by the *second* advance below) but does not initialize the key
+  // manager. Advance from reset to OTPRootKey (pre-UDS).
+  //
+  // Notes:
+  // - `allow_child` is ignored by the hardware and set to false here by
+  //   convention, even though the UDS is its logical successor.
+  // - Any slot could be used for the OTPRootKey, but we use the sealing slot
+  //   (slot 0) by convention.
+  RETURN_IF_ERROR(sc_keymgr_dpe_state_check(kScKeymgrDpeStateReset));
+  sc_keymgr_dpe_advance_state(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                              /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                              /*allow_child=*/kHardenedBoolFalse,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolFalse,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
+  RETURN_IF_ERROR(sc_keymgr_dpe_state_check(kScKeymgrDpeStateAvailable));
 
-  // Generate UDS keys.
-  sc_keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
+  // At this point, the key manager is initialized with the OTP Root Secret,
+  // but has not yet generated UDS using the other hardware/software
+  // diversification.
+  //
+  // Now, advance again to derive the Silicon Creator Root secret (UDS). We set
+  // `retain_parent` so that we can generate the sealing and attestation CDI
+  // chains in separate slots.
+  sc_keymgr_dpe_advance_state(/*src_slot=*/kScKeymgrDpeSlotSealing,
+                              /*dst_slot=*/kScKeymgrDpeSlotSealing,
+                              /*allow_child=*/kHardenedBoolTrue,
+                              /*exportable=*/kHardenedBoolFalse,
+                              /*retain_parent=*/kHardenedBoolTrue,
+                              /*sw_binding_only=*/kHardenedBoolFalse);
   HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyUds, &static_dice_cdi_0.uds_pubkey_id,
       &static_dice_cdi_0.uds_pubkey));
 
   // Save UDS key for signing next stage cert.
   RETURN_IF_ERROR(acc_boot_attestation_key_save(
-      kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
+      kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.slot,
       *kDiceKeyUds.keymgr_diversifier));
+
+  // Wait for software binding and max version registers to be available before
+  // returning.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
 
   return kErrorOk;
 }
 
 rom_error_t dice_chain_attestation_creator(
-    keymgr_binding_value_t *rom_ext_measurement,
+    keymgr_dpe_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
-  // Generate CDI_0 attestation keys and (potentially) update certificate.
-  keymgr_binding_value_t seal_binding_value = {
+  keymgr_dpe_binding_value_t seal_binding_value = {
       .data = {rom_ext_manifest->identifier, 0}};
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
-                           kScKeymgrSecMmioOwnerIntMaxVerSet);
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_int_advance(
-      /*sealing_binding=*/&seal_binding_value,
-      /*attest_binding=*/rom_ext_measurement,
-      rom_ext_manifest->max_key_version));
+  // Derive Siilcon Creator Identity (CDI_0) attestation secret.
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
+  RETURN_IF_ERROR(sc_keymgr_dpe_advance(
+      /*src_slot=*/kScKeymgrDpeSlotSealing,
+      /*dst_slot=*/kScKeymgrDpeSlotAttestation,
+      /*allow_child=*/kHardenedBoolTrue,
+      /*exportable=*/kHardenedBoolFalse,
+      /*retain_parent=*/kHardenedBoolFalse,
+      /*sw_binding_only=*/kHardenedBoolFalse,
+      /*binding=*/rom_ext_measurement,
+      /*max_key_version=*/rom_ext_manifest->max_key_version));
+  // Wait for software binding and max version registers to be available again.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  // Derive Siilcon Creator Identity (CDI_0) sealing secret.
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
+  RETURN_IF_ERROR(sc_keymgr_dpe_advance(
+      /*src_slot=*/kScKeymgrDpeSlotSealing,
+      /*dst_slot=*/kScKeymgrDpeSlotSealing,
+      /*allow_child=*/kHardenedBoolTrue,
+      /*exportable=*/kHardenedBoolFalse,
+      /*retain_parent=*/kHardenedBoolFalse,
+      /*sw_binding_only=*/kHardenedBoolFalse,
+      /*binding=*/&seal_binding_value,
+      /*max_key_version=*/rom_ext_manifest->max_key_version));
+
+  // Update CDI_0 certificate if necessary.
   HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
       &static_dice_cdi_0.cdi_0_pubkey));
@@ -339,11 +387,14 @@ rom_error_t dice_chain_attestation_creator(
   } else {
     // Replace UDS with CDI_0 key for endorsing next stage cert.
     HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
-        kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
+        kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.slot,
         *kDiceKeyCdi0.keymgr_diversifier));
   }
 
-  sc_keymgr_sw_binding_unlock_wait();
+  // Wait for software binding and max version registers to be available before
+  // returning.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
 
   return kErrorOk;
 }
@@ -440,14 +491,16 @@ rom_error_t dice_chain_rom_ext_check(void) {
 }
 
 rom_error_t dice_chain_attestation_owner(
-    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    const manifest_t *owner_manifest,
+    keymgr_dpe_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
-    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain) {
+    keymgr_dpe_binding_value_t *sealing_binding,
+    owner_app_domain_t key_domain) {
   // Generate CDI_1 attestation keys and (potentially) update certificate.
-  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
-                           kScKeymgrSecMmioOwnerIntMaxVerSet);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
   static_assert(
-      sizeof(hmac_digest_t) == sizeof(keymgr_binding_value_t),
+      sizeof(hmac_digest_t) == sizeof(keymgr_dpe_binding_value_t),
       "Expect the keymgr binding value to be the same size as a sha256 digest");
 
   // Aggregate the owner firmware (BL0) measurement and the ownership
@@ -461,10 +514,34 @@ rom_error_t dice_chain_attestation_owner(
   hmac_sha256_process();
   hmac_sha256_final(&attest_measurement);
 
-  HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_advance(
-      /*sealing_binding=*/sealing_binding,
-      /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
-      owner_manifest->max_key_version));
+  // Derive Silicon Owner Identity (CDI_1) attestation secret.
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
+  RETURN_IF_ERROR(sc_keymgr_dpe_advance(
+      /*src_slot=*/kScKeymgrDpeSlotAttestation,
+      /*dst_slot=*/kScKeymgrDpeSlotAttestation,
+      /*allow_child=*/kHardenedBoolTrue,
+      /*exportable=*/kHardenedBoolFalse,
+      /*retain_parent=*/kHardenedBoolFalse,
+      /*sw_binding_only=*/kHardenedBoolFalse,
+      /*binding=*/(keymgr_dpe_binding_value_t *)&attest_measurement,
+      /*max_key_version=*/owner_manifest->max_key_version));
+  // Wait for software binding and max version registers to be available again.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
+  // Derive Silicon Owner Identity (CDI_1) sealing secret.
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDpeSecMmioSwBindingSet +
+                           kScKeymgrDpeSecMmioMaxVerSet);
+  RETURN_IF_ERROR(sc_keymgr_dpe_advance(
+      /*src_slot=*/kScKeymgrDpeSlotSealing,
+      /*dst_slot=*/kScKeymgrDpeSlotSealing,
+      /*allow_child=*/kHardenedBoolTrue,
+      /*exportable=*/kHardenedBoolFalse,
+      /*retain_parent=*/kHardenedBoolFalse,
+      /*sw_binding_only=*/kHardenedBoolFalse,
+      /*binding=*/sealing_binding,
+      /*max_key_version=*/owner_manifest->max_key_version));
+
   HARDENED_RETURN_IF_ERROR(acc_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
@@ -488,12 +565,15 @@ rom_error_t dice_chain_attestation_owner(
 
     // Replace CDI_0 with CDI_1 key for endorsing next stage cert.
     HARDENED_RETURN_IF_ERROR(acc_boot_attestation_key_save(
-        kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
+        kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.slot,
         *kDiceKeyCdi1.keymgr_diversifier));
   }
   dice_chain.endorsement_pubkey_id = dice_chain.subject_pubkey_id;
 
-  sc_keymgr_sw_binding_unlock_wait();
+  // Wait for software binding and max version registers to be available before
+  // returning.
+  sc_keymgr_dpe_sw_binding_unlock_wait();
+  sc_keymgr_dpe_max_ver_unlock_wait();
 
   return kErrorOk;
 }

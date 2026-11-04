@@ -31,25 +31,18 @@ status_t ownership_print(void) { return OK_STATUS(); }
 #endif
 
 #ifdef WITH_KEYMGR
-#include "sw/device/lib/dif/dif_keymgr.h"
+#include "hw/top/dt/keymgr_dpe.h"
+#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
-const char *keymgr_state(dif_keymgr_state_t s) {
+const char *keymgr_state(dif_keymgr_dpe_state_t s) {
   switch (s) {
-    case kDifKeymgrStateReset:
+    case kDifKeymgrDpeStateReset:
       return "Reset";
-    case kDifKeymgrStateInitialized:
-      return "Initialized";
-    case kDifKeymgrStateCreatorRootKey:
-      return "CreatorRootKey";
-    case kDifKeymgrStateOwnerIntermediateKey:
-      return "OwnerIntermediateKey";
-    case kDifKeymgrStateOwnerRootKey:
-      return "OwnerRootKey";
-    case kDifKeymgrStateDisabled:
+    case kDifKeymgrDpeStateAvailable:
+      return "Available";
+    case kDifKeymgrDpeStateDisabled:
       return "Disabled";
-    case kDifKeymgrStateInvalid:
+    case kDifKeymgrDpeStateInvalid:
       return "Invalid";
     default:
       return "Unknown";
@@ -57,28 +50,26 @@ const char *keymgr_state(dif_keymgr_state_t s) {
 }
 
 status_t keymgr_print(void) {
-  dif_keymgr_t km;
-  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EGRET_KEYMGR_BASE_ADDR), &km));
+  dif_keymgr_dpe_t km;
+  TRY(dif_keymgr_dpe_init(
+      mmio_region_from_addr(dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe)),
+      &km));
 
-  dif_keymgr_state_t state;
-  TRY(dif_keymgr_get_state(&km, &state));
+  dif_keymgr_dpe_state_t state;
+  TRY(dif_keymgr_dpe_get_state(&km, &state));
   LOG_INFO("keymgr state = %s", keymgr_state(state));
 
-  dif_keymgr_binding_value_t bind;
-  TRY(dif_keymgr_read_binding(&km, &bind));
-  LOG_INFO("keymgr bind_sealing = %08x%08x%08x%08x%08x%08x%08x%08x",
-           bind.sealing[0], bind.sealing[1], bind.sealing[2], bind.sealing[3],
-           bind.sealing[4], bind.sealing[5], bind.sealing[6], bind.sealing[7]);
-  LOG_INFO("keymgr bind_attest = %08x%08x%08x%08x%08x%08x%08x%08x",
-           bind.attestation[0], bind.attestation[1], bind.attestation[2],
-           bind.attestation[3], bind.attestation[4], bind.attestation[5],
-           bind.attestation[6], bind.attestation[7]);
+  dif_keymgr_dpe_binding_value_t bind;
+  TRY(dif_keymgr_dpe_read_binding(&km, &bind));
+  LOG_INFO("keymgr binding = %08x%08x%08x%08x%08x%08x%08x%08x", bind.binding[0],
+           bind.binding[1], bind.binding[2], bind.binding[3], bind.binding[4],
+           bind.binding[5], bind.binding[6], bind.binding[7]);
 
-  dif_keymgr_versioned_key_params_t p = {kDifKeymgrVersionedKeyDestSw};
-  TRY(dif_keymgr_generate_versioned_key(&km, p));
+  dif_keymgr_dpe_generate_params_t p = {kDifKeymgrDpeKeyDestNone};
+  TRY(dif_keymgr_dpe_generate(&km, &p));
 
-  dif_keymgr_output_t out;
-  TRY(dif_keymgr_read_output(&km, &out));
+  dif_keymgr_dpe_output_t out;
+  TRY(dif_keymgr_dpe_read_output(&km, &out));
   LOG_INFO("keymgr sw_key = %08x%08x%08x%08x%08x%08x%08x%08x",
            out.value[0][0] ^ out.value[1][0], out.value[0][1] ^ out.value[1][1],
            out.value[0][2] ^ out.value[1][2], out.value[0][3] ^ out.value[1][3],

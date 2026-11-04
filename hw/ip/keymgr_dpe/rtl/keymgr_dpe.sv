@@ -16,6 +16,7 @@ module keymgr_dpe
   // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned AlertSkewCycles       = 1,
   parameter bit KmacEnMasking                  = 1'b1,
+  parameter int unsigned NumRomDigestInputs    = 2,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
   parameter rand_perm_t RndCnstRandPerm        = RndCnstRandPermDefault,

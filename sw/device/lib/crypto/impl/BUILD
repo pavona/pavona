@@ -6,6 +6,7 @@
 package(default_visibility = ["//visibility:public"])
 
 load("//rules/pavona:defs.bzl", "PAVONA_CPU")
+load("//hw/top:defs.bzl", "pavona_if_ip")
 
 config_setting(
     name = "crypto_status_debug",
@@ -155,17 +156,25 @@ cc_library(
     name = "keyblob",
     srcs = ["keyblob.c"],
     hdrs = ["keyblob.h"],
+    defines = pavona_if_ip(
+        "keymgr_dpe",
+        ["HAS_KEYMGR_DPE"],
+        ["HAS_KEYMGR"],
+    ),
     deps = [
         ":integrity",
         ":status",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/include:datatypes",
-    ],
+    ] + pavona_if_ip(
+        "keymgr_dpe",
+        ["//sw/device/lib/crypto/drivers:keymgr_dpe"],
+        ["//sw/device/lib/crypto/drivers:keymgr"],
+    ),
 )
 
 cc_test(

@@ -10,11 +10,11 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/template.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
+const sc_keymgr_dpe_diversification_t kTpmEkKeymgrDiversifier = {
     .salt =
         {
             0x3fd3bc42,
@@ -28,11 +28,10 @@ const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
         },
     .version = 0,
 };
-const sc_keymgr_ecc_key_t kTpmKeyEk = {
-    .type = kScKeymgrKeyTypeSealing,
+const sc_keymgr_dpe_ecc_key_t kTpmKeyEk = {
+    .slot = kScKeymgrDpeSlotSealing,
     .keygen_seed_idx = kFlashInfoFieldTpmEkKeySeedIdx,
     .keymgr_diversifier = &kTpmEkKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
 rom_error_t tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,

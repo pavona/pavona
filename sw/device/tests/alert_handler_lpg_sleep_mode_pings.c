@@ -18,7 +18,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
@@ -500,15 +500,6 @@ bool test_main(void) {
     LOG_INFO("Will run %d iterations per phase", rnd_num_iterations);
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterTestSteps, &test_step_cnt));
-
-    // We need to initialize the info FLASH partitions storing the Creator and
-    // Owner secrets to avoid getting the flash controller into a fatal error
-    // state.
-    if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
-      CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
-                                                  &kOwnerSecret));
-      chip_sw_reset();
-    }
   }
   CHECK_STATUS_OK(
       ret_sram_testutils_counter_get(kCounterTestPhase, &rnd_num_iterations));
