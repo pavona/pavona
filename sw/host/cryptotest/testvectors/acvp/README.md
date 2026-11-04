@@ -16,11 +16,21 @@ Each file is a self-contained JSON object in the format defined by the [ACVP spe
 
 These are ACVP testing capabilities, which may be narrower than the cryptolib capabilities.
 
+Some ACVP test cases are deferred.
+Their prompt leaves some values open for the implementation to choose, and the response returns the chosen values together with the answer.
+The server computes its own answer from those values once it receives the response.
+
+The expected results of a sample vector set only hold for the values NIST chose.
+To test deferred test cases against known answers, the pinned vector sets use those values, taken with the expected results from the sample's `internalProjection.json`.
+For a prompt from a certification session, we choose the open values, and only the server can check the response.
+The supported algorithms below mark those with deferred test cases.
+
 ## Supported algorithms
 
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
 - [KDA HKDF](https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-kdf-hkdf.html) with SHA2-256, SHA2-384 and SHA2-512: AFT, VAL, revision Sp800-56Cr2.
+- [KDF](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with HMAC-SHA2-256, HMAC-SHA2-384 and HMAC-SHA2-512: counter and feedback mode, AFT (deferred), revision 1.0.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
 - [SHA2-256, SHA2-384, SHA2-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha.html): AFT, MCT.
@@ -61,6 +71,20 @@ These are ACVP testing capabilities, which may be narrower than the cryptolib ca
 The pinned vector set is the Sp800-56Cr1 sample, because every group of the Sp800-56Cr2 sample uses a hybrid shared secret.
 The two revisions derive keys the same way.
 
+### KDF (SP 800-108)
+
+- Counters other than 32 bits before the fixed data in counter mode, and other than 8 bits after the fixed data in feedback mode.
+  The cryptolib fixes the length and position of the counter.
+- Feedback mode with an IV, and key derivation keys other than the hash length in feedback mode.
+  Feedback mode is `otcrypto_hkdf_expand`, which starts from an empty IV and takes a pseudorandom key of the hash length.
+- Double-pipeline iteration mode, and CMAC as the PRF.
+- HMAC with hash functions other than SHA2-256, SHA2-384 and SHA2-512.
+  The cryptolib does not implement them.
+- Output lengths that are not a whole number of bytes.
+  The cryptolib derives bytes.
+
+The parser chooses the fixed data.
+
 ### ML-DSA
 
 - `externalMu: false` on the internal signature interface, where ACVP distinguishes a caller-supplied mu (`true`) from one the module derives from a raw message (`false`).
@@ -99,7 +123,7 @@ The device runs the whole Monte Carlo test, all 100 outer and 1000 inner iterati
 A vector set is answered the same way whether it comes from a certification session or from the pinned test data: the prompt goes in, and a response comes out.
 The parsers turn a prompt into the inputs the harness sends to the device, and the harness assembles the device's outputs into a response.
 
-The pinned vector sets run as part of the AES-KWP, HKDF, HMAC, ML-DSA, ML-KEM, SHA2, SHA3 and SHAKE known-answer tests:
+The pinned vector sets run as part of the AES-KWP, HKDF, HMAC, KDF, ML-DSA, ML-KEM, SHA2, SHA3 and SHAKE known-answer tests:
 
 ```sh
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:aes_kwp_kat_fpga_cw340_test_rom
@@ -108,7 +132,7 @@ The pinned vector sets run as part of the AES-KWP, HKDF, HMAC, ML-DSA, ML-KEM, S
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:sha3_256_kat_fpga_cw340_test_rom
 ```
 
-The `hkdf_kat` target covers KDA HKDF, and the `hmac_sha256_kat`, `hmac_sha384_kat` and `hmac_sha512_kat` targets cover HMAC.
+The `hkdf_kat` target covers KDA HKDF, the `kdf_hmac_kat` target covers KDF, and the `hmac_sha256_kat`, `hmac_sha384_kat` and `hmac_sha512_kat` targets cover HMAC.
 The `sha256_kat`, `sha384_kat`, `sha512_kat`, `sha3_224_kat`, `sha3_384_kat`, `sha3_512_kat`, `shake128_kat` and `shake256_kat` targets cover the other SHA2, SHA3 and SHAKE variants.
 
 These compare the assembled response against the expected results NIST publishes alongside each prompt.
