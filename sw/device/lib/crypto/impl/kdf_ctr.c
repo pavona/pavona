@@ -5,6 +5,7 @@
 
 #include "sw/device/lib/crypto/include/kdf_ctr.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -15,21 +16,8 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('c', 'k', 'd')
 
-/**
- * Check if the string contains a 0x00 byte.
- *
- * @param buffer Inspected string.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
-  for (size_t i = 0; i < buffer.len; i++) {
-    if (buffer.data[i] == 0x00) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-  }
-  return OTCRYPTO_OK;
-}
+// Bounds the number of iterations in `otcrypto_kdf_ctr_hmac`.
+OT_ASSERT_MEMBER_SIZE(otcrypto_key_config_t, key_length, 4);
 
 /**
  * Infer the digest length in 32-bit words for the given hash function.
@@ -64,8 +52,7 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
 
 otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_blinded_key_t *key_derivation_key,
-    const otcrypto_const_byte_buf_t label,
-    const otcrypto_const_byte_buf_t context,
+    const otcrypto_const_byte_buf_t fixed_data,
     otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
@@ -81,13 +68,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
-  // Check for null label with nonzero length.
-  if (label.data == NULL && label.len != 0) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check for null context with nonzero length.
-  if (context.data == NULL && context.len != 0) {
+  // Check for null fixed data with nonzero length.
+  if (fixed_data.data == NULL && fixed_data.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -121,33 +103,17 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check that the unmasked key length is not too large for HMAC CTR
-  // (see NIST SP 800-108r1, section 4.1)
   size_t required_byte_len = output_key_material->config.key_length;
   size_t required_word_len = ceil_div(required_byte_len, sizeof(uint32_t));
   size_t num_iterations = ceil_div(required_word_len, digest_word_len);
-  if (launder32(num_iterations) > UINT32_MAX ||
-      launder32(required_byte_len) > UINT32_MAX / 8) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_LE(num_iterations, UINT32_MAX);
-  HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
-  uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
-
-  // Check if label or context contain 0x00 bytes
-  // Since 0x00 is used as the delimiter between label and context
-  // there shouldn't be multiple instances of them in input data
-  HARDENED_TRY(check_zero_byte(label));
-  HARDENED_TRY(check_zero_byte(context));
-
-  // Setup
-  uint8_t zero = 0x00;
+  // NIST SP 800-108r1, section 4.1, requires `num_iterations` <= 2^32 - 1 for
+  // the 32-bit counter `i + 1` below. `key_length` is a `uint32_t`, which
+  // bounds `num_iterations` by 2^27.
 
   // Repeatedly call HMAC to generate the derived key based on input data:
-  // [i]_2 || Label || 0x00 || Context || [L]_2
+  // [i]_2 || FixedData
   // (see NIST SP 800-108r1, section 4.1)
   // [i]_2 is the binary representation of the counter value
-  // [L]_2 is the binary representation of the required bit length
   // The counter value is updated within the loop
 
   uint32_t output_key_material_data[num_iterations * digest_word_len];
@@ -160,16 +126,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
         &ctx, (otcrypto_const_byte_buf_t){
                   .data = (const unsigned char *const)&counter_be,
                   .len = sizeof(counter_be)}));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, label));
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx,
-        (otcrypto_const_byte_buf_t){.data = (const unsigned char *const)&zero,
-                                    .len = sizeof(zero)}));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, context));
-    HARDENED_TRY(otcrypto_hmac_update(
-        &ctx, (otcrypto_const_byte_buf_t){
-                  .data = (const unsigned char *const)&required_bit_len,
-                  .len = sizeof(required_bit_len)}));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, fixed_data));
     uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     HARDENED_TRY(otcrypto_hmac_final(
         &ctx,

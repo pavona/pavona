@@ -152,6 +152,7 @@ cc_library(
         ":integrity",
         ":keyblob",
         ":status",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/include:datatypes",
     ],

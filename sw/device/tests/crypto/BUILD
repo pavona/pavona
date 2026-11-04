@@ -471,6 +471,7 @@ pavona_test(
         tags = ["manual"],
     ),
     deps = [
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:kdf_ctr",
         "//sw/device/lib/crypto/impl:keyblob",
