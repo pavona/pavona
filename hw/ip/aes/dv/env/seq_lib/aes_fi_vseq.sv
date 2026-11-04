@@ -15,7 +15,6 @@ class aes_fi_vseq extends aes_base_vseq;
   status_t aes_status;
   bit  finished_all_msgs = 0;
   bit  wait_for_alert_clear = 0;
-  bit  alert = 0;
 
   typedef enum int { main_fsm = 0, cipher_fsm = 1, ctr_fsm = 2 } fi_t;
 
@@ -61,13 +60,25 @@ class aes_fi_vseq extends aes_base_vseq;
             send_msg_queue(cfg.unbalanced, cfg.read_prob, cfg.write_prob);
             finished_all_msgs = 1;
           end
+          alert: begin
+            // As long as the DUT hasn't finished processing messages yet, the signal forcing
+            // will interrupt the message processing. The `basic` thread will notice this and
+            // as part of the recovery procedure wait for an alert, reset the DUT and then
+            // continue processing messages.
+            // Otherwise if we have finished all messages and send_msg_queue did not yet capture
+            // the fault we have to try and detect the alert and to reset the DUT ourselves.
+            wait (finished_all_msgs && wait_for_alert_clear);
+            wait_for_fatal_alert_and_reset();
+          end
         join_none
         // make sure we don't wait for a reset that never comes
         // in case the inject happened after test finished
         wait (finished_all_msgs);
-        if (wait_for_alert_clear) begin
-          `uvm_fatal(`gfn, $sformatf("Was Able to finish without clearing reset"))
-        end
+        // The fault may have been injected just before the message processing finished, in which
+        // case send_msg_queue did not observe the alert. The `alert` thread detects the alert and
+        // resets the DUT in that case, so give the `error` thread a bounded amount of time to see
+        // the reset and release the forced signal.
+        `DV_WAIT(!wait_for_alert_clear, "Was Able to finish without clearing reset")
         wait_no_outstanding_access();
         disable fork;
       end // fork
