@@ -21,7 +21,7 @@ static dif_pinmux_t pinmux;
 enum {
   kSramStart = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
   kSramEnd = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-             TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
+      TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
 };
 
 bool test_main(void) {

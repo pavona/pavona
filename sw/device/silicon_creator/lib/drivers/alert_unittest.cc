@@ -356,7 +356,7 @@ class AlertConfigCheckTest : public AlertTest {
     for (size_t klass = 0; klass < ALERT_HANDLER_PARAM_N_CLASSES; ++klass) {
       enum {
         kClassStep = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET -
-                     ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
+            ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
       };
       iter = ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET + kClassStep * klass;
       iter = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_REG_OFFSET + kClassStep * klass;

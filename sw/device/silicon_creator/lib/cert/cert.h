@@ -22,7 +22,8 @@ enum {
   kCertX509Asn1SerialNumberTagByteOffset =
       kCertX509Asn1SerialNumberFieldByteOffset,
   kCertX509Asn1SerialNumberLengthByteOffset =
-      kCertX509Asn1SerialNumberTagByteOffset + 1,
+          kCertX509Asn1SerialNumberTagByteOffset +
+      1,
 
   /**
    * Sizes of the ASN.1 DER encoded serial number of an X.509 certificate.
@@ -46,8 +47,8 @@ enum dice_x509_cert_expectations {
    * Total size in bytes of the SerialNumber region.
    * Expects header + 20B key id with MSb set.
    */
-  kDiceX509SerialSizeBytes =
-      kDiceX509SerialHeaderSizeBytes + kCertKeyIdSizeInBytes,
+  kDiceX509SerialSizeBytes = kDiceX509SerialHeaderSizeBytes +
+      kCertKeyIdSizeInBytes,
 
   /**
    * Offset to the SerialNumber region including header.

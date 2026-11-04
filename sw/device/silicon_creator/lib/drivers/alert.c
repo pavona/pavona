@@ -305,7 +305,7 @@ uint32_t alert_config_crc32(void) {
   for (size_t class = 0; class < ALERT_HANDLER_PARAM_N_CLASSES; ++class) {
     enum {
       kClassStep = ALERT_HANDLER_CLASSB_REGWEN_REG_OFFSET -
-                   ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
+          ALERT_HANDLER_CLASSA_REGWEN_REG_OFFSET,
     };
     uint32_t classOffset = kClassStep * class;
 

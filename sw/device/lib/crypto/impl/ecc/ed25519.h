@@ -83,8 +83,8 @@ enum {
   /**
    * Max length of Ed25519 context buffer in words (rounded up).
    */
-  kEd25519ContextWords =
-      (kEd25519ContextBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
+  kEd25519ContextWords = (kEd25519ContextBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
   /**
    * A successful Ed25519 signature verification result.
    */

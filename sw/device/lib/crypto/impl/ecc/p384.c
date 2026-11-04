@@ -82,20 +82,20 @@ enum {
    * The extra outer "% W" ensures that the padding is 0 if (S % W) is 0.
    */
   kMaskedScalarPaddingWords =
-      (kAccWideWordNumWords -
-       (kP384MaskedScalarShareWords % kAccWideWordNumWords)) %
+          (kAccWideWordNumWords -
+           (kP384MaskedScalarShareWords % kAccWideWordNumWords)) %
       kAccWideWordNumWords,
   /**
    * Number of extra padding words needed for unmasked scalars.
    */
   kScalarPaddingWords =
-      (kAccWideWordNumWords - (kP384ScalarWords % kAccWideWordNumWords)) %
+          (kAccWideWordNumWords - (kP384ScalarWords % kAccWideWordNumWords)) %
       kAccWideWordNumWords,
   /**
    * Number of extra padding words needed for unmasked coordinates.
    */
   kCoordPaddingWords =
-      (kAccWideWordNumWords - (kP384CoordWords % kAccWideWordNumWords)) %
+          (kAccWideWordNumWords - (kP384CoordWords % kAccWideWordNumWords)) %
       kAccWideWordNumWords,
 };
 

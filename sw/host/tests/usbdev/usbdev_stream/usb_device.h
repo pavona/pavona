@@ -117,8 +117,7 @@ class USBDevice {
      * Default stream flags; for non-libusb builds.
      */
     kUsbdevStreamFlagsDefault = kUsbdevStreamFlagRetrieve |
-                                kUsbdevStreamFlagCheck |
-                                kUsbdevStreamFlagRetry | kUsbdevStreamFlagSend
+        kUsbdevStreamFlagCheck | kUsbdevStreamFlagRetry | kUsbdevStreamFlagSend
   } usbdev_stream_flags_t;
 
   // Vendor-Specific requests.

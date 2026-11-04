@@ -84,8 +84,8 @@ enum {
    * The extra outer "% W" ensures that the padding is 0 if (S % W) is 0.
    */
   kMaskedScalarPaddingWords =
-      (kAccWideWordNumWords -
-       (kP256MaskedScalarShareWords % kAccWideWordNumWords)) %
+          (kAccWideWordNumWords -
+           (kP256MaskedScalarShareWords % kAccWideWordNumWords)) %
       kAccWideWordNumWords,
 };
 

@@ -55,8 +55,8 @@ enum {
    * Size of buffer in words to hold all the samples, assuming
    * 4-bit samples at the most.
    */
-  kFifoBufferSizeWords =
-      kContiguousSamplesCount * kBitsPerSample / sizeof(uint32_t),
+  kFifoBufferSizeWords = kContiguousSamplesCount * kBitsPerSample /
+      sizeof(uint32_t),
 };
 
 static uint32_t sample_buffer[kFifoBufferSizeWords];

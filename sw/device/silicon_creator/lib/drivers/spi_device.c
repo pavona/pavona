@@ -31,19 +31,20 @@ enum {
   /**
    * Start address of the SFDP space in spi_device buffer.
    */
-  kSfdpAreaStartOff =
-      SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset,
+  kSfdpAreaStartOff = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+      kSpiDeviceSfdpAreaOffset,
   /**
    * End address (exclusive) of the SFDP space in spi_device buffer.
    */
   kSfdpAreaEndOff = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
-                    kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
+      kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
   /**
    * Flash data partition size in bits.
    */
   kFlashBitCount =
 #ifdef HAS_FLASH_CTRL
-      FLASH_CTRL_PARAM_REG_NUM_BANKS * FLASH_CTRL_PARAM_BYTES_PER_BANK * 8,
+          FLASH_CTRL_PARAM_REG_NUM_BANKS *
+      FLASH_CTRL_PARAM_BYTES_PER_BANK * 8,
 #else
       0,
 #endif

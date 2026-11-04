@@ -33,8 +33,8 @@ enum {
   /**
    * Number of words for ECDSA P-256 modular inverse input shares (k0,k1).
    */
-  kEcc256ModInvInputShareNumWords =
-      kEcc256ModInvInputShareNumBytes / sizeof(uint32_t),
+  kEcc256ModInvInputShareNumWords = kEcc256ModInvInputShareNumBytes /
+      sizeof(uint32_t),
   /**
    * Number of bytes for ECDSA P-256 modular inverse output ((k*alpha)^-1 mod
    * n).
@@ -44,8 +44,8 @@ enum {
    * Number of words for ECDSA P-256 modular inverse output ((k*alpha)^-1 mod
    * n).
    */
-  kEcc256ModInvOutputKAlphaInvNumWords =
-      kEcc256ModInvOutputKAlphaInvNumBytes / sizeof(uint32_t),
+  kEcc256ModInvOutputKAlphaInvNumWords = kEcc256ModInvOutputKAlphaInvNumBytes /
+      sizeof(uint32_t),
   /**
    * Number of bytes for ECDSA P-256 modular inverse output mask (alpha).
    */
@@ -53,8 +53,8 @@ enum {
   /**
    * Number of words for ECDSA P-256 modular inverse output mask (alpha).
    */
-  kEcc256ModInvOutputAlphaNumWords =
-      kEcc256ModInvOutputAlphaNumBytes / sizeof(uint32_t),
+  kEcc256ModInvOutputAlphaNumWords = kEcc256ModInvOutputAlphaNumBytes /
+      sizeof(uint32_t),
 };
 
 /**

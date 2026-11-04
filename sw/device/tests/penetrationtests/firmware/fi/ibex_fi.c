@@ -45,8 +45,8 @@ enum {
    * Size (in number of 32-bit words) of the buffer that is allocated in the
    * SRAM. This buffer is used by various SRAM tests.
    */
-  kSramMainBufSize =
-      1 << 13,  // Size of the SRAM buffer used in the SRAM tests.
+  kSramMainBufSize = 1
+      << 13,  // Size of the SRAM buffer used in the SRAM tests.
   /**
    * Number of reference values that are available in the ref_values array.
    */

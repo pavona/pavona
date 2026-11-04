@@ -26,8 +26,8 @@ enum {
   /**
    * Device ID OTP offset and sizes.
    */
-  kDeviceIdOffset =
-      OTP_CTRL_PARAM_DEVICE_ID_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+  kDeviceIdOffset = OTP_CTRL_PARAM_DEVICE_ID_OFFSET -
+      OTP_CTRL_PARAM_HW_CFG0_OFFSET,
   kDeviceIdSizeInBytes = OTP_CTRL_PARAM_DEVICE_ID_SIZE,
   kDeviceIdSizeIn32BitWords = kDeviceIdSizeInBytes / sizeof(uint32_t),
 };
