@@ -69,11 +69,11 @@ otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t *ikm,
   };
   size_t keyblob_wordlen = 0;
   HARDENED_TRY(keyblob_num_words(prk_config, &keyblob_wordlen));
-  uint32_t keyblob[keyblob_wordlen];
+  uint32_t keyblob[2 * kOtcryptoHmacMaxKeyWords];
   otcrypto_blinded_key_t prk = {
       .config = prk_config,
       .keyblob = keyblob,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_wordlen * sizeof(uint32_t),
   };
 
   // Call extract and expand.
