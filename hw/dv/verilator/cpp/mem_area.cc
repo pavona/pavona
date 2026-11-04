@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <iterator>
 #include <sstream>
 
 #include "sv_scoped.h"
