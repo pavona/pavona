@@ -150,9 +150,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   // [L]_2 is the binary representation of the required bit length
   // The counter value is updated within the loop
 
-  uint32_t output_key_material_len =
-      required_word_len + digest_word_len - required_word_len % digest_word_len;
-  uint32_t output_key_material_data[output_key_material_len];
+  uint32_t output_key_material_data[num_iterations * digest_word_len];
 
   for (uint32_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
@@ -179,7 +177,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
 
   // Generate a mask (all-zero for now, since HMAC is unhardened anyway).
-  uint32_t mask[digest_word_len];
+  uint32_t mask[required_word_len];
   memset(mask, 0, sizeof(mask));
 
   // Construct a blinded key.
