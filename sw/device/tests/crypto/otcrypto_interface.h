@@ -116,7 +116,6 @@ typedef struct otcrypto_interface_t {
   // KDF-CTR
   otcrypto_status_t (*kdf_ctr_hmac)(const otcrypto_blinded_key_t *,
                                     const otcrypto_const_byte_buf_t,
-                                    const otcrypto_const_byte_buf_t,
                                     otcrypto_blinded_key_t *);
 
   // KMAC
