@@ -1,0 +1,52 @@
+{
+  "algorithm": "KDF",
+  "revision": "1.0",
+  "capabilities": [
+    {
+      "kdfMode": "counter",
+      "macMode": [
+        "HMAC-SHA2-256",
+        "HMAC-SHA2-384",
+        "HMAC-SHA2-512"
+      ],
+      "customKeyInLength": 0,
+      "supportedLengths": [
+        {
+          "min": 8,
+          "max": 1024,
+          "increment": 8
+        }
+      ],
+      "fixedDataOrder": [
+        "before fixed data"
+      ],
+      "counterLength": [
+        32
+      ]
+    },
+    {
+      "kdfMode": "feedback",
+      "macMode": [
+        "HMAC-SHA2-256",
+        "HMAC-SHA2-384",
+        "HMAC-SHA2-512"
+      ],
+      "customKeyInLength": 0,
+      "supportedLengths": [
+        {
+          "min": 8,
+          "max": 1024,
+          "increment": 8
+        }
+      ],
+      "fixedDataOrder": [
+        "after fixed data"
+      ],
+      "counterLength": [
+        8
+      ],
+      "supportsEmptyIv": true,
+      "requiresEmptyIv": true
+    }
+  ]
+}
