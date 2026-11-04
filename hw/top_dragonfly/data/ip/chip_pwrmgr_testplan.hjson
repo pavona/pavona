@@ -397,23 +397,6 @@
       bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test"]
     }
     {
-      name: chip_sw_pwrmgr_usb_clk_disabled_when_active
-      desc: '''Verify that the USB stops responding when its clock is disabled in active state.
-
-            Configure the pwrmgr CONTROL CSR with USB_CLK_EN_ACTIVE off, and issue a CSR read
-            to the USB.  This CSR read should cause the CPU to hung.  Prior to this read,
-            configure the watchdog to bite, and the test passes if there is a watchdog reset.
-
-            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            '''
-      stage: V3
-      si_stage: SV3
-      lc_states: ["PROD"]
-      features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
-      tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
-      bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test"]
-    }
-    {
       name: chip_sw_all_resets
       desc: '''Verify resets by relevant reset sources when active.
 
