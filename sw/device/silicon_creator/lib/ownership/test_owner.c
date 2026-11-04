@@ -47,17 +47,15 @@
 #ifdef TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH
 #define TEST_OWNER_KEY_ALG kOwnershipKeyAlgHybridSpxPrehash
 #endif
-#define OWNER_KEYDATA                                        \
-  (owner_keydata_t) {                                        \
-    .hybrid = {.ecdsa = OWNER_ECDSA_P256, .spx = OWNER_SPX } \
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .hybrid = {.ecdsa = OWNER_ECDSA_P256, .spx = OWNER_SPX} }
+#define ACTIVATE_KEYDATA                                          \
+  (owner_keydata_t) {                                             \
+    .hybrid = {.ecdsa = ACTIVATE_ECDSA_P256, .spx = ACTIVATE_SPX} \
   }
-#define ACTIVATE_KEYDATA                                           \
-  (owner_keydata_t) {                                              \
-    .hybrid = {.ecdsa = ACTIVATE_ECDSA_P256, .spx = ACTIVATE_SPX } \
-  }
-#define UNLOCK_KEYDATA                                         \
-  (owner_keydata_t) {                                          \
-    .hybrid = {.ecdsa = UNLOCK_ECDSA_P256, .spx = UNLOCK_SPX } \
+#define UNLOCK_KEYDATA                                        \
+  (owner_keydata_t) {                                         \
+    .hybrid = {.ecdsa = UNLOCK_ECDSA_P256, .spx = UNLOCK_SPX} \
   }
 #endif
 

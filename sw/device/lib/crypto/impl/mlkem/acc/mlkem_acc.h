@@ -53,12 +53,12 @@ enum {
   kMlkem1024SecretKeyWords = kMlkem1024SecretKeyBytes / sizeof(uint32_t),
   kMlkem1024CiphertextWords = kMlkem1024CiphertextBytes / sizeof(uint32_t),
 
-  kMlkem512MaskedSecretKeyWords =
-      kMlkem512MaskedSecretKeyBytes / sizeof(uint32_t),
-  kMlkem768MaskedSecretKeyWords =
-      kMlkem768MaskedSecretKeyBytes / sizeof(uint32_t),
-  kMlkem1024MaskedSecretKeyWords =
-      kMlkem1024MaskedSecretKeyBytes / sizeof(uint32_t),
+  kMlkem512MaskedSecretKeyWords = kMlkem512MaskedSecretKeyBytes /
+      sizeof(uint32_t),
+  kMlkem768MaskedSecretKeyWords = kMlkem768MaskedSecretKeyBytes /
+      sizeof(uint32_t),
+  kMlkem1024MaskedSecretKeyWords = kMlkem1024MaskedSecretKeyBytes /
+      sizeof(uint32_t),
 };
 
 /**

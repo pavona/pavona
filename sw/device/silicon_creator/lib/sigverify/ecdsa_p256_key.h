@@ -25,8 +25,8 @@ enum {
   /**
    * Size of a coordinate for an attestation public key in 32b words.
    */
-  kEcdsaP256PublicKeyCoordWords =
-      kEcdsaP256PublicKeyCoordBytes / sizeof(uint32_t),
+  kEcdsaP256PublicKeyCoordWords = kEcdsaP256PublicKeyCoordBytes /
+      sizeof(uint32_t),
   /**
    * Size of an attestation signature component in bits.
    */
@@ -38,8 +38,8 @@ enum {
   /**
    * Size of an attestation signature component in 32b words.
    */
-  kEcdsaP256SignatureComponentWords =
-      kEcdsaP256SignatureComponentBytes / sizeof(uint32_t),
+  kEcdsaP256SignatureComponentWords = kEcdsaP256SignatureComponentBytes /
+      sizeof(uint32_t),
   /**
    * Size of an attestation signature in bits.
    */

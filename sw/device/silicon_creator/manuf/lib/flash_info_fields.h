@@ -56,10 +56,11 @@ enum {
    * Number of AST calibration words that will be stored in flash / OTP.
    */
   kFlashInfoFieldAstCalibrationDataStartOffset = 128,
-  kFlashInfoAstCalibrationDataSizeInBytes =
-      AST_REGAL_REG_OFFSET + sizeof(uint32_t),
+  kFlashInfoAstCalibrationDataSizeInBytes = AST_REGAL_REG_OFFSET +
+      sizeof(uint32_t),
   kFlashInfoAstCalibrationDataSizeIn32BitWords =
-      kFlashInfoAstCalibrationDataSizeInBytes / sizeof(uint32_t),
+          kFlashInfoAstCalibrationDataSizeInBytes /
+      sizeof(uint32_t),
 
   /**
    * AST Calibration Version Start / Size - Bank 0, Page 0
@@ -75,7 +76,8 @@ enum {
   kFlashInfoFieldCpDeviceIdStartOffset = 384,
   kFlashInfoFieldCpDeviceIdSizeIn32BitWords = 4,
   kFlashInfoFieldCpDeviceIdSizeInBytes =
-      kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t),
+          kFlashInfoFieldCpDeviceIdSizeIn32BitWords *
+      sizeof(uint32_t),
 
   /**
    * AST Individualize Patch Address Start / Size - Bank 0, Page 0

@@ -45,33 +45,33 @@ enum {
   kMldsaRndWords = (kMldsaRndBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
   kMldsaMuWords = (kMldsaMuBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
 
-  kMldsa44PublicKeyWords =
-      (kMldsa44PublicKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa44SecretKeyWords =
-      (kMldsa44SecretKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa44SignatureWords =
-      (kMldsa44SignatureBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
+  kMldsa44PublicKeyWords = (kMldsa44PublicKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa44SecretKeyWords = (kMldsa44SecretKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa44SignatureWords = (kMldsa44SignatureBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
 
-  kMldsa65PublicKeyWords =
-      (kMldsa65PublicKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa65SecretKeyWords =
-      (kMldsa65SecretKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa65SignatureWords =
-      (kMldsa65SignatureBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
+  kMldsa65PublicKeyWords = (kMldsa65PublicKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa65SecretKeyWords = (kMldsa65SecretKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa65SignatureWords = (kMldsa65SignatureBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
 
-  kMldsa87PublicKeyWords =
-      (kMldsa87PublicKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa87SecretKeyWords =
-      (kMldsa87SecretKeyBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
-  kMldsa87SignatureWords =
-      (kMldsa87SignatureBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
+  kMldsa87PublicKeyWords = (kMldsa87PublicKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa87SecretKeyWords = (kMldsa87SecretKeyBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
+  kMldsa87SignatureWords = (kMldsa87SignatureBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
 
-  kMldsa44MaskedSecretKeyWords =
-      kMldsa44MaskedSecretKeyBytes / sizeof(uint32_t),
-  kMldsa65MaskedSecretKeyWords =
-      kMldsa65MaskedSecretKeyBytes / sizeof(uint32_t),
-  kMldsa87MaskedSecretKeyWords =
-      kMldsa87MaskedSecretKeyBytes / sizeof(uint32_t),
+  kMldsa44MaskedSecretKeyWords = kMldsa44MaskedSecretKeyBytes /
+      sizeof(uint32_t),
+  kMldsa65MaskedSecretKeyWords = kMldsa65MaskedSecretKeyBytes /
+      sizeof(uint32_t),
+  kMldsa87MaskedSecretKeyWords = kMldsa87MaskedSecretKeyBytes /
+      sizeof(uint32_t),
 };
 
 /**

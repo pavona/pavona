@@ -155,15 +155,15 @@
  * @param num_items_ Number of items to compare.
  * @param ... Arguments to a LOG_* macro, which are evaluated if the check.
  */
-#define CHECK_ARRAYS_EQ(actual_, expected_, num_items_, ...)               \
-  do {                                                                     \
-    if (status_err(CHECK_ARRAYS_IMPL(true, actual_, expected_, num_items_, \
-                                     ##__VA_ARGS__))) {                    \
-      /* Currently, this macro will call into the test failure code,       \
-      which logs "FAIL" and aborts. In the future, we will try to          \
-      condition on whether or not this is a test.*/                        \
-      test_status_set(kTestStatusFailed);                                  \
-    }                                                                      \
+#define CHECK_ARRAYS_EQ(actual_, expected_, num_items_, ...)         \
+  do {                                                               \
+    if (status_err(CHECK_ARRAYS_IMPL(true, actual_, expected_,       \
+                                     num_items_, ##__VA_ARGS__))) {  \
+      /* Currently, this macro will call into the test failure code, \
+      which logs "FAIL" and aborts. In the future, we will try to    \
+      condition on whether or not this is a test.*/                  \
+      test_status_set(kTestStatusFailed);                            \
+    }                                                                \
   } while (false)
 
 /**

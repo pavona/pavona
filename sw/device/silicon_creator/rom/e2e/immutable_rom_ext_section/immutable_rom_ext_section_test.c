@@ -24,7 +24,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kImmutableRomExtSectionHashSizeIn32BitWords =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_SIZE /
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_SIZE /
       sizeof(uint32_t),
   kSramValuePass = 0x53534150,  // PASS
 };

@@ -45,11 +45,11 @@ enum {
   kRomPatchRegionMatchTableSizeBytes = sizeof((struct rom_patch){0}.table),
   kRomPatchRegionSignatureSizeBytes = kSigVerifyRsaNumBytes,
   /* Preamble is the patch header and the complete match table. */
-  kRomPatchRegionPreambleSizeBytes =
-      kRomPatchRegionHeaderSizeBytes + kRomPatchRegionMatchTableSizeBytes,
+  kRomPatchRegionPreambleSizeBytes = kRomPatchRegionHeaderSizeBytes +
+      kRomPatchRegionMatchTableSizeBytes,
   /* The patch code envelope is the preamble and the signature. */
-  kRomPatchRegionEnvelopeSizeBytes =
-      kRomPatchRegionPreambleSizeBytes + kRomPatchRegionSignatureSizeBytes,
+  kRomPatchRegionEnvelopeSizeBytes = kRomPatchRegionPreambleSizeBytes +
+      kRomPatchRegionSignatureSizeBytes,
 };
 
 static inline uint8_t rom_patch_revision(uint32_t patch_header) {

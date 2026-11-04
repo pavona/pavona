@@ -59,14 +59,14 @@ enum {
 
 enum {
   kCreatorSecretDataRetSramAddress = 0,
-  kOwnerSecretDataRetSramAddress =
-      kCreatorSecretDataRetSramAddress + (kNumTestWords * sizeof(uint32_t)),
-  kIsoPartDataRetSramAddress =
-      kOwnerSecretDataRetSramAddress + (kNumTestWords * sizeof(uint32_t)),
-  kBank0Page0DataRetSramAddress =
-      kIsoPartDataRetSramAddress + (kNumTestWords * sizeof(uint32_t)),
-  kBank1Page0DataRetSramAddress =
-      kBank0Page0DataRetSramAddress + (kNumTestWords * sizeof(uint32_t)),
+  kOwnerSecretDataRetSramAddress = kCreatorSecretDataRetSramAddress +
+      (kNumTestWords * sizeof(uint32_t)),
+  kIsoPartDataRetSramAddress = kOwnerSecretDataRetSramAddress +
+      (kNumTestWords * sizeof(uint32_t)),
+  kBank0Page0DataRetSramAddress = kIsoPartDataRetSramAddress +
+      (kNumTestWords * sizeof(uint32_t)),
+  kBank1Page0DataRetSramAddress = kBank0Page0DataRetSramAddress +
+      (kNumTestWords * sizeof(uint32_t)),
 };
 
 // The test phase is updated by the testbench with a symbol backdoor overwrite.

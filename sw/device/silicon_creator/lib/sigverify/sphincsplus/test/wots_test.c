@@ -18,8 +18,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kSpxWotsMsgBytes = ((kSpxWotsLen1 * kSpxWotsLogW + 7) / 8),
-  kSpxWotsMsgWords =
-      (kSpxWotsMsgBytes + sizeof(uint32_t) - 1) / sizeof(uint32_t),
+  kSpxWotsMsgWords = (kSpxWotsMsgBytes + sizeof(uint32_t) - 1) /
+      sizeof(uint32_t),
 };
 
 // Test signature, message, and address. Populate before running test.

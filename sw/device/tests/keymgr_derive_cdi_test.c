@@ -34,8 +34,7 @@ enum {
   // number of counters; both of which should not be overwritten by this
   // test. Hence, the actual base address is offset to account for this.
   kRetSramBaseAddr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                     offsetof(retention_sram_t, owner) +
-                     4 * kRetSramTestutilsNumberOfCounters,
+      offsetof(retention_sram_t, owner) + 4 * kRetSramTestutilsNumberOfCounters,
 
 // Compile-time directive to choose between CDI flow types. The default
 // derivation type is sealing.
