@@ -229,14 +229,14 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
     };
     HARDENED_TRY(otcrypto_hmac_update(&ctx, ikm_chunk));
   }
-  uint32_t tag_data[digest_words];
-  otcrypto_word32_buf_t tag = {.data = tag_data, .len = ARRAYSIZE(tag_data)};
+  uint32_t tag_data[kHmacMaxDigestWords];
+  otcrypto_word32_buf_t tag = {.data = tag_data, .len = digest_words};
   HARDENED_TRY(otcrypto_hmac_final(&ctx, tag));
 
   // Construct the blinded keyblob for PRK (with an all-zero mask for now
   // because HMAC is unhardened anyway).
-  uint32_t prk_mask[digest_words];
-  memset(prk_mask, 0, sizeof(prk_mask));
+  uint32_t prk_mask[kHmacMaxDigestWords];
+  memset(prk_mask, 0, digest_words * sizeof(uint32_t));
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
   prk->checksum = integrity_blinded_checksum(prk);
