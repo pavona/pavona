@@ -295,7 +295,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
 
   // Repeatedly call HMAC to generate the derived key (see RFC 5869, section
   // 2.3):
-  uint32_t okm_data[okm_wordlen];
+  uint32_t okm_data[num_iterations * digest_words];
   uint32_t *t_data = okm_data;
   for (uint8_t i = 0; i < num_iterations; i++) {
     counter_val = i + 1;
@@ -319,7 +319,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   }
 
   // Generate a mask (all-zero for now, since HMAC is unhardened anyway).
-  uint32_t mask[digest_words];
+  uint32_t mask[okm_wordlen];
   memset(mask, 0, sizeof(mask));
 
   // Construct a blinded key.
