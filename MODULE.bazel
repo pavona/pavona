@@ -295,21 +295,21 @@ llvm.toolchain(
         "-isysroot",
         "external/+macos_sdk+macos_sdk",
     ]},
-    llvm_versions = {"": "22.1.2"},
+    llvm_versions = {"": "23.1.5"},
     sha256 = {
-        "darwin-aarch64": "7b290ec4529c309b6b952d64a3513595c816dff1c217d54466a586d6e35dcec9",
-        "linux-aarch64": "cf2e84d965a95954971cafc71d18c0eb38e723c3ac7276286fd5636df4374b3a",
-        "linux-x86_64": "ff32497b6801267ee427bc69cdaeecfb2d19578af8c2a942e864c45215f9a2ac",
+        "darwin-aarch64": "aba592b4a15e8f90c634c5367b51ec8418b8bcd2829865db331a17dc9418dcff",
+        "linux-aarch64": "44f1e4b7a125b2763d56386a199928dd57ec32e151cc6042dce2f7b0da7bb651",
+        "linux-x86_64": "f72edb0b36580ece7f52e23858f00c18fad4e87395ea7ad05d7e55c39f8fc78a",
     },
     strip_prefix = {
-        "darwin-aarch64": "LLVM-22.1.2-macOS-ARM64",
-        "linux-aarch64": "LLVM-22.1.2-Linux-ARM64",
-        "linux-x86_64": "LLVM-22.1.2-Linux-X64",
+        "darwin-aarch64": "LLVM-23.1.5-macOS-ARM64",
+        "linux-aarch64": "LLVM-23.1.5-Linux-ARM64",
+        "linux-x86_64": "LLVM-23.1.5-Linux-X64",
     },
     urls = {
-        "darwin-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-macOS-ARM64.tar.xz"],
-        "linux-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-ARM64.tar.xz"],
-        "linux-x86_64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-22.1.2/LLVM-22.1.2-Linux-X64.tar.xz"],
+        "darwin-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.5/LLVM-23.1.5-macOS-ARM64.tar.xz"],
+        "linux-aarch64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.5/LLVM-23.1.5-Linux-ARM64.tar.xz"],
+        "linux-x86_64": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.5/LLVM-23.1.5-Linux-X64.tar.xz"],
     },
 )
 
