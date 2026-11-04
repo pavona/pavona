@@ -5,7 +5,9 @@
 
 #include "sw/device/lib/crypto/include/hkdf.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -293,10 +295,24 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
       .len = 1,
   };
 
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize the keyblob buffer. Since we populate the keyblob in place (in
+  // order to avoid allocating a pair of OKM-sized VLAs), we must shred the
+  // keyblob buffer now; this matches keyblob_from_key_and_mask.
+  size_t num_words = 0;
+  HARDENED_TRY(keyblob_num_words(okm->config, &num_words));
+  hardened_memshred(okm->keyblob, num_words);
+
+  // Split the OKM into shares.
+  uint32_t *okm_share0;
+  uint32_t *okm_share1;
+  HARDENED_TRY(keyblob_to_shares(okm, &okm_share0, &okm_share1));
+
   // Repeatedly call HMAC to generate the derived key (see RFC 5869, section
   // 2.3):
-  uint32_t okm_data[num_iterations * digest_words];
-  uint32_t *t_data = okm_data;
+  uint32_t *t_data = okm_share0;
   for (uint8_t i = 0; i < num_iterations; i++) {
     counter_val = i + 1;
     otcrypto_hmac_context_t ctx;
@@ -311,20 +327,33 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
     }
     HARDENED_TRY(otcrypto_hmac_update(&ctx, info));
     HARDENED_TRY(otcrypto_hmac_update(&ctx, counter));
-    otcrypto_word32_buf_t t_words = {
-        .data = t_data,
-        .len = digest_words,
-    };
-    HARDENED_TRY(otcrypto_hmac_final(&ctx, t_words));
+    size_t words_left = okm_wordlen - launder32(i) * digest_words;
+    if (words_left < digest_words) {
+      // Compute the HMAC tag into a separate buffer; we don't want to place the
+      // entire tag into the OKM keyblob as there isn't room left for it. The
+      // result is moved into the OKM keyblob via a hardened memcpy, to match
+      // how keyblob_from_key_and_mask copies key material.
+      uint32_t tag_data[kHmacMaxDigestWords];
+      otcrypto_word32_buf_t tag_words = {
+          .data = tag_data,
+          .len = digest_words,
+      };
+      HARDENED_TRY(otcrypto_hmac_final(&ctx, tag_words));
+      hardened_memcpy(t_data, tag_data, words_left);
+    } else {
+      // Compute and store the HMAC tag directly in the OKM buffer.
+      otcrypto_word32_buf_t t_words = {
+          .data = t_data,
+          .len = digest_words,
+      };
+      HARDENED_TRY(otcrypto_hmac_final(&ctx, t_words));
+    }
   }
 
-  // Generate a mask (all-zero for now, since HMAC is unhardened anyway).
-  uint32_t mask[okm_wordlen];
-  memset(mask, 0, sizeof(mask));
+  // Store the mask (all-zero for now, since HMAC is unhardened anyway).
+  memset(okm_share1, 0, okm->config.key_length);
 
-  // Construct a blinded key.
-  HARDENED_TRY(
-      keyblob_from_key_and_mask(okm_data, mask, okm->config, okm->keyblob));
+  // Set the OKM's checksum.
   okm->checksum = integrity_blinded_checksum(okm);
   return OTCRYPTO_OK;
 }
