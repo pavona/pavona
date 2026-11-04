@@ -21,13 +21,12 @@
  * SPI console buffer management constants.
  */
 enum {
-  kSpiDeviceReadBufferSizeBytes =
-      SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t),
+  kSpiDeviceReadBufferSizeBytes = SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH *
+      sizeof(uint32_t),
   kSpiDeviceFrameHeaderSizeBytes = 12,
   kSpiDeviceBufferPreservedSizeBytes = kSpiDeviceFrameHeaderSizeBytes,
   kSpiDeviceMaxFramePayloadSizeBytes = kSpiDeviceReadBufferSizeBytes -
-                                       kSpiDeviceFrameHeaderSizeBytes -
-                                       kSpiDeviceBufferPreservedSizeBytes - 4,
+      kSpiDeviceFrameHeaderSizeBytes - kSpiDeviceBufferPreservedSizeBytes - 4,
   kSpiDeviceFrameMagicNumber = 0xa5a5beef,
 };
 

@@ -270,7 +270,7 @@ class RequestSources : public DifPwrmgrInitialized {
           0,
           // All sources.
           kDifPwrmgrWakeupRequestSourceOne,
-      };
+  };
   static constexpr std::array<dif_pwrmgr_request_sources_t, 2> kResetSources = {
       // No sources.
       0,

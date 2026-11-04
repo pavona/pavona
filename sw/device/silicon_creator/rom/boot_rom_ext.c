@@ -476,14 +476,14 @@ static rom_error_t rom_boot_rom_ext(const manifest_t *manifest,
      * Expected value of the `kCfiRomTryBootRomExt` counter when jumping to the
      * first ROM_EXT image.
      */
-    kCfiRomTryBootRomExtManifest0Val =
-        3 * kCfiIncrement + kCfiRomTryBootRomExtVal0,
+    kCfiRomTryBootRomExtManifest0Val = 3 * kCfiIncrement +
+        kCfiRomTryBootRomExtVal0,
     /**
      * Expected value of the `kCfiRomTryBootRomExt` counter when jumping to the
      * second ROM_EXT image.
      */
-    kCfiRomTryBootRomExtManifest1Val =
-        10 * kCfiIncrement + kCfiRomTryBootRomExtVal0,
+    kCfiRomTryBootRomExtManifest1Val = 10 * kCfiIncrement +
+        kCfiRomTryBootRomExtVal0,
   };
   const manifest_t *manifest_check = NULL;
   switch (launder32(rom_counters[kCfiRomTryBootRomExt])) {

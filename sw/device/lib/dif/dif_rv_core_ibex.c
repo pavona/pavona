@@ -388,12 +388,13 @@ enum {
   kIbexCrashDumpBytesCount = sizeof(dif_rv_core_ibex_crash_dump_info_t),
   kIbexCrashDumpWordsCount = kIbexCrashDumpBytesCount / sizeof(uint32_t),
   kIbexCrashDumpStateBytesCount = sizeof(dif_rv_core_ibex_crash_dump_state_t),
-  kIbexCrashDumpStateWordsCount =
-      kIbexCrashDumpStateBytesCount / sizeof(uint32_t),
+  kIbexCrashDumpStateWordsCount = kIbexCrashDumpStateBytesCount /
+      sizeof(uint32_t),
   kIbexCrashDumpPreviousStateBytesCount =
       sizeof(dif_rv_core_ibex_previous_crash_dump_state_t),
   kIbexCrashDumpPreviousStateWordsCount =
-      kIbexCrashDumpPreviousStateBytesCount / sizeof(uint32_t),
+          kIbexCrashDumpPreviousStateBytesCount /
+      sizeof(uint32_t),
 };
 
 dif_result_t dif_rv_core_ibex_parse_crash_dump(

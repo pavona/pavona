@@ -306,47 +306,47 @@ typedef enum dif_csrng_recoverable_alert {
    * Indicates a bad value was written to the ENABLE field of the control
    * register.
    */
-  kDifCsrngRecoverableAlertBadEnable =
-      1U << CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadEnable = 1U
+      << CSRNG_RECOV_ALERT_STS_ENABLE_FIELD_ALERT_BIT,
   /**
    * Indicates a bad value was written to the SW_APP_ENABLE field of the control
    * register.
    */
-  kDifCsrngRecoverableAlertBadSwAppEnable =
-      1U << CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadSwAppEnable = 1U
+      << CSRNG_RECOV_ALERT_STS_SW_APP_ENABLE_FIELD_ALERT_BIT,
   /**
    * Indicates a bad value was written to the READ_INT_STATE field of the
    * control register.
    */
-  kDifCsrngRecoverableAlertBadIntState =
-      1U << CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadIntState = 1U
+      << CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
   /**
    * Indicates the FLAG0 field in the Application Command is set to a value
    * other than kMultiBitBool4True or kMultiBitBool4False.
    */
-  kDifCsrngRecoverableAlertBadFlag0 =
-      1U << CSRNG_RECOV_ALERT_STS_ACMD_FLAG0_FIELD_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadFlag0 = 1U
+      << CSRNG_RECOV_ALERT_STS_ACMD_FLAG0_FIELD_ALERT_BIT,
   /**
    * Indicates the genbits bus saw two identical values, indicating a possible
    * attack.
    */
-  kDifCsrngRecoverableAlertRepeatedGenBits =
-      1U << CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
+  kDifCsrngRecoverableAlertRepeatedGenBits = 1U
+      << CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
   /**
    * Indicates an unsupported CSRNG command was issued.
    */
-  kDifCsrngRecoverableAlertBadCsrngCmd =
-      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_ACMD_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadCsrngCmd = 1U
+      << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_ACMD_ALERT_BIT,
   /**
    * Indicates a supported CSRNG command was issued out of sequence.
    */
-  kDifCsrngRecoverableAlertBadCsrngCmdSeq =
-      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_CMD_SEQ_ALERT_BIT,
+  kDifCsrngRecoverableAlertBadCsrngCmdSeq = 1U
+      << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_CMD_SEQ_ALERT_BIT,
   /**
    * Indicates that too many generate commands were issued in a row.
    */
-  kDifCsrngRecoverableAlertMaxReseedsExceeded =
-      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_RESEED_CNT_ALERT_BIT,
+  kDifCsrngRecoverableAlertMaxReseedsExceeded = 1U
+      << CSRNG_RECOV_ALERT_STS_CMD_STAGE_RESEED_CNT_ALERT_BIT,
 } dif_csrng_recoverable_alert_t;
 
 /**

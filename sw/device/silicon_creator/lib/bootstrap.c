@@ -24,8 +24,8 @@ enum {
   /*
    * Maximum flash address, exclusive.
    */
-  kMaxAddress =
-      FLASH_CTRL_PARAM_BYTES_PER_BANK * FLASH_CTRL_PARAM_REG_NUM_BANKS,
+  kMaxAddress = FLASH_CTRL_PARAM_BYTES_PER_BANK *
+      FLASH_CTRL_PARAM_REG_NUM_BANKS,
 };
 
 static_assert(FLASH_CTRL_PARAM_REG_NUM_BANKS == 2, "Flash must have 2 banks");

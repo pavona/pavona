@@ -32,9 +32,9 @@ OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 enum {
   kAstInitEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET -
-                     OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
   kJitterEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET -
-                    OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
 };
 
 void epmp_read(rom_epmp_config_t *epmp) {

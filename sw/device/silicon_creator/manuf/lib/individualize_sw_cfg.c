@@ -24,8 +24,8 @@
 
 enum {
   kValidAstCfgOtpAddrLow = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET,
-  kInvalidAstCfgOtpAddrHigh =
-      kValidAstCfgOtpAddrLow + OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
+  kInvalidAstCfgOtpAddrHigh = kValidAstCfgOtpAddrLow +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_SIZE,
   kSha256DigestWords = 256 / 32,
 };
 

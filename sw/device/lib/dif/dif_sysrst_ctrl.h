@@ -220,73 +220,73 @@ typedef enum dif_sysrst_ctrl_key_intr_src {
   /**
    * Power button input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputPowerButtonH2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_PWRB_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputPowerButtonH2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_PWRB_H2L_BIT,
   /**
    * Key 0 input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey0H2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY0_IN_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey0H2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY0_IN_H2L_BIT,
   /**
    * Key 1 input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey1H2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY1_IN_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey1H2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY1_IN_H2L_BIT,
   /**
    * Key 2 input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey2H2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY2_IN_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey2H2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY2_IN_H2L_BIT,
   /**
    * AC power present input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputAcPowerPresetH2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_AC_PRESENT_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputAcPowerPresetH2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_AC_PRESENT_H2L_BIT,
   /**
    * Embedded controller reset input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputEcResetH2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_EC_RST_L_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputEcResetH2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_EC_RST_L_H2L_BIT,
   /**
    * Flash write protect input signal high-to-low.
    */
-  kDifSysrstCtrlKeyIntrStatusInputFlashWriteProtectH2L =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_H2L_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputFlashWriteProtectH2L = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_H2L_BIT,
   /**
    * Power button input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputPowerButtonL2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_PWRB_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputPowerButtonL2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_PWRB_L2H_BIT,
   /**
    * Key 0 input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey0L2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY0_IN_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey0L2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY0_IN_L2H_BIT,
   /**
    * Key 1 input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey1L2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY1_IN_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey1L2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY1_IN_L2H_BIT,
   /**
    * Key 2 input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputKey2L2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_KEY2_IN_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputKey2L2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_KEY2_IN_L2H_BIT,
   /**
    * AC power present input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputAcPowerPresetL2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_AC_PRESENT_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputAcPowerPresetL2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_AC_PRESENT_L2H_BIT,
   /**
    * Embedded controller reset input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputEcResetL2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_EC_RST_L_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputEcResetL2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_EC_RST_L_L2H_BIT,
   /**
    * Flash write protect input signal low-to-high.
    */
-  kDifSysrstCtrlKeyIntrStatusInputFlashWriteProtectL2H =
-      1U << SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_L2H_BIT,
+  kDifSysrstCtrlKeyIntrStatusInputFlashWriteProtectL2H = 1U
+      << SYSRST_CTRL_KEY_INTR_STATUS_FLASH_WP_L_L2H_BIT,
 } dif_sysrst_ctrl_key_intr_src_t;
 
 /**
@@ -296,23 +296,23 @@ typedef enum dif_sysrst_ctrl_combo_intr_src {
   /**
    * Power button input signal high-to-low.
    */
-  kDifSysrstCtrlComboIntrStatusCombo0H2L =
-      1U << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO0_H2L_BIT,
+  kDifSysrstCtrlComboIntrStatusCombo0H2L = 1U
+      << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO0_H2L_BIT,
   /**
    * Key 0 input signal high-to-low.
    */
-  kDifSysrstCtrlComboIntrStatusCombo1H2L =
-      1U << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO1_H2L_BIT,
+  kDifSysrstCtrlComboIntrStatusCombo1H2L = 1U
+      << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO1_H2L_BIT,
   /**
    * Key 1 input signal high-to-low.
    */
-  kDifSysrstCtrlComboIntrStatusCombo2H2L =
-      1U << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO2_H2L_BIT,
+  kDifSysrstCtrlComboIntrStatusCombo2H2L = 1U
+      << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO2_H2L_BIT,
   /**
    * Key 2 input signal high-to-low.
    */
-  kDifSysrstCtrlComboIntrStatusCombo3H2L =
-      1U << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO3_H2L_BIT,
+  kDifSysrstCtrlComboIntrStatusCombo3H2L = 1U
+      << SYSRST_CTRL_COMBO_INTR_STATUS_COMBO3_H2L_BIT,
 } dif_sysrst_ctrl_combo_intr_src_t;
 
 /**

@@ -54,32 +54,32 @@ enum {
   kOtcryptoMlkem1024EncapsSeedBytes = 32,
 
   // Buffer sizes in 32-bit words (used by the word32_buf public API).
-  kOtcryptoMlkem512KeygenSeedWords =
-      kOtcryptoMlkem512KeygenSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem512EncapsSeedWords =
-      kOtcryptoMlkem512EncapsSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem512SharedSecretWords =
-      kOtcryptoMlkem512SharedSecretBytes / sizeof(uint32_t),
-  kOtcryptoMlkem512CiphertextWords =
-      kOtcryptoMlkem512CiphertextBytes / sizeof(uint32_t),
+  kOtcryptoMlkem512KeygenSeedWords = kOtcryptoMlkem512KeygenSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem512EncapsSeedWords = kOtcryptoMlkem512EncapsSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem512SharedSecretWords = kOtcryptoMlkem512SharedSecretBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem512CiphertextWords = kOtcryptoMlkem512CiphertextBytes /
+      sizeof(uint32_t),
 
-  kOtcryptoMlkem768KeygenSeedWords =
-      kOtcryptoMlkem768KeygenSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem768EncapsSeedWords =
-      kOtcryptoMlkem768EncapsSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem768SharedSecretWords =
-      kOtcryptoMlkem768SharedSecretBytes / sizeof(uint32_t),
-  kOtcryptoMlkem768CiphertextWords =
-      kOtcryptoMlkem768CiphertextBytes / sizeof(uint32_t),
+  kOtcryptoMlkem768KeygenSeedWords = kOtcryptoMlkem768KeygenSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem768EncapsSeedWords = kOtcryptoMlkem768EncapsSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem768SharedSecretWords = kOtcryptoMlkem768SharedSecretBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem768CiphertextWords = kOtcryptoMlkem768CiphertextBytes /
+      sizeof(uint32_t),
 
-  kOtcryptoMlkem1024KeygenSeedWords =
-      kOtcryptoMlkem1024KeygenSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem1024EncapsSeedWords =
-      kOtcryptoMlkem1024EncapsSeedBytes / sizeof(uint32_t),
-  kOtcryptoMlkem1024SharedSecretWords =
-      kOtcryptoMlkem1024SharedSecretBytes / sizeof(uint32_t),
-  kOtcryptoMlkem1024CiphertextWords =
-      kOtcryptoMlkem1024CiphertextBytes / sizeof(uint32_t),
+  kOtcryptoMlkem1024KeygenSeedWords = kOtcryptoMlkem1024KeygenSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem1024EncapsSeedWords = kOtcryptoMlkem1024EncapsSeedBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem1024SharedSecretWords = kOtcryptoMlkem1024SharedSecretBytes /
+      sizeof(uint32_t),
+  kOtcryptoMlkem1024CiphertextWords = kOtcryptoMlkem1024CiphertextBytes /
+      sizeof(uint32_t),
 
 // Work buffer sizes in 32-bit words. The ACC backends stage in DMEM and need
 // no caller work buffer; only the software backend does.

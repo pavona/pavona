@@ -70,8 +70,8 @@ enum cwt_cert_expectations {
 
   // Total size in bytes of the CoseKey identity region. (y-coord)
   // Expects header + 32B p256 y-coord.
-  kDiceCwtCoseKeyIdSizeBytes =
-      kDiceCwtCoseKeyIdHeaderSizeBytes + kEcdsaP256PublicKeyCoordBytes,
+  kDiceCwtCoseKeyIdSizeBytes = kDiceCwtCoseKeyIdHeaderSizeBytes +
+      kEcdsaP256PublicKeyCoordBytes,
 
   // Offset to the CoseKey identity region. (y-coord)
   // This offset is relative to the *end* of CoseKey message.
@@ -79,8 +79,7 @@ enum cwt_cert_expectations {
 
   // All valid CoseKey messages should be longer than this size.
   kDiceCwtCoseKeyMinSizeBytes = kDiceCwtMagicSizeBytes +
-                                kDiceCwtCoseKeyIdOffsetBytes +
-                                kDiceCwtCoseKeyIdSizeBytes,
+      kDiceCwtCoseKeyIdOffsetBytes + kDiceCwtCoseKeyIdSizeBytes,
 
   // Magic header identifying a CoseSign1 message (CBOR array with 4 elements).
   kDiceCwtCoseSign1Magic = 0x84,
@@ -91,8 +90,8 @@ enum cwt_cert_expectations {
 
   // Size of the CoseSign1 identity region. (subject hex id)
   // Expects header + 64B subject hex id.
-  kDiceCwtCoseSign1IdSizeBytes =
-      kDiceCwtCoseSign1IdHeaderSizeBytes + kIssuerSubjectNameLength,
+  kDiceCwtCoseSign1IdSizeBytes = kDiceCwtCoseSign1IdHeaderSizeBytes +
+      kIssuerSubjectNameLength,
 
   // Offset to the CoseSign1 identity region. (subject hex id)
   // This offset is relative to the *begin* of CoseSign1.
@@ -101,8 +100,7 @@ enum cwt_cert_expectations {
 
   // All valid CoseSign1 messages should be longer than this size.
   kDiceCwtCoseSign1MinSizeBytes = kDiceCwtMagicSizeBytes +
-                                  kDiceCwtCoseSign1IdOffsetBytes +
-                                  kDiceCwtCoseSign1IdSizeBytes,
+      kDiceCwtCoseSign1IdOffsetBytes + kDiceCwtCoseSign1IdSizeBytes,
 };
 
 // Reusable buffer for checking cose key identity.

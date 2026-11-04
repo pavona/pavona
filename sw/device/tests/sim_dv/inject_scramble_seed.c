@@ -111,11 +111,11 @@ bool test_main(void) {
     // Figure out that part later.
     enum {
       kFlashAddrKeyOffset = OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_OFFSET -
-                            OTP_CTRL_PARAM_SECRET1_OFFSET,
+          OTP_CTRL_PARAM_SECRET1_OFFSET,
       kFlashDataKeyOffset = OTP_CTRL_PARAM_FLASH_DATA_KEY_SEED_OFFSET -
-                            OTP_CTRL_PARAM_SECRET1_OFFSET,
+          OTP_CTRL_PARAM_SECRET1_OFFSET,
       kSramDataKeyOffset = OTP_CTRL_PARAM_SRAM_DATA_KEY_SEED_OFFSET -
-                           OTP_CTRL_PARAM_SECRET1_OFFSET
+          OTP_CTRL_PARAM_SECRET1_OFFSET
     };
 
     for (uint32_t i = 0; i < OTP_CTRL_PARAM_FLASH_ADDR_KEY_SEED_SIZE;

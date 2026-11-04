@@ -124,8 +124,8 @@ enum {
   /**
    * SPHINCS+ signature.
    */
-  kSpxBytes =
-      kSpxN + kSpxForsBytes + kSpxD * kSpxWotsBytes + kSpxFullHeight * kSpxN,
+  kSpxBytes = kSpxN + kSpxForsBytes + kSpxD * kSpxWotsBytes +
+      kSpxFullHeight * kSpxN,
   /**
    * SPHINCS+ public key length.
    */

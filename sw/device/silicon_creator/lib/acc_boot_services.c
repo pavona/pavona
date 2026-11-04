@@ -83,8 +83,8 @@ enum {
   /* Size of the ACC attestation seed buffer in 32-bit words (rounding the
      attestation seed size up to the next ACC wide word). */
   kAccAttestationSeedBufferWords =
-      ((kAttestationSeedWords + kScAccWideWordNumWords - 1) /
-       kScAccWideWordNumWords) *
+          ((kAttestationSeedWords + kScAccWideWordNumWords - 1) /
+           kScAccWideWordNumWords) *
       kScAccWideWordNumWords,
 };
 
