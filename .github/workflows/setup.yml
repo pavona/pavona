@@ -45,6 +45,9 @@ jobs:
           - ubuntu-24.04-arm
           - ubuntu-26.04-arm
     steps:
+      # Some runner images do not have enough free disk for the build.
+      - name: Free disk space
+        run: sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v7
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
@@ -112,6 +115,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     container:
       image: ${{ matrix.image }}
+      volumes:
+        - /usr/local/lib/android:/host-android
     strategy:
       fail-fast: false
       matrix:
@@ -125,6 +130,10 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
     steps:
+      # Some runner images do not have enough free disk for the build.
+      # Container steps cannot reach the host, so the SDK is mounted in.
+      - name: Free disk space
+        run: rm -rf /host-android/*
       - name: Bootstrap container
         run: apt-get update && apt-get install -y sudo git curl wget ca-certificates
       - uses: actions/checkout@v7
