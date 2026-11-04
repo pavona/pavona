@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/pavona/pavona/main/sw/host/cryptotest/testvectors/data/schemas/kdf_hmac_schema.json",
+  "title": "Cryptotest KDF HMAC Testvector",
+  "description": "A list of testvectors for SP 800-108 KDF testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "test_case_id": {
+        "description": "Incremental test case ID -- used for debugging",
+        "type": "integer"
+      },
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "algorithm": {
+        "description": "The ACVP algorithm the test came from",
+        "type": "string",
+        "enum": ["KDF"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "kdf_mode": {
+        "description": "KDF mode",
+        "type": "string",
+        "enum": ["counter", "feedback"]
+      },
+      "mac_mode": {
+        "description": "PRF of the KDF",
+        "type": "string",
+        "enum": ["HMAC-SHA2-256", "HMAC-SHA2-384", "HMAC-SHA2-512"]
+      },
+      "key_in": {
+        "description": "Key derivation key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "fixed_data": {
+        "description": "Fixed data",
+        "$ref": "#/$defs/byte_array"
+      },
+      "key_out_len": {
+        "description": "Length of the derived key in bytes",
+        "type": "integer"
+      },
+      "key_out": {
+        "description": "Expected derived key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether the derived key should match `key_out`",
+        "type": "boolean"
+      }
+    }
+  }
+}
