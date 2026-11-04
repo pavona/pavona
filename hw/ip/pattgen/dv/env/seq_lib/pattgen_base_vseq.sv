@@ -420,7 +420,8 @@ function pattgen_channel_cfg pattgen_base_vseq::get_random_channel_config(uint c
   pattgen_channel_cfg ch_cfg;
   ch_cfg = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg_%0d", channel));
   if (inactive_level_en) begin
-    // TODO(#23219): Remove this when the scoreboard supports the inactive_level feature.
+    // TODO(lowrisc/opentitan#23219): Remove this when the scoreboard supports the inactive_level
+    // feature.
     ch_cfg.inactive_level_disabled_c.constraint_mode(0);
   end
   `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,

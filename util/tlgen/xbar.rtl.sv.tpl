@@ -215,7 +215,7 @@ ${"end" if loop.last else ""}
 % for block in xbar.nodes:
 <%
   stripped_name = block.name.replace('.', '__')
-  # TODO #15754: Pass this parameter through the tlgen script instead of hardcoding
+  # TODO lowrisc/opentitan#15754: Pass this parameter through the tlgen script instead of hardcoding
 %>\
   % if isinstance(block, AsyncFifo):
   tlul_fifo_async #(

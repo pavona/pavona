@@ -44,7 +44,7 @@ enum {
   kSpiDeviceNoAddress = UINT32_MAX,
 };
 
-// TODO(#11740): Auto-generated macros for HW constants.
+// TODO(lowrisc/opentitan#11740): Auto-generated macros for HW constants.
 enum {
   /**
    * Size of the JEDEC Basic Flash Parameter Table (BFPT) in words.

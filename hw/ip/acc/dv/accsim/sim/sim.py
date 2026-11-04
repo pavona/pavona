@@ -405,7 +405,7 @@ class ACCSim:
         # first one we are here in particular!), we will get analogous
         # behaviour.
         #
-        # TODO(#23903): Fix the bug in the design then drop this code (and
+        # TODO(lowrisc/opentitan#23903): Fix the bug in the design then drop this code (and
         # change the STATUS value in _step_idle from LOCKED to
         # BUSY_SEC_WIPE_INT).
         self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)

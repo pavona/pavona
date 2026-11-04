@@ -21,7 +21,7 @@
 #include "hw/top_egret/sw/autogen/top_egret.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-// TODO #14111, remove it once pinout configuration is provided
+// TODO lowrisc/opentitan#14111, remove it once pinout configuration is provided
 #include "hw/top/i2c_regs.h"
 #include "hw/top/pinmux_regs.h"
 
@@ -199,7 +199,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_i2c_set_device_id(&i2c, &id0, &id1));
   CHECK_DIF_OK(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
 
-  // TODO #15081, transaction complete may not be set by i2c device.
+  // TODO lowrisc/opentitan#15081, transaction complete may not be set by i2c
+  // device.
   CHECK(!cmd_complete_irq_seen);
 
   CHECK_DIF_OK(

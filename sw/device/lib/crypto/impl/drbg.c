@@ -37,7 +37,7 @@ static status_t seed_material_construct(
   seed_material->len = nwords;
 
   // Copy seed data.
-  // TODO(#17711) Change to `hardened_memcpy`.
+  // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
   memcpy(seed_material->data, value.data, value.len);
 
   // Set any unset bytes to zero.

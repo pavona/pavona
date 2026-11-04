@@ -16,7 +16,7 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO(#24462): The tests in this file are marked `changes_otp = True`,
+# TODO(lowrisc/opentitan#24462): The tests in this file are marked `changes_otp = True`,
 # but they don't change OTP.  They modify the ownership INFO pages,
 # so we need to clear the bitstream after the test, which is what the
 # `changes_otp` parameter actually does.

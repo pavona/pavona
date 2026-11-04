@@ -4,7 +4,7 @@
 {
   tool: "veriblelint"
 
-  // TODO(#1342): switch over to native structured tool output, once supported by Verible
+  // TODO(lowrisc/opentitan#1342): switch over to native structured tool output, once supported by Verible
   // Verible lint-specific results parsing script that is called after running lint
   report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py "
   report_opts: ["--repfile={build_log}",

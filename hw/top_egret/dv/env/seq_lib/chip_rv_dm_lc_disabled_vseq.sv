@@ -11,9 +11,9 @@
 // so that the ROM check can complete successfully. This is needed since the TAP straps are
 // currently sampled after the ROM check succeeds.
 //
-// TODO(#15624): the ROM dependency can be removed once the pwrmgr FSM has been simplified (due
-// to the reset domain reorg). The strap sampling pulse will then be issued earlier, before the ROM
-// check is performed.
+// TODO(lowrisc/opentitan#15624): the ROM dependency can be removed once the pwrmgr FSM has been
+// simplified (due to the reset domain reorg). The strap sampling pulse will then be issued earlier,
+// before the ROM check is performed.
 
 class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   `uvm_object_utils(chip_rv_dm_lc_disabled_vseq)
@@ -59,7 +59,7 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     super.dut_init(reset_kind);
     `uvm_info(`gfn, $sformatf("DUT Init with lc_state %0s", lc_state.name), UVM_LOW)
 
-    // TODO(#15624): remove this part later.
+    // TODO(lowrisc/opentitan#15624): remove this part later.
     // We already wait for the ROM check to complete in the post_apply_reset sequence of
     // chip_stub_cpu_base_vseq. However, we need to wait a few additional cycles here since
     // the strap sampling pulse is released a few cycles after the ROM check completes.

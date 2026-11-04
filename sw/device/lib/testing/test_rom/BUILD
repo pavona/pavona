@@ -91,7 +91,7 @@ legacy_rom_targets(
     ]
 ]
 
-# TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
+# TODO(lowrisc/opentitan#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
 # and other functions necessary to build the test_rom for the Scafi_Deprecated top level.
 cc_library(
     name = "scafi_deprecated_test_rom_lib",
@@ -149,7 +149,7 @@ alias(
     visibility = ["//visibility:private"],
 )
 
-# TODO(#12905): Use a slightly hollowed out version of the silicon_creator manifest
+# TODO(lowrisc/opentitan#12905): Use a slightly hollowed out version of the silicon_creator manifest
 # implementation when building the test_rom for the Scafi_Deprecated top level.
 cc_library(
     name = "scafi_deprecated_test_rom_manifest",

@@ -7,7 +7,7 @@
   // TODO: remove the common testplans if not applicable
   import_testplans: [
     "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-    // TODO #5484, comment these 2 lines out because spi host memory is dummy
+    // TODO lowrisc/opentitan#5484, comment these 2 lines out because spi host memory is dummy
     // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
     // Integrity error is tested in a SW test.
     "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",

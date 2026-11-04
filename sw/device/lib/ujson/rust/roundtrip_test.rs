@@ -158,7 +158,7 @@ mod test {
     #[test]
     fn test_fuzzy_maybe() -> Result<()> {
         let before = FuzzyBool(49);
-        // TODO(opentitan#19373): The C ujson deserialiser reads the trailing newline
+        // TODO(lowrisc/opentitan#19373): The C ujson deserialiser reads the trailing newline
         // when deserialising this type,
         // as it has no other way of knowing the last character of the integer.
         // This means the crc calculation includes the trailing newline,

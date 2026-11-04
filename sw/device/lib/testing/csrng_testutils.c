@@ -222,9 +222,9 @@ status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
   enum {
     kExpectedOutputLen = 16,
   };
-  // TODO(#13342): csrng does not provide a linear output order. For example,
-  // note the test vector output word order: 12,13,14,15 8,9,10,11 4,5,6,7
-  // 0,1,2,3.
+  // TODO(lowrisc/opentitan#13342): csrng does not provide a linear output
+  // order. For example, note the test vector output word order: 12,13,14,15
+  // 8,9,10,11 4,5,6,7 0,1,2,3.
   const uint32_t kExpectedOutput[kExpectedOutputLen] = {
       0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
       0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,

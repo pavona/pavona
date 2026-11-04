@@ -110,7 +110,7 @@ class LintCfg(OneShotCfg):
         print(str(self.results_summary_md))
         return self.results_summary_md
 
-    # TODO(#9079): This way of parsing out messages into an intermediate
+    # TODO(lowrisc/opentitan#9079): This way of parsing out messages into an intermediate
     # results.hjson file will be replaced by a native parser mechanism.
     def _gen_results(self, results):
         # '''
@@ -149,7 +149,7 @@ class LintCfg(OneShotCfg):
                 subst_wildcards(self.build_dir, {'build_mode': mode.name}) +
                 '/results.hjson')
             log.info('[results:hjson]: [%s]: [%s]', self.name, result_path)
-            # TODO(#9079): replace this with native log parser
+            # TODO(lowrisc/opentitan#9079): replace this with native log parser
             msgs = MsgBuckets(self.message_buckets)
             msgs.load_hjson(result_path)
             self.result.append(msgs)

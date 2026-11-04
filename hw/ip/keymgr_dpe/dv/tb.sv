@@ -42,7 +42,7 @@ module tb;
   assign keymgr_dpe_if.lfsr_en   = dut.lfsr_en;
 
   // dut
-  // TODO(opentitan-integrated/issues/332):
+  // TODO:
   // need to model the OTP seed input
   keymgr_dpe dut (
     .clk_i                (clk           ),

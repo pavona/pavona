@@ -30,7 +30,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // test should not update timing parameter.
   // This variable indicates target DUT receives the end of the transaction
   // and allow tb to program a new timing parameter.
-  // TODO(#23920) Remove this.
+  // TODO(lowrisc/opentitan#23920) Remove this.
   bit     got_stop = 0;
 
   int     rcvd_rd_byte = 0; // Increment each time the agent reads a byte.
@@ -67,7 +67,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // never be read out.
   // Note. that this queue is only queried immediately before writing to the TXFIFO, and we only
   // push new values to the queue when the monitor decodes the address.
-  // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
+  // TODO(lowrisc/opentitan#23920) Remove knowledge of the DUT Addresses from the i2c_agent
   bit       read_addr_q[$];
   /////////////////////////////////////////////
 
@@ -112,7 +112,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   endfunction
 
 
-  // TODO(#23920) Remove knowledge of the DUT Addresses from the i2c_agent
+  // TODO(lowrisc/opentitan#23920) Remove knowledge of the DUT Addresses from the i2c_agent
   function bit is_target_addr(bit [6:0] addr);
     return (addr == target_addr0 || addr == target_addr1);
   endfunction

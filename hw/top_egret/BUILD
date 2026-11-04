@@ -242,7 +242,7 @@ fpga_cw310(
 ###########################################################################
 # FPGA CW305 Environments
 #
-# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# TODO(lowrisc/opentitan#19493): Determine whether the `fpga_cw310` infrastructure
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################
@@ -262,7 +262,7 @@ fpga_cw305(
 ###########################################################################
 # FPGA CW340 Environments
 #
-# TODO(opentitan#19493): Determine whether the `fpga_cw310` infrastructure
+# TODO(lowrisc/opentitan#19493): Determine whether the `fpga_cw310` infrastructure
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################

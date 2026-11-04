@@ -90,7 +90,7 @@ EGRET_SKUS = {
     # },
 } | EXT_EGRET_SKUS
 
-# TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
+# TODO(lowrisc/opentitan#27275): Refactor build/signing rules for perso binaries.
 def disqualified_for_signing(name, data):
     if "staging" in name:
         return True

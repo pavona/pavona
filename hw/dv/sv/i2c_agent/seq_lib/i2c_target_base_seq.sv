@@ -9,7 +9,7 @@ class i2c_target_base_seq extends i2c_base_seq;
   virtual task body();
     // A sequence of i2c_items that are randomized in the vseq are fed into the req_q here.
     // This isn't ideal, and hopefully will be rethought in the future.
-    // TODO(#14825) Randomize in the sequence, rather than the vseq. Or, compose a
+    // TODO(lowrisc/opentitan#14825) Randomize in the sequence, rather than the vseq. Or, compose a
     // transfer or transaction-level sequence item, randomize it, and then
     // decompose into individual driver op's in the agent sequence (i.e. here).
 

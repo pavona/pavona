@@ -358,7 +358,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.error_enable), .value(error_enable));
     csr_wr(.ptr(ral.event_enable), .value(event_enable));
     csr_wr(.ptr(ral.intr_enable), .value(intr_enable));
-    // TODO(#18886)
+    // TODO(lowrisc/opentitan#18886)
     update_spi_agent_regs();
   endtask : program_spi_host_regs
 
@@ -543,8 +543,8 @@ class spi_host_base_vseq extends cip_base_vseq #(
               UVM_HIGH)
   endtask : tl_access_inner
 
-  // TODO (#24198): incorporate into a tl_access task wrapper and use whenever the mask is 0x0,
-  // or non-3 byte strobes for TXFIFO
+  // TODO (lowrisc/opentitan#24198): incorporate into a tl_access task wrapper and use whenever the
+  // mask is 0x0, or non-3 byte strobes for TXFIFO
   virtual task accessinval_error_check(bit [TL_DBW-1:0] mask, bit txfifo);
     int num_try = 2;
     bit accessinval_error;
@@ -584,7 +584,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(fifo, AllFifos)
 
     // Check for free space in the fifo
-    // TODO(#18886) add interrupt handling if FIFO overflows
+    // TODO(lowrisc/opentitan#18886) add interrupt handling if FIFO overflows
     if (fifo_avail_chk) wait_for_fifos_available(fifo);
 
     if (rw == WRITE) begin

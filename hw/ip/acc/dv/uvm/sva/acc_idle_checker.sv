@@ -128,7 +128,7 @@ module acc_idle_checker
   `ASSERT(NotIdleIfRunning_A,
           running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
-  // TODO(#23903):
+  // TODO(lowrisc/opentitan#23903):
   //
   //    The logic here is to cope with a single cycle of surprising behaviour we are neither running
   //    nor locked but the idle_o signal is not high. This is probably a (minor) RTL bug. When it is

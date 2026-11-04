@@ -10,7 +10,7 @@
   build_opts: ["-elaborate -64bit -sv",
                // Wait to acquire a license.
                "-licqueue",
-               // TODO: duplicate primitives between OT and Ibex #1231
+               // TODO: duplicate primitives between OT and Ibex lowrisc/opentitan#1231
                "-ALLOWREDEFINITION",
                "-messages -errormax 50",
                "-timescale {timescale}",

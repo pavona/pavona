@@ -613,7 +613,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
               // they are not very useful. A better solution would be to disable the counters for
               // tests where they are not valuable, or improve the way we increment them such that
               // they remain in-sync across a SW_RESET event.
-              // TODO(#18886)
+              // TODO(lowrisc/opentitan#18886)
               // As described above, consider improving segment_cnt check for tests with resets
               in_tx_seg_cnt = 0;
               checked_tx_seg_cnt = 0;

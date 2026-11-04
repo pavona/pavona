@@ -29,7 +29,7 @@ set USER_CONFIG_FILE    [get_env_var "USER_CONFIG_FILE"]
 # Used to disable some SDC constructs that are not needed by CDC.
 set IS_CDC_RUN 1
 
-# TODO(#24208): Increasing the `ri_max_total_range_bits` setting as below can help removing
+# TODO(lowrisc/opentitan#24208): Increasing the `ri_max_total_range_bits` setting as below can help removing
 # black-box expressions, but it requires > 256 GiB of RAM, which is probably not available on
 # typical workstations.  We might want to enable this based on an environment variable.
 # set ri_max_total_range_bits 20
@@ -46,7 +46,7 @@ if {$DEFINE != ""} {
 # tech-specific implementation, so analyzing RTL that won't be used on the chip is meaningless and
 # without this black box, MeridianCDC reports conflicts between how the design drives derived clocks
 # and how derived clocks are specified in the SDC.
-# TODO(#24208): ast_clks_byp should not be black-boxed, however.
+# TODO(lowrisc/opentitan#24208): ast_clks_byp should not be black-boxed, however.
 set BLACK_BOX_MODULES [list \
   ast_clks_byp \
   prim_clock_div \

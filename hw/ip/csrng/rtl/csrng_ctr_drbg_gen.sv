@@ -152,8 +152,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; (
   // prepare value for block_encrypt step
   //--------------------------------------------
 
-  // TODO(#28153) check if the (additional) increment here is really necessary and whether it
-  // violates the redundant counter encoding listed as a SEC_CM below.
+  // TODO(lowrisc/opentitan#28153) check if the (additional) increment here is really necessary and
+  // whether it violates the redundant counter encoding listed as a SEC_CM below.
   if (CtrLen < BlkLen) begin : g_ctr_load_lsb
     logic [CtrLen-1:0] v_inc;
     assign v_inc  = cmd_req_data_i.v[CtrLen-1:0] + 1;

@@ -141,7 +141,8 @@ rom_error_t boot_svc_handler(boot_svc_msg_t *boot_svc_msg,
                              owner_application_keyring_t *keyring,
                              size_t *verify_key, owner_config_t *owner_config,
                              uint32_t *isfb_check_count) {
-  // TODO(lowRISC#22387): Examine the boot_svc code paths for boot loops.
+  // TODO(lowrisc/opentitan#22387): Examine the boot_svc code paths for boot
+  // loops.
   if (boot_svc_msg->header.identifier == kBootSvcIdentifier) {
     HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg->header));
     uint32_t msg_type = boot_svc_msg->header.type;

@@ -61,7 +61,7 @@ interface i2c_if(
     repeat (dly) @(posedge clk_i);
   endtask : wait_for_dly
 
-  // TODO(#21887) Re-strengthen checks when detecting S/Sr/P conditions on the bus
+  // TODO(lowrisc/opentitan#21887) Re-strengthen checks when detecting S/Sr/P conditions on the bus
   // Currently these monitor tasks observe the derived timing parameters before
   // checking for the expected bus behaviour.
   // These delays were disabled as removal of some extra slack in the system
@@ -126,7 +126,7 @@ interface i2c_if(
     `DV_CHECK(rstart ^ stop, , , "i2c_if")
   endtask: wait_for_host_stop_or_rstart
 
-  // TODO(#21887) Re-strengthen checks when detecting ACK/NACK on the bus
+  // TODO(lowrisc/opentitan#21887) Re-strengthen checks when detecting ACK/NACK on the bus
   // Similar to S/Sr/P conditions above, these timing-referenced monitor
   // routines are brittle. Remove some delays for now.
 
@@ -182,7 +182,7 @@ interface i2c_if(
     acknack = (ack) ? i2c_pkg::ACK : i2c_pkg::NACK;
   endtask: wait_for_host_ack_or_nack
 
-  // TODO(#21887) Re-strengthen checks
+  // TODO(lowrisc/opentitan#21887) Re-strengthen checks
 
   task automatic wait_for_device_ack(ref timing_cfg_t tc, input bit ack_bit = 1'b1);
     // @(negedge sda_o && scl_o);

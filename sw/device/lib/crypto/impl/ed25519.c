@@ -116,7 +116,7 @@ static status_t construct_hash_h(uint32_t hash_h[kEd25519HashWords],
       .len = kEd25519SecretBytes,
   };
 
-  // TODO(#17711) Change to `hardened_memcpy`.
+  // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
   memcpy(private_key_data_buf, private_key->keyblob, kEd25519SecretBytes);
 
   // Prepare a struct for the hashed private key.
@@ -129,7 +129,7 @@ static status_t construct_hash_h(uint32_t hash_h[kEd25519HashWords],
   HARDENED_TRY(otcrypto_sha2_512(private_key_buf, &hash_h_digest));
 
   // Copy the hashed private key into the provided buffer.
-  // TODO(#17711) Change to `hardened_memcpy`.
+  // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
   memcpy(hash_h, hash_h_buf, kEd25519HashBytes);
 
   return OTCRYPTO_OK;
@@ -198,7 +198,7 @@ otcrypto_status_t otcrypto_ed25519_sign_async_start(
     // Copy the context into a 32-bit aligned buffer.
     size_t context_wordlen = ceil_div(context.len, sizeof(uint32_t));
     uint32_t context_aligned[context_wordlen];
-    // TODO(#17711) Change to `hardened_memcpy`.
+    // TODO(lowrisc/opentitan#17711) Change to `hardened_memcpy`.
     memset(context_aligned, 0, sizeof(context_aligned));
     memcpy(context_aligned, context.data, context.len);
     return ed25519_sign_hash_start(input_message_aligned, hash_h,

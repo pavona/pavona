@@ -30,10 +30,10 @@ class mubi_cov #(parameter int Width = 4,
   endfunction : sample
 endclass : mubi_cov
 
-// TODO(#24142): This is a bit silly: it's just mubi_cov above, specialised to Width=32. But that
-// doesn't work properly with VCS (tried with version 2023.03) because it ends up creating an
-// enormous number of bins. Setting an explicit width here works around the problem. Fix this up
-// properly if we change tool version.
+// TODO(lowrisc/opentitan#24142): This is a bit silly: it's just mubi_cov above, specialised to
+// Width=32. But that doesn't work properly with VCS (tried with version 2023.03) because it ends up
+// creating an enormous number of bins. Setting an explicit width here works around the problem. Fix
+// this up properly if we change tool version.
 class mubi32_cov extends uvm_object;
   `uvm_object_utils(mubi32_cov)
 

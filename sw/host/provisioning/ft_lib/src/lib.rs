@@ -474,7 +474,7 @@ fn provision_certificates(
         };
 
         // Collect all DICE certs to validate the chain.
-        // TODO(lowRISC/opentitan:#24281): Add CWT verifier
+        // TODO(lowrisc/opentitan#24281): Add CWT verifier
         if dice_cert_names.contains(cert.cert_name)
             && header.obj_type == ObjType::UnendorsedX509Cert
         {
@@ -490,7 +490,7 @@ fn provision_certificates(
 
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
-        // TODO(lowRISC/opentitan:#24281): Add CWT parser
+        // TODO(lowrisc/opentitan#24281): Add CWT parser
         if header.obj_type != ObjType::DevSeed && header.obj_type != ObjType::EndorsedCwtCert {
             let _ = parse_certificate(&cert_bytes)?;
         }
@@ -553,7 +553,7 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
-    // TODO(lowRISC/opentitan:#24281): Add CWT verifier
+    // TODO(lowrisc/opentitan#24281): Add CWT verifier
     let t0 = Instant::now();
     if !dice_cert_chain.is_empty() {
         log::info!(

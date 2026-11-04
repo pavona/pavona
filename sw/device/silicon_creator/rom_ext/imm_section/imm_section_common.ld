@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * TODO(#24368): Adapt the linker script for real IMM_SECTION. This linker
+ * TODO(lowrisc/opentitan#24368): Adapt the linker script for real IMM_SECTION. This linker
  * script only works for hello-world ROM_EXT IMM_SECTION.
  */
 

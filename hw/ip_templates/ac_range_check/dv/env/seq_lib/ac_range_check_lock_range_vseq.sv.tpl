@@ -152,7 +152,7 @@ task ${module_instance_name}_lock_range_vseq::body();
       `uvm_info(`gfn, $sformatf("enable: %0h", enable[i]), UVM_MEDIUM)
     end
 
-    // TODO(#27352): Coverage sampling needs to be moved to scoreboard.
+    // TODO(lowrisc/opentitan#27352): Coverage sampling needs to be moved to scoreboard.
     // Currently in ${module_instance_name}_scoreboard we are seeing TL transactions to range_regwen[i]
     // register being dropped when a write with range_regwen[i] = 1. This needs to be debugged as
     // a write to this register irrespective of the value triggers coverage sampling
