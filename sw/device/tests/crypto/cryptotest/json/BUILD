@@ -19,6 +19,7 @@ cc_library(
         ":hash_commands",
         ":hkdf_commands",
         ":hmac_commands",
+        ":kdf_hmac_commands",
         ":kmac_commands",
         ":mldsa_commands",
         ":mlkem_commands",
@@ -80,6 +81,13 @@ cc_library(
     name = "hmac_commands",
     srcs = ["hmac_commands.c"],
     hdrs = ["hmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "kdf_hmac_commands",
+    srcs = ["kdf_hmac_commands.c"],
+    hdrs = ["kdf_hmac_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

@@ -217,6 +217,27 @@ cc_library(
 )
 
 cc_library(
+    name = "kdf_hmac",
+    srcs = ["kdf_hmac.c"],
+    hdrs = ["kdf_hmac.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hkdf",
+        "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:kdf_ctr",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:kdf_hmac_commands",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
@@ -343,6 +364,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hkdf",
     ":hmac",
+    ":kdf_hmac",
     ":kmac",
     ":rsa",
     ":sphincsplus",
