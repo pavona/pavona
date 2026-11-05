@@ -195,6 +195,9 @@ jobs:
           - ubuntu-24.04
           - ubuntu-24.04-arm
     steps:
+      # Some runner images do not have enough free disk for the build.
+      - name: Free disk space
+        run: sudo rm -rf /usr/local/lib/android
       - uses: actions/checkout@v7
       - name: Build container
         run: docker build -t pavona -f util/container/Dockerfile .
