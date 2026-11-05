@@ -307,14 +307,22 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
-  // Generate a fresh mask the size of one share.
+  // XOR each share with a fresh mask, one chunk at a time.
   size_t key_share_words = keyblob_share_num_words(key->config);
-  uint32_t mask[key_share_words];
-  hardened_memshred(mask, key_share_words);
-
-  // XOR each share with the mask.
-  hardened_xor(share0, mask, key_share_words);
-  hardened_xor(share1, mask, key_share_words);
+  uint32_t mask[16];
+  size_t num_chunks = ceil_div(key_share_words, ARRAYSIZE(mask));
+  size_t chunk = 0;
+  for (; launder32(chunk) < num_chunks; chunk++) {
+    size_t off = chunk * ARRAYSIZE(mask);
+    size_t n = key_share_words - off;
+    if (n > ARRAYSIZE(mask)) {
+      n = ARRAYSIZE(mask);
+    }
+    hardened_memshred(mask, n);
+    hardened_xor(share0 + off, mask, n);
+    hardened_xor(share1 + off, mask, n);
+  }
+  HARDENED_CHECK_EQ(chunk, num_chunks);
 
   // Update the key checksum.
   key->checksum = integrity_blinded_checksum(key);
