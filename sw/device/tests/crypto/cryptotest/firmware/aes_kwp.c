@@ -70,7 +70,8 @@ status_t handle_aes_kwp(ujson_t *uj) {
       size_t ct_len = padded_len + 8;
       size_t ct_num_words = ct_len / sizeof(uint32_t);
       uint32_t ct_buf[ct_num_words];
-      TRY(aes_kwp_wrap(kek, input_buf, uj_data.input_length, ct_buf));
+      memcpy(ct_buf, uj_data.input, uj_data.input_length);
+      TRY(aes_kwp_wrap(kek, ct_buf, uj_data.input_length));
       uj_output.output_len = ct_len;
       memcpy(uj_output.output, ct_buf, ct_len);
       uj_output.success = true;

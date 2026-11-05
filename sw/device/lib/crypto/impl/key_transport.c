@@ -221,8 +221,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   size_t keyblob_words = key_to_wrap->keyblob_length / sizeof(uint32_t);
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
-  uint32_t plaintext[plaintext_num_words];
-  hardened_memshred(plaintext, ARRAYSIZE(plaintext));
+  uint32_t *plaintext = wrapped_key.data;
+  hardened_memshred(plaintext, plaintext_num_words);
   hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
   plaintext[config_words] = key_to_wrap->checksum;
   plaintext[config_words + 1] = keyblob_words;
@@ -230,7 +230,14 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                   keyblob_words);
 
   // Wrap the key.
-  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
+  status_t err =
+      aes_kwp_wrap(kek, plaintext, plaintext_num_words * sizeof(uint32_t));
+  if (launder32(OT_UNSIGNED(err.value)) != kHardenedBoolTrue) {
+    hardened_memshred(wrapped_key.data, wrapped_key.len);
+    return err;
+  }
+  HARDENED_CHECK_EQ(err.value, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
