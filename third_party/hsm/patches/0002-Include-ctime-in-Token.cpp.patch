@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matthias J. Kannwischer <matthias@zerorisc.com>
+Date: Thu, 5 Nov 2026 00:00:00 +0000
+Subject: Include <ctime> in Token.cpp
+
+
+diff --git a/src/lib/slot_mgr/Token.cpp b/src/lib/slot_mgr/Token.cpp
+index b4c9401..3e09df7 100644
+--- a/src/lib/slot_mgr/Token.cpp
++++ b/src/lib/slot_mgr/Token.cpp
+@@ -32,6 +32,7 @@
+ #include "ByteString.h"
+ #include "SecureDataManager.h"
+ #include <cstdio>
++#include <ctime>
+ 
+ #ifndef _WIN32
+ #include <sys/time.h>
