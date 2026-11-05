@@ -90,16 +90,19 @@ enum {
   kOtcryptoMldsa44SecretKeyBytes = 2560,
   kOtcryptoMldsa44SignatureBytes = 2420,
   kOtcryptoMldsa44SeedBytes = 32,
+  kOtcryptoMldsa44SeedWords = kOtcryptoMldsa44SeedBytes / sizeof(uint32_t),
 
   kOtcryptoMldsa65PublicKeyBytes = 1952,
   kOtcryptoMldsa65SecretKeyBytes = 4032,
   kOtcryptoMldsa65SignatureBytes = 3309,
   kOtcryptoMldsa65SeedBytes = 32,
+  kOtcryptoMldsa65SeedWords = kOtcryptoMldsa65SeedBytes / sizeof(uint32_t),
 
   kOtcryptoMldsa87PublicKeyBytes = 2592,
   kOtcryptoMldsa87SecretKeyBytes = 4896,
   kOtcryptoMldsa87SignatureBytes = 4627,
   kOtcryptoMldsa87SeedBytes = 32,
+  kOtcryptoMldsa87SeedWords = kOtcryptoMldsa87SeedBytes / sizeof(uint32_t),
 
 // Work buffer sizes in 32-bit words. The ACC backends stage inputs and outputs
 // in DMEM and need no caller work buffer; only the software backend does.
