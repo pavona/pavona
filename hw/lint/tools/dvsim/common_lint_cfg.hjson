@@ -19,10 +19,8 @@
   build_log:  "{build_dir}/{tool}.log"
 
   // We rely on fusesoc to run lint for us.
-  build_cmd:  "{job_prefix} fusesoc"
-  build_opts: ["--cores-root {proj_root}/hw",
-               "run",
-               "--target={flow}",
+  build_cmd:  "{job_prefix} fusesoc --cores-root {proj_root}/hw run"
+  build_opts: ["--target={flow}",
                "--tool={tool}",
                "--work-root={build_dir}/fusesoc-work",
                "--mapping=lowrisc:prim_generic:all:0.1",

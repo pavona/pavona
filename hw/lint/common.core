@@ -41,5 +41,5 @@ targets:
           - "-Wpedantic"
           - "-Werror"
           - "--allow-use-before-declare"
-          - "--single-unit"
+          - "!slang_separate_units ? (--single-unit)"
           - "--error-limit 0"
