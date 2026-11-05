@@ -78,15 +78,14 @@ status_t handle_aes_kwp(ujson_t *uj) {
       break;
     }
     case kCryptotestAesKwpOperationUnwrap: {
-      uint32_t pt_buf[input_num_words];
       hardened_bool_t success;
       size_t pt_len;
-      TRY(aes_kwp_unwrap(kek, input_buf, uj_data.input_length, &success, pt_buf,
+      TRY(aes_kwp_unwrap(kek, input_buf, uj_data.input_length, &success,
                          &pt_len));
       if (success == kHardenedBoolTrue) {
         uj_output.success = true;
         uj_output.output_len = pt_len;
-        memcpy(uj_output.output, pt_buf, pt_len);
+        memcpy(uj_output.output, input_buf, pt_len);
       } else {
         uj_output.success = false;
         uj_output.output_len = 0;
