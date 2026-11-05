@@ -7,7 +7,6 @@
 
 #include <string.h>
 
-#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -184,9 +183,9 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
     uint32_t work[kOtcryptoMldsa44WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 #if defined(ACC_MLDSA_HARDENED)
-  uint32_t seed[ceil_div(2 * kOtcryptoMldsa44SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[2 * kOtcryptoMldsa44SeedWords];
 #else
-  uint32_t seed[ceil_div(kOtcryptoMldsa44SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[kOtcryptoMldsa44SeedWords];
 #endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
@@ -251,8 +250,7 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
 #if defined(ACC_HAS_PQC) && defined(ACC_MLDSA_HARDENED)
   (void)work;
   const uint32_t *seed_share0 = seed.data;
-  const uint32_t *seed_share1 =
-      &seed.data[ceil_div(kOtcryptoMldsa44SeedBytes, sizeof(uint32_t))];
+  const uint32_t *seed_share1 = &seed.data[kOtcryptoMldsa44SeedWords];
   HARDENED_TRY(mldsa_acc_44_keygen_hardened(
       seed_share0, seed_share1, public_key->key, secret_key->keyblob));
 #elif defined(ACC_HAS_PQC)
@@ -285,7 +283,7 @@ otcrypto_status_t otcrypto_mldsa44_sign(
     uint32_t work[kOtcryptoMldsa44WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
-  uint32_t rnd[ceil_div(kOtcryptoMldsa44SeedBytes, sizeof(uint32_t))];
+  uint32_t rnd[kOtcryptoMldsa44SeedWords];
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
@@ -532,9 +530,9 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
   HARDENED_TRY(entropy_complex_check());
 
 #if defined(ACC_MLDSA_HARDENED)
-  uint32_t seed[ceil_div(2 * kOtcryptoMldsa65SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[2 * kOtcryptoMldsa65SeedWords];
 #else
-  uint32_t seed[ceil_div(kOtcryptoMldsa65SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[kOtcryptoMldsa65SeedWords];
 #endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
@@ -599,8 +597,7 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
 #if defined(ACC_HAS_PQC) && defined(ACC_MLDSA_HARDENED)
   (void)work;
   const uint32_t *seed_share0 = seed.data;
-  const uint32_t *seed_share1 =
-      &seed.data[ceil_div(kOtcryptoMldsa65SeedBytes, sizeof(uint32_t))];
+  const uint32_t *seed_share1 = &seed.data[kOtcryptoMldsa65SeedWords];
   HARDENED_TRY(mldsa_acc_65_keygen_hardened(
       seed_share0, seed_share1, public_key->key, secret_key->keyblob));
 #elif defined(ACC_HAS_PQC)
@@ -633,7 +630,7 @@ otcrypto_status_t otcrypto_mldsa65_sign(
     uint32_t work[kOtcryptoMldsa65WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
-  uint32_t rnd[ceil_div(kOtcryptoMldsa65SeedBytes, sizeof(uint32_t))];
+  uint32_t rnd[kOtcryptoMldsa65SeedWords];
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
@@ -879,9 +876,9 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
     uint32_t work[kOtcryptoMldsa87WorkBufferKeypairWords]) {
   HARDENED_TRY(entropy_complex_check());
 #if defined(ACC_MLDSA_HARDENED)
-  uint32_t seed[ceil_div(2 * kOtcryptoMldsa87SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[2 * kOtcryptoMldsa87SeedWords];
 #else
-  uint32_t seed[ceil_div(kOtcryptoMldsa87SeedBytes, sizeof(uint32_t))];
+  uint32_t seed[kOtcryptoMldsa87SeedWords];
 #endif
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
@@ -946,8 +943,7 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
 #if defined(ACC_HAS_PQC) && defined(ACC_MLDSA_HARDENED)
   (void)work;
   const uint32_t *seed_share0 = seed.data;
-  const uint32_t *seed_share1 =
-      &seed.data[ceil_div(kOtcryptoMldsa87SeedBytes, sizeof(uint32_t))];
+  const uint32_t *seed_share1 = &seed.data[kOtcryptoMldsa87SeedWords];
   HARDENED_TRY(mldsa_acc_87_keygen_hardened(
       seed_share0, seed_share1, public_key->key, secret_key->keyblob));
 #elif defined(ACC_HAS_PQC)
@@ -980,7 +976,7 @@ otcrypto_status_t otcrypto_mldsa87_sign(
     uint32_t work[kOtcryptoMldsa87WorkBufferSignWords]) {
   HARDENED_TRY(entropy_complex_check());
 
-  uint32_t rnd[ceil_div(kOtcryptoMldsa87SeedBytes, sizeof(uint32_t))];
+  uint32_t rnd[kOtcryptoMldsa87SeedWords];
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
