@@ -286,13 +286,11 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   }
   HARDENED_CHECK_LE(num_iterations, 255);
 
-  // Create a buffer that holds `info` and a one-byte counter.
-  uint8_t info_and_counter_data[info.len + 1];
-  memcpy(info_and_counter_data, info.data, info.len);
-  info_and_counter_data[info.len] = 0x00;
-  otcrypto_const_byte_buf_t info_and_counter = {
-      .data = info_and_counter_data,
-      .len = sizeof(info_and_counter_data),
+  // Create a buffer that holds a one-byte counter.
+  uint8_t counter_val = 0x00;
+  otcrypto_const_byte_buf_t counter = {
+      .data = &counter_val,
+      .len = 1,
   };
 
   // Repeatedly call HMAC to generate the derived key (see RFC 5869, section
@@ -300,7 +298,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   uint32_t okm_data[okm_wordlen];
   uint32_t *t_data = okm_data;
   for (uint8_t i = 0; i < num_iterations; i++) {
-    info_and_counter_data[info.len] = i + 1;
+    counter_val = i + 1;
     otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, prk));
     if (launder32(i) != 0) {
@@ -311,7 +309,8 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
       HARDENED_TRY(otcrypto_hmac_update(&ctx, t_bytes));
       t_data += digest_words;
     }
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, info_and_counter));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, info));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, counter));
     otcrypto_word32_buf_t t_words = {
         .data = t_data,
         .len = digest_words,
