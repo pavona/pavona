@@ -59,12 +59,14 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
       .keyblob_length = keyblob_words * sizeof(uint32_t),
       .keyblob = unwrapped_key_keyblob,
   };
+  uint32_t work[ARRAYSIZE(wrapped_key_data)];
   TRY(otcrypto_key_unwrap(
       (otcrypto_const_word32_buf_t){
           .data = wrapped_key_data,
           .len = ARRAYSIZE(wrapped_key_data),
       },
-      key_kek, &success, &unwrapped_key));
+      key_kek, &success, &unwrapped_key,
+      (otcrypto_word32_buf_t){.data = work, .len = ARRAYSIZE(work)}));
 
   // Check the result.
   TRY_CHECK(success == kHardenedBoolTrue);

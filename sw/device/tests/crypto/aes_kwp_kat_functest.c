@@ -94,13 +94,14 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
   aes_key_t aes_kek = make_aes_key(kek, kek_words);
 
   // Run key unwrapping.
-  size_t ptext_words = (ptext_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
-  uint32_t act_ptext[ptext_words];
+  uint32_t act_ptext[ctext_words];
+  memcpy(act_ptext, ctext, ctext_words * sizeof(uint32_t));
   hardened_bool_t success;
   size_t act_ptext_len;
   uint64_t t = profile_start();
-  status_t err = aes_kwp_unwrap(aes_kek, ctext, ctext_words * sizeof(uint32_t),
-                                &success, act_ptext, &act_ptext_len);
+  status_t err =
+      aes_kwp_unwrap(aes_kek, act_ptext, ctext_words * sizeof(uint32_t),
+                     &success, &act_ptext_len);
   profile_end_and_print(t, "aes_kwp_unwrap");
   TRY(err);
 
