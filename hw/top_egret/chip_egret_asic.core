@@ -79,6 +79,9 @@ targets:
       slang:
         slang_options:
           - "-Wno-port-coercion"
+          # chip_egret_asic.sv uses the INOUT_AI/INOUT_AO macros from top_egret_pkg.sv and
+          # PAD2AST_WIRES from ast_pkg.sv, so it needs one compilation unit.
+          - "slang_separate_units ? (--single-unit)"
 
   syn:
     <<: *default_target

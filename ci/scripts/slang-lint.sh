@@ -42,3 +42,14 @@ env DVSIM_MAX_PARALLEL="$mp" \
         "Run 'util/dvsim/dvsim.py -t slang ${dvsim_cfg}' and fix all errors."
     exit 1
 }
+
+# Run slang again but now with each file in its own compilation unit,
+# which finds files with a missing include.
+opts="--build-opts=--flag=slang_separate_units"
+env DVSIM_MAX_PARALLEL="$mp" \
+  util/dvsim/dvsim.py --tool=slang "$opts" "$dvsim_cfg" || {
+    echo "::error::"\
+        "Slang lint (separate compilation units) of RTL sources failed for top '${top}'." \
+        "Run 'util/dvsim/dvsim.py -t slang ${opts} ${dvsim_cfg}' and fix all errors."
+    exit 1
+}
