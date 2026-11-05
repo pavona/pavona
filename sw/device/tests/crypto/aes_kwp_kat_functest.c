@@ -57,8 +57,9 @@ static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
   // Run key wrapping and check the result.
   uint32_t act_ctext[ctext_words + 1];
   act_ctext[ctext_words] = 0xffffffff;
+  memcpy(act_ctext, ptext, ptext_bytes);
   uint64_t t = profile_start();
-  status_t err = aes_kwp_wrap(aes_kek, ptext, ptext_bytes, act_ctext);
+  status_t err = aes_kwp_wrap(aes_kek, act_ctext, ptext_bytes);
   profile_end_and_print(t, "aes_kwp_wrap");
   TRY(err);
   TRY_CHECK_ARRAYS_EQ(act_ctext, ctext, ctext_words);

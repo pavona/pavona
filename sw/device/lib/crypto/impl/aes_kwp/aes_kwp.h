@@ -29,20 +29,18 @@ extern "C" {
  * will be zeroed. The plaintext must be at least 16 bytes long, and must be
  * shorter than 2^32 bytes.
  *
- * The ciphertext buffer must be long enough to hold the *padded* version of
- * the plaintext; this means the length should be rounded up to the next
- * multiple of 64 bits. If the key length is a multiple of 64 bits, then the
- * ciphertext and plaintext should be the same length.
+ * The plaintext is wrapped in place. The buffer must be long enough to hold
+ * the ciphertext, which is the plaintext length rounded up to the next
+ * multiple of 64 bits, plus 64 bits.
  *
  * @param kek Key encryption key, AES key to encrypt with.
- * @param plaintext Key material to wrap.
+ * @param[in,out] buf Plaintext to wrap; overwritten by the ciphertext.
  * @param plaintext_len Plaintext length in bytes.
- * @param[out] ciphertext Output buffer.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
-                      const size_t plaintext_len, uint32_t *ciphertext);
+status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *buf,
+                      const size_t plaintext_len);
 
 /**
  * AES Key Wrapping with Padding (KWP) authenticated decryption.
