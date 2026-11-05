@@ -276,16 +276,24 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   // Check that the key is masked with XOR.
   HARDENED_TRY(keyblob_ensure_xor_masked(config));
 
+  // Entropy complex must be initialized for `hardened_memcpy`.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize the keyblob contents before writing shares.
+  size_t num_words = 0;
+  HARDENED_TRY(keyblob_num_words(config, &num_words));
+  hardened_memshred(keyblob, num_words);
+
   // share0 = key ^ mask, share1 = mask
   size_t key_words = keyblob_share_num_words(config);
-  uint32_t share0[key_words];
   size_t i = 0;
   for (; launder32(i) < key_words; i++) {
-    share0[i] = key[i] ^ mask[i];
+    keyblob[i] = key[i] ^ mask[i];
   }
   HARDENED_CHECK_EQ(i, key_words);
+  hardened_memcpy(keyblob + key_words, mask, key_words);
 
-  return keyblob_from_shares(share0, mask, config, keyblob);
+  return OTCRYPTO_OK;
 }
 
 status_t keyblob_remask(otcrypto_blinded_key_t *key) {
