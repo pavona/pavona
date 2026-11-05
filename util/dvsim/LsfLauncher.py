@@ -206,7 +206,7 @@ class LsfLauncher(Launcher):
         if job_rusage:
             cmd += ["-R", job_rusage]
 
-        cmd += ["/usr/bin/bash {} $LSB_JOBINDEX".format(job_script)]
+        cmd += ["bash {} $LSB_JOBINDEX".format(job_script)]
 
         try:
             p = subprocess.run(cmd,
