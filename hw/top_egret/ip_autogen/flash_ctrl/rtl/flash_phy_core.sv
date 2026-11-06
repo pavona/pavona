@@ -9,6 +9,8 @@
 // This module wraps every single flash bank and contains most of the region attribute,
 // scramble, ECC, security and arbitration logic.
 
+`include "prim_assert.sv"
+
 module flash_phy_core
   import flash_phy_macro_pkg::flash_phy_macro_bank_req_t;
   import flash_phy_macro_pkg::flash_phy_macro_bank_rsp_t;
