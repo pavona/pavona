@@ -115,6 +115,7 @@ package ac_range_check_env_pkg;
   `include "ac_range_check_virtual_sequencer.sv"
   `include "ac_range_check_predictor.sv"
   `include "ac_range_check_scoreboard.sv"
+  `include "ac_range_check_rst_safe_scoreboard.sv"
   `include "ac_range_check_env.sv"
   `include "ac_range_check_rst_safe_env.sv"
   `include "ac_range_check_vseq_list.sv"

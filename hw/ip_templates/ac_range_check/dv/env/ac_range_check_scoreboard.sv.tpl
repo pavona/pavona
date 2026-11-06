@@ -309,14 +309,18 @@ task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item item,
     "log_config": begin
       // log_config is hwext with mixed field types - check reads but handle log_clear specially
       // Detect write to log_config with log_clear bit set and clear log status
-      if (tl_phase == AChanWrite &&
-          item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
-        `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
-                                   "(detected in scoreboard)"}), UVM_MEDIUM)
-        void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-        void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
-        predict.deny_cnt = 0;
-        predict.overflow_flag = 0;
+      if (tl_phase == AChanWrite) begin
+        if (item.a_data[ral.log_config.log_clear.get_lsb_pos()] == 1'b1) begin
+          `uvm_info(`gfn, $sformatf({"Clear performed to log_status and log_address ",
+                                     "(detected in scoreboard)"}), UVM_MEDIUM)
+          void'(ral.log_status.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+          void'(ral.log_address.predict(.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+          predict.deny_cnt = 0;
+          predict.overflow_flag = 0;
+        end
+        void'(ral.intr_state.deny_cnt_reached.predict(
+            .value(predict.deny_cnt > `gmv(ral.log_config.deny_cnt_threshold)),
+            .kind(UVM_PREDICT_DIRECT)));
       end
     end
     "log_status": begin
@@ -386,6 +390,28 @@ function void ${module_instance_name}_scoreboard::reset(string kind = "HARD");
   act_filt_a_chan_cnt   = 0;
   a_chan_matching_cnt   = 0;
   d_chan_matching_cnt   = 0;
+
+  // Reset the decoded range-config model to the register reset values. Without this
+  // it retains the pre-reset range configuration; and a range left at its reset value
+  // is never re-written, so the stale entry would persist.
+  foreach (dut_cfg.range_attr[i]) begin
+    dut_cfg.range_base[i]  = ral.range_base[i].get_reset(kind);
+    dut_cfg.range_limit[i] = ral.range_limit[i].get_reset(kind);
+    dut_cfg.range_attr[i].log_denied_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].log_denied_access.get_reset(kind));
+    dut_cfg.range_attr[i].execute_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].execute_access.get_reset(kind));
+    dut_cfg.range_attr[i].write_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].write_access.get_reset(kind));
+    dut_cfg.range_attr[i].read_access =
+      mubi4_logic_test_true_strict(ral.range_attr[i].read_access.get_reset(kind));
+    dut_cfg.range_attr[i].enable =
+      mubi4_logic_test_true_strict(ral.range_attr[i].enable.get_reset(kind));
+    dut_cfg.range_racl_policy[i].read_perm =
+      ral.range_racl_policy_shadowed[i].read_perm.get_reset(kind);
+    dut_cfg.range_racl_policy[i].write_perm =
+      ral.range_racl_policy_shadowed[i].write_perm.get_reset(kind);
+  end
 endfunction : reset
 
 function void ${module_instance_name}_scoreboard::check_phase(uvm_phase phase);

@@ -1,0 +1,851 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+class cip_rst_safe_scoreboard #(type RAL_T = dv_base_reg_block,
+                                type CFG_T = cip_base_env_cfg,
+                                type COV_T = cip_base_env_cov)
+                                extends dv_rst_safe_scoreboard #(RAL_T, CFG_T, COV_T);
+  `uvm_component_param_utils(cip_rst_safe_scoreboard #(RAL_T, CFG_T, COV_T))
+
+  // Reset notification fifo driven by clk_rst_agent.monitor.
+  // TODO(rst_safe): This currently models a single reset domain through the inherited
+  // protected under_reset flag. Multi-domain CIP scoreboards need domain-tagged reset
+  // notifications and domain-indexed reset state, for example by RAL/TL/reset-domain name.
+  uvm_tlm_analysis_fifo #(clk_rst_item) clk_rst_fifo;
+
+  // TLM fifos to pick up the packets
+  uvm_tlm_analysis_fifo #(tl_channels_e) tl_dir_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_seq_item)   tl_a_chan_fifos[string];
+  uvm_tlm_analysis_fifo #(tl_seq_item)   tl_d_chan_fifos[string];
+
+  // Alert_fifo to notify scb if DUT sends an alert
+  uvm_tlm_analysis_fifo #(alert_esc_seq_item) alert_fifos[string];
+
+  // EDN fifo
+  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(EDN_DATA_WIDTH))) edn_fifos[];
+
+  mem_model#() exp_mem[string];
+
+  // Holds the information related to expected alerts.
+  typedef struct packed {
+    bit expected;
+    bit is_fatal;
+    int max_delay;
+  } expected_alert_t;
+
+  // This holds alerts to be added to the expected_alert array: incoming expectations
+  // are placed in this queue before going into the expected_alert since we would need
+  // to fork a thread within a function since there needs to be a wait before determining
+  // how they need to be handled. A fork with delays within a function has given some
+  // trouble so it is best to avoid it.
+  //
+  // This queue holds alerts since they are received in set_exp_alert and when they are handled
+  // in process_set_exp_alerts.
+  expected_alert_t exp_alert_q[string][$];
+
+  // This event is used to notify process_set_exp_alerts there are alerts to be handled.
+  event new_exp_alert;
+  bit ignore_exp_alert = 0;
+
+  // alert checking related parameters
+  bit do_alert_check = 1;
+  bit check_alert_sig_int_err = 1;
+  bit under_alert_handshake[string];
+  expected_alert_t expected_alert[string];
+  int alert_count[string];
+
+  // intg check
+  bit en_d_user_intg_chk = 1;
+
+  // ecc error expected
+  bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
+
+  // covergroups
+  tl_errors_cg_wrap   tl_errors_cgs_wrap[string];
+  tl_intg_err_cg_wrap tl_intg_err_cgs_wrap[string];
+  tl_intg_err_mem_subword_cg_wrap tl_intg_err_mem_subword_cgs_wrap[string];
+
+  `uvm_component_new
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    clk_rst_fifo = new("clk_rst_fifo", this);
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      tl_a_chan_fifos[i] = new({"tl_a_chan_fifo_", i}, this);
+      tl_d_chan_fifos[i] = new({"tl_d_chan_fifo_", i}, this);
+      tl_dir_fifos[i] = new({"tl_dir_fifo_", i}, this);
+    end
+    foreach(cfg.list_of_alerts[i]) begin
+      string alert_name = cfg.list_of_alerts[i];
+      alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
+    end
+    edn_fifos = new[cfg.num_edn];
+    foreach (cfg.m_edn_pull_agent_cfgs[i]) begin
+      edn_fifos[i] = new($sformatf("edn_fifos[%0d]", i), this);
+    end
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      exp_mem[i] = mem_model#()::type_id::create({"exp_mem_", i}, this);
+    end
+
+    foreach (cfg.ral_models[ral_name]) begin
+      bit has_unmapped  = (cfg.ral_models[ral_name].unmapped_addr_ranges.size > 0);
+      bit has_csr       = (cfg.ral_models[ral_name].csr_addrs.size > 0);
+      bit has_mem       = (cfg.ral_models[ral_name].mem_ranges.size > 0);
+      bit has_mem_byte_access_err;
+      bit has_wo_mem;
+      bit has_ro_mem;
+
+      if (has_mem) begin
+        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem,
+                          has_ro_mem);
+      end
+      if (cfg.en_tl_err_cov) begin
+        tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
+        if (!has_csr) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.at_least = 0;
+        end
+        if (!has_unmapped) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.at_least = 0;
+        end
+        if (!has_mem_byte_access_err) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.at_least = 0;
+        end
+        if (!has_wo_mem) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.at_least = 0;
+        end
+        if (!has_ro_mem) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.at_least = 0;
+        end
+
+      end
+      if (cfg.en_tl_intg_err_cov) begin
+        if (has_mem) begin
+          tl_intg_err_mem_subword_cgs_wrap[ral_name] = new(
+              $sformatf("tl_intg_err_mem_subword_cgs_wrap[%0s]", ral_name));
+        end
+
+        tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
+        if (!has_mem || !has_csr) begin
+          tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+          tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.at_least = 0;
+        end
+      end
+    end
+  endfunction
+
+  virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    fork
+      process_clk_rst_fifo();
+      process_tl_fifos();
+      // Process every alert FIFO that was constructed. A derived block may add
+      // protocol-compatible alert channels whose architectural meaning differs
+      // from the standard DUT-output alerts named by cfg.list_of_alerts.
+      if (alert_fifos.size()) process_alert_fifos();
+      if (cfg.list_of_alerts.size()) check_alerts();
+      if (cfg.list_of_alerts.size()) process_set_exp_alerts();
+    join_none
+  endtask
+
+  virtual task process_clk_rst_fifo();
+    forever begin
+      clk_rst_item item;
+      clk_rst_fifo.get(item);
+      process_clk_rst_item(item);
+    end
+  endtask
+
+  virtual function void process_clk_rst_item(clk_rst_item item);
+    `DV_CHECK_NE_FATAL(item, null)
+
+    unique case (item.item_type)
+      clk_rst_item::RESET_ASSERTED: begin
+        `uvm_info(`gfn, "cip_rst_safe_scoreboard received RESET_ASSERTED transaction", UVM_LOW)
+        process_reset_asserted();
+      end
+      clk_rst_item::RESET_DEASSERTED: begin
+        `uvm_info(`gfn, "cip_rst_safe_scoreboard received RESET_DEASSERTED transaction", UVM_LOW)
+        process_reset_deasserted();
+      end
+      default: begin
+        `uvm_warning(`gfn, $sformatf("Ignoring unsupported clk_rst_item type %0s",
+                                     item.item_type.name()))
+      end
+    endcase
+  endfunction
+
+  task process_tl_fifos();
+    foreach (cfg.m_tl_agent_cfgs[i]) begin
+      automatic string ral_name = i;
+      process_tl_fifo(i, tl_dir_fifos[i], tl_a_chan_fifos[i], tl_d_chan_fifos[i]);
+    end
+  endtask
+
+  task process_tl_fifo(string ral_name,
+                       uvm_tlm_analysis_fifo #(tl_channels_e) dir_fifo,
+                       uvm_tlm_analysis_fifo #(tl_seq_item) a_chan_fifo,
+                       uvm_tlm_analysis_fifo #(tl_seq_item) d_chan_fifo);
+    tl_channels_e dir;
+    tl_seq_item   item;
+
+    fork
+      forever begin
+        dir_fifo.get(dir);
+        case (dir)
+          AddrChannel: begin
+            `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
+                            "dir_fifo pointed at A channel, but a_chan_fifo empty")
+            process_tl_a_item(ral_name, item);
+          end
+
+          DataChannel: begin
+            `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
+                            "dir_fifo pointed at D channel, but d_chan_fifo empty")
+            process_tl_d_item(ral_name, item);
+          end
+
+          default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
+        endcase
+      end
+    join_none
+  endtask
+
+  task process_tl_a_item(string ral_name, tl_seq_item item);
+    `uvm_info(`gfn, $sformatf(
+              "block %s received tl a_chan item: %0s", ral_name, item.convert2string()),
+              UVM_HIGH)
+
+    if (in_reset()) begin
+      `uvm_fatal(`gfn, $sformatf("TL A channel transaction received during reset: %0s",
+                                 item.convert2string()))
+    end
+
+    if (cfg.en_scb_tl_err_chk) begin
+      if (predict_tl_err(item, AddrChannel, ral_name)) return;
+    end
+    if (!cfg.en_scb) return;
+
+    process_tl_access(item, AddrChannel, ral_name);
+  endtask
+
+  task process_tl_d_item(string ral_name, tl_seq_item item);
+    `uvm_info(`gfn, $sformatf(
+              "block %s received tl d_chan item: %0s", ral_name, item.convert2string()),
+              UVM_HIGH)
+
+    if (in_reset()) begin
+      `uvm_fatal(`gfn, $sformatf("TL D channel transaction received during reset: %0s",
+                                 item.convert2string()))
+    end
+
+    if (cfg.en_scb_tl_err_chk) begin
+      // check tl packet integrity
+      if (!item.is_ok()) begin
+        `uvm_error(`gfn,
+                   $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
+                             item.a_source, item.d_source))
+      end
+      if (predict_tl_err(item, DataChannel, ral_name)) return;
+    end
+    if (cfg.en_scb_mem_chk && is_mem_addr(item.a_addr, cfg.ral_models[ral_name])) begin
+      if (item.is_write()) begin
+        process_mem_write(item, ral_name);
+      end else begin
+        process_mem_read(item, ral_name);
+      end
+    end
+
+    if (!cfg.en_scb) return;
+
+    if (!item.is_write()) begin
+      uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(item.a_addr);
+      if (csr != null) begin
+        dv_base_reg dv_reg;
+        `downcast(dv_reg, csr)
+        do_read_check(dv_reg, item);
+      end
+    end
+    process_tl_access(item, DataChannel, ral_name);
+  endtask
+
+  // This function implements the generic read checks, any TB can override this method to
+  // expand the checks further
+  virtual function void do_read_check(dv_base_reg dv_reg, tl_seq_item item);
+    uvm_reg_data_t pred_mask = dv_reg.get_predicted_mask();
+    `DV_CHECK_EQ(dv_reg.get_mirrored_value() & pred_mask,
+                 item.d_data & pred_mask,
+                 $sformatf("Register read data for %0s (qualified by prediction mask %0h)",
+                           dv_reg.get_full_name(),
+                           pred_mask))
+  endfunction
+
+  virtual task process_alert_fifos();
+    foreach (alert_fifos[i]) begin
+      automatic string alert_name = i;
+      fork
+        forever begin
+          alert_esc_seq_item item;
+          alert_fifos[alert_name].get(item);
+          `uvm_info(`gfn, $sformatf("[cfg.en_scb=%0d] - Received alert_esc_item: \n%0s",
+                                    cfg.en_scb, item.sprint), UVM_DEBUG)
+          if (!cfg.en_scb) continue;
+          if (item.alert_esc_type == AlertEscSigTrans && !item.ping_timeout &&
+              item.alert_handshake_sta inside {AlertReceived, AlertAckComplete}) begin
+            process_alert(alert_name, item);
+          // IP level alert protocol does not drive any sig_int_err or ping response.
+          // However, `lpg_en` or `alert_init` will trigger signal integrity error, user can
+          // disable signal integrity checking via `check_alert_sig_int_err` flag.
+          end else if (check_alert_sig_int_err && item.alert_esc_type == AlertEscIntFail) begin
+            `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
+          end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
+            `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
+          end
+        end
+      join_none
+    end
+  endtask
+
+  // Called at the start of each alert handshake. The default implementation depends on the
+  // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
+  // expected_alert[alert_name].expected).
+  virtual function void on_alert(string alert_name, alert_esc_seq_item item);
+    if (do_alert_check) begin
+      `DV_CHECK_EQ(expected_alert[alert_name].expected, 1,
+                   $sformatf("alert %0s triggered unexpectedly", alert_name))
+    end
+  endfunction
+
+  // this function check if the triggered alert is expected
+  // to turn off this check, user can set `do_alert_check` to 0
+  virtual function void process_alert(string alert_name, alert_esc_seq_item item);
+    if (!(alert_name inside {cfg.list_of_alerts})) begin
+      `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
+    end
+
+    `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s", alert_name,
+                              item.alert_handshake_sta), UVM_DEBUG)
+    if (item.alert_handshake_sta == AlertReceived) begin
+      under_alert_handshake[alert_name] = 1;
+      on_alert(alert_name, item);
+      ++alert_count[alert_name];
+    end else begin
+      if (!in_reset() && under_alert_handshake[alert_name] == 0) begin
+        `uvm_error(`gfn, $sformatf("alert %0s is not received!", alert_name))
+      end
+      under_alert_handshake[alert_name] = 0;
+    end
+  endfunction
+
+  virtual function int get_alert_count(string alert_name);
+    return alert_count[alert_name];
+  endfunction
+
+  // This task checks if expected alert is triggered within certain clock cycles.
+  // If alert is fatal it will expect alert handshakes until reset, otherwise it will clear
+  // expected_alert's expected flag when check is finished.
+  virtual task check_alerts();
+    foreach (cfg.list_of_alerts[i]) begin
+      automatic string alert_name = cfg.list_of_alerts[i];
+      fork
+        forever begin
+          wait(expected_alert[alert_name].expected == 1 && under_reset == 0);
+          if (expected_alert[alert_name].is_fatal) begin
+            // Variable is unused, but declared since output arguments can't be skipped
+            bit alert_due_to_ping;
+            while (under_reset == 0) begin
+              check_alert_triggered(alert_name, alert_due_to_ping);
+              wait(under_alert_handshake[alert_name] == 0 || under_reset == 1);
+            end
+          end else begin
+            // If set it means the alert is just a ping response
+            bit alert_due_to_ping;
+            check_alert_triggered(alert_name, alert_due_to_ping);
+            if (!alert_due_to_ping)
+              expected_alert[alert_name].expected = 0;
+            else begin
+              // If the alert is due to ping, wait until the ping finished, then check again
+              // by finishing this iteration of the loop body and leaving the alert `expected`
+              // untouched .
+              wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+            end
+          end
+        end
+      join_none
+    end
+  endtask
+
+  // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
+  // it should not clear the `expected_alert[alert_name].expected` flag
+  local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
+    int unsigned ping_count = cfg.m_alert_agent_cfgs[alert_name].ping_count;
+    // If the alert happens when we are in the middle of ping handshake phases then wait until we
+    // are out of ping.
+    wait(!cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake &&
+         !cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake_ph_2);
+    // Add 1 extra negedge edge clock to make sure no race condition.
+    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + expected_alert[alert_name].max_delay) begin
+      cfg.clk_rst_vif.wait_n_clks(1);
+      if (under_alert_handshake[alert_name] || in_reset()) return;
+    end
+    // Ignore the alert if it's due to a ping by checking if there's been a ping since the
+    // check started
+    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) begin
+      alert_due_to_ping = 1;
+      return;
+    end
+    // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
+    // alert bit is set.
+    if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
+    `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
+                               alert_name, expected_alert[alert_name].max_delay))
+  endtask
+
+  // This function is used for individual IPs to set when they expect certain alert to trigger
+  // - Input alert_name is the full name of the alert listed in LIST_OF_ALERTS.
+  // - Input is_fatal, if set, expects to continuously trigger alert request until reset is
+  //   asserted.
+  // - Input max_delay can be used when user could not predict the exact time when alert triggered.
+  //   This input allows alert to trigger anytime between 0 to `max_delay` clock cycles. However,
+  //   please do not use this variable if there is any ongoing alert handshake, because if using
+  //   max_delay, we cannot accurately predict if two alerts are merged or not.
+  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 4);
+    if (!(alert_name inside {cfg.list_of_alerts})) begin
+      `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
+    end
+    `uvm_info(`gfn, $sformatf("Pushing expected alert with: is_fatal=%0d | max_delay=%0d",
+                              is_fatal, max_delay), UVM_DEBUG)
+    exp_alert_q[alert_name].push_back(expected_alert_t'{1, is_fatal, max_delay});
+    // Notify process_set_exp_alerts there is work to do.
+    ->new_exp_alert;
+  endfunction
+
+  // Handle incoming expected alerts.
+  virtual task process_set_exp_alerts();
+    forever begin
+      int num_alerts = 0;
+      @new_exp_alert;
+      @cfg.clk_rst_vif.cbn;
+      foreach (exp_alert_q[alert_name]) begin
+        while (exp_alert_q[alert_name].size() > 0) begin
+          expected_alert_t exp_alert = exp_alert_q[alert_name].pop_front();
+          ++num_alerts;
+          if (under_alert_handshake[alert_name] || expected_alert[alert_name].expected) begin
+            `uvm_info(`gfn, $sformatf(
+                      {"Current %0s status: under_alert_handshake=%0b, exp_alert=%0b, ",
+                       "request ignored"},
+                      alert_name,
+                      under_alert_handshake[alert_name],
+                      expected_alert[alert_name].expected
+                      ), UVM_MEDIUM)
+          end else begin
+            `uvm_info(`gfn, $sformatf(
+                      "alert %0s is expected to trigger, fatal=%0d, delay %0d", alert_name,
+                       exp_alert.is_fatal, exp_alert.max_delay), UVM_MEDIUM)
+            expected_alert[alert_name] = '{1, exp_alert.is_fatal, exp_alert.max_delay};
+          end
+        end
+      end
+      `DV_CHECK_NE(num_alerts, 0, "Expected some alerts received")
+    end
+  endtask
+
+  // task to process tl access
+  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
+    `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+  endtask
+
+  virtual task process_mem_write(tl_seq_item item, string ral_name);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+    if (!in_reset()) exp_mem[ral_name].write(addr, item.a_data, item.a_mask);
+  endtask
+
+  virtual task process_mem_read(tl_seq_item item, string ral_name);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+
+    if (!in_reset() && get_mem_access_by_addr(cfg.ral_models[ral_name], addr) == "RW") begin
+      mem_compare(ral_name, addr, item);
+    end
+  endtask
+
+  virtual function void mem_compare(string ral_name, uvm_reg_addr_t addr, tl_seq_item item);
+    exp_mem[ral_name].compare(addr, item.d_data, item.a_mask);
+  endfunction
+
+  // Return true if the normalised version of addr is a memory address in the given reg block.
+  protected virtual function bit is_mem_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
+    addr_range_t   loc_mem_ranges[$] = block.mem_ranges;
+    foreach (loc_mem_ranges[i]) begin
+      if (norm_addr inside {[loc_mem_ranges[i].start_addr : loc_mem_ranges[i].end_addr]}) begin
+        return 1;
+      end
+    end
+    return 0;
+  endfunction
+
+  // Return true if the normalized version of addr is a csr address in the given reg block.
+  protected virtual function bit is_csr_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    uvm_reg_addr_t norm_addr = block.get_normalized_addr(addr);
+    return norm_addr inside {block.csr_addrs};
+  endfunction : is_csr_addr
+
+  // Return true if item is a fetch from a mapped address in the given register block
+  protected function bit is_csr_fetch(tl_seq_item item, dv_base_reg_block block);
+    cip_tl_seq_item cip_item;
+    `downcast(cip_item, item)
+    return (item.a_opcode == tlul_pkg::Get &&
+            cip_item.get_instr_type() == MuBi4True &&
+            is_csr_addr(item.a_addr, block));
+  endfunction
+
+  // Return whether an A-channel access was invalid and check any D-channel response.
+  //
+  // Arguments:
+  //
+  //    item:     A tl_seq_item representing the transaction. If channel points at the A channel,
+  //              this item will contain all of the "a_* fields* of the request. If channel points
+  //              at the D channel, the item will also contain the "d_* fields" of the response.
+  //
+  //    channel:  The channel from which item was constructed (A or D)
+  //
+  //    ral_name: A string naming the interface (used to get a RAL model)
+  //
+  //
+  // If the channel argument points at the D channel the function checks that the item's D channel
+  // integrity is correct (because the DUT should never inject errors). If the A-channel access was
+  // invalid, the function also checks that d_error=1 and that d_data has been blanked.
+  //
+  // Looking at the A channel transaction, any of the following problems makes the access invalid:
+  //
+  //    - Unmapped address
+  //    - Write address isn't word-aligned
+  //    - Partial writes to a bus that does not support it
+  //    - Memory write isn't a full word
+  //    - Register write size is less than actual register width
+  //    - TL protocol violation
+  protected virtual function bit predict_tl_err(tl_seq_item   item,
+                                                tl_channels_e channel,
+                                                string        ral_name);
+    dv_base_reg_block block = cfg.ral_models[ral_name];
+
+    bit unmapped_err   = !is_tl_access_mapped_addr(item.a_addr, block);
+    bit bus_intg_err   = !item.is_a_chan_intg_ok(.throw_error(0));
+    bit byte_wr_err    = is_tl_access_unsupported_byte_wr(item, block);
+    bit csr_size_err   = !is_tl_csr_write_size_gte_csr_width(item, block);
+    bit tl_item_err    = item.get_exp_d_error();
+    bit csr_read_err   = is_csr_fetch(item, block);
+
+    bit mem_access_err, mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err;
+
+    cip_tl_seq_item cip_item;
+    tl_intg_err_e   tl_intg_err_type;
+    logic           cmd_intg_err, data_intg_err;
+    bit             write_w_instr_type_err, instr_type_err;
+    logic           trans_blocked;
+
+    mem_access_err = !is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
+                                               mem_ro_err, custom_err);
+
+    `downcast(cip_item, item)
+    cip_item.get_a_chan_err_info(tl_intg_err_type, cmd_intg_err, data_intg_err,
+                                 write_w_instr_type_err, instr_type_err, trans_blocked);
+
+    if (bus_intg_err) begin
+      // On bus integrity error, update the mirrored value of bus integrity alert CSR fields.
+      update_tl_alert_field_prediction();
+    end
+
+    if (channel == DataChannel) begin
+      bit exp_d_error = 1'b0;
+
+      // For flash, address has to be 8-byte aligned.
+      bit ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3], 3'b0});
+
+      if (unmapped_err) begin
+        exp_d_error = !block.get_unmapped_access_ok();
+      end
+
+      if (mem_access_err) begin
+        // Some memory implementations may not return an error response on invalid accesses.
+        exp_d_error |= mem_byte_access_err | mem_wo_err | mem_ro_err | custom_err;
+      end
+
+      if (is_mem_addr(item.a_addr, block) && cfg.tl_mem_access_gated) begin
+        exp_d_error |= cfg.tl_mem_access_gated;
+      end
+
+      if (trans_blocked) begin
+        `uvm_info(`gfn, $sformatf("trans_blocked=%b for ral %s", trans_blocked, ral_name),
+                  UVM_HIGH)
+      end
+      exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
+                     write_w_instr_type_err | instr_type_err |
+                     ecc_err | csr_read_err | trans_blocked;
+
+      // integrity at d_user is from DUT, which should be always correct, except data integrity for
+      // passthru memory
+      void'(item.is_d_chan_intg_ok(
+            .en_data_intg_chk(!is_data_intg_passthru_mem(item, block) ||
+                              !cfg.disable_d_user_data_intg_check_for_passthru_mem),
+            .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
+
+      // sample covergroup
+      if (cfg.en_tl_intg_err_cov) begin
+        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, cmd_intg_err, data_intg_err,
+                                              is_mem_addr(item.a_addr, block));
+
+        if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
+          tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
+              .tl_intg_err_type(tl_intg_err_type),
+              .write(item.a_opcode != tlul_pkg::Get),
+              .num_enable_bytes($countones(item.a_mask)));
+        end
+      end
+
+      `DV_CHECK_EQ(item.d_error, exp_d_error,
+          $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
+                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",
+                     "write_w_instr_type_err: %0d, ", "cfg.tl_mem_access_gated: %0d ",
+                     "ecc_err: %0d ", "trans_blocked: %0d"},
+                    ral_name, item.sprint(uvm_default_line_printer), unmapped_err, mem_access_err,
+                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err, write_w_instr_type_err,
+                    cfg.tl_mem_access_gated, ecc_err, trans_blocked))
+
+      // In data read phase, check d_data when d_error = 1.
+      if (item.d_error && (item.d_opcode == tlul_pkg::AccessAckData)) begin
+        check_tl_read_value_after_error(item, block, trans_blocked);
+      end
+
+      // we don't have cross coverage for simultaneous errors because 1) they're not important,
+      // 2) there are so many errors and combinations, 3) if we do cross them, we need to take
+      // out many invalid combinations.
+      // these errors all have the same outcome. Only sample coverages when there is just one
+      // error, so that we know the error actually triggers the outcome
+      if (cfg.en_tl_err_cov && $onehot0({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
+                                         bus_intg_err, byte_wr_err, csr_size_err, tl_item_err,
+                                         instr_type_err})) begin
+        tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(unmapped_err),
+                                            .csr_size_err(csr_size_err),
+                                            .mem_byte_access_err(mem_byte_access_err),
+                                            .mem_wo_err(mem_wo_err),
+                                            .mem_ro_err(mem_ro_err),
+                                            .tl_protocol_err(tl_item_err),
+                                            .write_w_instr_type_err(write_w_instr_type_err),
+                                            .instr_type_err(instr_type_err));
+      end
+    end
+
+    return (unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
+            write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated | csr_read_err);
+  endfunction
+
+  protected function void check_tl_read_value_after_error(tl_seq_item item,
+                                                          dv_base_reg_block block,
+                                                          bit access_blocked);
+    bit [DataWidth-1:0] exp_data;
+    tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(item.a_user);
+
+    // Determine expected data.
+    // - If the transaction was blocked or it is a memory access tlul returns '0 for instruction
+    //   type accesses, else '1.
+    // - Otherwise it is a csr accesss and tlul_adapter_reg returns '1.
+    uvm_reg_addr_t csr_addr = block.get_word_aligned_addr(item.a_addr);
+    if (access_blocked || is_mem_addr(item.a_addr, block)) begin
+      exp_data = (a_user.instr_type == prim_mubi_pkg::MuBi4True) ? '0 : '1;
+    end else begin
+      exp_data = '1;
+    end
+
+    `DV_CHECK_EQ(item.d_data, exp_data, "d_data mismatch when d_error = 1")
+  endfunction
+
+  // Return true if the given address is mapped in the register block
+  local function bit is_tl_access_mapped_addr(bit [AddrWidth-1:0] addr, dv_base_reg_block block);
+    // check if it's mem addr or reg addr
+    return is_mem_addr(addr, block) || is_csr_addr(addr, block);
+  endfunction
+
+  // check if tl mem access will trigger error or not
+  // `custom_err` is not set by this base class method. It can be set by the extended class
+  // scoreboard to indicate additional, implementation specific errors.
+  protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                          dv_base_reg_block block,
+                                                          output bit        mem_byte_access_err,
+                                                          output bit        mem_wo_err,
+                                                          output bit        mem_ro_err,
+                                                          output bit        custom_err);
+    if (is_mem_addr(item.a_addr, block)) begin
+      dv_base_mem mem;
+      bit invalid_access;
+      uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+      string mem_access = get_mem_access_by_addr(block, addr);
+
+      `downcast(mem, get_mem_by_addr(block, addr))
+
+      // Check if write isn't full word for mem that doesn't allow byte access.
+      if (!mem.get_mem_partial_write_support() &&
+          (item.a_size != 2 || item.a_mask != '1) &&
+          item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData}) begin
+        invalid_access = 1;
+        mem_byte_access_err = 1;
+      end
+
+      // check if mem read happens while mem doesn't allow read (WO)
+      if ((mem_access == "WO") && (item.a_opcode == tlul_pkg::Get)) begin
+        invalid_access = 1;
+        mem_wo_err = !mem.get_read_to_wo_mem_ok();
+      end
+
+      // check if mem write happens while mem is RO
+      if ((mem_access == "RO") && (item.a_opcode != tlul_pkg::Get)) begin
+        invalid_access = 1;
+        mem_ro_err = !mem.get_write_to_ro_mem_ok();
+      end
+
+      if (invalid_access) begin
+        `uvm_info(`gfn, $sformatf("mem_byte_access_err = %0d, mem_wo_err = %0d, mem_ro_err = %0d",
+                                  mem_byte_access_err, mem_wo_err, mem_ro_err), UVM_HIGH)
+        return 0;
+      end
+    end
+    return 1;
+  endfunction
+
+  // Returns true on encountering a byte write on a TL interface that does not support it, else
+  // false.
+  //
+  // Typically, this is a TLUL adapter SRAM feature, which means it applies to a memory element
+  // within the RAL (the is_tl_mem_access_allowed() method above already does this), not to the
+  // entire TL interface. We however have an example in rv_dm where the OpenTitan codebase
+  // exposes a 'window' (a.k.a. a memory region) accessed via a TLUL adapter SRAM instance, but
+  // in reality, behind it is a full set of CSRs, ROM and SRAM, which are not specified within
+  // our comportable framework. We custom-build the RAL model for this region by writing the Hjson
+  // file specifically for DV purposes, using an externally sourced specification as reference
+  // (third party 'vendored-in' code). The end result is - the TL adapter prevents non-word writes
+  // to the entire region. See issue #10765 for more details.
+  local function bit is_tl_access_unsupported_byte_wr(tl_seq_item item, dv_base_reg_block block);
+    // TODO: We should infer byte enable support from the adapter attached to the interface (i.e.
+    // the map) instead. To do that, more extensive changes may be needed, because we do not know
+    // which map to pick - we only know the register block. For now,
+    // dv_base_reg_block::supports_byte_enable serves this need.
+    return (!block.get_supports_byte_enable() &&
+            item.a_opcode inside {tlul_pkg::PutFullData, tlul_pkg::PutPartialData} &&
+            (item.a_size != 2 || item.a_mask != '1));
+  endfunction
+
+  local function bit is_data_intg_passthru_mem(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
+
+    if (mem == null) begin
+      return 0;
+    end else begin
+      dv_base_mem dv_mem;
+      `downcast(dv_mem, mem)
+      return dv_mem.get_data_intg_passthru();
+    end
+  endfunction
+
+  // Return true unless this is a write operation on a register block (potentially a sub-block of
+  // the block argument) where sub-word writes are not allowed but a_mask only hits part of a
+  // register.
+  local function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, dv_base_reg_block block);
+    uvm_reg_addr_t    addr;
+    dv_base_reg       csr;
+    dv_base_reg_block sub_blk;
+    int unsigned      num_byte_lanes, req_byte_lanes, missing_lanes;
+
+    if (!item.is_write()) return 1;
+
+    // If the address is not mapped, this cannot hit part of a register (it won't hit anything).
+    // Similarly, this won't be part of a register if it is actually a memory address.
+    if (!is_tl_access_mapped_addr(item.a_addr, block) || is_mem_addr(item.a_addr, block)) return 1;
+
+    // The RAL may be composed of sub-blocks each with its own settings. Find the sub-block to which
+    // this address belongs. If that sub-block supports subword writes, return 1 (even if this is a
+    // sub-word write, that's ok).
+    addr = block.get_normalized_addr(item.a_addr);
+    `downcast(csr, block.default_map.get_reg_by_offset(addr))
+    `downcast(sub_blk, csr.get_parent())
+
+    if (sub_blk.get_supports_sub_word_csr_writes()) return 1;
+
+    // We are writing to a register block that doesn't support subword writes. Check that a_mask
+    // hits all the byte lanes of the register. Do this by making a bitmask which is true for all
+    // required byte lanes. Clear the bits in a_mask. If the result is nonzero, there is a byte lane
+    // that wasn't written to.
+    num_byte_lanes = 1 + csr.get_msb_pos() / 8;
+    req_byte_lanes = (1 << num_byte_lanes) - 1;
+    missing_lanes = req_byte_lanes & ~item.a_mask;
+    return ~|missing_lanes;
+  endfunction
+
+  protected virtual function void reset_alert_state();
+    // Flush the transport itself by what was constructed, not by one source of
+    // channel names. This also covers protocol-compatible FIFOs added by a
+    // derived scoreboard.
+    foreach (alert_fifos[alert_name]) alert_fifos[alert_name].flush();
+    foreach (cfg.list_of_alerts[i]) begin
+      expected_alert[cfg.list_of_alerts[i]] = '0;
+      under_alert_handshake[cfg.list_of_alerts[i]] = 0;
+    end
+  endfunction
+
+  virtual function void reset(string kind = "HARD");
+    super.reset(kind);
+    `uvm_info(`gfn, $sformatf(
+              "cip_rst_safe_scoreboard::reset(%0s): clearing CSR/TL/CIP scoreboard state", kind),
+              UVM_LOW)
+    csr_utils_pkg::clear_outstanding_access();
+    // The direction FIFO and its corresponding A/D FIFOs form one ordered
+    // transaction stream. Reset must discard all three parts of every stream;
+    // retaining a pre-reset direction entry could pair it with a post-reset
+    // channel item.
+    foreach (tl_dir_fifos[i]) tl_dir_fifos[i].flush();
+    foreach (tl_a_chan_fifos[i]) tl_a_chan_fifos[i].flush();
+    foreach (tl_d_chan_fifos[i]) tl_d_chan_fifos[i].flush();
+    foreach (edn_fifos[i]) edn_fifos[i].flush();
+    reset_alert_state();
+    cfg.tl_mem_access_gated = 0;
+  endfunction
+
+  virtual task sample_resets();
+    if (cfg.num_edn && cfg.en_cov) begin
+      // Discard the first resets
+      wait(cfg.clk_rst_vif.rst_n && cfg.edn_clk_rst_vif.rst_n);
+      forever begin
+        @(cfg.clk_rst_vif.rst_n or cfg.edn_clk_rst_vif.rst_n);
+        cov.resets_cg.sample({cfg.clk_rst_vif.rst_n, cfg.edn_clk_rst_vif.rst_n});
+      end
+    end
+  endtask
+
+  virtual function void check_phase(uvm_phase phase);
+    super.check_phase(phase);
+    // tl_channels_e is an enum rather than a UVM object, so use its count
+    // directly instead of the object-printing end-of-test FIFO macro.
+    foreach (tl_dir_fifos[i]) begin
+      `DV_CHECK_EQ(tl_dir_fifos[i].used(), 0,
+                   $sformatf("Unprocessed TL direction items remain for %s", i))
+    end
+    foreach (tl_a_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_a_chan_fifos[i])
+    foreach (tl_d_chan_fifos[i]) `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, tl_d_chan_fifos[i])
+  endfunction
+
+  virtual function void update_tl_alert_field_prediction();
+    foreach (cfg.tl_intg_alert_fields[field]) begin
+      uvm_reg_data_t value = cfg.tl_intg_alert_fields[field];
+      `DV_CHECK_FATAL(field, "field is Null in tl_intg_alert_fields")
+
+      // Set the field
+      `DV_CHECK_FATAL(field.predict(.value(value), .kind(UVM_PREDICT_READ)));
+    end
+  endfunction
+
+endclass

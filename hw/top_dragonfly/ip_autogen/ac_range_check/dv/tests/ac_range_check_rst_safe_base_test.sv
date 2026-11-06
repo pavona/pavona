@@ -19,12 +19,26 @@ class ac_range_check_rst_safe_base_test extends cip_base_test #(
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
+  extern virtual function void add_message_demotes(dv_report_catcher catcher);
 endclass : ac_range_check_rst_safe_base_test
 
 
 function ac_range_check_rst_safe_base_test::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
+
+function void ac_range_check_rst_safe_base_test::add_message_demotes(
+    dv_report_catcher catcher);
+  string msg;
+
+  super.add_message_demotes(catcher);
+
+  msg = ".*Reset Testing Enabled and main_thread.*finished before reset_trigger_thread.*";
+  catcher.add_change_sev(
+      {"uvm_test_top.env.virtual_sequencer.ac_range_check_",
+       "rst_safe_stress_all_with_rand_reset_vseq"},
+      msg, UVM_INFO);
+endfunction : add_message_demotes
 
 function void ac_range_check_rst_safe_base_test::build_phase(uvm_phase phase);
   string test_seq_s;

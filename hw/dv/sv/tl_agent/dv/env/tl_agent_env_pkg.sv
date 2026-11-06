@@ -18,8 +18,10 @@ package tl_agent_env_pkg;
 
   `include "tl_agent_env_cfg.sv"
   `include "tl_agent_virtual_sequencer.sv"
+  `include "tl_rst_safe_agent_virtual_sequencer.sv"
   `include "tl_agent_scoreboard.sv"
   `include "tl_agent_env.sv"
+  `include "tl_rst_safe_agent_env.sv"
   `include "tl_agent_vseq_list.sv"
 
 endpackage
