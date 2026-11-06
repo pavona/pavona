@@ -21,6 +21,7 @@ filesets:
       - ${module_instance_name}_virtual_sequencer.sv: {is_include_file: true}
       - ${module_instance_name}_predictor.sv: {is_include_file: true}
       - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
+      - ${module_instance_name}_rst_safe_scoreboard.sv: {is_include_file: true}
       - ${module_instance_name}_env.sv: {is_include_file: true}
       - ${module_instance_name}_rst_safe_env.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_vseq_list.sv: {is_include_file: true}
@@ -34,6 +35,13 @@ filesets:
       - seq_lib/${module_instance_name}_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rand_rst_safe_base_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rst_safe_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_smoke_racl_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_smoke_high_threshold_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_bypass_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_smoke_with_rand_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/${module_instance_name}_rst_safe_stress_all_with_rand_reset_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

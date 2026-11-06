@@ -33,6 +33,20 @@ class cip_base_test #(type CFG_T = cip_base_env_cfg,
     void'($value$plusargs("en_scb_tl_err_chk=%0b", cfg.en_scb_tl_err_chk));
   endfunction
 
+  virtual task run_seq(string test_seq_s, uvm_phase phase);
+    super.run_seq(test_seq_s, phase);
+
+    // CIP owns the alert agents in both the legacy and reset-safe environments,
+    // so their normal end-of-test lifecycle belongs here. Once the primary
+    // sequence and its objection lifecycle have completed in dv_base_test,
+    // stop only each periodic ping producer. Reactive alert response sequences
+    // remain alive through this cleanup, and an already-active ping handshake
+    // finishes normally before this task returns.
+    foreach (env.m_alert_agent[alert_name]) begin
+      env.m_alert_agent[alert_name].stop_default_ping_sequence();
+    end
+  endtask : run_seq
+
   virtual task run_phase(uvm_phase phase);
     // Disable random delays in specific `prim_cdc_rand_delay`s even if CDC instrumentation is
     // enabled.  (See `cip_base_env_cfg` for details.)

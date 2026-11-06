@@ -13,3 +13,4 @@
 // vseqs
 `include "cip_base_vseq.sv"
 `include "cip_rand_rst_safe_base_vseq.sv"
+`include "cip_rst_safe_stress_all_vseq.sv"

@@ -8,7 +8,7 @@
                        "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
                        "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson"]
+                       "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson"]
     testpoints: [
       {
         name: ac_range_check_smoke
@@ -44,7 +44,8 @@
                   the current implementation sets it to zero (for the reason described in PR #1236).
               '''
         stage: V1
-        tests: ["ac_range_check_smoke"]
+        tests: ["ac_range_check_rst_safe_smoke",
+                "ac_range_check_rst_safe_smoke_with_rand_reset"]
       }
       {
         name: ac_range_check_smoke_racl
@@ -52,7 +53,7 @@
               TODO
               '''
         stage: V1
-        tests: ["ac_range_check_smoke_racl"]
+        tests: ["ac_range_check_rst_safe_smoke_racl"]
       }
       {
         name: ac_range_check_lock_range
@@ -64,14 +65,17 @@
                 register
               - Clear RANGE_REGWEN to MuBi4::False in a randomized way
               - Try to reconfigure the range with different values
+              - Assert random reset while any functional phase is active, then restart the
+                lock-range operation after reset is released
 
               Checking:
               - If RANGE_REGWEN was cleared to MuBi4::False, the reconfigured register values
                 The original configuration should remain in the registers. If RANGE_REGWEN was not
                 cleared, the reconfigured values should have replaced the original ones.
+              - After reset, no pre-reset lock or sequence state affects the restarted operation.
               '''
         stage: V2
-        tests: ["ac_range_check_lock_range"]
+        tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset"]
       }
       {
         name: ac_range_bypass_enable
@@ -90,16 +94,7 @@
               - LOG_STATUS.deny_cnt must stay 0
               '''
         stage: V2
-        tests: ["ac_range_check_bypass"]
-      }
-      {
-        name: stress_all
-        desc: '''
-              Combine above sequences in one test and then randomly select for running (except CSR
-              tests).
-              '''
-        stage: V2
-        tests: ["ac_range_check_stress_all"]
+        tests: ["ac_range_check_rst_safe_bypass"]
       }
     ]
     covergroups: [

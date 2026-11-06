@@ -14,3 +14,10 @@
 
 `include "ac_range_check_rand_rst_safe_base_vseq.sv"
 `include "ac_range_check_rst_safe_smoke_vseq.sv"
+`include "ac_range_check_rst_safe_smoke_racl_vseq.sv"
+`include "ac_range_check_rst_safe_smoke_high_threshold_vseq.sv"
+`include "ac_range_check_rst_safe_bypass_vseq.sv"
+`include "ac_range_check_rst_safe_lock_range_with_rand_reset_vseq.sv"
+`include "ac_range_check_rst_safe_smoke_with_rand_reset_vseq.sv"
+`include "ac_range_check_rst_safe_stress_all_vseq.sv"
+`include "ac_range_check_rst_safe_stress_all_with_rand_reset_vseq.sv"

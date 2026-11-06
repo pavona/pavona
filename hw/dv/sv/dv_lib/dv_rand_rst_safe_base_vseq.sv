@@ -20,6 +20,17 @@ class dv_rand_rst_safe_base_vseq #(
 
   bit   in_reset = 1;
 
+  // When 'reset_ctrl_higher_seq' flag is set the sequence is in pure functional mode.
+  // Reset activation and monitoring threads with in this sequence are suspended since the
+  // higher level sequence that created an instance of this sequence controls reset triggering
+  // and monitoring.
+  bit   reset_ctrl_higher_seq = 0;
+
+  // Keep the knob available on reset-safe sequences for parity with dv_base_vseq, but default it
+  // off. In reset-safe tests the base body owns reset orchestration and stimulus belongs in
+  // main_thread().
+  bit   do_apply_reset = 1'b0;
+
   TEST_PARAMS_T   test_params;
   CONFIG_PARAMS_T config_params;
 
@@ -95,8 +106,12 @@ task dv_rand_rst_safe_base_vseq::body();
   process             main_thread_id ;
 
   `uvm_info (`gfn, "dv_rand_rst_safe_base_vseq::body() - Starting", UVM_LOW)
-  test_params   = TEST_PARAMS_T::type_id::create("test_seq_parameters");
-  config_params = CONFIG_PARAMS_T::type_id::create("config_parameters");
+  if (test_params == null) begin
+    test_params = TEST_PARAMS_T::type_id::create("test_seq_parameters");
+  end
+  if (config_params == null) begin
+    config_params = CONFIG_PARAMS_T::type_id::create("config_parameters");
+  end
 
   `uvm_info (`gfn, $sformatf("body() - test_params type_name:%s",
                                     test_params.get_type_name()), UVM_LOW)
@@ -123,7 +138,16 @@ task dv_rand_rst_safe_base_vseq::body();
   //
   // Actions taken when reset is triggered are different to when sequence actually triggers a reset,
   // since both threads run independently.
-  monitor_reset();
+  //
+  // When reset is controlled by a higher sequence (such as stress_all / stress_with_rand_reset)
+  // reset monitoring and management should be turned off. Execution should only focus on
+  // main_thread() processing.
+  if (!reset_ctrl_higher_seq) begin
+    monitor_reset();
+  end else begin
+    // At this point reset monitoring is delegated
+    in_reset = 0;
+  end
 
   // This is the start of the primary loop of the sequence. If reset testing is enabled, we will
   // have multiple passes through the loop, else a single pass is sufficient.
@@ -167,7 +191,10 @@ task dv_rand_rst_safe_base_vseq::body();
 
         // Do Reset Testing if reset testing is enabled & test_params.num_reset_loops !=0
         // primary loops of the test looking to be executed.
-        if (test_params.num_reset_loops != 0 &&
+        if (reset_ctrl_higher_seq ) begin
+          `uvm_info(`gfn, "forked_reset_thread is disabled due to delegation to wrapper sequence",
+                    UVM_LOW)
+        end else if (test_params.num_reset_loops != 0 &&
             test_params.reset_testing == dv_test_seq_parameters::ENABLE) begin
           reset_trigger_thread ();
 
@@ -175,11 +202,13 @@ task dv_rand_rst_safe_base_vseq::body();
           // asserted.
           wait (in_reset == 1);
         end
+        `uvm_info(`gfn, "Exiting forked_reset_thread", UVM_LOW)
       end
       begin : forked_main_thread
         // Capture Process handle for the spawned process
         main_thread_id = process::self();
         main_thread ();
+        `uvm_info(`gfn, "Exiting forked_main_thread()", UVM_LOW)
       end
     join_none
 
@@ -194,8 +223,11 @@ task dv_rand_rst_safe_base_vseq::body();
     // If we are not in the final/only loop, and reset testing is enabled
     // We should now be able to conditionally kill main thread only as it should be operational.
     // if that is not the case, re-adjust reset timing on the 'reset_seq' to ensure reset is
-      // triggered when 'main_thread' is operational.
-    if (   test_params.num_reset_loops != 0
+    // triggered when 'main_thread' is operational.
+    //
+    // If reset control is delegated, only wait on main_thread to complete.
+    if (   reset_ctrl_higher_seq == 0
+        && test_params.num_reset_loops != 0
         && test_params.reset_testing == dv_test_seq_parameters::ENABLE) begin
       // If reset testing is enabled, the DUT should be in reset at this point.
       // So it is safe to terminate main thread and return the sequencers to
@@ -221,8 +253,8 @@ task dv_rand_rst_safe_base_vseq::body();
 
     end // if (test_params.reset_testing == ENABLE)
     else begin
-        // If reset testing is not enabled/or in the final pass of the loop wait until the main
-        // thread is completed
+        // If reset testing is delegated or not enabled or in the final pass of the loop wait until
+        // the main thread is completed
         `uvm_info (`gfn, "Waiting for main_thread() to complete", UVM_LOW)
         main_thread_id.await();
     end //else

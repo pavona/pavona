@@ -37,6 +37,7 @@ filesets:
       - dv_base_env_cov.sv: {is_include_file: true}
       - dv_base_virtual_sequencer.sv: {is_include_file: true}
       - dv_base_scoreboard.sv: {is_include_file: true}
+      - dv_rst_safe_scoreboard.sv: {is_include_file: true}
       - dv_base_env.sv: {is_include_file: true}
       - dv_base_vseq.sv: {is_include_file: true}
       - dv_test_seq_parameters.sv: {is_include_file: true}

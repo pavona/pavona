@@ -253,14 +253,19 @@ endclass
 class csr_rw_seq extends csr_base_seq;
   `uvm_object_utils(csr_rw_seq)
 
+  bit blocking = 0;
+
   `uvm_object_new
 
   virtual task body();
+    void'($value$plusargs("csr_rw_blocking=%0b", blocking));
+
     foreach (test_csrs[i]) begin
       uvm_reg_data_t wdata;
       uvm_reg_field  test_fields[$];
       dv_base_reg    test_dv_csr;
       bit            supports_byte_enable;
+      bit            has_user_frontdoor;
       bit            do_field_rd_check;
 
       // The test_csrs list may be jumbled from different RAL models. Hence, we find at runtime, if
@@ -271,6 +276,7 @@ class csr_rw_seq extends csr_base_seq;
         if (adapter != null) begin
           supports_byte_enable = adapter.supports_byte_enable;
         end
+        has_user_frontdoor = test_csrs[i].get_frontdoor(map) != null;
       end
 
       // check if parent block or register is excluded from write
@@ -291,7 +297,8 @@ class csr_rw_seq extends csr_base_seq;
       // might pick up stale mirrored value
       // the pre-predict also needs to happen after the register is being written, to make sure the
       // register is getting the updated access information.
-      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(0), .predict(!external_checker));
+      csr_wr(.ptr(test_csrs[i]), .value(wdata), .blocking(blocking),
+             .predict(!external_checker));
 
       // Shadow register requires two writes with the same value to write registers into DUT.
       // In `csr_wr` task, the `predict` task is triggered after two shadow writes are done.
@@ -302,9 +309,9 @@ class csr_rw_seq extends csr_base_seq;
       if (test_dv_csr.get_is_shadowed) wait_no_outstanding_access();
 
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(do_field_rd_check,
-          !supports_byte_enable -> !do_field_rd_check;)
+          (!supports_byte_enable || has_user_frontdoor) -> !do_field_rd_check;)
       do_check_csr_or_field_rd(.csr(test_csrs[i]),
-                              .blocking(0),
+                              .blocking(blocking),
                               .compare(!external_checker),
                               .compare_vs_ral(1),
                               .do_csr_field_rd_check(do_field_rd_check),

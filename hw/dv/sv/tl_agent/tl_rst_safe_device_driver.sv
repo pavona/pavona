@@ -8,7 +8,7 @@
 // ---------------------------------------------
 class tl_rst_safe_device_driver extends tl_rst_safe_base_driver;
 
-  `uvm_component_utils(tl_device_driver)
+  `uvm_component_utils(tl_rst_safe_device_driver)
   `uvm_component_new
 
   virtual task get_and_drive();
@@ -44,9 +44,19 @@ class tl_rst_safe_device_driver extends tl_rst_safe_base_driver;
     forever begin
       int unsigned d_valid_delay, d_valid_len, d_valid_cnt;
       bit rsp_done, rsp_abort;
-      seq_item_port.get_next_item(rsp);
 
-      while (!rsp_done && !rsp_abort && cfg.vif.rst_n) begin
+      // Make sure both control flags are initialized
+      rsp_done  = 1'b0;
+      rsp_abort = 1'b0;
+
+      // Use the reset-safe base-driver wrapper so the agent knows that the
+      // driver owns an item while this response is being processed.
+      get_next_item(rsp);
+
+      // Reset is handled by dv_rst_safe_base_driver, which kills this complete
+      // worker hierarchy and releases an owned item. This loop contains only
+      // normal protocol behavior.
+      while (!rsp_done && !rsp_abort) begin
         if (cfg.use_seq_item_d_valid_delay) begin
           d_valid_delay = rsp.d_valid_delay;
         end else begin
@@ -61,26 +71,20 @@ class tl_rst_safe_device_driver extends tl_rst_safe_base_driver;
           end
         end
 
-        // break delay loop if reset asserted to release blocking
-        repeat (d_valid_delay) begin
-          if (!cfg.vif.rst_n) break;
-          else @(cfg.vif.device_cb);
-        end
-        if (cfg.vif.rst_n) begin
-          cfg.vif.d2h_int.d_valid  <= 1'b1;
-          cfg.vif.d2h_int.d_opcode <= tl_d_op_e'(rsp.d_opcode);
-          cfg.vif.d2h_int.d_data   <= rsp.d_data;
-          cfg.vif.d2h_int.d_source <= rsp.d_source;
-          cfg.vif.d2h_int.d_param  <= rsp.d_param;
-          cfg.vif.d2h_int.d_error  <= rsp.d_error;
-          cfg.vif.d2h_int.d_sink   <= rsp.d_sink;
-          cfg.vif.d2h_int.d_user   <= rsp.d_user;
-          cfg.vif.d2h_int.d_size   <= rsp.d_size;
-        end
+        repeat (d_valid_delay) @(cfg.vif.device_cb);
+        cfg.vif.d2h_int.d_valid  <= 1'b1;
+        cfg.vif.d2h_int.d_opcode <= tl_d_op_e'(rsp.d_opcode);
+        cfg.vif.d2h_int.d_data   <= rsp.d_data;
+        cfg.vif.d2h_int.d_source <= rsp.d_source;
+        cfg.vif.d2h_int.d_param  <= rsp.d_param;
+        cfg.vif.d2h_int.d_error  <= rsp.d_error;
+        cfg.vif.d2h_int.d_sink   <= rsp.d_sink;
+        cfg.vif.d2h_int.d_user   <= rsp.d_user;
+        cfg.vif.d2h_int.d_size   <= rsp.d_size;
 
         // wait for ready or reaching d_valid_len
         d_valid_cnt = 0;
-        while (cfg.vif.rst_n) begin
+        while (1) begin
           @(cfg.vif.device_cb);
           d_valid_cnt++;
           if (cfg.vif.device_cb.h2d.d_ready) begin
@@ -90,14 +94,13 @@ class tl_rst_safe_device_driver extends tl_rst_safe_base_driver;
                       && d_valid_cnt >= d_valid_len) begin
             if (rsp.rsp_abort_after_d_valid_len) rsp_abort = 1;
             invalidate_d_channel();
-            if (!cfg.vif.rst_n) @(cfg.vif.device_cb);
             break;
           end
-        end // while (!cfg.vif.rst_n)
-      end // while (!rsp_done && cfg.vif.rst_n)
+        end
+      end
       invalidate_d_channel();
       rsp.rsp_completed = !rsp_abort;
-      seq_item_port.item_done();
+      item_done();
       seq_item_port.put_response(rsp);
     end
   endtask : d_channel_thread

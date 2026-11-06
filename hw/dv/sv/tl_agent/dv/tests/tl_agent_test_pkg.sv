@@ -14,4 +14,6 @@ package tl_agent_test_pkg;
 
   // package sources
   `include "tl_agent_base_test.sv"
+  `include "tl_rst_safe_agent_base_test.sv"
+  `include "tl_rst_safe_host_agent_base_test.sv"
 endpackage

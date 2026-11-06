@@ -34,7 +34,7 @@ class dv_rst_safe_base_driver #(type ITEM_T     = uvm_sequence_item,
   extern virtual function void reset_interface_and_driver();
 
   extern task get_next_item(output ITEM_T item);
-  extern virtual function void item_done();
+  extern virtual function void item_done(ITEM_T rsp = null);
 endclass
 
 
@@ -132,7 +132,12 @@ task dv_rst_safe_base_driver::get_next_item(output ITEM_T item);
   processing_item = 1;
 endtask
 
-function void dv_rst_safe_base_driver::item_done();
-  seq_item_port.item_done();
+// Completes the item the driver owns. The optional argument is the response returned to the
+// sequence: a responder sequence that calls get_response() after finish_item() blocks forever
+// unless the driver returns one, which is why this carries a response rather than only releasing
+// the item. It defaults to null, which is exactly seq_item_port.item_done() for the drivers that
+// return nothing.
+function void dv_rst_safe_base_driver::item_done(ITEM_T rsp = null);
+  seq_item_port.item_done(rsp);
   processing_item = 0;
 endfunction

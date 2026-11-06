@@ -104,6 +104,13 @@ interface clk_rst_if #(
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
   string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
 
+  // Monotonic count of positive clock edges. This is intentionally not reset
+  // with rst_n so monitors can attach stable reference-clock timestamps to
+  // transactions without transferring runtime state through configuration.
+  longint unsigned posedge_count = 0;
+
+  always @(posedge clk) posedge_count++;
+
   clocking cb @(posedge clk);
   endclocking
 

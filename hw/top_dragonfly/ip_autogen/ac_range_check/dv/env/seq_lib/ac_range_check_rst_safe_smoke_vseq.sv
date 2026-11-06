@@ -1,25 +1,32 @@
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Reset-safe equivalent of the block's smoke sequence. Each completed main-thread pass:
+// 1. Programs logging and interrupt controls.
+// 2. Repeatedly either changes or preserves the range configuration.
+// 3. Optionally clears the log, sends live traffic on the unfiltered TLUL interface, and reads the
+//    logging CSRs so the scoreboard checks the resulting architectural state.
+// Test-wide reset controls live in the test-parameter object. Configuration that may change while
+// main_thread() runs lives in the configuration-parameter object.
 
-class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_seq_parameters;
+class ac_range_check_smoke_test_seq_parameters
+    extends ac_range_check_base_test_seq_parameters;
 
   import ac_range_check_reg_pkg::*;
   `uvm_object_utils(ac_range_check_smoke_test_seq_parameters)
 
-  // The following parameters are inherited that allow controlling of test parameters for
-  // ac_range_smoke sequence
+  // The following inherited parameters control the smoke sequence:
   //
   // reset_testing   = DISABLE / ENABLE;
   // num_reset_loops = <integer_value>;
-  // num_trans       = <integer_value>;  -- Controls how many transactions are triggered in each run
-  //                                        of the main_thread()
-  // do_dut_init     = 1                 -- Controls if DUT needs to be initialized at the beginning
-  //                                        of after release of reset and before main_thread() is
-  //                                        invoked
-  // do_dut_shutdown = 1                 -- Controls if 'dut_shutdown90' task has to be executed
-  // do_ac_range_check_init = 1;         -- Controls if ac_range_check is initialized inside the
-  //                                        call for 'dut_init()'
+  // num_trans       = <integer_value>;  -- Controls how many transactions are triggered in each
+  //                                        run of the main_thread()
+  // do_dut_init     = 1                 -- Controls if DUT is initialized after reset release and
+  //                                        before main_thread() is invoked
+  // do_dut_shutdown = 1                 -- Controls whether dut_shutdown() is executed
+  // do_ac_range_check_init = 1 -- Controls whether ac_range_check is initialized
+  //                                        inside dut_init()
 
   // If reset_testing == ENABLE, 'num_reset_loops > 0' -- Put a constraint in the derived sequence
   //                                                      to limit the number of runs.
@@ -28,7 +35,11 @@ class ac_range_check_smoke_test_seq_parameters extends ac_range_check_base_test_
 
 
   constraint reset_enable_c {
-    reset_testing == ENABLE;
+    reset_testing == DISABLE;
+  }
+
+  constraint reset_loops_c {
+    num_reset_loops == 1;
   }
 
   constraint num_trans_c {
@@ -99,15 +110,15 @@ class ac_range_check_rst_safe_smoke_vseq extends ac_range_check_rand_rst_safe_ba
   extern virtual task body();
 
   // Task/Methods added in dv_rand_rst_safe_base_vseq that need implementations in any derived
-  // class. For this implementation of the ac_range_check_smoke sequence only the 'main_thread()'
-  // is needed as there is an implementation to handle reset triggering and handling reset assertion
-  // in 'ac_range_check_rand_rst_safe_base_vseq'
+  // class. For this implementation of the ac_range_check_smoke sequence only the
+  // 'main_thread()' is needed as there is an implementation to handle reset triggering and
+  // handling reset assertion in 'ac_range_check_rand_rst_safe_base_vseq'
   //
   // extern virtual task reset_trigger_thread();
   // extern virtual function void handle_reset_assertion ();
   extern virtual task main_thread();
 
-  // Specific tasks for
+  // Smoke-specific logging tasks.
   extern task set_logging();
   extern task check_logging();
 endclass : ac_range_check_rst_safe_smoke_vseq
@@ -115,14 +126,18 @@ endclass : ac_range_check_rst_safe_smoke_vseq
 
 function ac_range_check_rst_safe_smoke_vseq::new(string name="");
   super.new(name);
-  ac_range_check_base_test_seq_parameters::type_id::set_type_override(
-                                              ac_range_check_smoke_test_seq_parameters::get_type());
-  ac_range_check_base_config_parameters::type_id::set_type_override(
-                                              ac_range_check_smoke_config_parameters::get_type());
 endfunction : new
 
 
 task ac_range_check_rst_safe_smoke_vseq::body();
+  if (test_params == null) begin
+    test_params =
+        ac_range_check_smoke_test_seq_parameters::type_id::create("test_params");
+  end
+  if (config_params == null) begin
+    config_params =
+        ac_range_check_smoke_config_parameters::type_id::create("config_params");
+  end
   super.body();
 endtask : body
 

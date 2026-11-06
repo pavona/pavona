@@ -32,7 +32,7 @@ class dv_rst_safe_base_monitor #(type ITEM_T = uvm_sequence_item,
   extern virtual task collect_trans();
 
   // 'reset_monitor()' function is used by the reset_thread to get the monitor to the reset state.
-  extern function void reset_monitor();
+  extern virtual function void reset_monitor();
 endclass
 
 

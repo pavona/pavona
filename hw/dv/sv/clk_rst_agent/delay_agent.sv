@@ -62,9 +62,15 @@ class delay_agent extends uvm_agent;
       begin : agent_reset_thread
         forever begin
           cfg.reset_domain.wait_reset_assert();
+          `uvm_info(`gfn, "Reset Asserted", UVM_LOW)
+
+          `uvm_info(`gfn, "Initiating Sequences Termination", UVM_LOW)
+          wait (driver.processing_item == 0);
           sequencer.stop_sequences();
+          `uvm_info(`gfn, "Sequences Stopped", UVM_LOW)
 
           cfg.reset_domain.wait_reset_deassert();
+          `uvm_info(`gfn, "Reset Deasserted", UVM_LOW)
         end // forever
       end
     join_none

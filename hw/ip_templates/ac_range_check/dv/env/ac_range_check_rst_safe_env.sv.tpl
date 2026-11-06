@@ -7,15 +7,12 @@ class ${module_instance_name}_rst_safe_env extends cip_rst_safe_base_env #(
     .CFG_T              (${module_instance_name}_env_cfg),
     .COV_T              (${module_instance_name}_env_cov),
     .VIRTUAL_SEQUENCER_T(${module_instance_name}_virtual_sequencer),
-    .SCOREBOARD_T       (${module_instance_name}_scoreboard)
+    .SCOREBOARD_T       (${module_instance_name}_rst_safe_scoreboard)
   );
   `uvm_component_utils(${module_instance_name}_rst_safe_env)
 
-  tl_agent tl_unfilt_agt;
-  tl_agent tl_filt_agt;
-
-  clk_rst_agent clk_rst_agt;
-  delay_agent   delay_agt;
+  tl_rst_safe_agent tl_unfilt_agt;
+  tl_rst_safe_agent tl_filt_agt;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -32,29 +29,16 @@ function void ${module_instance_name}_rst_safe_env::build_phase(uvm_phase phase)
   super.build_phase(phase);
 
   // Create Unfiltered TL agent
-  tl_unfilt_agt = tl_agent::type_id::create("tl_unfilt_agt", this);
+  tl_unfilt_agt = tl_rst_safe_agent::type_id::create("tl_unfilt_agt", this);
   uvm_config_db#(tl_agent_cfg)::set(this, "tl_unfilt_agt*", "cfg", cfg.tl_unfilt_agt_cfg);
   cfg.tl_unfilt_agt_cfg.en_cov = cfg.en_cov;
   cfg.tl_unfilt_agt_cfg.reset_domain = cfg.reset_domain;
 
   // Create Filtered TL agent
-  tl_filt_agt = tl_agent::type_id::create("tl_filt_agt", this);
+  tl_filt_agt = tl_rst_safe_agent::type_id::create("tl_filt_agt", this);
   uvm_config_db#(tl_agent_cfg)::set(this, "tl_filt_agt*", "cfg", cfg.tl_filt_agt_cfg);
   cfg.tl_filt_agt_cfg.en_cov = cfg.en_cov;
   cfg.tl_filt_agt_cfg.reset_domain = cfg.reset_domain;
-
-  // clk_rst_agent establishes the default reset_domain that all other agents should use in the
-  // testbench. If there are more than one reset domains for the block/toplevel multiple clock
-  // agents with their associated reset domains should be created.
-  clk_rst_agt = clk_rst_agent::type_id::create("clk_rst_agt", this);
-  uvm_config_db#(clk_rst_agent_cfg)::set(this, "clk_rst_agt*", "cfg", cfg.clk_rst_agt_cfg);
-  cfg.clk_rst_agt_cfg.en_cov       = cfg.en_cov;
-  cfg.clk_rst_agt_cfg.reset_domain = cfg.reset_domain;
-
-  // delay agent uses the same reset domain parameters that the clk_rst_agent uses as it works on
-  // the same underlying interface.
-  delay_agt = delay_agent::type_id::create("delay_agt", this);
-  uvm_config_db#(clk_rst_agent_cfg)::set(this, "delay_agt*", "cfg", cfg.clk_rst_agt_cfg);
 
   // Retrieve the ac_range_check_misc_io_if virtual interface
   if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
@@ -80,6 +64,4 @@ function void ${module_instance_name}_rst_safe_env::connect_phase(uvm_phase phas
   if (cfg.is_active && cfg.tl_filt_agt_cfg.is_active) begin
     virtual_sequencer.tl_filt_sqr = tl_filt_agt.sequencer;
   end
-
-  virtual_sequencer.clk_rst_sequencer_h = clk_rst_agt.sequencer;
 endfunction : connect_phase

@@ -25,6 +25,7 @@ filesets:
       - tl_rst_safe_host_driver.sv: {is_include_file: true}
       - tl_rst_safe_device_driver.sv: {is_include_file: true}
       - tl_sequencer.sv: {is_include_file: true}
+      - tl_rst_safe_sequencer.sv: {is_include_file: true}
       - tl_monitor.sv: {is_include_file: true}
       - tl_agent.sv: {is_include_file: true}
       - tl_rst_safe_agent.sv: {is_include_file: true}

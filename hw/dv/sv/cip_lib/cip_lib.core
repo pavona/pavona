@@ -24,9 +24,11 @@ filesets:
       - cip_base_pkg.sv
       - cip_macros.svh: {is_include_file: true}
       - cip_base_env_cfg.sv: {is_include_file: true}
+      - cip_rst_safe_base_env_cfg.sv: {is_include_file: true}
       - cip_base_env_cov.sv: {is_include_file: true}
       - cip_base_virtual_sequencer.sv: {is_include_file: true}
       - cip_base_scoreboard.sv: {is_include_file: true}
+      - cip_rst_safe_scoreboard.sv: {is_include_file: true}
       - cip_base_env.sv: {is_include_file: true}
       - cip_rst_safe_base_env.sv: {is_include_file: true}
       - seq_lib/cip_seq_list.sv: {is_include_file: true}
@@ -38,6 +40,7 @@ filesets:
       - seq_lib/cip_tl_host_single_seq.sv: {is_include_file: true}
       - seq_lib/cip_tl_device_seq.sv: {is_include_file: true}
       - seq_lib/cip_rand_rst_safe_base_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_stress_all_vseq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}
       - cip_mubi_cov_if.sv
       - cip_mubi_cov_wrapper.sv

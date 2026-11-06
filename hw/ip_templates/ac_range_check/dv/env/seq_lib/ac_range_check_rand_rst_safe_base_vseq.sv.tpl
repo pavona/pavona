@@ -1,18 +1,17 @@
-// Copyright lowRISC contributors (OpenTitan project).
 // Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Base sequence with random reset safety from which all other 'ac_range_check' test sequences
+// Base sequence with random reset safety from which all other '${module_instance_name}' test sequences
 // can be derived.
 
-// First declare ac_range_check_test_seq_parameters class (inherits dv_test_seq_parameters) that
+// First declare ${module_instance_name}_test_seq_parameters class (inherits dv_test_seq_parameters) that
 // contains the control knobs that are required by the sequence.
-// Instance of ac_range_check_base_test_seq_parameters is randomized at the beginning of sequence
+// Instance of ${module_instance_name}_base_test_seq_parameters is randomized at the beginning of sequence
 // execution and held constant until the end.
 //
-// 'ac_range_check_base_config_parameters' contains all the other control knobs/parameters that any
-// ac_range_check test sequence will require. An instance of this class can be used to generate
+// '${module_instance_name}_base_config_parameters' contains all the other control knobs/parameters that any
+// ${module_instance_name} test sequence will require. An instance of this class can be used to generate
 // constraint random data during the execution of the 'main_thread()'
 // It also contains the "dut_cfg" class which itself contains all variables relating to DUT
 // configuration.
@@ -21,9 +20,9 @@
 // required.
 
 
-class ac_range_check_base_test_seq_parameters extends dv_test_seq_parameters;
+class ${module_instance_name}_base_test_seq_parameters extends dv_test_seq_parameters;
 
-  `uvm_object_utils(ac_range_check_base_test_seq_parameters)
+  `uvm_object_utils(${module_instance_name}_base_test_seq_parameters)
 
   // The following parameters are inherited that allow controlling
   // random reset assertion
@@ -40,7 +39,7 @@ class ac_range_check_base_test_seq_parameters extends dv_test_seq_parameters;
   // If reset_testing == DISABLE,'num_reset_loops == 1'-- Ensure is at least equal to '1'
 
   // ---
-  // The control knobs below are all the control knobs that are used by 'ac_range_check sequences'
+  // The control knobs below are all the control knobs that are used by '${module_instance_name} sequences'
   // that are randomized once in the test and held constant for the duration of test execution.
   //
   // Below we also add other fixed control knobs too.
@@ -49,7 +48,7 @@ class ac_range_check_base_test_seq_parameters extends dv_test_seq_parameters;
   // ---
 
   // Various knobs to enable certain routines
-  bit do_ac_range_check_init = 1;
+  bit do_${module_instance_name}_init = 1;
 
   // A derived class can set the reset_enable constraint to only ENABLE or DISABLE and still will
   // not violate any constraints in this base class
@@ -70,21 +69,21 @@ endclass
 
 
 
-class ac_range_check_base_config_parameters extends dv_config_parameters;
+class ${module_instance_name}_base_config_parameters extends dv_config_parameters;
 
-  `uvm_object_utils(ac_range_check_base_config_parameters)
+  `uvm_object_utils(${module_instance_name}_base_config_parameters)
   // ---
   // The control knobs below are all the control knobs that are used inside the 'main_thread()' of
-  // 'ac_range_check sequences' via 'config_params'. These control knobs are expected to be
+  // '${module_instance_name} sequences' via 'config_params'. These control knobs are expected to be
   // potentially randomized multiple times over the course of the execution of the test.
   //
   // Derived classes only need to add constraints
   // ---
 
-  import ac_range_check_reg_pkg::*;
+  import ${module_instance_name}_reg_pkg::*;
 
   // Configuration variables
-  rand ac_range_check_dut_cfg dut_cfg;
+  rand ${module_instance_name}_dut_cfg dut_cfg;
   rand tl_main_vars_t tl_main_vars;
   rand int range_idx;
 
@@ -106,7 +105,7 @@ class ac_range_check_base_config_parameters extends dv_config_parameters;
 
   function new(string name="");
     super.new(name);
-    dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
+    dut_cfg = ${module_instance_name}_dut_cfg::type_id::create("dut_cfg");
   endfunction : new
 
   // Constraints
@@ -191,18 +190,18 @@ endclass
 
 
 
-class ac_range_check_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq #(
-    .RAL_T               (ac_range_check_reg_block),
-    .CFG_T               (ac_range_check_env_cfg),
-    .COV_T               (ac_range_check_env_cov),
-    .VIRTUAL_SEQUENCER_T (ac_range_check_virtual_sequencer),
-    .TEST_PARAMS_T       (ac_range_check_base_test_seq_parameters),
-    .CONFIG_PARAMS_T     (ac_range_check_base_config_parameters)
+class ${module_instance_name}_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq #(
+    .RAL_T               (${module_instance_name}_reg_block),
+    .CFG_T               (${module_instance_name}_env_cfg),
+    .COV_T               (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T (${module_instance_name}_virtual_sequencer),
+    .TEST_PARAMS_T       (${module_instance_name}_base_test_seq_parameters),
+    .CONFIG_PARAMS_T     (${module_instance_name}_base_config_parameters)
   );
-  `uvm_object_utils(ac_range_check_rand_rst_safe_base_vseq)
+  `uvm_object_utils(${module_instance_name}_rand_rst_safe_base_vseq)
 
   // Moving of all sequence control parameters to two separate parameter classes helps with random
-  // stability issues that were observed during coverage closure for ac_range_check block
+  // stability issues that were observed during coverage closure for ${module_instance_name} block
 
   // This vseq inherits two params object instances that are created instanced in
   // 'dv_rand_rst_safe_base_seq' namely:
@@ -221,7 +220,7 @@ class ac_range_check_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq
 
   // Class specific methods
   extern virtual task dut_init();
-  extern virtual task ac_range_check_init();
+  extern virtual task ${module_instance_name}_init();
   extern virtual task cfg_range_base();
   extern virtual task cfg_range_limit();
   extern virtual task cfg_range_attr();
@@ -232,10 +231,10 @@ class ac_range_check_rand_rst_safe_base_vseq extends cip_rand_rst_safe_base_vseq
   extern virtual task configure_range(int unsigned idx = 0, bit [DataWidth-1:0] base = 0,
     bit [DataWidth-1:0] limit = 0, bit read_perm = 0, bit write_perm = 0, bit execute_perm = 0,
     bit en = 0, bit log_denied_access = 0);
-endclass : ac_range_check_rand_rst_safe_base_vseq
+endclass : ${module_instance_name}_rand_rst_safe_base_vseq
 
 
-function ac_range_check_rand_rst_safe_base_vseq::new(string name="");
+function ${module_instance_name}_rand_rst_safe_base_vseq::new(string name="");
   super.new(name);
 
   // Derived test sequences will need to set the appropriate type override in the 'new()' method
@@ -246,10 +245,16 @@ function ac_range_check_rand_rst_safe_base_vseq::new(string name="");
   //
   // <TEST_PARAMS_T>::type_id::set_type_override(<OVERRIDE_TEST_PARAMS_T>::get_type());
   // <CONFIG_PARAMS_T>::type_id::set_type_override(<OVERRIDE_CONFIG_PARAMS_T>::get_type());
+
+  // The only interrupt (deny_cnt_reached) is a Status interrupt and it's
+  // read-only in intr_state, so it cannot be cleared by a CSR write. Thus,
+  // clear_all_interrupts() has nothing to clear; it will generate a read that
+  // will result in countless outstanding accesses.
+  do_clear_all_interrupts = 0;
 endfunction : new
 
 
-task ac_range_check_rand_rst_safe_base_vseq::reset_trigger_thread();
+task ${module_instance_name}_rand_rst_safe_base_vseq::reset_trigger_thread();
   // Any TB that implements the reset safety will need the below lines implemented in the derived
   // sequence. DV Lib does not have access to reset_seq at compile and hence the example is provided
   // such that derived TB base_vseq can implement
@@ -263,15 +268,15 @@ task ac_range_check_rand_rst_safe_base_vseq::reset_trigger_thread();
 endtask : reset_trigger_thread
 
 
-task ac_range_check_rand_rst_safe_base_vseq::main_thread();
+task ${module_instance_name}_rand_rst_safe_base_vseq::main_thread();
   // This is the task for main execution focus of the virtual sequence i.e. the transaction
   // generator.
-  // For 'ac_range_check' this will need to be implemented in any of the sequences deriving from
-  // this base sequence. An example is 'ac_range_check_rst_safe_smoke_sequence'
+  // For '${module_instance_name}' this will need to be implemented in any of the sequences deriving from
+  // this base sequence. An example is '${module_instance_name}_rst_safe_smoke_sequence'
   `uvm_fatal (get_name(), "Derived sequence needs to provide an implementation")
 endtask : main_thread
 
-function void ac_range_check_rand_rst_safe_base_vseq::handle_reset_assertion ();
+function void ${module_instance_name}_rand_rst_safe_base_vseq::handle_reset_assertion ();
   // This function is to make sure all state elements in the sequence and env are brought to the
   // default state as what would be when the sequence was initially started / at the point reset is
   // asserted
@@ -279,7 +284,7 @@ function void ac_range_check_rand_rst_safe_base_vseq::handle_reset_assertion ();
 endfunction : handle_reset_assertion
 
 
-task ac_range_check_rand_rst_safe_base_vseq::dut_init();
+task ${module_instance_name}_rand_rst_safe_base_vseq::dut_init();
 
   // TODO: misc_vif needs to be moved into a separate agent
   // and have appropriate sequences to drive the interface
@@ -287,8 +292,8 @@ task ac_range_check_rand_rst_safe_base_vseq::dut_init();
   cfg.misc_vif.set_range_check_overwrite(0);
   cfg.misc_vif.init_racl_policies();
 
-  if (test_params.do_ac_range_check_init) begin
-    ac_range_check_init();
+  if (test_params.do_${module_instance_name}_init) begin
+    ${module_instance_name}_init();
   end
 
   // Spawns off a thread to auto-respond to incoming TL accesses on the Filtered host interface.
@@ -299,7 +304,7 @@ task ac_range_check_rand_rst_safe_base_vseq::dut_init();
 endtask : dut_init
 
 
-task ac_range_check_rand_rst_safe_base_vseq::ac_range_check_init();
+task ${module_instance_name}_rand_rst_safe_base_vseq::${module_instance_name}_init();
   // This fork will ensure that configuration takes place in "disorder", as the TL register
   // sequencer will have to deal with parallel requests (and random delays).
   fork
@@ -309,11 +314,11 @@ task ac_range_check_rand_rst_safe_base_vseq::ac_range_check_init();
     cfg_range_racl_policy();
   join
   // TODO lastly, randomly lock the configuration with RANGE_REGWEN
-endtask : ac_range_check_init
+endtask : ${module_instance_name}_init
 
 
 // Only update registers whose value does not match the new one (usage of set+update instead write)
-task ac_range_check_rand_rst_safe_base_vseq::cfg_range_base();
+task ${module_instance_name}_rand_rst_safe_base_vseq::cfg_range_base();
   foreach (config_params.dut_cfg.range_base[i]) begin
     ral.range_base[i].set(config_params.dut_cfg.range_base[i]);
     csr_update(.csr(ral.range_base[i]));
@@ -321,7 +326,7 @@ task ac_range_check_rand_rst_safe_base_vseq::cfg_range_base();
 endtask : cfg_range_base
 
 
-task ac_range_check_rand_rst_safe_base_vseq::cfg_range_limit();
+task ${module_instance_name}_rand_rst_safe_base_vseq::cfg_range_limit();
   foreach (config_params.dut_cfg.range_limit[i]) begin
     ral.range_limit[i].set(config_params.dut_cfg.range_limit[i]);
     csr_update(.csr(ral.range_limit[i]));
@@ -329,7 +334,7 @@ task ac_range_check_rand_rst_safe_base_vseq::cfg_range_limit();
 endtask : cfg_range_limit
 
 
-task ac_range_check_rand_rst_safe_base_vseq::cfg_range_attr();
+task ${module_instance_name}_rand_rst_safe_base_vseq::cfg_range_attr();
   foreach (config_params.dut_cfg.range_attr[i]) begin
     ral.range_attr[i].log_denied_access.set(mubi4_bool_to_mubi(
                                             config_params.dut_cfg.range_attr[i].log_denied_access));
@@ -346,7 +351,7 @@ task ac_range_check_rand_rst_safe_base_vseq::cfg_range_attr();
 endtask : cfg_range_attr
 
 
-task ac_range_check_rand_rst_safe_base_vseq::cfg_range_racl_policy();
+task ${module_instance_name}_rand_rst_safe_base_vseq::cfg_range_racl_policy();
   foreach (config_params.dut_cfg.range_racl_policy[i]) begin
     ral.range_racl_policy_shadowed[i].set(config_params.dut_cfg.range_racl_policy[i]);
     // Shadowed register: the 2 writes are automatically managed by the csr_utils_pkg
@@ -355,7 +360,7 @@ task ac_range_check_rand_rst_safe_base_vseq::cfg_range_racl_policy();
 endtask : cfg_range_racl_policy
 
 
-task ac_range_check_rand_rst_safe_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
+task ${module_instance_name}_rand_rst_safe_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
   cip_tl_host_single_seq tl_unfilt_host_seq;
   `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
   if (zero_delays) begin
@@ -378,7 +383,7 @@ task ac_range_check_rand_rst_safe_base_vseq::send_single_tl_unfilt_tr(bit zero_d
 endtask : send_single_tl_unfilt_tr
 
 
-task ac_range_check_rand_rst_safe_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       = 0,
+task ${module_instance_name}_rand_rst_safe_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       = 0,
                                                         int max_rsp_delay       = 80,
                                                         int rsp_abort_pct       = 25,
                                                         int d_error_pct         = 0,
@@ -396,7 +401,7 @@ task ac_range_check_rand_rst_safe_base_vseq::tl_filt_device_auto_resp(int min_rs
 endtask : tl_filt_device_auto_resp
 
 
-task ac_range_check_rand_rst_safe_base_vseq::configure_range(int unsigned idx = 0,
+task ${module_instance_name}_rand_rst_safe_base_vseq::configure_range(int unsigned idx = 0,
   bit [DataWidth-1:0] base = 0, bit [DataWidth-1:0] limit = 0, bit read_perm = 0,
   bit write_perm = 0, bit execute_perm = 0, bit en = 0, bit log_denied_access = 0);
 

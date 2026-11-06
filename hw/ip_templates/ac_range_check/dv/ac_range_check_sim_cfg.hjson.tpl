@@ -33,7 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/shadow_reg_errors_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson", // TODO MVy needed?
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_stress_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["${module_instance_name}_bind"]
@@ -56,34 +56,47 @@
   // List of test specifications.
   tests: [
     {
-      name: ac_range_check_smoke
-      uvm_test_seq: ${module_instance_name}_smoke_vseq
-      reseed: 20
-    }
-    {
-      name: ac_range_check_smoke_racl
-      uvm_test_seq: ${module_instance_name}_smoke_racl_vseq
-      reseed: 20
-    }
-    {
-      name: ac_range_check_smoke_high_threshold
-      uvm_test_seq: ${module_instance_name}_smoke_high_threshold_vseq
-      reseed: 20
-    }
-    {
       name: ac_range_check_rst_safe_smoke
       uvm_test: ${module_instance_name}_rst_safe_base_test
-      uvm_test_seq: ac_range_check_rst_safe_smoke_vseq
+      uvm_test_seq: ${module_instance_name}_rst_safe_smoke_vseq
       reseed: 20
     }
     {
-      name: ac_range_check_bypass
-      uvm_test_seq: ${module_instance_name}_bypass_vseq
+      name: ac_range_check_rst_safe_smoke_racl
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_smoke_racl_vseq
+      reseed: 20
+    }
+    {
+      name: ac_range_check_rst_safe_smoke_high_threshold
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_smoke_high_threshold_vseq
+      reseed: 20
+    }
+    {
+      name: ac_range_check_rst_safe_smoke_with_rand_reset
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_smoke_with_rand_reset_vseq
+      reseed: 20
+    }
+    {
+      name: ac_range_check_rst_safe_stress_all
+      reseed: 5
+    }
+    {
+      name: ac_range_check_rst_safe_stress_all_with_rand_reset
+      reseed: 5
+    }
+    {
+      name: ac_range_check_rst_safe_bypass
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_bypass_vseq
       reseed: 1
     }
     {
-      name: ac_range_check_lock_range
-      uvm_test_seq: ${module_instance_name}_lock_range_vseq
+      name: ac_range_check_rst_safe_lock_range_with_rand_reset
+      uvm_test: ${module_instance_name}_rst_safe_base_test
+      uvm_test_seq: ${module_instance_name}_rst_safe_lock_range_with_rand_reset_vseq
       reseed: 20
     }
 
@@ -94,20 +107,20 @@
   regressions: [
     {
       name: smoke
-      tests: ["ac_range_check_smoke",
-              "ac_range_check_smoke_racl",
-              "ac_range_check_smoke_high_threshold"
-              "ac_range_check_rst_safe_smoke"
+      tests: ["ac_range_check_rst_safe_smoke",
+              "ac_range_check_rst_safe_smoke_racl",
+              "ac_range_check_rst_safe_smoke_high_threshold"
+              "ac_range_check_rst_safe_smoke_with_rand_reset"
              ]
     }
     {
       name: normal
-      tests: ["ac_range_check_smoke",
-              "ac_range_check_smoke_racl",
-              "ac_range_check_smoke_high_threshold",
-              "ac_range_check_rst_safe_smoke"
-              "ac_range_check_bypass",
-              "ac_range_check_lock_range"
+      tests: ["ac_range_check_rst_safe_smoke",
+              "ac_range_check_rst_safe_smoke_racl",
+              "ac_range_check_rst_safe_smoke_high_threshold",
+              "ac_range_check_rst_safe_smoke_with_rand_reset"
+              "ac_range_check_rst_safe_bypass",
+              "ac_range_check_rst_safe_lock_range_with_rand_reset"
              ]
     }
   ]

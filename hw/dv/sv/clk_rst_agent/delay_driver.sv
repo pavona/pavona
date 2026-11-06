@@ -33,12 +33,29 @@ class delay_driver extends dv_rst_safe_base_driver #(.ITEM_T(clk_rst_item),
       // Get the next data item from sequencer
       get_next_item (item);
 
-      if (item.item_type == clk_rst_item::DELAY) begin
-        cfg.reset_domain.clk_rst_vif.wait_clks(item.delay_time_steps);
-      end else begin
+      if (item.item_type !== clk_rst_item::DELAY) begin
         `uvm_fatal (`gfn, {"Unsupported item.type: ", item.item_type.name()})
       end
 
+      fork
+        begin
+          automatic clk_rst_item lcl_item = item;
+          automatic clk_rst_item rsp_item;
+
+          `uvm_info (get_name(), "Starting....", UVM_HIGH)
+
+          cfg.reset_domain.clk_rst_vif.wait_clks(lcl_item.delay_time_steps);
+
+          // At this point the delay is completed. Indicate back to the parent that triggered the
+          // delay sequence so that it is unblocked.
+          rsp_item = clk_rst_item::type_id::create("rsp_item");
+          rsp_item.copy(lcl_item);
+          rsp_item.set_id_info(lcl_item);
+
+          seq_item_port.put_response(rsp_item);
+          `uvm_info (get_name(), "....Completed", UVM_HIGH)
+        end
+      join_none
       item_done();
     end // forever
   endtask

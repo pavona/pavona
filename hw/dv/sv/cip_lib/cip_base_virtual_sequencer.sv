@@ -14,6 +14,7 @@ class cip_base_virtual_sequencer #(type CFG_T = cip_base_env_cfg,
   tl_sequencer        tl_sequencer_hs[string];
 
   clk_rst_sequencer   clk_rst_sequencer_h;
+  delay_sequencer     delay_sequencer_h;
 
   alert_esc_sequencer alert_esc_sequencer_h[string];
   push_pull_sequencer#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_pull_sequencer_h;
