@@ -8,6 +8,8 @@
 // util/gen_top_sv.py --completecfg hw/top_egret/data/autogen/top_egret.gen.hjson
 //                    --seedcfg hw/top_egret/data/autogen/top_egret.secrets.testing.gen.hjson
 
+`include "prim_assert.sv"
+
 module top_egret #(
   // Manually defined parameters
 

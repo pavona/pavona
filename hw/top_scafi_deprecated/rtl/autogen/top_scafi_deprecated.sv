@@ -8,6 +8,8 @@
 // util/gen_top_sv.py --completecfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.gen.hjson
 //                    --seedcfg hw/top_scafi_deprecated/data/autogen/top_scafi_deprecated.secrets.testing.gen.hjson
 
+`include "prim_assert.sv"
+
 module top_scafi_deprecated #(
   // Manually defined parameters
 

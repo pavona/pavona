@@ -51,6 +51,8 @@ default_handler = top.get("default_alert_handler", None)
 
 alert_handlers = [handler["type"] for handler in lib.find_modules(top["module"], "alert_handler")]
 %>\
+`include "prim_assert.sv"
+
 module top_${top["name"]} #(
   // Manually defined parameters
 % if not lib.num_rom_ctrl(top["module"]):
