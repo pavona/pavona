@@ -27,7 +27,7 @@ load(
 )
 load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
-_TEST_SCRIPT = """#!/bin/bash
+_TEST_SCRIPT = """#!/usr/bin/env bash
 set -e
 
 TEST_CMD=({test_cmd})
