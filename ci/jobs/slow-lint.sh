@@ -28,7 +28,7 @@ section "Bazel test suite tags"
 ./ci/scripts/check_bazel_test_suites.py
 section_end
 
-# NOTE : #21973: disabled until Verilator tags are fixed.
+# NOTE : lowrisc/opentitan#21973: disabled until Verilator tags are fixed.
 # section "Check tags on Bazel artifacts"
 # ci/scripts/check-bazel-tags.sh
 
