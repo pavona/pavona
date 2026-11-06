@@ -28,6 +28,7 @@ The supported algorithms below mark those with deferred test cases.
 ## Supported algorithms
 
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
+- [ctrDRBG](https://pages.nist.gov/ACVP/draft-vassilev-acvp-drbg.html) with AES-256 and without a derivation function: AFT, revision SP800-90Ar1.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
 - [KDA HKDF](https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-kdf-hkdf.html) with SHA2-256, SHA2-384 and SHA2-512: AFT, VAL, revision Sp800-56Cr2.
 - [KDF](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with HMAC-SHA2-256, HMAC-SHA2-384 and HMAC-SHA2-512: counter and feedback mode, AFT (deferred), revision 1.0.
@@ -47,6 +48,15 @@ The supported algorithms below mark those with deferred test cases.
 - Payloads of at most 64 bits.
   The cryptolib does not implement the single-block case.
 - AES-KW, the variant without padding.
+
+### ctrDRBG
+
+- AES-128, AES-192 and TDES, and the derivation function.
+  CSRNG implements CTR_DRBG with AES-256 and without a derivation function.
+- Prediction resistance.
+  The cryptolib has no prediction resistance mode.
+- Output lengths that are not a multiple of 32 bits.
+  The cryptolib returns whole 32-bit words.
 
 ### HMAC
 

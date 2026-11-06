@@ -49,6 +49,29 @@ genrule(
 ]
 
 run_binary(
+    name = "acvp_ctr_drbg_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json",
+        "@acvp_vectors//:ctr-drbg/expectedResults.json",
+        "@acvp_vectors//:ctr-drbg/prompt.json",
+    ],
+    outs = [":acvp_ctr_drbg.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:ctr-drbg/prompt.json)",
+        "--dst",
+        "$(location :acvp_ctr_drbg.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:ctr-drbg/expectedResults.json)",
+        "--test-type",
+        "ctr_drbg",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_drbg_parser",
+)
+
+run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",

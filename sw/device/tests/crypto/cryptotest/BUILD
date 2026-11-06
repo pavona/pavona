@@ -429,6 +429,7 @@ cryptotest(
 )
 
 DRBG_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_ctr_drbg_json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_reseed_json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_no_reseed_json",
 ]
@@ -440,6 +441,9 @@ DRBG_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "drbg_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = DRBG_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/drbg_kat:harness",

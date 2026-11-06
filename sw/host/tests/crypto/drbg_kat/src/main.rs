@@ -5,11 +5,12 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
 
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex, read_vectors};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::drbg_commands::{CryptotestDrbgInput, CryptotestDrbgOutput};
 
@@ -31,12 +32,17 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     drbg_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct DrbgTestCase {
     vendor: String,
-    test_case_id: usize,
+    test_case_id: u64,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     entropy: Vec<u8>,
     personalization_string: Vec<u8>,
     reseed: bool,
@@ -46,8 +52,14 @@ struct DrbgTestCase {
     reseed_additional_input: Vec<u8>,
     additional_input_1: Vec<u8>,
     additional_input_2: Vec<u8>,
+    /// Length of the returned bits in bytes that an ACVP test asks for.
+    #[serde(default)]
+    output_len: usize,
+    #[serde(default)]
     output: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in an ACVP prompt.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
 fn run_drbg_testcase(
@@ -55,6 +67,7 @@ fn run_drbg_testcase(
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
     fail_counter: &mut u32,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -86,7 +99,11 @@ fn run_drbg_testcase(
         additional_input_1_len: addl_1.len(),
         additional_input_2: ArrayVec::try_from(addl_2.as_slice()).unwrap(),
         additional_input_2_len: addl_2.len(),
-        output_len: test_case.output.len(),
+        output_len: if test_case.output_len != 0 {
+            test_case.output_len
+        } else {
+            test_case.output.len()
+        },
     }
     .send(spi_console)?;
 
@@ -99,14 +116,22 @@ fn run_drbg_testcase(
         panic!("Output length in bytes was not a multiple of 4.");
     }
     let success = test_case.output == output;
-    if test_case.result != success {
+    if let Some(want) = test_case.result
+        && want != success
+    {
         log::info!(
             "FAILED test #{}: expected = {}, actual = {}",
             test_case.test_case_id,
-            test_case.result,
+            want,
             success
         );
         *fail_counter += 1;
+    }
+
+    if test_case.vendor == "acvp" {
+        let mut fields = Fields::new();
+        fields.insert("returnedBits".to_string(), json!(hex(&output)));
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
     }
     Ok(())
 }
@@ -116,25 +141,28 @@ fn test_drbg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
-    let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
-    let test_vector_files = &opts.drbg_json;
-    for file in test_vector_files {
-        let raw_json = fs::read_to_string(file)?;
-        let drbg_tests: Vec<DrbgTestCase> = serde_json::from_str(&raw_json)?;
+    let cases: Vec<DrbgTestCase> = read_vectors(opts.acvp.vectors(&opts.drbg_json))?;
 
-        for drbg_test in &drbg_tests {
-            test_counter += 1;
-            log::info!("Test counter: {}", test_counter);
-            run_drbg_testcase(drbg_test, opts, &spi_console_device, &mut fail_counter)?;
-        }
+    let mut fail_counter = 0u32;
+    let mut responses = ResponseBuilder::new();
+    for (counter, case) in cases.iter().enumerate() {
+        log::info!("Test counter: {}", counter + 1);
+        run_drbg_testcase(
+            case,
+            opts,
+            &spi_console_device,
+            &mut fail_counter,
+            &mut responses,
+        )?;
     }
     assert_eq!(
-        0, fail_counter,
+        0,
+        fail_counter,
         "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        fail_counter,
+        cases.len()
     );
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {
