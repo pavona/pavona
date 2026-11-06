@@ -1,3 +1,7 @@
+// Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Unhardened byte-array authentication check for testing core fault detection.
 // Handling the authentication result in assembly avoids compiler-dependent lowering:
 //   Branchless: gpio = (compare - 1) XOR SUCCESS_WORD

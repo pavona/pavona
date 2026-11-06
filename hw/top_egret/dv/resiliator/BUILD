@@ -1,3 +1,7 @@
+# Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 load("//rules:fusesoc.bzl", "fusesoc_build")
 
 package(default_visibility = ["//visibility:public"])

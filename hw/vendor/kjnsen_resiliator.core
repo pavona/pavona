@@ -1,4 +1,8 @@
 CAPI=2:
+# Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 name: "kjnsen:dv:resiliator:0.1"
 description: "Resiliator fault-injection simulation driver"
 

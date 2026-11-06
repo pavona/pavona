@@ -1,3 +1,7 @@
+/* Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
 /* Linker script for the testbench's flat SRAM at address zero.
  * Ibex requires the exception entry at 0x00 and reset entry at 0x80.
  * start.S places both in .init.

@@ -1,3 +1,9 @@
+<!--
+Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+Licensed under the Apache License, Version 2.0, see LICENSE for details.
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Resiliator fault-injection testbench (Egret Ibex, lockstep)
 
 [Resiliator][resiliator] exhaustively evaluates a hardware/software combination

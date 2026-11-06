@@ -1,3 +1,7 @@
+# Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 # Build the Verilator fork with autoconf; its CMake build omits Resiliator.o.
 
 load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")

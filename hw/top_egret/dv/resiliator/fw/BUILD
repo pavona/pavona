@@ -1,3 +1,6 @@
+# Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
 load("//rules:linker.bzl", "ld_library")
 load("//rules/pavona:cc.bzl", "pavona_binary")

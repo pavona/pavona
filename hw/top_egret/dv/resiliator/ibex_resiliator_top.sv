@@ -1,3 +1,7 @@
+// Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
 // Resiliator fault-injection wrapper around the Egret Ibex core.
 //
 // The driver supplies clk and active-high rst. Firmware reports 

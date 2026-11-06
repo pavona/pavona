@@ -914,7 +914,7 @@
     },
     "//third_party/resiliator:extensions.bzl%resiliator": {
       "general": {
-        "bzlTransitiveDigest": "mYf7TAp0pnfHMyOZiVcdf9ypUlh7TsyCI44KHNFaRNI=",
+        "bzlTransitiveDigest": "ZowM4xtv75Acck9YkWKd4Siq0Knji7+tBDbiEPmrl2k=",
         "usagesDigest": "8sBTZotxa6i8AwsnZHkpjXGHiHWozBj5KoEXgOdRtvc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -927,7 +927,7 @@
                 "https://github.com/kjnsen/verilator/archive/a18d5f2b5a6e174c54920e3442886415c92c586a.tar.gz"
               ],
               "strip_prefix": "verilator-a18d5f2b5a6e174c54920e3442886415c92c586a",
-              "build_file": "@@//third_party/resiliator:BUILD.verilator.bazel",
+              "build_file": "@@//third_party/resiliator:BUILD.resiliator.bazel",
               "sha256": "7e23ef809c95c7b87c438c748c4bf3852a0d436a5dad3c7d20d1ea302c78a454"
             }
           }
