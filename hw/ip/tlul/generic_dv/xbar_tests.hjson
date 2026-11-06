@@ -101,6 +101,8 @@
                  // Thus reduce the number of runs (called `num_trans` in `dv_base_vseq`) to prevent
                  // timeouts.
                  "+max_num_trans=10",
+                 "+min_req_cnt=50",
+                 "+max_req_cnt=100",
                 ]
     }
 
@@ -120,6 +122,8 @@
                  // configurations. Thus reduce the number of runs (called `num_trans` in
                  // `dv_base_vseq`) to prevent timeouts.
                  "+max_num_trans=10",
+                 "+min_req_cnt=50",
+                 "+max_req_cnt=100",
                 ]
     }
 
@@ -147,6 +151,8 @@
                  // configurations. Thus reduce the number of runs (called `num_trans` in
                  // `dv_base_vseq`) to prevent timeouts.
                  "+max_num_trans=10",
+                 "+min_req_cnt=50",
+                 "+max_req_cnt=100",
                 ]
     }
 
