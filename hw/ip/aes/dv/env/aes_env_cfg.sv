@@ -25,6 +25,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   virtual fi_control_if aes_control_fi_vif[Sp2VWidth];
   virtual fi_cipher_if aes_cipher_control_fi_vif[Sp2VWidth];
   virtual fi_ctr_fsm_if aes_ctr_fsm_fi_vif[Sp2VWidth];
+  virtual fi_ghash_if aes_ghash_fi_vif;
   virtual fi_core_if aes_core_fi_vif;
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
@@ -35,6 +36,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                num_messages_max            = 1;
   int                message_len_min             = 128;
   int                message_len_max             = 128;
+  int                aad_len_min                 = 128;
+  int                aad_len_max                 = 128;
   bit                use_key_mask                = 0;
   bit                use_c_model_pct             = 0;
 
@@ -44,13 +47,14 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   bit                random_data_key_iv_order    = 1;
 
   // Mode distribution //
-  // There are 5 modes (ecb, cbc, ofb, cfb, ctr). The weight for mode X is called X_weight. By
-  // default, all weights are set equal at 10 (so each is selected 10/50 = 20% of the time).
+  // There are 6 modes (ecb, cbc, ofb, cfb, ctr, gcm). The weight for mode X is called X_weight. By
+  // default, all weights are set equal at 10 (so each is selected 10/60 = 16.66% of the time).
   int                ecb_weight                 = 10;
   int                cbc_weight                 = 10;
   int                ofb_weight                 = 10;
   int                cfb_weight                 = 10;
   int                ctr_weight                 = 10;
+  int                gcm_weight                 = 10;
 
   // KEYLEN weights
   // change of selecting 128b key
@@ -79,6 +83,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   bit [1:0]          fixed_operation            = AES_ENC;
   // fixed iv (will set all to bits 0)
   bit                fixed_iv_en                = 0;
+  // fixed aad (will set all to bits 0)
+  bit                fixed_aad_en               = 0;
 
   bit                fixed_keylen_en            = 0;
   bit [2:0]          fixed_keylen               = 3'b001;
@@ -94,7 +100,9 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   //   [1]: reseed error
   //   [2]: mode error
   //   [3]: key_len
-  cfg_error_type_t   config_error_type_en       = '{key_len:  1'b1,
+  //   [4]: gcm_phase
+  cfg_error_type_t   config_error_type_en       = '{gcm_phase:1'b1,
+                                                    key_len:  1'b1,
                                                     mode:     1'b1,
                                                     rsd_rate: 1'b1,
                                                     op:       1'b1};
@@ -218,6 +226,8 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| Min Number of message %d \t ", num_messages_min)};
     str = {str,  $sformatf("\n\t ----| Max message len %d bytes \t ", message_len_max)};
     str = {str,  $sformatf("\n\t ----| Min message len %d bytes \t ", message_len_min)};
+    str = {str,  $sformatf("\n\t ----| Max aad len %d bytes     \t ", aad_len_max)};
+    str = {str,  $sformatf("\n\t ----| Min aad len %d bytes     \t ", aad_len_min)};
     str = {str,  $sformatf("\n\t ----| Host response speed %s   \t ", host_resp_speed.name())};
     str = {str,  $sformatf("\n\t ----| Reference model:\t    %s              \t ",
          (ref_model==0) ? "C-MODEL" : "OPEN_SSL" )};
@@ -225,6 +235,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
     str = {str,  $sformatf("\n\t ----| ECB Weight: %d         \t ", ecb_weight)};
     str = {str,  $sformatf("\n\t ----| CBC Weight: %d         \t ", cbc_weight)};
     str = {str,  $sformatf("\n\t ----| CFB Weight: %d         \t ", cfb_weight)};
+    str = {str,  $sformatf("\n\t ----| GCM Weight: %d         \t ", gcm_weight)};
     str = {str,  $sformatf("\n\t ----| OFB Weight: %d         \t ", ofb_weight)};
     str = {str,  $sformatf("\n\t ----| CTR Weight: %d         \t ", ctr_weight)};
     str = {str,  $sformatf("\n\t ----| key mask:   %b         \t ", key_mask)};
@@ -298,6 +309,10 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
                            aes_ctr_fsm_fi_vif[nn])) begin
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
       end
+    end
+    if (!uvm_config_db#(virtual fi_ghash_if)::get(null, "*.env", "aes_ghash_fi_vif",
+                         aes_ghash_fi_vif)) begin
+      `uvm_fatal(`gfn, "FAILED TO GET HANDLE TO GHASH FAULT INJECTION INTERFACE")
     end
     if (!uvm_config_db#(virtual fi_core_if)::get(null, "*.env", "aes_core_fi_vif",
                          aes_core_fi_vif)) begin

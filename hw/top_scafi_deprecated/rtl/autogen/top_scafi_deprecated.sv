@@ -40,6 +40,7 @@ module top_scafi_deprecated #(
   // parameters for flash_macro_wrapper
   // parameters for rv_plic
   // parameters for aes
+  parameter bit AesAESGCMEnable = 1,
   parameter bit SecAesMasking = 1,
   parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
@@ -1206,6 +1207,7 @@ module top_scafi_deprecated #(
     .AlertAsyncOn(AsyncOnOutgoingAlertScafi_deprecated[21:20]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(AesAESGCMEnable),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),

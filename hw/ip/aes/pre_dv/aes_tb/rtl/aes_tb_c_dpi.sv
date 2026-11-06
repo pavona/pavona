@@ -7,10 +7,10 @@
 // bits of data and tag become visible at the module's output ports in the next clock cycle. The
 // flopped data and tag can be rotated by 32 positions to the right to make other bits visible.
 
-module aes_tlul_shim_tb_c_dpi
+module aes_tb_c_dpi
   import aes_pkg::*;
-  import aes_tlul_shim_tb_pkg::*;
   import aes_model_dpi_pkg::*;
+  import aes_tb_pkg::*;
 #(
     parameter int ADLength = 0,
     parameter int DataLength = 16
@@ -25,7 +25,9 @@ module aes_tlul_shim_tb_c_dpi
    input logic c_dpi_rotate_tag_i,   // Rotate tag  >> 32.
 
    output logic [31:0] c_dpi_data_o,
-   output logic [31:0] c_dpi_tag_o
+   output logic [31:0] c_dpi_tag_o,
+
+   output int          c_dpi_crypto_res_o
 );
 
   // Make the 32 least signification bits of data and tag visible at the output ports.
@@ -111,11 +113,14 @@ module aes_tlul_shim_tb_c_dpi
         c_dpi_input_i.iv,
         c_dpi_input_i.key_length,
         c_dpi_input_i.key,
+        DataLength,
+        ADLength,
         '0,
         '0,
         c_dpi_input_i.tag,
         c_dpi_data,
-        c_dpi_tag
+        c_dpi_tag,
+        c_dpi_crypto_res_o
       );
     end else if (ADLength == 0 && DataLength > 0) begin
       c_dpi_aes_crypt_message(
@@ -125,11 +130,14 @@ module aes_tlul_shim_tb_c_dpi
         c_dpi_input_i.iv,
         c_dpi_input_i.key_length,
         c_dpi_input_i.key,
+        DataLength,
+        ADLength,
         c_dpi_data_unp,
         '0,
         c_dpi_input_i.tag,
         c_dpi_data,
-        c_dpi_tag
+        c_dpi_tag,
+        c_dpi_crypto_res_o
       );
     end else if (ADLength > 0 && DataLength == 0) begin
       c_dpi_aes_crypt_message(
@@ -139,11 +147,14 @@ module aes_tlul_shim_tb_c_dpi
         c_dpi_input_i.iv,
         c_dpi_input_i.key_length,
         c_dpi_input_i.key,
+        DataLength,
+        ADLength,
         '0,
         c_dpi_ad_unp,
         c_dpi_input_i.tag,
         c_dpi_data,
-        c_dpi_tag
+        c_dpi_tag,
+        c_dpi_crypto_res_o
       );
     end else begin
       c_dpi_aes_crypt_message(
@@ -153,11 +164,14 @@ module aes_tlul_shim_tb_c_dpi
         c_dpi_input_i.iv,
         c_dpi_input_i.key_length,
         c_dpi_input_i.key,
+        DataLength,
+        ADLength,
         c_dpi_data_unp,
         c_dpi_ad_unp,
         c_dpi_input_i.tag,
         c_dpi_data,
-        c_dpi_tag
+        c_dpi_tag,
+        c_dpi_crypto_res_o
       );
     end
   end
