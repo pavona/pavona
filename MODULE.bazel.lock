@@ -334,12 +334,28 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "B4wV2E/XLm+H7olwIz+QWXdNCyWhgsya0is1fTtGcrc=",
+        "bzlTransitiveDigest": "iCjI/15+Jr12MfgxhJ+vrCtI3MEaKXkPhzT6RmvG5WQ=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "acvp_vectors_ctr-drbg_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "feaee0d9e2387fa88e6e9502336ac9d60a16d785ce3dd53fd97978deb871b433",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ctrDRBG-SP800-90Ar1/052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ctr-drbg_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7d760e84600e8eb4befbfd12cd09fda7313b07f2d1f48c5104a9a9866a4501d9",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ctrDRBG-SP800-90Ar1/052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9/prompt.json"
+            }
+          },
           "acvp_vectors_kdf-kmac_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -360,6 +376,8 @@
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
               "files": {
+                "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
+                "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json"
               }

@@ -31,6 +31,7 @@ PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
+    ("ctrDRBG", ""): ("drbg", "ctr_drbg"),
     ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),
     ("KDA", "HKDF"): ("hkdf", "hkdf"),
     ("HMAC-SHA2-384", ""): ("hmac_sha384", "hmac"),
