@@ -140,6 +140,26 @@ cc_library(
 )
 
 cc_library(
+    name = "hkdf",
+    srcs = ["hkdf.c"],
+    hdrs = ["hkdf.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hkdf",
+        "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hkdf_commands",
+    ],
+)
+
+cc_library(
     name = "hmac",
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
@@ -193,6 +213,27 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
         "//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands",
+    ],
+)
+
+cc_library(
+    name = "kdf_hmac",
+    srcs = ["kdf_hmac.c"],
+    hdrs = ["kdf_hmac.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hkdf",
+        "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:kdf_ctr",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:kdf_hmac_commands",
     ],
 )
 
@@ -321,7 +362,9 @@ FIRMWARE_DEPS = [
     ":ecdsa",
     ":ed25519",
     ":hash",
+    ":hkdf",
     ":hmac",
+    ":kdf_hmac",
     ":kmac",
     ":rsa",
     ":sphincsplus",

@@ -22,7 +22,9 @@
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ed25519_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/hkdf_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/kdf_hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/mldsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/mlkem_commands.h"
@@ -38,7 +40,9 @@
 #include "ecdsa.h"
 #include "ed25519.h"
 #include "hash.h"
+#include "hkdf.h"
 #include "hmac.h"
+#include "kdf_hmac.h"
 #include "kmac.h"
 #include "mldsa.h"
 #include "mlkem.h"
@@ -48,7 +52,9 @@
 // Scratch buffers for crypto tests.
 static union {
   hash_test_scratch_t hash;
+  hkdf_test_scratch_t hkdf;
   hmac_test_scratch_t hmac;
+  kdf_hmac_test_scratch_t kdf_hmac;
   mlkem_test_scratch_t mlkem;
   mldsa_test_scratch_t mldsa;
   sphincsplus_test_scratch_t sphincsplus;
@@ -87,8 +93,14 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandHashMct:
         RESP_ERR(uj, handle_hash_mct(uj, &cryptotest_scratch.hash));
         break;
+      case kCryptotestCommandHkdf:
+        RESP_ERR(uj, handle_hkdf(uj, &cryptotest_scratch.hkdf));
+        break;
       case kCryptotestCommandHmac:
         RESP_ERR(uj, handle_hmac(uj, &cryptotest_scratch.hmac));
+        break;
+      case kCryptotestCommandKdfHmac:
+        RESP_ERR(uj, handle_kdf_hmac(uj, &cryptotest_scratch.kdf_hmac));
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));

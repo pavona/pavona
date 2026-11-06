@@ -518,6 +518,44 @@ cryptotest(
     test_vectors = HMAC_SHA512_TESTVECTOR_TARGETS,
 )
 
+HKDF_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_kda_hkdf_json",
+]
+
+HKDF_TESTVECTOR_ARGS = " ".join([
+    "--hkdf-json=\"$(rootpath {})\"".format(target)
+    for target in HKDF_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "hkdf_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    test_args = HKDF_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hkdf_kat:harness",
+    test_vectors = HKDF_TESTVECTOR_TARGETS,
+)
+
+KDF_HMAC_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_kdf_hmac_json",
+]
+
+KDF_HMAC_TESTVECTOR_ARGS = " ".join([
+    "--kdf-hmac-json=\"$(rootpath {})\"".format(target)
+    for target in KDF_HMAC_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "kdf_hmac_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    test_args = KDF_HMAC_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/kdf_hmac_kat:harness",
+    test_vectors = KDF_HMAC_TESTVECTOR_TARGETS,
+)
+
 KMAC_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_kmac_{}.json".format(config)
     for config in [
@@ -597,9 +635,11 @@ test_suite(
         ":ecdh_kat",
         ":ecdsa_kat",
         ":ed25519_kat",
+        ":hkdf_kat",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
+        ":kdf_hmac_kat",
         ":kmac_kat",
         ":mldsa_kat",
         ":mlkem_kat",

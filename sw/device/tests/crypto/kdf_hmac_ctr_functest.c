@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -121,16 +122,30 @@ static status_t run_test(kdf_test_vector_t *test) {
       .keyblob_length = sizeof(km_keyblob),
   };
 
-  // Construct a buffer for the context.
-  otcrypto_const_byte_buf_t context = {
-      .data = test->kdf_context,
-      .len = test->kdf_context_bytelen,
-  };
-
-  // Construct a buffer for the label.
-  otcrypto_const_byte_buf_t label = {
-      .data = test->kdf_label,
-      .len = test->kdf_label_bytelen,
+  // Construct the fixed data as Label || 0x00 || Context || [L]_32.
+  uint8_t fixed_data_buf[64];
+  size_t fixed_data_len = test->kdf_label_bytelen + 1 +
+                          test->kdf_context_bytelen + sizeof(uint32_t);
+  if (fixed_data_len > sizeof(fixed_data_buf)) {
+    return OUT_OF_RANGE();
+  }
+  size_t offset = 0;
+  if (test->kdf_label_bytelen > 0) {
+    memcpy(&fixed_data_buf[offset], test->kdf_label, test->kdf_label_bytelen);
+    offset += test->kdf_label_bytelen;
+  }
+  fixed_data_buf[offset] = 0x00;
+  offset += 1;
+  if (test->kdf_context_bytelen > 0) {
+    memcpy(&fixed_data_buf[offset], test->kdf_context,
+           test->kdf_context_bytelen);
+    offset += test->kdf_context_bytelen;
+  }
+  uint32_t km_bitlen_be = __builtin_bswap32(test->km_bytelen * 8);
+  memcpy(&fixed_data_buf[offset], &km_bitlen_be, sizeof(km_bitlen_be));
+  otcrypto_const_byte_buf_t fixed_data = {
+      .data = fixed_data_buf,
+      .len = fixed_data_len,
   };
 
   // Run the KDF specified by the key mode.
@@ -138,7 +153,7 @@ static status_t run_test(kdf_test_vector_t *test) {
     case kOtcryptoKeyModeHmacSha256:
     case kOtcryptoKeyModeHmacSha384:
     case kOtcryptoKeyModeHmacSha512:
-      TRY(otcrypto_kdf_ctr_hmac(&kdk, label, context, &km));
+      TRY(otcrypto_kdf_ctr_hmac(&kdk, fixed_data, &km));
       break;
     default:
       LOG_INFO("Should never end up here.");
