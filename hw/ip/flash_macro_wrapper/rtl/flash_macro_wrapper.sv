@@ -6,6 +6,8 @@
 // Flash macro wrapper
 //
 
+`include "prim_assert.sv"
+
 module flash_macro_wrapper
   import flash_ctrl_pkg::*;
   import flash_macro_wrapper_pkg::*;
