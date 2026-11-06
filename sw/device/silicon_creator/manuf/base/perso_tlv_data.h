@@ -77,8 +77,8 @@ typedef enum perso_tlv_obj_header_fields {
 
   // Object type, one of perso_tlv_object_type_t.
   kObjhTypeFieldShift = kObjhSizeFieldWidth,
-  kObjhTypeFieldWidth =
-      sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
+  kObjhTypeFieldWidth = sizeof(perso_tlv_object_header_t) * 8 -
+      kObjhSizeFieldWidth,
   kObjhTypeFieldMask = (1 << kObjhTypeFieldWidth) - 1,
 } perso_tlv_obj_header_fields_t;
 
@@ -116,8 +116,8 @@ typedef enum perso_tlv_cert_header_fields {
 
   // Length of the certificate name immediately following the header.
   kCrthNameSizeFieldShift = kCrthSizeFieldWidth,
-  kCrthNameSizeFieldWidth =
-      sizeof(perso_tlv_cert_header_t) * 8 - kCrthSizeFieldWidth,
+  kCrthNameSizeFieldWidth = sizeof(perso_tlv_cert_header_t) * 8 -
+      kCrthSizeFieldWidth,
   kCrthNameSizeFieldMask = (1 << kCrthNameSizeFieldWidth) - 1,
 } perso_tlv_cert_header_fields_t;
 

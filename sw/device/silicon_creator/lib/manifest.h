@@ -629,7 +629,7 @@ inline manifest_digest_region_t manifest_digest_region_get(
     const manifest_t *manifest) {
   enum {
     kDigestRegionOffset = offsetof(manifest_t, usage_constraints) +
-                          sizeof(manifest->usage_constraints),
+        sizeof(manifest->usage_constraints),
   };
   return (manifest_digest_region_t){
       .start = (const char *)manifest + kDigestRegionOffset,

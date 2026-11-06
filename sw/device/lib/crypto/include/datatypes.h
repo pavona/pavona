@@ -401,74 +401,74 @@ typedef enum otcrypto_key_mode {
   // Key is intended for AES KWP mode.
   kOtcryptoKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
   // Key is intended for HMAC SHA256 mode.
-  kOtcryptoKeyModeHmacSha256 =
-      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
+  kOtcryptoKeyModeHmacSha256 = kOtcryptoKeyTypeHmac << 16 |
+      kOtcryptoHmacKeyModeSha256,
   // Key is intended for HMAC SHA384 mode.
-  kOtcryptoKeyModeHmacSha384 =
-      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha384,
+  kOtcryptoKeyModeHmacSha384 = kOtcryptoKeyTypeHmac << 16 |
+      kOtcryptoHmacKeyModeSha384,
   // Key is intended for HMAC SHA512 mode.
-  kOtcryptoKeyModeHmacSha512 =
-      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha512,
+  kOtcryptoKeyModeHmacSha512 = kOtcryptoKeyTypeHmac << 16 |
+      kOtcryptoHmacKeyModeSha512,
   // Key is intended for KMAC128 mode.
-  kOtcryptoKeyModeKmac128 =
-      kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac128,
+  kOtcryptoKeyModeKmac128 = kOtcryptoKeyTypeKmac << 16 |
+      kOtcryptoKmacKeyModeKmac128,
   // Key is intended for KMAC256 mode.
-  kOtcryptoKeyModeKmac256 =
-      kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac256,
+  kOtcryptoKeyModeKmac256 = kOtcryptoKeyTypeKmac << 16 |
+      kOtcryptoKmacKeyModeKmac256,
   // Key is intended for RSA signature RSASSA-PKCS mode.
-  kOtcryptoKeyModeRsaSignPkcs =
-      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPkcs,
+  kOtcryptoKeyModeRsaSignPkcs = kOtcryptoKeyTypeRsa << 16 |
+      kOtcryptoRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
-  kOtcryptoKeyModeRsaSignPss =
-      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPss,
+  kOtcryptoKeyModeRsaSignPss = kOtcryptoKeyTypeRsa << 16 |
+      kOtcryptoRsaKeyModeSignPss,
   // Key is intended for RSA encryption RSAES-OAEP mode.
-  kOtcryptoKeyModeRsaEncryptOaep =
-      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
+  kOtcryptoKeyModeRsaEncryptOaep = kOtcryptoKeyTypeRsa << 16 |
+      kOtcryptoRsaKeyModeEncryptOaep,
   // Key is intended for ECDSA with P-256.
-  kOtcryptoKeyModeEcdsaP256 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP256,
+  kOtcryptoKeyModeEcdsaP256 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeEcdsaP256,
   // Key is intended for ECDSA with P-384.
-  kOtcryptoKeyModeEcdsaP384 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP384,
+  kOtcryptoKeyModeEcdsaP384 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeEcdsaP384,
   // Key is intended for ECDH with P-256.
-  kOtcryptoKeyModeEcdhP256 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP256,
+  kOtcryptoKeyModeEcdhP256 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeEcdhP256,
   // Key is intended for ECDH with P-384.
-  kOtcryptoKeyModeEcdhP384 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP384,
+  kOtcryptoKeyModeEcdhP384 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeEcdhP384,
   // Key is intended for Ed25519 mode.
-  kOtcryptoKeyModeEd25519 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
+  kOtcryptoKeyModeEd25519 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeEd25519,
   // Key is intended for X25519 mode.
-  kOtcryptoKeyModeX25519 =
-      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
+  kOtcryptoKeyModeX25519 = kOtcryptoKeyTypeEcc << 16 |
+      kOtcryptoEccKeyModeX25519,
   // Key is intended for KDF-CTR with HMAC as PRF.
-  kOtcryptoKeyModeKdfCtrHmac =
-      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
+  kOtcryptoKeyModeKdfCtrHmac = kOtcryptoKeyTypeKdf << 16 |
+      kOtcryptoKdfKeyModeCtrHmac,
   // Key is intended for KDF with KMAC128 as PRF.
-  kOtcryptoKeyModeKdfKmac128 =
-      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac128,
+  kOtcryptoKeyModeKdfKmac128 = kOtcryptoKeyTypeKdf << 16 |
+      kOtcryptoKdfKeyModeKmac128,
   // Key is intended for KDF with KMAC256 as PRF.
-  kOtcryptoKeyModeKdfKmac256 =
-      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac256,
+  kOtcryptoKeyModeKdfKmac256 = kOtcryptoKeyTypeKdf << 16 |
+      kOtcryptoKdfKeyModeKmac256,
   // Key is intended for ML-KEM-512.
-  kOtcryptoKeyModeMlkem512 =
-      kOtcryptoKeyTypeMlkem << 16 | kOtcryptoMlkemKeyMode512,
+  kOtcryptoKeyModeMlkem512 = kOtcryptoKeyTypeMlkem << 16 |
+      kOtcryptoMlkemKeyMode512,
   // Key is intended for ML-KEM-768.
-  kOtcryptoKeyModeMlkem768 =
-      kOtcryptoKeyTypeMlkem << 16 | kOtcryptoMlkemKeyMode768,
+  kOtcryptoKeyModeMlkem768 = kOtcryptoKeyTypeMlkem << 16 |
+      kOtcryptoMlkemKeyMode768,
   // Key is intended for ML-KEM-1024.
-  kOtcryptoKeyModeMlkem1024 =
-      kOtcryptoKeyTypeMlkem << 16 | kOtcryptoMlkemKeyMode1024,
+  kOtcryptoKeyModeMlkem1024 = kOtcryptoKeyTypeMlkem << 16 |
+      kOtcryptoMlkemKeyMode1024,
   // Key is intended for ML-DSA-44.
-  kOtcryptoKeyModeMldsa44 =
-      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode44,
+  kOtcryptoKeyModeMldsa44 = kOtcryptoKeyTypeMldsa << 16 |
+      kOtcryptoMldsaKeyMode44,
   // Key is intended for ML-DSA-65.
-  kOtcryptoKeyModeMldsa65 =
-      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode65,
+  kOtcryptoKeyModeMldsa65 = kOtcryptoKeyTypeMldsa << 16 |
+      kOtcryptoMldsaKeyMode65,
   // Key is intended for ML-DSA-87.
-  kOtcryptoKeyModeMldsa87 =
-      kOtcryptoKeyTypeMldsa << 16 | kOtcryptoMldsaKeyMode87,
+  kOtcryptoKeyModeMldsa87 = kOtcryptoKeyTypeMldsa << 16 |
+      kOtcryptoMldsaKeyMode87,
 } otcrypto_key_mode_t;
 
 /**

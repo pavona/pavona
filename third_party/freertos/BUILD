@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "freertos",
     srcs = ["@freertos//:srcs"],
+    copts = ["-Wno-unused-but-set-global"],
     deps = [
         "//sw/device/lib/testing/test_framework:freertos_config",
         "@freertos//:hdrs",

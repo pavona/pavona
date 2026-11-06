@@ -19,10 +19,10 @@ enum {
   KProductExprMaxCountBytes = kProductExprMaxCount * sizeof(uint32_t),
 
   // The expected size of the strike region in bytes and words.
-  kExpectedStrikeRegionBytesCount =
-      kIsfbExpectedStrikeBitCount * sizeof(uint32_t),
-  kExpectedStrikeRegionWordsCount =
-      kExpectedStrikeRegionBytesCount / sizeof(uint32_t),
+  kExpectedStrikeRegionBytesCount = kIsfbExpectedStrikeBitCount *
+      sizeof(uint32_t),
+  kExpectedStrikeRegionWordsCount = kExpectedStrikeRegionBytesCount /
+      sizeof(uint32_t),
 };
 
 rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,

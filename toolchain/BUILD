@@ -238,7 +238,7 @@ cc_args(
 
 copy_directory(
     name = "lib-clang-include",
-    src = "@llvm_toolchain_llvm//:lib/clang/22/include",
+    src = "@llvm_toolchain_llvm//:lib/clang/23/include",
     out = "toolchain",
 )
 

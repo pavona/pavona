@@ -59,7 +59,7 @@ enum {
   kBank1StartPageNum = 256 + kRomExtPageCount,
 
   kFlashTestLoc = TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR +
-                  kBank1StartPageNum * kFlashBytesPerPage,
+      kBank1StartPageNum * kFlashBytesPerPage,
   // The ROM_EXT protects itself using regions 0-1.
   kFlashRegionNum = 2,
 };

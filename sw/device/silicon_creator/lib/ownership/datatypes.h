@@ -267,12 +267,12 @@ OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, data, 48);
 OT_ASSERT_SIZE(owner_application_key_t, 144);
 
 enum {
-  kTlvLenApplicationKeySpx =
-      offsetof(owner_application_key_t, data) + sizeof(sigverify_spx_key_t),
-  kTlvLenApplicationKeyEcdsa =
-      offsetof(owner_application_key_t, data) + sizeof(ecdsa_p256_public_key_t),
-  kTlvLenApplicationKeyHybrid =
-      offsetof(owner_application_key_t, data) + sizeof(hybrid_key_t),
+  kTlvLenApplicationKeySpx = offsetof(owner_application_key_t, data) +
+      sizeof(sigverify_spx_key_t),
+  kTlvLenApplicationKeyEcdsa = offsetof(owner_application_key_t, data) +
+      sizeof(ecdsa_p256_public_key_t),
+  kTlvLenApplicationKeyHybrid = offsetof(owner_application_key_t, data) +
+      sizeof(hybrid_key_t),
 };
 
 // clang-format off

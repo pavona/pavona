@@ -69,8 +69,8 @@ enum {
    * Size of the largest OTP partition to be measured.
    */
   kDiceMeasuredOtpPartitionMaxSizeIn32bitWords =
-      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
-       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+          (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+           OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
       sizeof(uint32_t),
 };
 

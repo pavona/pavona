@@ -20,13 +20,14 @@ enum {
   /**
    * Size of an ECDSA P256 signature component in bytes.
    */
-  kUtilEcdsaP256SignatureComponentBytes =
-      kUtilEcdsaP256SignatureComponentBits / 8,
+  kUtilEcdsaP256SignatureComponentBytes = kUtilEcdsaP256SignatureComponentBits /
+      8,
   /**
    * Size of an ECDSA P256 signature component in 32b words.
    */
   kUtilEcdsaP256SignatureComponentWords =
-      kUtilEcdsaP256SignatureComponentBytes / sizeof(uint32_t),
+          kUtilEcdsaP256SignatureComponentBytes /
+      sizeof(uint32_t),
 };
 
 /**

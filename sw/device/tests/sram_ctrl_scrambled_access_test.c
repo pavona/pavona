@@ -33,12 +33,12 @@ enum {
  */
 #if defined(OPENTITAN_IS_EGRET)
   kRetSramBaseAddr = TOP_EGRET_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-  kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_EGRET_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+  kRetRamLastAddr = kRetSramBaseAddr +
+      TOP_EGRET_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 #elif defined(OPENTITAN_IS_DRAGONFLY)
   kRetSramBaseAddr = TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-  kRetRamLastAddr =
-      kRetSramBaseAddr + TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
+  kRetRamLastAddr = kRetSramBaseAddr +
+      TOP_DRAGONFLY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 #else
 #error Unsupported top
 #endif

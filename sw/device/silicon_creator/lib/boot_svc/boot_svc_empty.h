@@ -19,8 +19,8 @@ enum {
   kBootSvcEmptyReqType = 0x54504d45,
   /** Empty boot services response: `TPME`. */
   kBootSvcEmptyResType = 0x454d5054,
-  kBootSvcEmptyPayloadWordCount =
-      CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX / sizeof(uint32_t),
+  kBootSvcEmptyPayloadWordCount = CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX /
+      sizeof(uint32_t),
 };
 
 /**

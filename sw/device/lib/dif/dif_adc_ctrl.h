@@ -98,10 +98,11 @@ typedef enum dif_adc_ctrl_filter {
  */
 typedef enum dif_adc_ctrl_irq_cause {
   DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_)
-  /**
-   * Sample ready cause in Oneshot mode.
-   */
-  kDifAdcCtrlIrqCauseTrans = 1U << ADC_CTRL_ADC_INTR_STATUS_TRANS_BIT,
+      /**
+       * Sample ready cause in Oneshot mode.
+       */
+      kDifAdcCtrlIrqCauseTrans = 1U
+      << ADC_CTRL_ADC_INTR_STATUS_TRANS_BIT,
   /**
    * Sample ready cause in Oneshot mode.
    */
@@ -112,8 +113,8 @@ typedef enum dif_adc_ctrl_irq_cause {
    * This is useful when clearing all IRQ causes at once, to initialize the ADC
    * Controller.
    */
-  kDifAdcCtrlIrqCauseAll =
-      (1U << (ADC_CTRL_ADC_INTR_STATUS_ONESHOT_BIT + 1)) - 1,
+  kDifAdcCtrlIrqCauseAll = (1U << (ADC_CTRL_ADC_INTR_STATUS_ONESHOT_BIT + 1)) -
+      1,
 } dif_adc_ctrl_irq_cause_t;
 
 #undef DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_

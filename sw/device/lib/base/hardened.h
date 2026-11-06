@@ -577,7 +577,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
       "unimp;"                                                        \
       ".L_HARDENED_OK_%=:;"                                           \
       OT_CAT(HARDENED_CHECK_INV_, op_) " %0, %1, .L_HARDENED_BAD_%=;" \
-      ::"r"(a_), "r"(b_))
+      ::"r"((uint32_t)(a_)), "r"((uint32_t)(b_)))
 // clang-format on
 
 #define HARDENED_TRAP_()                      \
