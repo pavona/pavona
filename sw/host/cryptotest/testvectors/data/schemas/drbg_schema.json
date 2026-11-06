@@ -28,9 +28,25 @@
         "type": "integer"
       },
       "algorithm": {
-        "description": "Should be drbg",
+        "description": "drbg, or the ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["drbg"]
+        "enum": ["drbg", "ctrDRBG"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
       },
       "entropy": {
         "description": "Initial entropy value",
@@ -59,6 +75,10 @@
       "additional_input_2": {
         "description": "Second additional value",
         "$ref": "#/$defs/byte_array"
+      },
+      "output_len": {
+        "description": "Length of the returned bits in bytes that an ACVP test asks for",
+        "type": "integer"
       },
       "output": {
         "description": "Expected random returned bits",
