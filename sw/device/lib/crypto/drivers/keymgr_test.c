@@ -52,44 +52,86 @@ status_t test_setup(void) {
 }
 
 /**
- * Test generating a single software-visible key.
+ * Test generating a single software-visible sealing key.
  *
  * This test just checks that the key generation process finished without
  * errors, without performing any validation on the key.
  */
-status_t sw_single_key_test(void) {
+status_t sw_single_key_sealing_test(void) {
   keymgr_output_t key;
-  return keymgr_generate_key_sw(kTestDiversification, &key);
+  return keymgr_generate_key_sw(kTestDiversification, kKeymgrCdiSealing, &key);
 }
 
 /**
- * Test generating a single sideloaded AES key.
+ * Test generating a single software-visible attestation key.
+ *
+ * This test just checks that the key generation process finished without
+ * errors, without performing any validation on the key.
+ */
+status_t sw_single_key_attestation_test(void) {
+  keymgr_output_t key;
+  return keymgr_generate_key_sw(kTestDiversification, kKeymgrCdiAttestation,
+                                &key);
+}
+
+/**
+ * Test generating a single sideloaded AES sealing key.
  *
  * This test just checks that the key generation process finished without
  * errors, without actually attempting to use the key.
  */
-status_t aes_basic_test(void) {
-  return keymgr_generate_key_aes(kTestDiversification);
+status_t aes_basic_sealing_test(void) {
+  return keymgr_generate_key_aes(kTestDiversification, kKeymgrCdiSealing);
 }
 
 /**
- * Test generating a single sideloaded KMAC key.
+ * Test generating a single sideloaded AES attestation key.
  *
  * This test just checks that the key generation process finished without
  * errors, without actually attempting to use the key.
  */
-status_t kmac_basic_test(void) {
-  return keymgr_generate_key_kmac(kTestDiversification);
+status_t aes_basic_attestation_test(void) {
+  return keymgr_generate_key_aes(kTestDiversification, kKeymgrCdiAttestation);
 }
 
 /**
- * Test generating a single sideloaded ACC key.
+ * Test generating a single sideloaded KMAC sealing key.
  *
  * This test just checks that the key generation process finished without
  * errors, without actually attempting to use the key.
  */
-status_t acc_basic_test(void) {
-  return keymgr_generate_key_acc(kTestDiversification);
+status_t kmac_basic_sealing_test(void) {
+  return keymgr_generate_key_kmac(kTestDiversification, kKeymgrCdiSealing);
+}
+
+/**
+ * Test generating a single sideloaded KMAC attestation key.
+ *
+ * This test just checks that the key generation process finished without
+ * errors, without actually attempting to use the key.
+ */
+status_t kmac_basic_attestation_test(void) {
+  return keymgr_generate_key_kmac(kTestDiversification, kKeymgrCdiAttestation);
+}
+
+/**
+ * Test generating a single sideloaded ACC sealing key.
+ *
+ * This test just checks that the key generation process finished without
+ * errors, without actually attempting to use the key.
+ */
+status_t acc_basic_sealing_test(void) {
+  return keymgr_generate_key_acc(kTestDiversification, kKeymgrCdiSealing);
+}
+
+/**
+ * Test generating a single sideloaded ACC attestation key.
+ *
+ * This test just checks that the key generation process finished without
+ * errors, without actually attempting to use the key.
+ */
+status_t acc_basic_attestation_test(void) {
+  return keymgr_generate_key_acc(kTestDiversification, kKeymgrCdiAttestation);
 }
 
 /**
@@ -114,12 +156,12 @@ static bool output_equiv(keymgr_output_t key1, keymgr_output_t key2) {
 }
 
 /**
- * Test generating software-visible keys with different salts.
+ * Test generating software-visible sealing keys with different salts.
  *
  * Different salts should produce different keys; the same salt should produce
  * the same key but with different masking.
  */
-status_t sw_keys_change_salt_test(void) {
+status_t sw_keys_change_salt_sealing_test(void) {
   // Copy the test data into a mutable structure.
   keymgr_diversification_t div;
   memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
@@ -127,12 +169,12 @@ status_t sw_keys_change_salt_test(void) {
 
   // Generate a key.
   keymgr_output_t key1;
-  TRY(keymgr_generate_key_sw(div, &key1));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key1));
 
   // Change the salt and generate the key again.
   div.salt[0]++;
   keymgr_output_t key2;
-  TRY(keymgr_generate_key_sw(div, &key2));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key2));
 
   // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
@@ -140,24 +182,24 @@ status_t sw_keys_change_salt_test(void) {
   // Change the salt back to its original value and generate a third time.
   div.salt[0]--;
   keymgr_output_t key3;
-  TRY(keymgr_generate_key_sw(div, &key3));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key3));
 
   // Check that the key is the equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
 
   // Check that the masking on the equivalent keys is different.
-  TRY_CHECK_ARRAYS_NE(key1.share0, key2.share0, sizeof(key1.share0));
+  TRY_CHECK_ARRAYS_NE(key1.share0, key3.share0, sizeof(key1.share0));
 
   return OK_STATUS();
 }
 
 /**
- * Test generating software-visible keys with different versions.
+ * Test generating software-visible attestation keys with different salts.
  *
- * Different versions should produce different keys; the same version should
- * produce the same key but with different masking.
+ * Different salts should produce different keys; the same salt should produce
+ * the same key but with different masking.
  */
-status_t sw_keys_change_version_test(void) {
+status_t sw_keys_change_salt_attestation_test(void) {
   // Copy the test data into a mutable structure.
   keymgr_diversification_t div;
   memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
@@ -165,12 +207,50 @@ status_t sw_keys_change_version_test(void) {
 
   // Generate a key.
   keymgr_output_t key1;
-  TRY(keymgr_generate_key_sw(div, &key1));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key1));
+
+  // Change the salt and generate the key again.
+  div.salt[0]++;
+  keymgr_output_t key2;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key2));
+
+  // Check that the keys are distinct.
+  TRY_CHECK(!output_equiv(key1, key2));
+
+  // Change the salt back to its original value and generate a third time.
+  div.salt[0]--;
+  keymgr_output_t key3;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key3));
+
+  // Check that the key is the equivalent to the first key when unmasked.
+  TRY_CHECK(output_equiv(key1, key3));
+
+  // Check that the masking on the equivalent keys is different.
+  TRY_CHECK_ARRAYS_NE(key1.share0, key3.share0, sizeof(key1.share0));
+
+  return OK_STATUS();
+}
+
+/**
+ * Test generating software-visible sealing keys with different versions.
+ *
+ * Different versions should produce different keys; the same version should
+ * produce the same key but with different masking.
+ */
+status_t sw_keys_change_version_sealing_test(void) {
+  // Copy the test data into a mutable structure.
+  keymgr_diversification_t div;
+  memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
+  div.version = kTestDiversification.version;
+
+  // Generate a key.
+  keymgr_output_t key1;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key1));
 
   // Change the version and generate the key again.
   div.version++;
   keymgr_output_t key2;
-  TRY(keymgr_generate_key_sw(div, &key2));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key2));
 
   // Check that the keys are distinct.
   TRY_CHECK(!output_equiv(key1, key2));
@@ -178,13 +258,51 @@ status_t sw_keys_change_version_test(void) {
   // Change the version back to its original value and generate a third time.
   div.version--;
   keymgr_output_t key3;
-  TRY(keymgr_generate_key_sw(div, &key3));
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiSealing, &key3));
 
   // Check that the key is the equivalent to the first key when unmasked.
   TRY_CHECK(output_equiv(key1, key3));
 
   // Check that the masking on the equivalent keys is different.
-  TRY_CHECK_ARRAYS_NE(key1.share0, key2.share0, sizeof(key1.share0));
+  TRY_CHECK_ARRAYS_NE(key1.share0, key3.share0, sizeof(key1.share0));
+
+  return OK_STATUS();
+}
+
+/**
+ * Test generating software-visible attestation keys with different versions.
+ *
+ * Different versions should produce different keys; the same version should
+ * produce the same key but with different masking.
+ */
+status_t sw_keys_change_version_attestation_test(void) {
+  // Copy the test data into a mutable structure.
+  keymgr_diversification_t div;
+  memcpy(div.salt, kTestDiversification.salt, sizeof(div.salt));
+  div.version = kTestDiversification.version;
+
+  // Generate a key.
+  keymgr_output_t key1;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key1));
+
+  // Change the version and generate the key again.
+  div.version++;
+  keymgr_output_t key2;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key2));
+
+  // Check that the keys are distinct.
+  TRY_CHECK(!output_equiv(key1, key2));
+
+  // Change the version back to its original value and generate a third time.
+  div.version--;
+  keymgr_output_t key3;
+  TRY(keymgr_generate_key_sw(div, kKeymgrCdiAttestation, &key3));
+
+  // Check that the key is the equivalent to the first key when unmasked.
+  TRY_CHECK(output_equiv(key1, key3));
+
+  // Check that the masking on the equivalent keys is different.
+  TRY_CHECK_ARRAYS_NE(key1.share0, key3.share0, sizeof(key1.share0));
 
   return OK_STATUS();
 }
@@ -195,12 +313,18 @@ bool test_main(void) {
   static status_t result;
 
   EXECUTE_TEST(result, test_setup);
-  EXECUTE_TEST(result, sw_single_key_test);
-  EXECUTE_TEST(result, sw_keys_change_salt_test);
-  EXECUTE_TEST(result, sw_keys_change_version_test);
-  EXECUTE_TEST(result, aes_basic_test);
-  EXECUTE_TEST(result, kmac_basic_test);
-  EXECUTE_TEST(result, acc_basic_test);
+  EXECUTE_TEST(result, sw_single_key_sealing_test);
+  EXECUTE_TEST(result, sw_single_key_attestation_test);
+  EXECUTE_TEST(result, sw_keys_change_salt_sealing_test);
+  EXECUTE_TEST(result, sw_keys_change_salt_attestation_test);
+  EXECUTE_TEST(result, sw_keys_change_version_sealing_test);
+  EXECUTE_TEST(result, sw_keys_change_version_attestation_test);
+  EXECUTE_TEST(result, aes_basic_sealing_test);
+  EXECUTE_TEST(result, aes_basic_attestation_test);
+  EXECUTE_TEST(result, kmac_basic_sealing_test);
+  EXECUTE_TEST(result, kmac_basic_attestation_test);
+  EXECUTE_TEST(result, acc_basic_sealing_test);
+  EXECUTE_TEST(result, acc_basic_attestation_test);
 
   return status_ok(result);
 }

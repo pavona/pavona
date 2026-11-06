@@ -133,19 +133,17 @@ static status_t keymgr_wait_until_done(void) {
 /**
  * Set the control register of the key manager.
  *
- * The CDI select bit is always set to false for this driver (i.e. Sealing
- * CDI). The driver does not support attestation CDI.
- *
  * @param dest (NONE, AES, ACC, or KMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
+ * @param cdi_sel_bit (kKeymgrCdiSealing or kKeymgrCdiAttestation)
  */
-#define WRITE_CTRL(dest, operation)                                            \
+#define WRITE_CTRL(dest, operation, cdi_sel_bit)                               \
   do {                                                                         \
     uint32_t ctrl =                                                            \
         bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,      \
                                KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_##dest); \
     ctrl = bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT,     \
-                                false);                                        \
+                                (cdi_sel_bit));                                \
     ctrl = bitfield_field32_write(                                             \
         ctrl, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,                         \
         KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_##operation##_OUTPUT);         \
@@ -158,14 +156,15 @@ static status_t keymgr_wait_until_done(void) {
  *
  * @param dest (NONE, AES, ACC, or KMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
+ * @param cdi_sel_bit (kKeymgrCdiSealing or kKeymgrCdiAttestation)
  */
-#define VERIFY_CTRL(dest, operation)                                           \
+#define VERIFY_CTRL(dest, operation, cdi_sel_bit)                              \
   do {                                                                         \
     uint32_t ctrl =                                                            \
         bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,      \
                                KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_##dest); \
     ctrl = bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT,     \
-                                false);                                        \
+                                (cdi_sel_bit));                                \
     ctrl = bitfield_field32_write(                                             \
         ctrl, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD,                         \
         KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_##operation##_OUTPUT);         \
@@ -175,20 +174,20 @@ static status_t keymgr_wait_until_done(void) {
   } while (false);
 
 status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
-                                keymgr_output_t *key) {
+                                keymgr_cdi_t cdi, keymgr_output_t *key) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a software-visible key.
-  WRITE_CTRL(NONE, GENERATE_SW);
+  WRITE_CTRL(NONE, GENERATE_SW, cdi);
 
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
 
   // Check the control register.
-  VERIFY_CTRL(NONE, GENERATE_SW);
+  VERIFY_CTRL(NONE, GENERATE_SW, cdi);
 
   // Randomize the destination buffer.
   hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
@@ -205,52 +204,55 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   return OTCRYPTO_OK;
 }
 
-status_t keymgr_generate_key_aes(keymgr_diversification_t diversification) {
+status_t keymgr_generate_key_aes(keymgr_diversification_t diversification,
+                                 keymgr_cdi_t cdi) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an AES key.
-  WRITE_CTRL(AES, GENERATE_HW);
+  WRITE_CTRL(AES, GENERATE_HW, cdi);
 
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
   // Check the control register.
-  VERIFY_CTRL(AES, GENERATE_HW);
+  VERIFY_CTRL(AES, GENERATE_HW, cdi);
 
   return OTCRYPTO_OK;
 }
 
-status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification) {
+status_t keymgr_generate_key_kmac(keymgr_diversification_t diversification,
+                                  keymgr_cdi_t cdi) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate a KMAC key.
-  WRITE_CTRL(KMAC, GENERATE_HW);
+  WRITE_CTRL(KMAC, GENERATE_HW, cdi);
 
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
   // Check the control register.
-  VERIFY_CTRL(KMAC, GENERATE_HW);
+  VERIFY_CTRL(KMAC, GENERATE_HW, cdi);
   return OTCRYPTO_OK;
 }
 
-status_t keymgr_generate_key_acc(keymgr_diversification_t diversification) {
+status_t keymgr_generate_key_acc(keymgr_diversification_t diversification,
+                                 keymgr_cdi_t cdi) {
   // Ensure that the entropy complex has been initialized and keymgr is idle.
   HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(keymgr_is_idle());
 
   // Set the control register to generate an ACC key.
-  WRITE_CTRL(ACC, GENERATE_HW);
+  WRITE_CTRL(ACC, GENERATE_HW, cdi);
 
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
   // Check the control register.
-  VERIFY_CTRL(ACC, GENERATE_HW);
+  VERIFY_CTRL(ACC, GENERATE_HW, cdi);
   return OTCRYPTO_OK;
 }
 
