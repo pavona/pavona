@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -13,6 +13,17 @@ filegroup(
 
 py_binary(
     name = "standalone",
+    srcs = ["standalone.py"],
+    deps = [
+        "//hw/ip/acc/dv/accsim/sim:load_elf",
+        "//hw/ip/acc/dv/accsim/sim:standalonesim",
+        "//hw/ip/acc/dv/accsim/sim:stats",
+        "//hw/ip/acc/util/shared:testcase",
+    ],
+)
+
+py_library(
+    name = "standalone_lib",
     srcs = ["standalone.py"],
     deps = [
         "//hw/ip/acc/dv/accsim/sim:load_elf",

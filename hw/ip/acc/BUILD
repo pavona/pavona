@@ -89,3 +89,12 @@ filegroup(
         "//hw/ip/acc/dv/verilator:cc_files",
     ],
 )
+
+test_suite(
+    name = "standalone_tests",
+    tests = [
+        "//hw/ip/acc/dv/accsim/test:acc_iss_test",
+        "//hw/ip/acc/dv/smoke:run_smoke_test",
+        "//hw/ip/acc/dv/smoke_pqc:run_smoke_test",
+    ],
+)

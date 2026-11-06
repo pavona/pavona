@@ -211,14 +211,8 @@ jobs:
         run: |
           python3 --version
           fusesoc --version
-      - name: ACC ISS test
-        run: make -C hw/ip/acc/dv/accsim test
-      - name: ACC smoke test
-        run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke:run_smoke_test
-      - name: ACC PQC smoke test
-        run: ./bazelisk.sh test --test_output=errors //hw/ip/acc/dv/smoke_pqc:run_smoke_test
-      - name: Assemble & link code snippets
-        run: make -C hw/ip/acc/util asm-check
+      - name: ACC Standalone Tests
+        run: ./bazelisk.sh test --test_output=errors //hw/ip/acc:standalone_tests
 
   acc_crypto_tests:
     name: Run ACC crypto tests
