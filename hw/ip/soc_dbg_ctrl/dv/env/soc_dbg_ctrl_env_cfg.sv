@@ -8,6 +8,8 @@ class soc_dbg_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(soc_dbg_ctrl_core_r
   // External interfaces
   misc_vif_t misc_vif;
 
+  rand clk_rst_agent_cfg clk_rst_agt_cfg;
+
   string jtag_ral_name = "soc_dbg_ctrl_jtag_reg_block";
 
   // Standard SV/UVM methods
@@ -30,4 +32,5 @@ function void soc_dbg_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   clk_freqs_mhz[jtag_ral_name] = clk_freq_mhz;
 
   super.initialize(csr_base_addr);
+  clk_rst_agt_cfg = clk_rst_agent_cfg::type_id::create("clk_rst_agt_cfg");
 endfunction : initialize

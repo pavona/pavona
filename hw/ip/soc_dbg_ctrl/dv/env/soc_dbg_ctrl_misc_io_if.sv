@@ -42,6 +42,20 @@ interface soc_dbg_ctrl_misc_io_if();
   logic             halt_cpu_boot;
   pwrmgr_data_t     continue_cpu_boot;
 
+  // Drive inputs to safe defaults at time 0 so the DUT's ASSERT_KNOWN checks on
+  // soc_dbg_policy_bus_o do not fire in the window between reset deassertion and
+  // the sequence's dut_init() re-drive
+  initial begin
+    soc_dbg_state   = SocDbgStBlank;
+    lc_dft_en       = Off;
+    lc_hw_debug_en  = Off;
+    lc_raw_test_rma = Off;
+    lc_cpu_en       = Off;
+    lc_rma_state    = Off;
+    boot_status     = '0;
+    halt_cpu_boot   = 1'b1;
+  end
+
   // Methods to manage soc_dbg_policy_bus
   function automatic soc_dbg_policy_t get_soc_dbg_policy_bus();
     return soc_dbg_policy_bus;
