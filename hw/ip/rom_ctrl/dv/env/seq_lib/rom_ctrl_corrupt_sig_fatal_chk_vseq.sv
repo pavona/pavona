@@ -142,7 +142,11 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1
     wait_clks = 10;
   end
   else begin
-    wait_clks = 10000;
+    // This formula is set so that the number of cycles waited is just under the number of
+    // words for the corresponding ROM. This is because that number of cycles corresponds to
+    // roughly the number of cycles it takes to check each word, so it needs to wait just
+    // under that number
+    wait_clks = RomSizeWords - RomSizeWords / 8;
   end
   wait_with_bound(wait_clks);
 
