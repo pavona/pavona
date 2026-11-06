@@ -3,6 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import copy
 import random
 from typing import Optional, Tuple
 
@@ -285,15 +286,25 @@ class BadDeepLoop(SnippetGen):
         if fat_count < insns_needed:
             return None
 
+        # Modify a copy of the model in case the _gen_loop_stack fails.
+        # Otherwise the half generated loop will create a section-address gap
+        # in the final program.
+        model_copy = copy.deepcopy(model)
+        program_copy = copy.deepcopy(program)
+
         # At this point, we *should* be able to make the loop unconditionally.
-        snippet, new_model = self._gen_loop_stack(model, program)
+        snippet, new_model = self._gen_loop_stack(model_copy, program_copy)
         if new_model is None:
             return None
+
+        # If we have succeeded in producing a bad loop update the model.
         model = new_model
 
         # Required to prevent assembly gen build error due to IMEM size increase.
         # Refer to _pick_bodysize for description.
         if snippet is None:
             return None
+
+        snippet.insert_into_program(program)
 
         return (snippet, model)

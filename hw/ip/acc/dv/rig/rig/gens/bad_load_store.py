@@ -197,7 +197,7 @@ class BadLoadStore(SnippetGen):
 
             op_val = [op_val_grs2, offset_val, op_val_grs1]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        return ProgInsn(insn, op_val, ('dmem', model.dmem_size))
 
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
         '''Fill out a BN.LID or BN.SID instruction'''
@@ -287,4 +287,4 @@ class BadLoadStore(SnippetGen):
 
             op_val = [op_val_grs1, op_val_wrs, bn_offset_val, 0]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        return ProgInsn(insn, op_val, ('dmem', model.dmem_size))
