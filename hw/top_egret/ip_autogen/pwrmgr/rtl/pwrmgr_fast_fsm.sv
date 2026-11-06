@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
+module pwrmgr_fast_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,
   input rst_ni,
   input clk_slow_i,
@@ -133,7 +133,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // Any reset request was asserted.
   assign reset_req = |reset_reqs_i;
 
-  // Any peripheral triggererd hardware reset request.
+  // Any peripheral triggered hardware reset request.
   assign hw_rst_req = |reset_reqs_i[NumRstReqs-1:0];
 
   // Direct reset request that bypass checks.

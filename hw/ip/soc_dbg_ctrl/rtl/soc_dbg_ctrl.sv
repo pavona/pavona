@@ -311,7 +311,7 @@ module soc_dbg_ctrl
   // Leverages the power manager's ROM integrity check function to enable this functionality.
   //   * pwrmgr_data_t -> done is used to halt / continue
   //   * pwrmgr_data_t -> good is permanently set to True
-  //   * A side note: ROM integrity check is disabled in pwrmgr_fsm in TEST / RMA states
+  //   * A side note: ROM integrity check is disabled in pwrmgr_fast_fsm in TEST / RMA states
   //
   // IBEX fetch is halted in the following scenario:
   //   * lc_dft_en_i is True, i.e. the Lifecycle is in TEST or RMA state and

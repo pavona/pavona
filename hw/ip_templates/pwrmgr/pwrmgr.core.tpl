@@ -25,7 +25,7 @@ filesets:
     files:
       - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv
-      - rtl/pwrmgr_fsm.sv
+      - rtl/pwrmgr_fast_fsm.sv
       - rtl/pwrmgr_wake_info.sv
       - rtl/pwrmgr.sv
     file_type: systemVerilogSource
