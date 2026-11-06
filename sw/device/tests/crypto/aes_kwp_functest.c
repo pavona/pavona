@@ -78,7 +78,11 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
           .data = wrapped_key_data,
           .len = ARRAYSIZE(wrapped_key_data),
       },
-      key_kek, &success, &unwrapped_key);
+      key_kek, &success, &unwrapped_key,
+      (otcrypto_word32_buf_t){
+          .data = wrapped_key_data,
+          .len = ARRAYSIZE(wrapped_key_data),
+      });
   profile_end_and_print(unwrap_start, unwrap_name);
   TRY(err);
 

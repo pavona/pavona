@@ -50,8 +50,8 @@ static status_t aes_spin_until(uint32_t bit) {
   }
 }
 
-status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
-                      const size_t plaintext_len, uint32_t *ciphertext) {
+status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *buf,
+                      const size_t plaintext_len) {
   // The plaintext length is expected to be at most 2^32 bytes.
   if (plaintext_len > UINT32_MAX || plaintext_len == 0) {
     return OTCRYPTO_BAD_ARGS;
@@ -71,7 +71,7 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
   HARDENED_TRY(aes_encrypt_begin(kek, /*iv=*/NULL));
 
   // Set the padding bytes for the plaintext if needed.
-  unsigned char *pad_start = ((unsigned char *)plaintext) + plaintext_len;
+  unsigned char *pad_start = ((unsigned char *)buf) + plaintext_len;
   memset(pad_start, 0, pad_len);
 
   // This implementation follows the "indexing" method for the wrapping
@@ -84,30 +84,21 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
 
   // Construct the first semiblock (A): a fixed 32-bit prefix followed by the
   // byte-length encoded as a big-endian 32-bit integer.
-  uint32_t *A = ciphertext;
+  uint32_t A[kSemiblockWords];
   A[0] = 0xa65959a6;
   A[1] = __builtin_bswap32(plaintext_len);
 
   uint64_t t = 1;
   for (size_t j = 0; j < 6; j++) {
-    uint32_t *Ri = ciphertext + kSemiblockWords;
+    uint32_t *Ri = buf;
     for (size_t i = 0; i < plaintext_semiblocks; i++) {
       HARDENED_TRY(aes_spin_until(AES_STATUS_INPUT_READY_BIT));
 
       // Send A || R[i] to the AES block.
       abs_mmio_write32(aes_base() + AES_DATA_IN_0_REG_OFFSET, A[0]);
       abs_mmio_write32(aes_base() + AES_DATA_IN_1_REG_OFFSET, A[1]);
-      if (j == 0) {
-        // For the first iteration of the outer loop, we fetch R[i] from the
-        // plaintext.
-        abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET,
-                         plaintext[i * kSemiblockWords]);
-        abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET,
-                         plaintext[i * kSemiblockWords + 1]);
-      } else {
-        abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET, Ri[0]);
-        abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET, Ri[1]);
-      }
+      abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET, Ri[0]);
+      abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET, Ri[1]);
 
       HARDENED_TRY(aes_spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
@@ -130,12 +121,19 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
     }
   }
 
+  // Shift R up by one semiblock and write A in front.
+  for (size_t k = plaintext_semiblocks * kSemiblockWords; k > 0; k--) {
+    buf[k + kSemiblockWords - 1] = buf[k - 1];
+  }
+  buf[0] = A[0];
+  buf[1] = A[1];
+
   return OTCRYPTO_OK;
 }
 
-status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
+status_t aes_kwp_unwrap(const aes_key_t kek, uint32_t *buf,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext, size_t *plaintext_len) {
+                        size_t *plaintext_len) {
   // The ciphertext length is expected to be nonempty, at most 2^32 bytes, and
   // a multiple of the semiblock size.
   if (ciphertext_len > UINT32_MAX || ciphertext_len == 0 ||
@@ -164,11 +162,16 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   // Construct A from the first semiblock of ciphertext.
   uint32_t A[kSemiblockWords];
-  memcpy(A, ciphertext, sizeof(A));
+  memcpy(A, buf, sizeof(A));
+
+  // Shift R down by one semiblock and unwrap it in place.
+  for (size_t k = 0; k < (ciphertext_semiblocks - 1) * kSemiblockWords; k++) {
+    buf[k] = buf[k + kSemiblockWords];
+  }
 
   uint64_t t = 6 * ((uint64_t)ciphertext_semiblocks - 1);
   for (size_t j = 0; j < 6; j++) {
-    uint32_t *Ri = plaintext + (ciphertext_semiblocks - 1) * kSemiblockWords;
+    uint32_t *Ri = buf + (ciphertext_semiblocks - 1) * kSemiblockWords;
     for (size_t i = ciphertext_semiblocks - 1; 1 <= i; i--) {
       // Encode the index and XOR it with the first semiblock (A ^ t).
       A[0] ^= __builtin_bswap32((uint32_t)(t >> 32));
@@ -181,16 +184,8 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
       // Write A || R[i] into the AES block.
       abs_mmio_write32(aes_base() + AES_DATA_IN_0_REG_OFFSET, A[0]);
       abs_mmio_write32(aes_base() + AES_DATA_IN_1_REG_OFFSET, A[1]);
-      if (j == 0) {
-        // For the first iteration, we fetch Ri from the ciphertext.
-        abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET,
-                         ciphertext[i * kSemiblockWords]);
-        abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET,
-                         ciphertext[i * kSemiblockWords + 1]);
-      } else {
-        abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET, Ri[0]);
-        abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET, Ri[1]);
-      }
+      abs_mmio_write32(aes_base() + AES_DATA_IN_2_REG_OFFSET, Ri[0]);
+      abs_mmio_write32(aes_base() + AES_DATA_IN_3_REG_OFFSET, Ri[1]);
 
       HARDENED_TRY(aes_spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
@@ -214,7 +209,7 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   // the padding length is valid.
   if (launder32(A[0]) != 0xa65959a6 || pad_len >= kSemiblockBytes) {
     *success = kHardenedBoolFalse;
-    memset(plaintext, 0, ciphertext_len);
+    memset(buf, 0, ciphertext_len);
     return OTCRYPTO_OK;
   }
   HARDENED_CHECK_EQ(A[0], 0xa65959a6);
@@ -222,12 +217,12 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   // Check that the padding bytes are zero. Note: this should happen only after
   // the prefix check. Otherwise it could expose a padding oracle, because
   // this check isn't constant-time.
-  unsigned char *pad_start = ((unsigned char *)plaintext) + *plaintext_len;
+  unsigned char *pad_start = ((unsigned char *)buf) + *plaintext_len;
   size_t i;
   for (i = 0; launder32(i) < pad_len; ++i) {
     if (launder32(pad_start[i]) != 0) {
       *success = kHardenedBoolFalse;
-      memset(plaintext, 0, ciphertext_len);
+      memset(buf, 0, ciphertext_len);
       return OTCRYPTO_OK;
     }
     HARDENED_CHECK_EQ(pad_start[i], 0);

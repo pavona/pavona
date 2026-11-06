@@ -221,8 +221,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   uint32_t config_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   size_t keyblob_words = key_to_wrap->keyblob_length / sizeof(uint32_t);
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
-  uint32_t plaintext[plaintext_num_words];
-  hardened_memshred(plaintext, ARRAYSIZE(plaintext));
+  uint32_t *plaintext = wrapped_key.data;
+  hardened_memshred(plaintext, plaintext_num_words);
   hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
   plaintext[config_words] = key_to_wrap->checksum;
   plaintext[config_words + 1] = keyblob_words;
@@ -230,18 +230,27 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
                   keyblob_words);
 
   // Wrap the key.
-  return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
+  status_t err =
+      aes_kwp_wrap(kek, plaintext, plaintext_num_words * sizeof(uint32_t));
+  if (launder32(OT_UNSIGNED(err.value)) != kHardenedBoolTrue) {
+    hardened_memshred(wrapped_key.data, wrapped_key.len);
+    return err;
+  }
+  HARDENED_CHECK_EQ(err.value, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
                                       const otcrypto_blinded_key_t *key_kek,
                                       hardened_bool_t *success,
-                                      otcrypto_blinded_key_t *unwrapped_key) {
+                                      otcrypto_blinded_key_t *unwrapped_key,
+                                      otcrypto_word32_buf_t work) {
   *success = kHardenedBoolFalse;
 
   if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||
       success == NULL || unwrapped_key == NULL ||
-      unwrapped_key->keyblob == NULL) {
+      unwrapped_key->keyblob == NULL || work.data == NULL ||
+      work.len < wrapped_key.len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -258,12 +267,22 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Unwrap the key.
-  uint32_t plaintext[wrapped_key.len];
+  // Copy the wrapped key into the work buffer, unless they are the same.
+  if (work.data != wrapped_key.data) {
+    memcpy(work.data, wrapped_key.data, wrapped_key.len * sizeof(uint32_t));
+  }
+
+  // Unwrap the key in place.
+  uint32_t *plaintext = work.data;
   size_t plaintext_len;
-  HARDENED_TRY(aes_kwp_unwrap(kek, wrapped_key.data,
-                              wrapped_key.len * sizeof(uint32_t), success,
-                              plaintext, &plaintext_len));
+  status_t err =
+      aes_kwp_unwrap(kek, plaintext, wrapped_key.len * sizeof(uint32_t),
+                     success, &plaintext_len);
+  if (launder32(OT_UNSIGNED(err.value)) != kHardenedBoolTrue) {
+    hardened_memshred(work.data, wrapped_key.len);
+    return err;
+  }
+  HARDENED_CHECK_EQ(err.value, kHardenedBoolTrue);
 
   if (launder32(*success) != kHardenedBoolTrue) {
     *success = kHardenedBoolFalse;
@@ -287,21 +306,25 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
     size_t keyblob_exp_words = 0;
     keyblob_num_words(unwrapped_key->config, &keyblob_exp_words);
     if (keyblob_words != keyblob_exp_words) {
+      hardened_memshred(work.data, wrapped_key.len);
       *success = kHardenedBoolFalse;
       return OTCRYPTO_OK;
     }
   } else {
     // Invalid value for hw_backed
+    hardened_memshred(work.data, wrapped_key.len);
     *success = kHardenedBoolFalse;
     return OTCRYPTO_OK;
   }
 
   // Extract the keyblob.
   if (unwrapped_key->keyblob_length != keyblob_words * sizeof(uint32_t)) {
+    hardened_memshred(work.data, wrapped_key.len);
     return OTCRYPTO_BAD_ARGS;
   }
   hardened_memcpy(unwrapped_key->keyblob, plaintext + config_words + 2,
                   keyblob_words);
+  hardened_memshred(work.data, wrapped_key.len);
 
   // Finally, check the integrity of the key material we unwrapped.
   *success = integrity_blinded_key_check(unwrapped_key);

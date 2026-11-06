@@ -27,7 +27,8 @@ typedef struct otcrypto_interface_t {
                                 otcrypto_word32_buf_t);
   otcrypto_status_t (*key_unwrap)(otcrypto_const_word32_buf_t,
                                   const otcrypto_blinded_key_t *,
-                                  hardened_bool_t *, otcrypto_blinded_key_t *);
+                                  hardened_bool_t *, otcrypto_blinded_key_t *,
+                                  otcrypto_word32_buf_t);
   otcrypto_status_t (*import_blinded_key)(
       const otcrypto_const_word32_buf_t key_share0,
       const otcrypto_const_word32_buf_t key_share1, otcrypto_blinded_key_t *);

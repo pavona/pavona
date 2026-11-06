@@ -29,20 +29,18 @@ extern "C" {
  * will be zeroed. The plaintext must be at least 16 bytes long, and must be
  * shorter than 2^32 bytes.
  *
- * The ciphertext buffer must be long enough to hold the *padded* version of
- * the plaintext; this means the length should be rounded up to the next
- * multiple of 64 bits. If the key length is a multiple of 64 bits, then the
- * ciphertext and plaintext should be the same length.
+ * The plaintext is wrapped in place. The buffer must be long enough to hold
+ * the ciphertext, which is the plaintext length rounded up to the next
+ * multiple of 64 bits, plus 64 bits.
  *
  * @param kek Key encryption key, AES key to encrypt with.
- * @param plaintext Key material to wrap.
+ * @param[in,out] buf Plaintext to wrap; overwritten by the ciphertext.
  * @param plaintext_len Plaintext length in bytes.
- * @param[out] ciphertext Output buffer.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
-                      const size_t plaintext_len, uint32_t *ciphertext);
+status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *buf,
+                      const size_t plaintext_len);
 
 /**
  * AES Key Wrapping with Padding (KWP) authenticated decryption.
@@ -58,23 +56,25 @@ status_t aes_kwp_wrap(const aes_key_t kek, uint32_t *plaintext,
  * uninitialized). The ciphertext must be at least 24 bytes long, and must be
  * shorter than 2^32 bytes.
  *
+ * The ciphertext is unwrapped in place. On return, the plaintext starts at the
+ * beginning of the buffer.
+ *
  * An OK status from this routine does NOT mean that the unwrapping succeeded,
  * only that there were no errors during execution. The caller must check both
  * the returned status and the `success` parameter before reading the
  * plaintext.
  *
  * @param kek Key encryption key, AES key to decrypt with.
- * @param ciphertext Key material to unwrap.
+ * @param[in,out] buf Ciphertext to unwrap; overwritten by the plaintext.
  * @param ciphertext_len Ciphertext length in bytes.
  * @param[out] success Whether the ciphertext was valid.
- * @param[out] plaintext Output buffer, same length as ciphertext.
  * @param[out] plaintext_len Plaintext length in bytes.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
+status_t aes_kwp_unwrap(const aes_key_t kek, uint32_t *buf,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext, size_t *plaintext_len);
+                        size_t *plaintext_len);
 
 #ifdef __cplusplus
 }  // extern "C"

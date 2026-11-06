@@ -137,17 +137,24 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
  * succeeded; the caller must check both the returned status and the `success`
  * parameter before reading the unwrapped key.
  *
+ * The caller must provide a work buffer at least as long as `wrapped_key`.
+ * The work buffer may be the same buffer as `wrapped_key`, to unwrap the key in
+ * its own buffer, in which case `wrapped_key` is overwritten. Otherwise, the
+ * two buffers must not overlap.
+ *
  * @param wrapped_key Encrypted key data.
  * @param key_kek AES-KWP key used to decrypt `wrapped_key`.
  * @param[out] success Whether the wrapped key was valid.
  * @param[out] unwrapped_key Decrypted key data.
+ * @param work Work buffer (at least `wrapped_key.len` words).
  * @return Result of the aes-kwp unwrap operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
                                       const otcrypto_blinded_key_t *key_kek,
                                       hardened_bool_t *success,
-                                      otcrypto_blinded_key_t *unwrapped_key);
+                                      otcrypto_blinded_key_t *unwrapped_key,
+                                      otcrypto_word32_buf_t work);
 
 /**
  * Creates a blinded key struct from masked key material.
