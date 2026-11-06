@@ -65,6 +65,7 @@ module top_dragonfly #(
   parameter bit SecAccSkipUrndReseedAtStart = 0,
   parameter bit AccAccPQCEn = 0,
   // parameters for aes
+  parameter bit AesAESGCMEnable = 1,
   parameter bit SecAesMasking = 1,
   parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
@@ -1809,6 +1810,7 @@ module top_dragonfly #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28:27]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .AES192Enable(1'b1),
+    .AESGCMEnable(AesAESGCMEnable),
     .SecMasking(SecAesMasking),
     .SecSBoxImpl(SecAesSBoxImpl),
     .SecStartTriggerDelay(SecAesStartTriggerDelay),
@@ -1827,6 +1829,8 @@ module top_dragonfly #(
 
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[1]),
+      .output_valid_o(),
+      .input_ready_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .edn_o(edn0_edn_req[4]),
       .edn_i(edn0_edn_rsp[4]),

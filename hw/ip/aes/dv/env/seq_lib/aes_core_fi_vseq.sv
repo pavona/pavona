@@ -30,7 +30,7 @@ class aes_core_fi_vseq extends aes_base_vseq;
     aes_pkg::aes_ctrl_e core_state_array [] = '{
         aes_pkg::CTRL_IDLE,
         aes_pkg::CTRL_LOAD,
-        aes_pkg::CTRL_PRNG_UPDATE,
+        aes_pkg::CTRL_GHASH_READY,
         aes_pkg::CTRL_PRNG_RESEED,
         aes_pkg::CTRL_FINISH,
         aes_pkg::CTRL_CLEAR_I,
@@ -71,20 +71,25 @@ class aes_core_fi_vseq extends aes_base_vseq;
               $countones(force_value[aes_pkg::AES_OP_WIDTH-1:0]) > 1;)
         end else if (target == 2) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
-              $countones(force_value[aes_pkg::AES_MODE_WIDTH-1:0]) > 1;)
+              $countones(force_value[aes_pkg::AES_MODE_WIDTH-1:0]) > 1;
+              force_value[aes_pkg::AES_MODE_WIDTH-1:0] != aes_pkg::AES_NONE;)
           wait_for_idle = 1;
         end else if (target == 3) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
               $countones(force_value[aes_pkg::AES_KEYLEN_WIDTH-1:0]) > 1;)
         end else if (target == 4) begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
+              $countones(force_value[aes_pkg::AES_GCMPHASE_WIDTH-1:0]) > 1;)
+          wait_for_idle = 1;
+        end else if (target == 5) begin
+          `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(force_value,
               $countones(force_value[aes_pkg::AES_PRNGRESEEDRATE_WIDTH-1:0]) > 1;)
         end
 
         // Wait and apply force.
-        if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+        if (await_state inside {aes_pkg::CTRL_GHASH_READY, aes_pkg::CTRL_CLEAR_I,
                                       aes_pkg::CTRL_CLEAR_CO}) begin
-          // The PRNG Update and Clear states are entered for ~1 cycle by clear_regs() during the
+          // The GHASH Ready and Clear states are entered for ~1 cycle by clear_regs() during the
           // multi-cycle CSR write. Arm a watcher BEFORE the trigger to sample the CG at entry.
           sample_fi_cg_at_state(AesFiCgCore, await_state, target, AesFiCgClearRegs,
                                  0, '{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
@@ -112,14 +117,21 @@ class aes_core_fi_vseq extends aes_base_vseq;
           // release the signal after reset.
           `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
           cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
-          `DV_WAIT(!cfg.clk_rst_vif.rst_n)
+          // Normally, the thread "basic" (below) resets the DUT when it detects a fatal alert.
+          // If the fault is injected after the last message is completed, that thread no longer
+          // exists. In this case, reset the DUT ourselves.
+          `DV_WAIT(!cfg.clk_rst_vif.rst_n || finished_all_msgs)
           cfg.aes_core_fi_vif.force_signal(target, RELEASE, force_value);
+          if (cfg.clk_rst_vif.rst_n) wait_for_fatal_alert_and_reset();
         end else if (wait_for_idle) begin
           // The fault potentially prevents the module from making any progress. DV will try to
           // clear and restart it but might never succeed resulting in the module being idle and
           // again busy.
           csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
-          csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b0));
+          // Wait until the DUT is busy again or until all messages are done.
+          `DV_WAIT(!cfg.idle_vif.pins[0] || finished_all_msgs)
+          // Release on the falling clock edge, otherwise assertions would see the forced value.
+          cfg.clk_rst_vif.wait_n_clks(1);
           cfg.aes_core_fi_vif.force_signal(target, RELEASE, force_value);
         end else begin
           // The fault might trigger a reset or not.

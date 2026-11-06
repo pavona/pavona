@@ -46,14 +46,17 @@ module tb;
 
   // dut
   aes #(
-    .SecMasking  ( `EN_MASKING   ),
-    .SecSBoxImpl ( `SBOX_IMPL    )
+    .SecMasking   ( `EN_MASKING   ),
+    .SecSBoxImpl  ( `SBOX_IMPL    ),
+    .AESGCMEnable ( `EN_GCM       )
   ) dut (
     .clk_i            ( clk                               ),
     .rst_ni           ( rst_n                             ),
     .rst_shadowed_ni  ( rst_shadowed_n                    ),
 
     .idle_o           ( idle_s                            ),
+    .output_valid_o   (                                   ),
+    .input_ready_o    (                                   ),
     .lc_escalate_en_i ( lc_escalate_en                    ),
     .clk_edn_i        ( edn_clk                           ),
     .rst_edn_ni       ( edn_rst_n                         ),

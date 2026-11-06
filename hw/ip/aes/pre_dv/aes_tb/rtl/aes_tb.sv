@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module aes_tlul_shim_tb
+module aes_tb
   import tlul_pkg::*;
   import aes_pkg::*;
   import aes_reg_pkg::*;
-  import aes_tlul_shim_tb_pkg::*;
+  import aes_tb_pkg::*;
 
 #(
   localparam bit          AES192Enable           = 1,
@@ -18,7 +18,8 @@ module aes_tlul_shim_tb
   localparam bit          SecSkipPRNGReseeding   = 0,
   localparam bit          EnableDataIntgGen      = 1,
   localparam bit          EnableRspDataIntgCheck = 1,
-  localparam bit          DelayerEnable          = 0
+  localparam bit          DelayerEnable          = 0,
+  localparam bit          ValidHoldEnable        = 1
  ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -44,18 +45,19 @@ module aes_tlul_shim_tb
     end
   end
 
-  logic          shim_done;
-  logic          shim_pop;
-  shim_request_t shim_req;
+  logic         bus_done;
+  logic         bus_pop;
+  bus_request_t bus_req;
 
-  logic                      shim_hld;
-  logic                      shim_error;
-  logic [top_pkg::TL_DW-1:0] shim_rdata;
+  logic                      bus_wait;
+  logic                      bus_error;
+  logic [top_pkg::TL_DW-1:0] bus_rdata;
 
   logic error;
   logic c_dpi_data_error;
   logic c_dpi_tag_error;
-  assign error = shim_error | c_dpi_data_error | c_dpi_tag_error;
+  logic c_dpi_error;
+  assign error = bus_error | c_dpi_data_error | c_dpi_tag_error | c_dpi_error;
 
   logic test_passed_q;
   logic test_done_q;
@@ -63,7 +65,7 @@ module aes_tlul_shim_tb
     if (!rst_ni) begin
       test_passed_q <= 1'b1;
       test_done_q   <= 1'b0;
-    end else if (shim_done || error) begin
+    end else if (bus_done || error) begin
       test_passed_q <= ~error;
       test_done_q   <= 1'b1;
     end
@@ -74,16 +76,16 @@ module aes_tlul_shim_tb
   // The AES block is run in automatic mode, which means the status register has to be polled in
   // order to check whether an operation has finished. A convenient side-effect of this is that it
   // will generate a large number of TLUL requests, which in combination with the delayer serves as
-  // a good stress test of the shim.
+  // a good stress test of the bus.
   //
   // Reads of the AES status registers are repeated (without popping a new request from the stack)
-  // until it matches the `shim_req.mask`. Such a stall can occur when the `IDLE` bit needs to be
+  // until it matches the `bus_req.mask`. Such a stall can occur when the `IDLE` bit needs to be
   // asserted before the computation can advance.
   logic poll;
-  assign poll = ~shim_hld
-      & (shim_req.addr == 32'(AES_STATUS_OFFSET))
-      & ~|(shim_rdata & shim_req.mask);
-  assign shim_pop = (~shim_hld & ~poll) | ~shim_req.dv;
+  assign poll = ~bus_wait
+      & (bus_req.addr == 32'(AES_STATUS_OFFSET))
+      & ~|(bus_rdata & bus_req.mask);
+  assign bus_pop = (~bus_wait & ~poll) | bus_req.c_dpi_load;
 
   aes_mode_e aes_mode_q;
   gcm_phase_e gcm_phase_q;
@@ -91,47 +93,117 @@ module aes_tlul_shim_tb
     if (!rst_ni) begin
       gcm_phase_q <= '0;
       aes_mode_q <= '0;
-    end else if (~shim_req.dv) begin
+    end else if (bus_req.c_dpi_load) begin
       gcm_phase_q <= '0;
-      aes_mode_q <= shim_req.c_dpi_input.mode;
-    end else if (shim_req.addr == 32'(AES_CTRL_GCM_SHADOWED_OFFSET)) begin
-      gcm_phase_q <= shim_req.wdata[5:0];
+      aes_mode_q <= bus_req.c_dpi_input.mode;
+    end else if (bus_req.addr == 32'(AES_CTRL_GCM_SHADOWED_OFFSET)) begin
+      gcm_phase_q <= bus_req.wdata[5:0];
     end
   end
 
-  aes_tlul_shim_tb_reqs u_aes_tlul_shim_tb_reqs (
-    .clk_i         ( clk_i       ),
-    .rst_ni        ( rst_ni      ),
-    .pop_req_i     ( shim_pop    ),
-    .req_o         ( shim_req    ),
-    .done_o        ( shim_done   )
+  aes_tb_reqs u_aes_tb_reqs (
+    .clk_i     ( clk_i    ),
+    .rst_ni    ( rst_ni   ),
+    .pop_req_i ( bus_pop  ),
+    .req_o     ( bus_req  ),
+    .done_o    ( bus_done )
   );
 
-  tlul_adapter_shim #(
-    .EnableDataIntgGen      ( EnableDataIntgGen      ),
-    .EnableRspDataIntgCheck ( EnableRspDataIntgCheck )
-  ) u_tlul_adapter_shim (
-    .clk_i   ( clk_i          ),
-    .rst_ni  ( rst_ni         ),
-    .tl_i    ( tl_d2h_delayed ),
-    .tl_o    ( tl_h2d         ),
-    .dv_i    ( shim_req.dv    ),
-    .addr_i  ( shim_req.addr  ),
-    .write_i ( shim_req.write ),
-    .wdata_i ( shim_req.wdata ),
-    .wstrb_i ( shim_req.wstrb ),
-    .size_i  ( shim_req.size  ),
-    .hld_o   ( shim_hld       ),
-    .rdata_o ( shim_rdata     ),
-    .error_o ( shim_error     ),
-    .last_i  ( shim_req.last  ),
-    .user_i  ( shim_req.user  ),
-    .id_i    ( shim_req.id    )
-  );
+  // Every request that is not a `c_dpi_load` counts as a valid bus access.
+  logic bus_en;
+  assign bus_en = ~bus_req.c_dpi_load;
 
-  aes_tlul_shim_delayer #(
+  // The Valid-Hold adapter converts inputs from the valid-hold protocol into TLUL requests.
+  if (ValidHoldEnable) begin : gen_tlul_adapter_vh
+
+    logic                       int_dv;
+    logic [top_pkg::TL_AW-1:0]  int_addr;
+    logic                       int_write;
+    logic [top_pkg::TL_DW-1:0]  int_wdata;
+    logic [top_pkg::TL_DBW-1:0] int_wstrb;
+    logic [2:0]                 int_size;
+    logic                       int_hld;
+    logic [top_pkg::TL_DW-1:0]  int_rdata;
+    logic                       int_error;
+    logic                       int_last;
+    logic [31:0]                int_user;
+    logic [top_pkg::TL_AIW-1:0] int_id;
+
+    tlul_adapter_vh #(
+      .EnableDataIntgGen      ( EnableDataIntgGen      ),
+      .EnableRspDataIntgCheck ( EnableRspDataIntgCheck )
+    ) u_tlul_adapter_vh (
+      .clk_i        ( clk_i                  ),
+      .rst_ni       ( rst_ni                 ),
+      .tl_i         ( tl_d2h_delayed         ),
+      .tl_o         ( tl_h2d                 ),
+      // Valid-Hold to TLUL
+      .dv_i         ( bus_en                 ),
+      .addr_i       ( bus_req.addr           ),
+      .write_i      ( bus_req.write          ),
+      .wdata_i      ( bus_req.wdata          ),
+      .wstrb_i      ( 4'b1111                ),
+      .size_i       ( 3'b010                 ),
+      .hld_o        ( bus_wait               ),
+      .rdata_o      ( bus_rdata              ),
+      .error_o      ( bus_error              ),
+      .last_i       ( 1'b0                   ),
+      .user_i       ( 32'(TL_A_USER_DEFAULT) ),
+      .id_i         ( '0                     ),
+      // Valid-Hold to internal register
+      .int_dv_o     ( int_dv                 ),
+      .int_addr_o   ( int_addr               ),
+      .int_write_o  ( int_write              ),
+      .int_wdata_o  ( int_wdata              ),
+      .int_wstrb_o  ( int_wstrb              ),
+      .int_size_o   ( int_size               ),
+      .int_hld_i    ( int_hld                ),
+      .int_rdata_i  ( int_rdata              ),
+      .int_error_i  ( int_error              ),
+      .int_last_o   ( int_last               ),
+      .int_user_o   ( int_user               ),
+      .int_id_o     ( int_id                 )
+    );
+
+    vh_regs u_vh_regs (
+      .clk_i   ( clk_i     ),
+      .rst_ni  ( rst_ni    ),
+      .dv_i    ( int_dv    ),
+      .addr_i  ( int_addr  ),
+      .write_i ( int_write ),
+      .wdata_i ( int_wdata ),
+      .wstrb_i ( int_wstrb ),
+      .size_i  ( int_size  ),
+      .hld_o   ( int_hld   ),
+      .rdata_o ( int_rdata ),
+      .error_o ( int_error ),
+      .last_i  ( int_last  ),
+      .user_i  ( int_user  ),
+      .id_i    ( int_id    )
+    );
+
+  end else begin : gen_tlul_adapter
+    tlul_adapter_tb_reqs #(
+      .EnableDataIntgGen      ( EnableDataIntgGen      ),
+      .EnableRspDataIntgCheck ( EnableRspDataIntgCheck )
+    ) u_tlul_adapter_tb_reqs (
+      .clk_i   ( clk_i          ),
+      .rst_ni  ( rst_ni         ),
+      .tl_i    ( tl_d2h_delayed ),
+      .tl_o    ( tl_h2d         ),
+      .en_i    ( bus_en         ),
+      .wait_o  ( bus_wait       ),
+      .addr_i  ( bus_req.addr   ),
+      .write_i ( bus_req.write  ),
+      .wdata_i ( bus_req.wdata  ),
+      .rdata_o ( bus_rdata      ),
+      .error_o ( bus_error      )
+    );
+  end
+
+  tlul_delayer #(
     .DelayerEnable ( DelayerEnable )
-  ) u_aes_tlul_shim_delayer (
+  ) u_tlul_delayer (
     .clk_i            ( clk_i          ),
     .rst_ni           ( rst_ni         ),
     .tl_h2d_i         ( tl_h2d         ),
@@ -177,10 +249,10 @@ module aes_tlul_shim_tb
   logic check_data;
   logic check_tag;
 
-  assign check_out = ~shim_hld && (shim_req.addr == 32'(AES_DATA_OUT_0_OFFSET) ||
-                                   shim_req.addr == 32'(AES_DATA_OUT_1_OFFSET) ||
-                                   shim_req.addr == 32'(AES_DATA_OUT_2_OFFSET) ||
-                                   shim_req.addr == 32'(AES_DATA_OUT_3_OFFSET)) ? 1'b1 : 1'b0;
+  assign check_out = ~bus_wait && (bus_req.addr == 32'(AES_DATA_OUT_0_OFFSET) ||
+                                   bus_req.addr == 32'(AES_DATA_OUT_1_OFFSET) ||
+                                   bus_req.addr == 32'(AES_DATA_OUT_2_OFFSET) ||
+                                   bus_req.addr == 32'(AES_DATA_OUT_3_OFFSET)) ? 1'b1 : 1'b0;
 
   assign check_data = check_out && (aes_mode_q != AES_GCM || gcm_phase_q == GCM_TEXT) ? 1'b1 : 1'b0;
   assign check_tag  = check_out && (gcm_phase_q == GCM_TAG)  ? 1'b1 : 1'b0;
@@ -189,11 +261,11 @@ module aes_tlul_shim_tb
   // correctness with the `c_dpi` model. We do this by initializing a counter to the number of data
   // bytes and decrementing it whenever 32 data bits from the AES block arrive. The value of the
   // counter steers a mask that is applied to both the AES block and the `c_dpi` model block. The
-  // counter is reset for every `c_dpi_load` request, i.e., shim_req.dv = 0.
+  // counter is reset for every `c_dpi_load`.
 
   int data_cntr_d, data_cntr_q;
-  assign data_cntr_d = ~shim_req.dv ? `DATA_LENGTH :
-                       check_data   ? (data_cntr_q >= 4 ? data_cntr_q - 4 : 0) : data_cntr_q;
+  assign data_cntr_d = bus_req.c_dpi_load ? `DATA_LENGTH :
+                       check_data         ? (data_cntr_q >= 4 ? data_cntr_q - 4 : 0) : data_cntr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -203,30 +275,35 @@ module aes_tlul_shim_tb
     end
   end
 
-  logic [31:0] data_mask;
+  logic [31:0]   data_mask;
   assign data_mask = data_cntr_q >= 4 ? 32'hffff_ffff :
                      data_cntr_q == 3 ? 32'h00ff_ffff :
                      data_cntr_q == 2 ? 32'h0000_ffff :
                      data_cntr_q == 1 ? 32'h0000_00ff : '0;
 
   logic [31:0] c_dpi_data, c_dpi_tag;
-  aes_tlul_shim_tb_c_dpi #(
+  int          c_dpi_crypto_res;
+  aes_tb_c_dpi #(
     .ADLength   ( `AD_LENGTH   ),
     .DataLength ( `DATA_LENGTH )
-  ) u_aes_tlul_shim_tb_c_dpi (
-     .clk_i               ( clk_i                ),
-     .rst_ni              ( rst_ni               ),
-     .c_dpi_input_i       ( shim_req.c_dpi_input ),
-     .c_dpi_load_i        ( ~shim_req.dv         ),
-     .c_dpi_rotate_data_i ( check_data           ),
-     .c_dpi_rotate_tag_i  ( check_tag            ),
-     .c_dpi_data_o        ( c_dpi_data           ),
-     .c_dpi_tag_o         ( c_dpi_tag            )
+  ) u_aes_tb_c_dpi (
+     .clk_i               ( clk_i               ),
+     .rst_ni              ( rst_ni              ),
+     .c_dpi_input_i       ( bus_req.c_dpi_input ),
+     .c_dpi_load_i        ( bus_req.c_dpi_load  ),
+     .c_dpi_rotate_data_i ( check_data          ),
+     .c_dpi_rotate_tag_i  ( check_tag           ),
+     .c_dpi_data_o        ( c_dpi_data          ),
+     .c_dpi_tag_o         ( c_dpi_tag           ),
+     .c_dpi_crypto_res_o  ( c_dpi_crypto_res    )
   );
 
   assign c_dpi_data_error = check_data &&
-                            (c_dpi_data & data_mask) != (shim_rdata & data_mask) ? 1'b1 : 1'b0;
-  assign c_dpi_tag_error  = check_tag && (c_dpi_tag != shim_rdata) ? 1'b1 : 1'b0;
+                            (c_dpi_data & data_mask) != (bus_rdata & data_mask) ? 1'b1 : 1'b0;
+  assign c_dpi_tag_error  = check_tag && (c_dpi_tag != bus_rdata) ? 1'b1 : 1'b0;
+
+  // The C DPI model returned an error.
+  assign c_dpi_error      = c_dpi_crypto_res < 0;
 
   // We do not care about alerts in this testbench. Set them to constant values.
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
