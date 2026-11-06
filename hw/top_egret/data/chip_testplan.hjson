@@ -563,6 +563,25 @@
       bazel: ["//sw/device/tests:otp_ctrl_smoketest"],
     }
     {
+      name: chip_sw_otp_ctrl_sw_parts
+      desc: '''Verify that SW partitions can be programmed and read/write locked.
+
+            This test operates on one representative SW partitions
+            and we rely on block-level coverage for the
+            remaining partitions:
+            - OWNER_SW_CFG (read and write-lockable)
+
+            The test checks:
+            - That the first word of this partition is writable.
+            - That the dynamic read locks work for this partition.
+            - That the permanent write lock works for OWNER_SW_CFG.
+            '''
+      stage: V2
+      si_stage: NA
+      tests: ["chip_sw_otp_ctrl_sw_parts"]
+      bazel: ["//sw/device/tests:chip_sw_otp_ctrl_sw_parts"]
+    }
+    {
       name: chip_sw_rom_functests
       desc: '''Run some ROM functional tests with test ROM.
 
@@ -582,7 +601,7 @@
       si_stage: SV4
       lc_states: ["PROD"]
       tests: ["chip_sw_coremark"]
-      bazel: ["//third_party/coremark/top_egret:coremark_test"]
+      bazel: ["//third_party/coremark:coremark_test"]
     }
     {
       name: chip_sw_boot

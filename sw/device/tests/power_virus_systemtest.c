@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,20 +8,16 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_acc.h"
-#include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_pattgen.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwm.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
@@ -39,7 +36,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top/adc_ctrl_regs.h"     // Generated.
 #include "hw/top/aes_regs.h"          // Generated.
 #include "hw/top/csrng_regs.h"        // Generated.
 #include "hw/top/entropy_src_regs.h"  // Generated.
@@ -47,50 +43,66 @@
 #include "hw/top/hmac_regs.h"         // Generated.
 #include "hw/top/i2c_regs.h"          // Generated.
 #include "hw/top/kmac_regs.h"         // Generated.
-#include "hw/top/pattgen_regs.h"      // Generated.
-#include "hw/top/pwm_regs.h"          // Generated.
 #include "hw/top/spi_host_regs.h"     // Generated.
 #include "hw/top/uart_regs.h"         // Generated.
-#include "hw/top_egret/sw/autogen/top_egret.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "sw/device/lib/dif/dif_adc_ctrl.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_pattgen.h"
+#include "sw/device/lib/dif/dif_pwm.h"
 
+#include "hw/top/adc_ctrl_regs.h"  // Generated.
+#include "hw/top/pattgen_regs.h"   // Generated.
+#include "hw/top/pwm_regs.h"       // Generated.
+#include "hw/top_egret/sw/autogen/top_egret.h"
+#endif
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
                         .enable_uart_flow_control = true);
 
 /**
  * Peripheral DIF Handles.
  */
-static dif_adc_ctrl_t adc_ctrl;
 static dif_aes_t aes;
 static dif_alert_handler_t alert_handler;
 static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_entropy_src_t entropy_src;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c_0;
-static dif_i2c_t i2c_1;
-static dif_i2c_t i2c_2;
 static dif_kmac_t kmac;
 static dif_acc_t acc;
-static dif_pattgen_t pattgen;
 static dif_pinmux_t pinmux;
-static dif_pwm_t pwm;
 static dif_rstmgr_t rstmgr;
 static dif_rv_plic_t rv_plic;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
+#if defined(OPENTITAN_IS_EGRET)
+static dif_adc_ctrl_t adc_ctrl;
+static dif_flash_ctrl_state_t flash_ctrl;
+static dif_i2c_t i2c_1;
+static dif_i2c_t i2c_2;
+static dif_pattgen_t pattgen;
+static dif_pwm_t pwm;
 static dif_spi_host_t spi_host_1;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
+#endif
 
+#if defined(OPENTITAN_IS_EGRET)
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 static const dif_pattgen_channel_t pattgen_channels[] = {kDifPattgenChannel0,
                                                          kDifPattgenChannel1};
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const dif_i2c_t *i2c_handles[] = {&i2c_0};
+static dif_kmac_operation_state_t kmac_operation_state;
+#else
+#error "Unexpected Top Configuration"
+#endif
 
 /**
  * Test configuration parameters.
@@ -139,12 +151,16 @@ enum {
   kI2cDeviceMask = 0x7f,
   kI2c0DeviceAddress0 = 0x11,
   kI2c0DeviceAddress1 = 0x22,
+  kI2c0TargetAddress = 0x01,
+
+#if defined(OPENTITAN_IS_EGRET)
+
   kI2c1DeviceAddress0 = 0x33,
   kI2c1DeviceAddress1 = 0x44,
+  kI2c1TargetAddress = 0x02,
+
   kI2c2DeviceAddress0 = 0x55,
   kI2c2DeviceAddress1 = 0x66,
-  kI2c0TargetAddress = 0x01,
-  kI2c1TargetAddress = 0x02,
   kI2c2TargetAddress = 0x03,
   /**
    * UART parameters.
@@ -165,6 +181,7 @@ enum {
   kPwmBeatsPerCycle = 2,
   kPwmOnBeats = 1,
   kPwmPhaseDelayBeats = 0,
+#endif
   /**
    * SPI Host parameters.
    */
@@ -274,11 +291,15 @@ static const uint32_t kRsa2KEncodedMessage[] = {
     0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff,
 };
 
+#if defined(OPENTITAN_IS_EGRET)
+// This is only used for Egret because UART 0 is used for OTTF so it
+// cannot be similarly used for SPI in Dragonfly in maximum power epoch
 static const uint8_t kUartMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
 };
+#endif
 
 static const uint8_t kI2cMessage[] = {
     0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
@@ -327,6 +348,7 @@ static void log_entropy_src_alert_failures(void) {
  * External (OTTF) ISR override.
  */
 void ottf_external_isr(uint32_t *exc_info) {
+#if defined(OPENTITAN_IS_EGRET)
   // Find which interrupt fired at PLIC by claiming it.
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(
@@ -343,35 +365,35 @@ void ottf_external_isr(uint32_t *exc_info) {
       CHECK(false, "Unexpected IRQ fired with ID: %d", irq_id);
       break;
   }
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  // Find which interrupt fired at PLIC by claiming it.
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&rv_plic, kTopDragonflyPlicTargetIbex0, &irq_id));
+
+  top_dragonfly_plic_peripheral_t periph =
+      top_dragonfly_plic_interrupt_for_peripheral[irq_id];
+  switch (periph) {
+    case kTopDragonflyPlicPeripheralEntropySrc:
+      log_entropy_src_alert_failures();
+      CHECK(false);
+      break;
+    default:
+      CHECK(false, "Unexpected IRQ fired with ID: %d", irq_id);
+      break;
+  }
+#else
+#error "Unrecognized Top Configuration"
+#endif
 }
 
 /**
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles(void) {
+#if defined(OPENTITAN_IS_EGRET)
   CHECK_DIF_OK(dif_adc_ctrl_init(
       mmio_region_from_addr(TOP_EGRET_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-  CHECK_DIF_OK(
-      dif_csrng_init(mmio_region_from_addr(TOP_EGRET_CSRNG_BASE_ADDR), &csrng));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN0_BASE_ADDR), &edn_0));
-  CHECK_DIF_OK(
-      dif_edn_init(mmio_region_from_addr(TOP_EGRET_EDN1_BASE_ADDR), &edn_1));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EGRET_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR), &hmac));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EGRET_GPIO_BASE_ADDR), &gpio));
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
   // UART 0 is already configured (and used) by the OTTF.
   CHECK_DIF_OK(
       dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART1_BASE_ADDR), &uart_1));
@@ -380,35 +402,41 @@ static void init_peripheral_handles(void) {
   CHECK_DIF_OK(
       dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART3_BASE_ADDR), &uart_3));
   CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C0_BASE_ADDR), &i2c_0));
-  CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C1_BASE_ADDR), &i2c_1));
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EGRET_I2C2_BASE_ADDR), &i2c_2));
-  CHECK_DIF_OK(dif_spi_device_init_handle(
-      mmio_region_from_addr(TOP_EGRET_SPI_DEVICE_BASE_ADDR), &spi_device));
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host_0));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host_1));
-  CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
   CHECK_DIF_OK(dif_pattgen_init(
       mmio_region_from_addr(TOP_EGRET_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(
       dif_pwm_init(mmio_region_from_addr(TOP_EGRET_PWM_AON_BASE_ADDR), &pwm));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl, mmio_region_from_addr(TOP_EGRET_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR), &rv_plic));
+#endif
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn_0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn_1));
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kDtHmac, &hmac));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpio, &gpio));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
+  CHECK_DIF_OK(dif_i2c_init_from_dt(kDtI2c0, &i2c_0));
+  CHECK_DIF_OK(dif_spi_device_init_handle_from_dt(kDtSpiDevice, &spi_device));
+  CHECK_DIF_OK(dif_spi_host_init_from_dt(kDtSpiHost0, &spi_host_0));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
 }
 
 static void configure_pinmux(void) {
   // Configure UART0 (console) and SW strapping pins.
   pinmux_testutils_init(&pinmux);
 
+#if defined(OPENTITAN_IS_EGRET)
   // Configure GPIO max-power period indicator pin on IOB8.
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEgretPinmuxMioOutIob8,
                                         kTopEgretPinmuxOutselGpioGpio0));
@@ -556,8 +584,10 @@ static void configure_pinmux(void) {
                                          kTopEgretPinmuxPeripheralInSpiHost1Sd3,
                                          kTopEgretPinmuxInselIor13));
   }
+#endif
 }
 
+#if defined(OPENTITAN_IS_EGRET)
 /**
  * Configures pins for DVsim.
  * In chip_if.sv, agents and interfaces are connected to fixed pins.
@@ -713,6 +743,7 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
     }
   }
 }
+#endif
 
 static void configure_entropy_complex(void) {
   // The (test) ROM enables the entropy complex, and to reconfigure it
@@ -747,6 +778,8 @@ static void configure_entropy_complex(void) {
     CHECK_DIF_OK(dif_edn_clear_recoverable_alerts(&edn_1));
   }
 
+#if defined(OPENTITAN_IS_EGRET)
+
   // Enable entropy_src interrupts for health-test alert detection.
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
       &rv_plic, kTopEgretPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
@@ -755,6 +788,21 @@ static void configure_entropy_complex(void) {
       kTopEgretPlicTargetIbex0, kDifToggleEnabled));
   CHECK_DIF_OK(dif_entropy_src_irq_set_enabled(
       &entropy_src, kDifEntropySrcIrqEsHealthTestFailed, kDifToggleEnabled));
+
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+
+  // Enable entropy_src interrupts for health-test alert detection.
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &rv_plic, kTopDragonflyPlicIrqIdEntropySrcEsHealthTestFailed, 0x1));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &rv_plic, kTopDragonflyPlicIrqIdEntropySrcEsHealthTestFailed,
+      kTopDragonflyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_entropy_src_irq_set_enabled(
+      &entropy_src, kDifEntropySrcIrqEsHealthTestFailed, kDifToggleEnabled));
+
+#else
+#error "Unrecognized Top configuration"
+#endif
 
   // Configure entropy_src and health tests.
   CHECK_DIF_OK(dif_entropy_src_health_test_configure(
@@ -934,7 +982,7 @@ static void configure_kmac(void) {
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, kmac_cfg));
 }
-
+#if defined(OPENTITAN_IS_EGRET)
 static void configure_uart(dif_uart_t *uart) {
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
@@ -951,6 +999,7 @@ static void configure_uart(dif_uart_t *uart) {
   CHECK_DIF_OK(
       dif_uart_loopback_set(uart, kDifUartLoopbackSystem, kDifToggleEnabled));
 }
+#endif
 
 static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
                           uint8_t device_addr_1) {
@@ -965,10 +1014,20 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
           .scl_period_nanos = kI2cSclPeriodNs},
       &config));
   CHECK_DIF_OK(dif_i2c_configure(i2c, config));
+#if defined(OPENTITAN_IS_EGRET)
   dif_i2c_id_t id_0 = {.mask = kI2cDeviceMask, .address = device_addr_0};
   dif_i2c_id_t id_1 = {.mask = kI2cDeviceMask, .address = device_addr_1};
   CHECK_DIF_OK(dif_i2c_set_device_id(i2c, &id_0, &id_1));
   CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
+
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  dif_i2c_id_t id_0 = {.mask = kI2cDeviceMask, .address = device_addr_0};
+  CHECK_DIF_OK(dif_i2c_set_device_id(i2c, &id_0, 0));
+  CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
+
+#else
+#error "Unexpected Top Configuration"
+#endif
 }
 
 static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
@@ -995,7 +1054,7 @@ static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
       spi_host->base_addr, SPI_HOST_CONTROL_REG_OFFSET,
       bitfield_bit32_write(0, SPI_HOST_CONTROL_SPIEN_BIT, enable));
 }
-
+#if defined(OPENTITAN_IS_EGRET)
 void configure_pattgen(void) {
   for (size_t i = 0; i < ARRAYSIZE(pattgen_channels); ++i) {
     CHECK_DIF_OK(dif_pattgen_channel_set_enabled(&pattgen, pattgen_channels[i],
@@ -1043,6 +1102,7 @@ void configure_pwm(void) {
       &pwm,
       /*channels*/ (1u << PWM_PARAM_N_OUTPUTS) - 1, kDifToggleEnabled));
 }
+#endif
 
 static void configure_acc(void) {
   CHECK_STATUS_OK(acc_testutils_rsa_load(&acc));
@@ -1159,10 +1219,10 @@ static void crypto_data_load_task(void *task_parameters) {
 
 static void comms_data_load(void) {
   LOG_INFO("Loading communication block FIFOs with data ...");
+  CHECK(ARRAYSIZE(kI2cMessage) == (I2C_PARAM_FIFO_DEPTH - 1));
+#if defined(OPENTITAN_IS_EGRET)
   size_t bytes_written;
   CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
-  CHECK(ARRAYSIZE(kI2cMessage) == (I2C_PARAM_FIFO_DEPTH - 1));
-
   // Load data into UART FIFOs.
   for (size_t i = 0; i < ARRAYSIZE(uart_handles); ++i) {
     bytes_written = 0;
@@ -1170,6 +1230,7 @@ static void comms_data_load(void) {
                                      ARRAYSIZE(kUartMessage), &bytes_written));
     CHECK(bytes_written == ARRAYSIZE(kUartMessage));
   }
+#endif
 
   // Load data into I2C FIFOs.
   static_assert(ARRAYSIZE(i2c_handles) < UINT8_MAX,
@@ -1182,7 +1243,7 @@ static void comms_data_load(void) {
                                           /*skip_stop=*/false));
     }
   }
-
+#if defined(OPENTITAN_IS_EGRET)
   // Load data into SPI host (1; as 0 is used in passthrough mode) FIFO.
   uint32_t spi_host_tx_data[SPI_HOST_PARAM_TX_DEPTH];
   for (size_t i = 0; i < SPI_HOST_PARAM_TX_DEPTH; ++i) {
@@ -1197,6 +1258,7 @@ static void comms_data_load(void) {
       }};
   CHECK_DIF_OK(dif_spi_host_transaction(&spi_host_1, kSpiHost1Csid,
                                         &spi_host_tx_segment, 1));
+#endif
 }
 
 static void comms_data_load_task(void *task_parameters) {
@@ -1236,16 +1298,19 @@ static void max_power(void) {
   uint32_t kmac_cmd_reg =
       bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_PROCESS);
 
+#if defined(OPENTITAN_IS_EGRET)
   // Prepare UART, I2C, SPI host enablement commands (note, all configurations
   // between each IP instance should be configured the same).
   uint32_t uart_ctrl_reg =
       mmio_region_read32(uart_1.base_addr, UART_CTRL_REG_OFFSET);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_TX_BIT, true);
   uart_ctrl_reg = bitfield_bit32_write(uart_ctrl_reg, UART_CTRL_RX_BIT, true);
+#endif
   uint32_t i2c_ctrl_reg =
       mmio_region_read32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET);
   i2c_ctrl_reg =
       bitfield_bit32_write(i2c_ctrl_reg, I2C_CTRL_ENABLEHOST_BIT, true);
+#if defined(OPENTITAN_IS_EGRET)
   uint32_t spi_host_1_ctrl_reg =
       mmio_region_read32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET);
   spi_host_1_ctrl_reg = bitfield_bit32_write(
@@ -1271,6 +1336,7 @@ static void max_power(void) {
   // after the phase counter is enabled (i.e, PWM_CFG_REG.CNTR_EN = 1).
   uint32_t pwm_cfg_reg = mmio_region_read32(pwm.base_addr, PWM_CFG_REG_OFFSET);
   pwm_cfg_reg = bitfield_bit32_write(pwm_cfg_reg, PWM_CFG_CNTR_EN_BIT, true);
+#endif
 
   // Prepare GPIO register values (for max power indicator).
   const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
@@ -1280,6 +1346,7 @@ static void max_power(void) {
 
   LOG_INFO("Entering max power epoch ...");
 
+#if defined(OPENTITAN_IS_EGRET)
   // Enable adc_ctrl
   mmio_region_write32(adc_ctrl.base_addr, ADC_CTRL_ADC_EN_CTL_REG_OFFSET,
                       adc_ctrl_reg);
@@ -1294,12 +1361,17 @@ static void max_power(void) {
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
-
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+#else
+#error "Unrecognized Top Configuration"
+#endif
   // Issue ACC start command.
   CHECK_STATUS_OK(acc_testutils_rsa_modexp_f4_start(
       &acc, (unsigned char *)kRsa2KModulus, (unsigned char *)kRsa2KSignature,
       sizeof(kRsa2KModulus)));
 
+#if defined(OPENTITAN_IS_EGRET)
   // Enable pattgen.
   mmio_region_write32(pattgen.base_addr, PATTGEN_CTRL_REG_OFFSET,
                       pattgen_ctrl_reg);
@@ -1307,6 +1379,7 @@ static void max_power(void) {
   // Enable SPI host (1).
   mmio_region_write32(spi_host_1.base_addr, SPI_HOST_CONTROL_REG_OFFSET,
                       spi_host_1_ctrl_reg);
+#endif
 
   // Request entropy during max power epoch. Since AES is so fast, realistically
   // we will only be able to request a single block of entropy.
@@ -1386,6 +1459,7 @@ static void max_power(void) {
   CHECK_ARRAYS_EQ(rsa_recovered_message, kRsa2KEncodedMessage,
                   ARRAYSIZE(kRsa2KEncodedMessage));
 
+#if defined(OPENTITAN_IS_EGRET)
   // Check UART transactions.
   uint8_t received_uart_data[kUartFifoDepth];
   size_t num_uart_rx_bytes;
@@ -1401,6 +1475,7 @@ static void max_power(void) {
                                         received_uart_data, NULL));
     CHECK_ARRAYS_EQ(received_uart_data, kUartMessage, num_uart_rx_bytes);
   }
+#endif
 
   // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.)
   if (kDeviceType == kDeviceSimDV) {
@@ -1462,7 +1537,7 @@ static void max_power_task(void *task_parameters) {
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
-
+#if defined(OPENTITAN_IS_EGRET)
 static void check_otp_csr_configs(void) {
   dif_flash_ctrl_region_properties_t default_properties;
   CHECK_DIF_OK(dif_flash_ctrl_get_default_region_properties(
@@ -1471,6 +1546,7 @@ static void check_otp_csr_configs(void) {
   CHECK(default_properties.ecc_en == kMultiBitBool4True);
   CHECK(default_properties.high_endurance_en == kMultiBitBool4False);
 }
+#endif
 
 bool test_main(void) {
   peripheral_clock_period_ns =
@@ -1492,17 +1568,20 @@ bool test_main(void) {
   }
 
   configure_pinmux();
+#if defined(OPENTITAN_IS_EGRET)
   // To be compatible with the configs in chip_if.sv,
   // apply the additional pinmux settings.
   if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
     configure_pinmux_sim();
   }
+  configure_adc_ctrl_to_continuously_sample();
+#endif
   // Clear GPIO pin 0 (max power indicator pin).
   CHECK_DIF_OK(
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
-  configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   configure_acc();
+#if defined(OPENTITAN_IS_EGRET)
   configure_uart(&uart_1);
   configure_uart(&uart_2);
   configure_uart(&uart_3);
@@ -1518,12 +1597,23 @@ bool test_main(void) {
       /*upload_write_commands=*/false));
   configure_pattgen();
   configure_pwm();
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  configure_i2c(&i2c_0, kI2c0DeviceAddress0, 0);
+  configure_spi_host(&spi_host_0, /*enable=*/true);
+  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
+      &spi_device, /*filters=*/0,
+      /*upload_write_commands=*/false));
+#else
+#error "Unrecognized Top Configuration"
+#endif
   LOG_INFO("All IPs configured.");
 
+#if defined(OPENTITAN_IS_EGRET)
   // ***************************************************************************
   // Check OTP configurations propagated to CSRs.
   // ***************************************************************************
   check_otp_csr_configs();
+#endif
 
   // ***************************************************************************
   // Kick off test tasks.
