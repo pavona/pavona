@@ -2904,7 +2904,8 @@ generate
 
             for (int i = 0; i < 16; i += 2) begin
               operation_result_o[i*16 +: 16] = ((operation_i.vector_type[0]) ?
-                  gen_adder_pqc.adder_x_carry_out[i] : gen_adder_pqc.adder_x_carry_out[i + 1]) ?
+                  1'(gen_adder_pqc.adder_x_carry_out[i]) :
+                  1'(gen_adder_pqc.adder_x_carry_out[i + 1])) ?
                       gen_adder_pqc.adder_x_res[i*16 +: 16] : adder_y_res[i*16 +: 16];
               operation_result_o[(i + 1)* 16 +: 16] = gen_adder_pqc.adder_x_carry_out[i + 1] ?
                     gen_adder_pqc.adder_x_res[(i + 1)*16 +: 16] : adder_y_res[(i + 1)*16 +: 16];
