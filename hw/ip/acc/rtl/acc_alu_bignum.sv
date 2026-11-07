@@ -1816,9 +1816,22 @@ endgenerate
       assign ispr_rdata_no_intg_mux_in[IsprKmacStatus] =
           {224'b0, gen_pqc_wsr.kmac_status_intg_q[31:0]};
 
+      assign ispr_rdata_no_intg_mux_in[IsprKmacPartialW] =
+          {224'b0, gen_pqc_wsr.kmac_pw_intg_q[31:0]};
+
       assign ispr_rdata_no_intg_mux_in[IsprKmacDigest0] = 0;
       assign ispr_rdata_no_intg_mux_in[IsprKmacDigest1] = 0;
       assign ispr_rdata_no_intg_mux_in[IsprAccH]        = 0;
+    end else begin : gen_ispr_no_intg_mux
+      // The PQC ISPRs don't exist, so they are never selected.
+      assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]      = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg0]     = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg1]     = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]   = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest0]  = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest1]  = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacPartialW] = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprAccH]         = 0;
     end
   endgenerate
 
