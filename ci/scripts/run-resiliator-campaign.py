@@ -124,6 +124,10 @@ def main():
         f"RESILIATOR CAMPAIGN DONE: {successes} injection site(s) "
         "changed the outcome with no alert"
     )
+    if successes > 0:
+        raise RuntimeError(
+            f"{successes} fault injections changed the outcome without an alert"
+        )
 
 
 if __name__ == "__main__":
