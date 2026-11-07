@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/pavona/pavona/main/sw/host/cryptotest/testvectors/data/schemas/hkdf_schema.json",
+  "title": "Cryptotest HKDF Testvector",
+  "description": "A list of testvectors for HKDF testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "test_case_id": {
+        "description": "Incremental test case ID -- used for debugging",
+        "type": "integer"
+      },
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "algorithm": {
+        "description": "The ACVP algorithm the test came from",
+        "type": "string",
+        "enum": ["KDA"]
+      },
+      "mode": {
+        "description": "The ACVP mode the test came from",
+        "type": "string",
+        "enum": ["HKDF"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "operation": {
+        "description": "derive to answer with the derived key, or validate to check `okm` against it",
+        "type": "string",
+        "enum": ["derive", "validate"]
+      },
+      "hash_alg": {
+        "description": "Hash function of the underlying HMAC",
+        "type": "string",
+        "enum": ["SHA2-256", "SHA2-384", "SHA2-512"]
+      },
+      "ikm": {
+        "description": "Input keying material",
+        "$ref": "#/$defs/byte_array"
+      },
+      "salt": {
+        "description": "Salt",
+        "$ref": "#/$defs/byte_array"
+      },
+      "info": {
+        "description": "Info, the FixedInfo of the ACVP test",
+        "$ref": "#/$defs/byte_array"
+      },
+      "okm_len": {
+        "description": "Length of the output keying material in bytes",
+        "type": "integer"
+      },
+      "okm": {
+        "description": "Output keying material, the expected one or the one to validate",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether the derived key should match `okm`",
+        "type": "boolean"
+      }
+    }
+  }
+}

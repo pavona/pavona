@@ -17,6 +17,7 @@ cc_library(
         ":ecdsa_commands",
         ":ed25519_commands",
         ":hash_commands",
+        ":hkdf_commands",
         ":hmac_commands",
         ":kmac_commands",
         ":mldsa_commands",
@@ -65,6 +66,13 @@ cc_library(
     name = "ecdsa_commands",
     srcs = ["ecdsa_commands.c"],
     hdrs = ["ecdsa_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "hkdf_commands",
+    srcs = ["hkdf_commands.c"],
+    hdrs = ["hkdf_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
