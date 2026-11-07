@@ -18,10 +18,10 @@ int main(int argc, char **argv) {
   std::string top_scope("TOP.chip_sim_tb.top_scafi_deprecated");
   std::string ram1p_adv_scope("u_prim_ram_1p_adv.u_mem");
 
-  MemArea rom(top_scope +
-                  ".u_rom_ctrl.gen_rom_scramble_disabled.u_rom."
-                  "u_prim_rom",
-              0x4000 / 4, 4);
+  MemArea rom0(top_scope +
+                   ".u_rom_ctrl.gen_rom_scramble_disabled.u_rom."
+                   "u_prim_rom",
+               0x4000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   MemArea flash0(top_scope +
@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
                      "u_flash_bank.u_mem",
                  0x100000 / 8, 8);
 
-  memutil.RegisterMemoryArea("rom", 0x8000, &rom);
+  memutil.RegisterMemoryArea("rom0", 0x8000, &rom0);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("flash0", 0x20000000u, &flash0);
   simctrl.RegisterExtension(&memutil);
