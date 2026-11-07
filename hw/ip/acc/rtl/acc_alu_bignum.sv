@@ -1780,17 +1780,14 @@ endgenerate
   // 2. Select between the ISPRs that have integrity bits and the result of the first stage.
 
   // IDs fpr ISPRs with integrity
-  localparam int IsprModIntg        = 0;
-  localparam int IsprAccIntg        = 1;
-  generate
-    if (AccPQCEn) begin : gen_ispr_ids_pqc
-      localparam int IsprKmacMsg0Intg    = 2;
-      localparam int IsprKmacMsg1Intg    = 3;
-      localparam int IsprKmacDigest0Intg = 4;
-      localparam int IsprKmacDigest1Intg = 5;
-      localparam int IsprAccHIntg        = 6;
-    end
-  endgenerate
+  localparam int IsprModIntg         = 0;
+  localparam int IsprAccIntg         = 1;
+  // Only used with AccPQCEn
+  localparam int IsprKmacMsg0Intg    = 2;
+  localparam int IsprKmacMsg1Intg    = 3;
+  localparam int IsprKmacDigest0Intg = 4;
+  localparam int IsprKmacDigest1Intg = 5;
+  localparam int IsprAccHIntg        = 6;
 
   // ID representing all ISPRs with no integrity
   localparam int IsprNoIntg = AccPQCEn ? 7 : 2;
@@ -1816,9 +1813,22 @@ endgenerate
       assign ispr_rdata_no_intg_mux_in[IsprKmacStatus] =
           {224'b0, gen_pqc_wsr.kmac_status_intg_q[31:0]};
 
+      assign ispr_rdata_no_intg_mux_in[IsprKmacPartialW] =
+          {224'b0, gen_pqc_wsr.kmac_pw_intg_q[31:0]};
+
       assign ispr_rdata_no_intg_mux_in[IsprKmacDigest0] = 0;
       assign ispr_rdata_no_intg_mux_in[IsprKmacDigest1] = 0;
       assign ispr_rdata_no_intg_mux_in[IsprAccH]        = 0;
+    end else begin : gen_ispr_no_intg_mux
+      // The PQC ISPRs don't exist, so they are never selected.
+      assign ispr_rdata_no_intg_mux_in[IsprKmacCfg]      = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg0]     = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacMsg1]     = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacStatus]   = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest0]  = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacDigest1]  = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprKmacPartialW] = 0;
+      assign ispr_rdata_no_intg_mux_in[IsprAccH]         = 0;
     end
   endgenerate
 
@@ -1863,15 +1873,15 @@ endgenerate
 
   generate
     if (AccPQCEn) begin : gen_ispr_intg_mux_pqc
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsg0Intg]    =
+      assign ispr_rdata_intg_mux_in[IsprKmacMsg0Intg]    =
           gen_pqc_wsr.kmac_msg_intg_q[0];
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacMsg1Intg]    =
-          gen_pqc_wsr.kmac_digest_intg_q[1];
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest0Intg] =
+      assign ispr_rdata_intg_mux_in[IsprKmacMsg1Intg]    =
+          gen_pqc_wsr.kmac_msg_intg_q[1];
+      assign ispr_rdata_intg_mux_in[IsprKmacDigest0Intg] =
           gen_pqc_wsr.kmac_digest_intg_q[0];
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprKmacDigest1Intg] =
+      assign ispr_rdata_intg_mux_in[IsprKmacDigest1Intg] =
           gen_pqc_wsr.kmac_digest_intg_q[1];
-      assign ispr_rdata_intg_mux_in[gen_ispr_ids_pqc.IsprAccHIntg]        = ispr_acch_intg_i;
+      assign ispr_rdata_intg_mux_in[IsprAccHIntg]        = ispr_acch_intg_i;
     end
   endgenerate
 
@@ -1880,15 +1890,15 @@ endgenerate
 
   generate
     if (AccPQCEn) begin : gen_ispr_intg_mux_sel_pqc
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsg0Intg]     =
+      assign ispr_rdata_intg_mux_sel[IsprKmacMsg0Intg]    =
           ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg0];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacMsg1Intg]     =
+      assign ispr_rdata_intg_mux_sel[IsprKmacMsg1Intg]    =
           ispr_predec_bignum_i.ispr_rd_en[IsprKmacMsg1];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigest0Intg] =
+      assign ispr_rdata_intg_mux_sel[IsprKmacDigest0Intg] =
           ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest0];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprKmacDigest1Intg] =
+      assign ispr_rdata_intg_mux_sel[IsprKmacDigest1Intg] =
           ispr_predec_bignum_i.ispr_rd_en[IsprKmacDigest1];
-      assign ispr_rdata_intg_mux_sel[gen_ispr_ids_pqc.IsprAccHIntg]        =
+      assign ispr_rdata_intg_mux_sel[IsprAccHIntg]        =
           ispr_predec_bignum_i.ispr_rd_en[IsprAccH];
     end
   endgenerate
@@ -2904,7 +2914,8 @@ generate
 
             for (int i = 0; i < 16; i += 2) begin
               operation_result_o[i*16 +: 16] = ((operation_i.vector_type[0]) ?
-                  gen_adder_pqc.adder_x_carry_out[i] : gen_adder_pqc.adder_x_carry_out[i + 1]) ?
+                  1'(gen_adder_pqc.adder_x_carry_out[i]) :
+                  1'(gen_adder_pqc.adder_x_carry_out[i + 1])) ?
                       gen_adder_pqc.adder_x_res[i*16 +: 16] : adder_y_res[i*16 +: 16];
               operation_result_o[(i + 1)* 16 +: 16] = gen_adder_pqc.adder_x_carry_out[i + 1] ?
                     gen_adder_pqc.adder_x_res[(i + 1)*16 +: 16] : adder_y_res[(i + 1)*16 +: 16];

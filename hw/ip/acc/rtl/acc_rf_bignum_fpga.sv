@@ -48,6 +48,11 @@ module acc_rf_bignum_fpga
   logic [ExtWLEN-1:0] unused_rf [NWdr];
   assign unused_rf = rf;
 
+  // SEC_CM: RF_BASE.DATA_REG_SW.GLITCH_DETECT
+  // There is nothing to check here since the decoding happens inside the inferred
+  // memory block.
+  assign we_err_o = 1'b0;
+
   // Split registers into individual 39bit wide memories - otherwise the tool fails to properly
   // implement the non-zero memory initialization assignment in the initial block. Further, the
   // regfile is split into two sets of memories for clear separation of the enable terms.
@@ -75,11 +80,6 @@ module acc_rf_bignum_fpga
     // Async read
     assign rd_data_a_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_a_i];
     assign rd_data_b_o[i*BaseIntgWidth+:BaseIntgWidth] = rf_local[rd_addr_b_i];
-
-    // SEC_CM: RF_BASE.DATA_REG_SW.GLITCH_DETECT
-    // There is nothing to check here since the decoding happens inside the inferred
-    // memory block.
-    assign we_err_o = 1'b0;
 
   // This is only used for backdoor access in simulations.
 `ifdef VERILATOR
