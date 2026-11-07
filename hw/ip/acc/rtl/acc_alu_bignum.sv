@@ -1876,7 +1876,7 @@ endgenerate
       assign ispr_rdata_intg_mux_in[IsprKmacMsg0Intg]    =
           gen_pqc_wsr.kmac_msg_intg_q[0];
       assign ispr_rdata_intg_mux_in[IsprKmacMsg1Intg]    =
-          gen_pqc_wsr.kmac_digest_intg_q[1];
+          gen_pqc_wsr.kmac_msg_intg_q[1];
       assign ispr_rdata_intg_mux_in[IsprKmacDigest0Intg] =
           gen_pqc_wsr.kmac_digest_intg_q[0];
       assign ispr_rdata_intg_mux_in[IsprKmacDigest1Intg] =
