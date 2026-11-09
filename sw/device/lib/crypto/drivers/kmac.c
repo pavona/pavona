@@ -835,38 +835,38 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
                           digest, NULL);
 }
 
-inline status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
-                              uint32_t *digest) {
+status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength224, message,
               message_len, kKmacSha3224DigestWords, digest);
 }
 
-inline status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
-                              uint32_t *digest) {
+status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength256, message,
               message_len, kKmacSha3256DigestWords, digest);
 }
 
-inline status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
-                              uint32_t *digest) {
+status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength384, message,
               message_len, kKmacSha3384DigestWords, digest);
 }
 
-inline status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
-                              uint32_t *digest) {
+status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength512, message,
               message_len, kKmacSha3512DigestWords, digest);
 }
 
-inline status_t kmac_shake_128(const uint8_t *message, size_t message_len,
-                               uint32_t *digest, size_t digest_len) {
+status_t kmac_shake_128(const uint8_t *message, size_t message_len,
+                        uint32_t *digest, size_t digest_len) {
   return hash(kKmacOperationShake, kKmacSecurityStrength128, message,
               message_len, digest_len, digest);
 }
 
-inline status_t kmac_shake_256(const uint8_t *message, size_t message_len,
-                               uint32_t *digest, size_t digest_len) {
+status_t kmac_shake_256(const uint8_t *message, size_t message_len,
+                        uint32_t *digest, size_t digest_len) {
   return hash(kKmacOperationShake, kKmacSecurityStrength256, message,
               message_len, digest_len, digest);
 }
