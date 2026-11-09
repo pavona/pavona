@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/mldsa/acc/mldsa_acc.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/acc.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
@@ -311,16 +312,20 @@ static status_t mldsa_keygen(uint32_t mode, uint32_t min_insn_count,
                              size_t sk_bytes) {
   HARDENED_TRY(acc_load_app(kAccAppMldsa));
   HARDENED_TRY(acc_dmem_write(kAccMldsaModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(ceil_div(kMldsaSeedBytes, sizeof(uint32_t)), zeta,
-                              kAccVarZeta));
-  HARDENED_TRY(acc_execute());
-  HARDENED_TRY(acc_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(ceil_div(kMldsaSeedBytes, sizeof(uint32_t)),
+                                   zeta, kAccVarZeta));
+  ACC_WIPE_IF_ERROR(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(
       acc_dmem_read(ceil_div(pk_bytes, sizeof(uint32_t)), kAccVarPk, pk));
   ACC_WIPE_IF_ERROR(
       acc_dmem_read(ceil_div(sk_bytes, sizeof(uint32_t)), kAccVarSk, sk));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(sk, ceil_div(sk_bytes, sizeof(uint32_t)));
+  }
+  return status;
 }
 #endif  // !ACC_MLDSA_HARDENED
 
@@ -333,13 +338,14 @@ static status_t mldsa_sign_with_mu(
     uint32_t *sig, size_t sig_bytes) {
   HARDENED_TRY(acc_load_app(kAccAppMldsa));
   HARDENED_TRY(acc_dmem_write(kAccMldsaModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(
+  ACC_WIPE_IF_ERROR(
       acc_dmem_write(ceil_div(sk_bytes, sizeof(uint32_t)), sk, kAccVarSk));
-  HARDENED_TRY(acc_dmem_write(kMldsaMuBytes / sizeof(uint32_t), mu, kAccVarMu));
-  HARDENED_TRY(acc_dmem_write(ceil_div(kMldsaRndBytes, sizeof(uint32_t)), rnd,
-                              kAccVarRnd));
-  HARDENED_TRY(acc_execute());
-  HARDENED_TRY(acc_busy_wait_for_done());
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_write(kMldsaMuBytes / sizeof(uint32_t), mu, kAccVarMu));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(ceil_div(kMldsaRndBytes, sizeof(uint32_t)),
+                                   rnd, kAccVarRnd));
+  ACC_WIPE_IF_ERROR(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(mldsa_dmem_read_bytes(sig_bytes, kAccVarSig, sig));
   return acc_dmem_sec_wipe();
@@ -719,10 +725,11 @@ static status_t mldsa_keygen_hardened(uint32_t mode, uint32_t min_insn_count,
 
   HARDENED_TRY(acc_load_app(kAccAppMldsa));
   HARDENED_TRY(acc_dmem_write(kAccMldsaModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(kMldsaSeedWords, zeta_share0, kAccVarZetaShares));
-  HARDENED_TRY(acc_dmem_write(kMldsaSeedWords, zeta_share1,
-                              kAccVarZetaShares + kMldsaSeedBytes));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_write(kMldsaSeedWords, zeta_share0, kAccVarZetaShares));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMldsaSeedWords, zeta_share1,
+                                   kAccVarZetaShares + kMldsaSeedBytes));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(
@@ -739,7 +746,12 @@ static status_t mldsa_keygen_hardened(uint32_t mode, uint32_t min_insn_count,
   ACC_WIPE_IF_ERROR(acc_dmem_read(2 * kMldsaKBytes / sizeof(uint32_t),
                                   kAccVarKShares,
                                   sk + acc_sk_words + s1s2_words));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(
+        sk, acc_sk_words + s1s2_words + 2 * kMldsaKBytes / sizeof(uint32_t));
+  }
+  return status;
 }
 
 // Runs the ACC masked-sign kernel given a precomputed mu (external-mu mode).
@@ -755,15 +767,17 @@ static status_t mldsa_sign_hardened_with_mu(
 
   HARDENED_TRY(acc_load_app(kAccAppMldsa));
   HARDENED_TRY(acc_dmem_write(kAccMldsaModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(acc_sk_words, sk, kAccVarSk));
-  HARDENED_TRY(
+  ACC_WIPE_IF_ERROR(acc_dmem_write(acc_sk_words, sk, kAccVarSk));
+  ACC_WIPE_IF_ERROR(
       acc_dmem_write(s1s2_words, sk + acc_sk_words, kAccVarS1s2Shares));
-  HARDENED_TRY(acc_dmem_write(2 * kMldsaKBytes / sizeof(uint32_t),
-                              sk + acc_sk_words + s1s2_words, kAccVarKShares));
-  HARDENED_TRY(acc_dmem_write(kMldsaMuBytes / sizeof(uint32_t), mu, kAccVarMu));
-  HARDENED_TRY(acc_dmem_write(ceil_div(kMldsaRndBytes, sizeof(uint32_t)), rnd,
-                              kAccVarRnd));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(2 * kMldsaKBytes / sizeof(uint32_t),
+                                   sk + acc_sk_words + s1s2_words,
+                                   kAccVarKShares));
+  ACC_WIPE_IF_ERROR(
+      acc_dmem_write(kMldsaMuBytes / sizeof(uint32_t), mu, kAccVarMu));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(ceil_div(kMldsaRndBytes, sizeof(uint32_t)),
+                                   rnd, kAccVarRnd));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(mldsa_dmem_read_bytes(sig_bytes, kAccVarSig, sig));
