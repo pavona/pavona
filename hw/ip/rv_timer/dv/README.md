@@ -119,10 +119,9 @@ For Egret:
 ```
 
 Use `-i all --cov` instead of `-i smoke` for a full coverage regression.
-The shared test definitions remain in `rv_timer_sim_cfg.hjson`.
-Running that file directly defaults to Egret and shares its output directory.
-Top-level batch configurations select the explicit variant for their top.
-After regenerating batch configurations, review their RV Timer entries because the collection script discovers all three configuration files without top-specific filtering.
+The shared test definitions are in `rv_timer_base_sim_cfg.hjson`, which both variants import.
+You can run the base file directly; it defaults to Egret and shares the Egret variant's output directory.
+Batch configurations list only the two variants, because the collection script skips base files.
 The top mapping applies to every build mode, including `default` and `cover_reg_top`.
 Do not merge Egret and Dragonfly databases or reuse databases from the older unpinned configuration.
 The RACL exclusions apply only to the testbench's disabled-RACL configuration, not to RACL verification.

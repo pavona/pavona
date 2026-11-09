@@ -4,5 +4,5 @@
 {
   // Select both the Egret packages and their matching coverage exclusions.
   variant: egret
-  import_cfgs: ["{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson"]
+  import_cfgs: ["{proj_root}/hw/ip/rv_timer/dv/rv_timer_base_sim_cfg.hjson"]
 }
