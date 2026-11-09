@@ -16,6 +16,9 @@ filegroup(
 )
 
 AES_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:acvp_aes_{}_json".format(mode)
+    for mode in ("cbc", "cfb128", "ecb", "ofb")
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
     for kat_type in ("varkey", "gfsbox", "vartxt", "keysbox")
@@ -29,6 +32,9 @@ AES_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "aes_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = AES_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
