@@ -3,12 +3,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/aes.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -28,15 +29,15 @@ static const uint32_t kKeyMask[8] = {
     0x8acdcb7e, 0x15e76440, 0x8459b2ce, 0xdc2110cc,
 };
 
-status_t handle_aes_block(ujson_t *uj) {
+status_t handle_aes_block(ujson_t *uj, aes_test_scratch_t *s) {
   cryptotest_aes_mode_t uj_mode;
   cryptotest_aes_operation_t uj_op;
   cryptotest_aes_padding_t uj_padding;
-  cryptotest_aes_data_t uj_data;
+  cryptotest_aes_data_t *uj_data = &s->data;
   TRY(ujson_deserialize_cryptotest_aes_mode_t(uj, &uj_mode));
   TRY(ujson_deserialize_cryptotest_aes_operation_t(uj, &uj_op));
   TRY(ujson_deserialize_cryptotest_aes_padding_t(uj, &uj_padding));
-  TRY(ujson_deserialize_cryptotest_aes_data_t(uj, &uj_data));
+  TRY(ujson_deserialize_cryptotest_aes_data_t(uj, uj_data));
 
   otcrypto_aes_mode_t mode;
   otcrypto_key_mode_t key_mode;
@@ -98,69 +99,69 @@ status_t handle_aes_block(ujson_t *uj) {
   // Convert the data struct into cryptolib types
   const size_t AES_IV_SIZE = 4;
   uint32_t iv_buf[AES_IV_SIZE];
-  memcpy(iv_buf, uj_data.iv, AES_IV_SIZE * 4);
+  memcpy(iv_buf, uj_data->iv, AES_IV_SIZE * 4);
   otcrypto_word32_buf_t iv = {
       .data = iv_buf,
       .len = kAesBlockWords,
   };
 
   otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
-      .len = (size_t)uj_data.input_len,
+      .data = uj_data->input,
+      .len = (size_t)uj_data->input_len,
   };
 
   // Build the key configuration
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
-      .key_length = uj_data.key_length,
+      .key_length = uj_data->key_length,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
   };
   // Create buffer to store key
   uint32_t key_buf[kAesMaxKeyWords];
-  memcpy(key_buf, uj_data.key, kAesMaxKeyBytes);
+  memcpy(key_buf, uj_data->key, kAesMaxKeyBytes);
   // Create keyblob
   size_t keyblob_words = 0;
   TRY(keyblob_num_words(config, &keyblob_words));
-  uint32_t keyblob[keyblob_words];
+  uint32_t keyblob[2 * kAesMaxKeyWords];
+  if (keyblob_words > ARRAYSIZE(keyblob)) {
+    return INVALID_ARGUMENT();
+  }
   // Create blinded key
   TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
   otcrypto_blinded_key_t key = {
       .config = config,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_words * sizeof(uint32_t),
       .keyblob = keyblob,
   };
   key.checksum = integrity_blinded_checksum(&key);
 
   size_t padded_len_bytes;
-  TRY(otcrypto_aes_padded_plaintext_length((size_t)uj_data.input_len, padding,
+  TRY(otcrypto_aes_padded_plaintext_length((size_t)uj_data->input_len, padding,
                                            &padded_len_bytes));
   if (padded_len_bytes > AES_CMD_MAX_MSG_BYTES) {
     return OUT_OF_RANGE();
   }
-  uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
+  cryptotest_aes_output_t *uj_output = &s->output;
   otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
-      .len = sizeof(output_buf),
+      .data = uj_output->output,
+      .len = padded_len_bytes,
   };
 
   TRY(otcrypto_aes(&key, iv, mode, op, input, padding, output));
 
-  cryptotest_aes_output_t uj_output;
-  uj_output.output_len = padded_len_bytes;
-  memset(uj_output.output, 0, AES_CMD_MAX_MSG_BYTES);
-  memcpy(uj_output.output, output_buf, uj_output.output_len);
-  RESP_OK(ujson_serialize_cryptotest_aes_output_t, uj, &uj_output);
+  uj_output->output_len = padded_len_bytes;
+  RESP_OK(ujson_serialize_cryptotest_aes_output_t, uj, uj_output);
   return OK_STATUS(0);
 }
 
-status_t handle_aes(ujson_t *uj) {
+status_t handle_aes(ujson_t *uj, aes_test_scratch_t *s) {
   aes_subcommand_t cmd;
   TRY(ujson_deserialize_aes_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kAesSubcommandAesBlock:
-      return handle_aes_block(uj);
+      return handle_aes_block(uj, s);
       break;
     default:
       LOG_ERROR("Unrecognized AES subcommand: %d", cmd);
