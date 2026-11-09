@@ -695,7 +695,8 @@ status_t mldsa_acc_87_verify_pre_hash(
 // Masked secret-key keyblob = the ACC key layout verbatim (see mldsa.h): the
 // three ACC DMEM regions concatenated, DMAed straight to/from the ACC.
 //   sk (acc_sk)  = rho(32) || K-slot(32, zeroed) || tr(64) || t0(K*416)
-//   s1s2_shares  = per eta poly [share0|share1], each polyeta bytes (L+K polys)
+//   s1s2_shares  = per eta poly [share0|share1], each polyeta bytes, bit-sliced
+//                  (L+K polys)
 //   K_shares     = K_share0(32) || K_share1(32)
 
 enum {

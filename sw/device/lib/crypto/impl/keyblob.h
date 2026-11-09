@@ -13,6 +13,16 @@
 extern "C" {
 #endif  // __cplusplus
 
+// Masked PQC secret-key blob sizes: the ACC key layout (see mlkem.h/mldsa.h).
+enum {
+  kMlkem512MaskedKeyblobBytes = 1152 * 2 + 128,
+  kMlkem768MaskedKeyblobBytes = 1152 * 3 + 128,
+  kMlkem1024MaskedKeyblobBytes = 1152 * 4 + 128,
+  kMldsa44MaskedKeyblobBytes = 128 + 4 * 416 + 2 * 8 * 96 + 64,
+  kMldsa65MaskedKeyblobBytes = 128 + 6 * 416 + 2 * 11 * 128 + 64,
+  kMldsa87MaskedKeyblobBytes = 128 + 8 * 416 + 2 * 15 * 96 + 64,
+};
+
 /**
  * Get the word-length of the full blinded keyblob for a given key length.
  *

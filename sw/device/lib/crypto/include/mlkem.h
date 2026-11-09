@@ -34,6 +34,7 @@ extern "C" {
 enum {
   kOtcryptoMlkem512PublicKeyBytes = 800,
   kOtcryptoMlkem512SecretKeyBytes = 1632,
+  kOtcryptoMlkem512MaskedSecretKeyBytes = 1152 * 2 + 128,
   kOtcryptoMlkem512CiphertextBytes = 768,
   kOtcryptoMlkem512SharedSecretBytes = 32,
   kOtcryptoMlkem512KeygenSeedBytes = 64,
@@ -41,6 +42,7 @@ enum {
 
   kOtcryptoMlkem768PublicKeyBytes = 1184,
   kOtcryptoMlkem768SecretKeyBytes = 2400,
+  kOtcryptoMlkem768MaskedSecretKeyBytes = 1152 * 3 + 128,
   kOtcryptoMlkem768CiphertextBytes = 1088,
   kOtcryptoMlkem768SharedSecretBytes = 32,
   kOtcryptoMlkem768KeygenSeedBytes = 64,
@@ -48,6 +50,7 @@ enum {
 
   kOtcryptoMlkem1024PublicKeyBytes = 1568,
   kOtcryptoMlkem1024SecretKeyBytes = 3168,
+  kOtcryptoMlkem1024MaskedSecretKeyBytes = 1152 * 4 + 128,
   kOtcryptoMlkem1024CiphertextBytes = 1568,
   kOtcryptoMlkem1024SharedSecretBytes = 32,
   kOtcryptoMlkem1024KeygenSeedBytes = 64,
@@ -114,11 +117,13 @@ enum {
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-KEM-512. The key
- * blob for the private key should have a length of 2x
- * ceil(kOtCryptoMlkem512SecretKeybytes / sizeof(uint32_t)) = 816 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMlkem512SecretKeyBytes / sizeof(uint32_t)) = 408 words, or
+ * ceil(kOtcryptoMlkem512MaskedSecretKeyBytes / sizeof(uint32_t)) = 608 words
+ * for the masked key of a hardened build.
  *
- * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len `kOtcryptoMlkem512PublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlkem512SecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem512WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -230,11 +235,13 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-KEM-768. The key
- * blob for the private key should have a length of 2x
- * ceil(kOtCryptoMlkem768SecretKeybytes / sizeof(uint32_t)) = 1200 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMlkem768SecretKeyBytes / sizeof(uint32_t)) = 600 words, or
+ * ceil(kOtcryptoMlkem768MaskedSecretKeyBytes / sizeof(uint32_t)) = 896 words
+ * for the masked key of a hardened build.
  *
- * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len `kOtcryptoMlkem768PublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlkem768SecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem768WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */
@@ -346,11 +353,13 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-KEM-1024. The key
- * blob for the private key should have a length of 2x
- * ceil(kOtCryptoMlkem1024SecretKeybytes / sizeof(uint32_t)) = 1584 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMlkem1024SecretKeyBytes / sizeof(uint32_t)) = 792 words, or
+ * ceil(kOtcryptoMlkem1024MaskedSecretKeyBytes / sizeof(uint32_t)) = 1184
+ * words for the masked key of a hardened build.
  *
- * @param[out] public_key dest, len >= `kOtcryptoMlKemPublicKeyBytes`.
- * @param[out] secret_key dest, unmasked len `kOtcryptoMlKemSecretKeyBytes`.
+ * @param[out] public_key dest, len `kOtcryptoMlkem1024PublicKeyBytes`.
+ * @param[out] secret_key dest, unmasked len `kOtcryptoMlkem1024SecretKeyBytes`.
  * @param work Work buffer (`kOtcryptoMlkem1024WorkBufferKeypairWords` words).
  * @return Status code (OK or error).
  */

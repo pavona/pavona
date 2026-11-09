@@ -55,16 +55,6 @@ size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
-// Masked PQC secret-key blob sizes: the ACC key layout (see mlkem.h/mldsa.h).
-enum {
-  kMlkem512MaskedKeyblobBytes = 1152 * 2 + 128,
-  kMlkem768MaskedKeyblobBytes = 1152 * 3 + 128,
-  kMlkem1024MaskedKeyblobBytes = 1152 * 4 + 128,
-  kMldsa44MaskedKeyblobBytes = 128 + 4 * 416 + 2 * 8 * 96 + 64,
-  kMldsa65MaskedKeyblobBytes = 128 + 6 * 416 + 2 * 11 * 128 + 64,
-  kMldsa87MaskedKeyblobBytes = 128 + 8 * 416 + 2 * 15 * 96 + 64,
-};
-
 status_t keyblob_num_words(const otcrypto_key_config_t config,
                            size_t *num_words) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
