@@ -30,7 +30,11 @@ CRYPTOTEST = "sw/device/tests/crypto/cryptotest"
 PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
+    ("ACVP-AES-CBC", ""): ("aes", "cbc"),
+    ("ACVP-AES-CFB128", ""): ("aes", "cfb128"),
+    ("ACVP-AES-ECB", ""): ("aes", "ecb"),
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
+    ("ACVP-AES-OFB", ""): ("aes", "ofb"),
     ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),
     ("KDA", "HKDF"): ("hkdf", "hkdf"),
     ("HMAC-SHA2-384", ""): ("hmac_sha384", "hmac"),
@@ -55,6 +59,7 @@ VECTOR_SETS = {
 
 # Harnesses whose parser and schema are named differently.
 PARSER_NAMES = {
+    "aes": "aes_block",
     "hmac_sha256": "hmac",
     "hmac_sha384": "hmac",
     "hmac_sha512": "hmac",

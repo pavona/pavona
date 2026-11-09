@@ -231,6 +231,15 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_aes_block_parser",
+    srcs = ["nist_acvp_aes_block_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_acvp_aes_kwp_parser",
     srcs = ["nist_acvp_aes_kwp_parser.py"],
     deps = [
