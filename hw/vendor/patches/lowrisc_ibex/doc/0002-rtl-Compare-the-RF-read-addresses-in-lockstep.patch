@@ -1,0 +1,40 @@
+From 37c0166219e29dd0ca6f0d0f2d799a7795c41638 Mon Sep 17 00:00:00 2001
+From: Pascal Nasahl <nasahlpa@lowrisc.org>
+Date: Thu, 5 Nov 2026 08:47:06 +0100
+Subject: [PATCH 2/2] [rtl] Compare the RF read addresses in lockstep
+
+A fault into the RF read address could deliver the wrong data
+word from the RF. Before this commit, such a fault could get
+undetected for the following cases:
+- 1/128 chance that the faulty and non-faulty ECC collide
+- 100% chance for faulty_data = inverse(non-faulty_data)
+
+To close this gap, add the RF read address into the lockstep
+comparison.
+
+This adds 10-bits x 3 stages, i.e., 30 FFs.
+
+Signed-off-by: Pascal Nasahl <nasahlpa@lowrisc.org>
+(cherry picked from commit 9c2734233ad1beb1dc37f3133dffa8aa1b81be99)
+---
+ 03_reference/security.rst | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/03_reference/security.rst b/03_reference/security.rst
+index df35e50e73..92422cf4f3 100644
+--- a/03_reference/security.rst
++++ b/03_reference/security.rst
+@@ -82,8 +82,8 @@ Register file ECC
+ -----------------
+ 
+ When Ibex is configured with the SecureIbex parameter, ECC checking is added to all reads of the register file.
+-In addition, the register file write port (write address, write enable, and write data) of the main core is compared against the one of the shadow core in the dual core lockstep.
+-Relying on the ECC check alone would miss a faulty result whose check bits happen to match those of the correct result, e.g., a bitwise inverted result.
++In addition, the register file read addresses and write port (write address, write enable, and write data) of the main core are compared against the ones of the shadow core in the dual core lockstep.
++Relying on the ECC check alone would miss a faulty value whose check bits happen to match those of the correct value, e.g., a bitwise inverted result or a read from a register holding the inverse.
+ This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
+ No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
+ 
+-- 
+2.43.0
+
