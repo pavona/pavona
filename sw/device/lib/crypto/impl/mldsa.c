@@ -222,6 +222,9 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa44) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
   if (public_key->key_length != kOtcryptoMldsa44PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -306,6 +309,9 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa44) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa44SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -569,6 +575,9 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa65) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
   if (public_key->key_length != kOtcryptoMldsa65PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -653,6 +662,9 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa65) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa65SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -915,6 +927,9 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa87) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
+  }
   if (public_key->key_length != kOtcryptoMldsa87PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -999,6 +1014,9 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa87) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa87SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
