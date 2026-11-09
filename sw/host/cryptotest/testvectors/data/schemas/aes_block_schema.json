@@ -18,10 +18,39 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID number -- used for debugging",
+        "type": "integer"
+      },
       "algorithm": {
-        "description": "Should be AES",
+        "description": "aes, or the ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["aes"]
+        "enum": ["aes", "ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "test_type": {
+        "description": "aft for a single operation, mct for a Monte Carlo test",
+        "type": "string",
+        "enum": ["aft", "mct"]
       },
       "operation": {
         "description": "AES operation",
@@ -58,6 +87,24 @@
       "plaintext": {
         "description": "Plaintext",
         "$ref": "#/$defs/byte_array"
+      },
+      "mct_results": {
+        "description": "Expected key, IV, plaintext and ciphertext of every outer iteration of a Monte Carlo test",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {"$ref": "#/$defs/byte_array"},
+            "iv": {"$ref": "#/$defs/byte_array"},
+            "plaintext": {"$ref": "#/$defs/byte_array"},
+            "ciphertext": {"$ref": "#/$defs/byte_array"}
+          }
+        }
+      },
+      "result": {
+        "description": "Whether the device output should match the expected output",
+        "type": "boolean"
       }
     }
   }
