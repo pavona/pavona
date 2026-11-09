@@ -12,12 +12,15 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'a', 'e')
 
 #define AES_CMD_MAX_MSG_BYTES 16000
-#define AES_CMD_MAX_KEY_BYTES 32  // 256 / 8
+#define AES_CMD_MAX_KEY_BYTES 32           // 256 / 8
+#define AES_CMD_MAX_MCT_KEYS_BYTES 3200    // 100 * 256 / 8
+#define AES_CMD_MAX_MCT_BLOCKS_BYTES 1600  // 100 * 128 / 8
 
 // clang-format off
 
 #define AES_SUBCOMMAND(_, value) \
     value(_, AesBlock) \
+    value(_, AesMct) \
     value(_, AesGcm)
 UJSON_SERDE_ENUM(AesSubcommand, aes_subcommand_t, AES_SUBCOMMAND);
 
@@ -53,6 +56,17 @@ UJSON_SERDE_STRUCT(CryptotestAesData, cryptotest_aes_data_t, AES_DATA);
     bytes(output, AES_CMD_MAX_MSG_BYTES, output_len) \
     field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesOutput, cryptotest_aes_output_t, AES_OUTPUT);
+
+#define AES_MCT_OUTPUT(field, string, bytes) \
+    bytes(keys, AES_CMD_MAX_MCT_KEYS_BYTES, keys_len) \
+    field(keys_len, size_t) \
+    bytes(ivs, AES_CMD_MAX_MCT_BLOCKS_BYTES, ivs_len) \
+    field(ivs_len, size_t) \
+    bytes(inputs, AES_CMD_MAX_MCT_BLOCKS_BYTES, inputs_len) \
+    field(inputs_len, size_t) \
+    bytes(outputs, AES_CMD_MAX_MCT_BLOCKS_BYTES, outputs_len) \
+    field(outputs_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestAesMctOutput, cryptotest_aes_mct_output_t, AES_MCT_OUTPUT);
 
 #undef MODULE_ID
 
