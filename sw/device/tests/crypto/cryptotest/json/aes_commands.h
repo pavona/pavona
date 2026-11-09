@@ -11,7 +11,7 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'a', 'e')
 
-#define AES_CMD_MAX_MSG_BYTES 64
+#define AES_CMD_MAX_MSG_BYTES 16000
 #define AES_CMD_MAX_KEY_BYTES 32  // 256 / 8
 
 // clang-format off
@@ -50,8 +50,8 @@ UJSON_SERDE_ENUM(CryptotestAesPadding, cryptotest_aes_padding_t, AES_PADDING);
 UJSON_SERDE_STRUCT(CryptotestAesData, cryptotest_aes_data_t, AES_DATA);
 
 #define AES_OUTPUT(field, string, bytes) \
-    field(output, uint8_t, AES_CMD_MAX_MSG_BYTES) \
-    field(output_len, uint32_t)
+    bytes(output, AES_CMD_MAX_MSG_BYTES, output_len) \
+    field(output_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesOutput, cryptotest_aes_output_t, AES_OUTPUT);
 
 #undef MODULE_ID
