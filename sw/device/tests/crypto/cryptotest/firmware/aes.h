@@ -13,6 +13,7 @@
 typedef struct aes_test_scratch {
   cryptotest_aes_data_t data;
   cryptotest_aes_output_t output;
+  cryptotest_aes_mct_output_t mct_output;
 } aes_test_scratch_t;
 
 status_t handle_aes_block(ujson_t *uj, aes_test_scratch_t *s);
