@@ -124,7 +124,7 @@
                   "CHECK_ARRAYS requires arguments of equal size.");      \
     status_t sts_ = OK_STATUS();                                          \
     volatile bool is_eq =                                                 \
-        memcmp((actual_), (ref_), size_ * sizeof(*(actual_))) == 0;       \
+        memcmp((actual_), (ref_), (size_) * sizeof(*(actual_))) == 0;     \
     if (is_eq != expect_eq_) {                                            \
       if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) {                      \
         LOG_INFO("CHECK-fail: " #actual_ " %smatches " #ref_,             \
@@ -132,7 +132,7 @@
       } else {                                                            \
         LOG_INFO("CHECK-fail: " __VA_ARGS__);                             \
       }                                                                   \
-      for (size_t i = 0; i < size_; ++i) {                                \
+      for (size_t i = 0; i < (size_); ++i) {                              \
         if (expect_eq_) {                                                 \
           LOG_INFO(SHOW_MISMATCH_FMT_STR_((actual_)[i]), i, (actual_)[i], \
                    (ref_)[i]);                                            \
