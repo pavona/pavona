@@ -9,7 +9,7 @@ It registers the capabilities, hands over the vector sets it downloads, and subm
 A session therefore arrives as one vector set per algorithm and mode, each needing a response in return.
 
 We aim to make answering those vector sets as close to a single command as we can.
-The registration below records what the cryptolib claims, and [`util/acvp_client.py`](/util/acvp_client.py) runs a session's vector sets on the device and produces the responses to submit.
+The registration below records what the cryptolib claims, and [`util/acvp_client.py`](../../../../../util/acvp_client.py) runs a session's vector sets on the device and produces the responses to submit.
 
 `registration/` documents the ACVP capabilities supported by the cryptolib ACVP harness, one file per algorithm and mode.
 Each file is a self-contained JSON object in the format defined by the [ACVP specification](https://pages.nist.gov/ACVP/).
@@ -162,7 +162,7 @@ The `_hardened` variants of the ML-DSA and ML-KEM targets always test the harden
 
 ### Running your own ACVP test vectors
 
-For running your own vector sets (e.g., during certification) [`util/acvp_client.py`](/util/acvp_client.py) can be used.
+For running your own vector sets (e.g., during certification) [`util/acvp_client.py`](../../../../../util/acvp_client.py) can be used.
 It converts ACVP prompts into test vector files and runs them through the cryptolib implementations.
 Optionally, expected results can be passed (e.g., during testing).
 
@@ -188,7 +188,7 @@ NIST's sample vector sets are generated from sample registrations, which sometim
 In such cases, it can make sense to generate our own test vectors that match the capabilities of the cryptolib exactly.
 This can be done with the [registration files](registration/) in this repository and NIST's [ACVP-Server](https://github.com/usnistgov/ACVP-Server).
 
-To generate test vectors, we provide a [genval container](/util/acvp/genval/Dockerfile).
+To generate test vectors, we provide a [genval container](../../../../../util/acvp/genval/Dockerfile).
 It can be built with:
 
 ```sh
