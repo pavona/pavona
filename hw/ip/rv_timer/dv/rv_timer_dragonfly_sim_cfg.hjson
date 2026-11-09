@@ -4,7 +4,7 @@
 {
   // Select both the Dragonfly packages and their matching coverage exclusions.
   variant: dragonfly
-  import_cfgs: ["{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson"]
+  import_cfgs: ["{proj_root}/hw/ip/rv_timer/dv/rv_timer_base_sim_cfg.hjson"]
   overrides: [
     {
       name: rv_timer_top
