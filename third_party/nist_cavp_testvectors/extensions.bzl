@@ -19,15 +19,6 @@ def _nist_cavp_repos():
     archive instead of the NIST website.
     """
     http_archive(
-        name = "nist_cavp_drbg_sp_800_90a_root",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "5f7e5658ebd5b4e6785a7b12fa32333511d2acc2f2d9c5ae1ffa16b699377769",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/drbgtestvectors.zip",
-        ],
-    )
-    http_archive(
         name = "nist_cavp_ecdsa_fips_186_4",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         strip_prefix = "186-4ecdsatestvectors",

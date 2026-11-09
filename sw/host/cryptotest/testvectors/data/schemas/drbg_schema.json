@@ -28,9 +28,9 @@
         "type": "integer"
       },
       "algorithm": {
-        "description": "drbg, or the ACVP algorithm the test came from",
+        "description": "The ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["drbg", "ctrDRBG"]
+        "enum": ["ctrDRBG"]
       },
       "revision": {
         "description": "ACVP algorithm revision the test came from",

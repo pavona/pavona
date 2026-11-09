@@ -52,8 +52,7 @@ struct DrbgTestCase {
     reseed_additional_input: Vec<u8>,
     additional_input_1: Vec<u8>,
     additional_input_2: Vec<u8>,
-    /// Length of the returned bits in bytes that an ACVP test asks for.
-    #[serde(default)]
+    /// Length of the returned bits in bytes.
     output_len: usize,
     #[serde(default)]
     output: Vec<u8>,
@@ -99,11 +98,7 @@ fn run_drbg_testcase(
         additional_input_1_len: addl_1.len(),
         additional_input_2: ArrayVec::try_from(addl_2.as_slice()).unwrap(),
         additional_input_2_len: addl_2.len(),
-        output_len: if test_case.output_len != 0 {
-            test_case.output_len
-        } else {
-            test_case.output.len()
-        },
+        output_len: test_case.output_len,
     }
     .send(spi_console)?;
 
