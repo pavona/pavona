@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/include/mlkem.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -67,6 +68,8 @@ _Static_assert(kOtcryptoMlkem1024MaskedSecretKeyBytes ==
 /**
  * Fills `buf` from a fresh CSRNG instance, uninstantiating it on every exit.
  *
+ * Shreds `buf` on failure.
+ *
  * @param[out] buf Destination buffer.
  * @param len Length of `buf` in words.
  * @return Result of the operation.
@@ -77,7 +80,13 @@ static status_t mlkem_csrng_generate(uint32_t *buf, size_t len) {
       /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
   status_t status = entropy_csrng_generate(&kEntropyEmptySeed, buf, len,
                                            /*fips_check=*/kHardenedBoolTrue);
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  status_t uninstantiate_status = entropy_csrng_uninstantiate();
+  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
+    status = uninstantiate_status;
+  }
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(buf, len);
+  }
   return status;
 }
 
@@ -248,8 +257,10 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem512_keygen_derand(randomness_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status = otcrypto_mlkem512_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem512_encapsulate(
@@ -263,8 +274,10 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem512_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem512_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem512_decapsulate(
@@ -532,8 +545,10 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem768_keygen_derand(randomness_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status = otcrypto_mlkem768_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem768_encapsulate(
@@ -547,8 +562,10 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem768_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem768_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem768_decapsulate(
@@ -816,8 +833,10 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem1024_keygen_derand(randomness_buf, public_key,
-                                          secret_key, work);
+  otcrypto_status_t status = otcrypto_mlkem1024_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem1024_encapsulate(
@@ -831,8 +850,10 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem1024_encapsulate_derand(public_key, randomness_buf,
-                                               ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem1024_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem1024_decapsulate(
