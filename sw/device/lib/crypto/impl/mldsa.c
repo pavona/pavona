@@ -319,7 +319,7 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
   if (rnd.len != kOtcryptoMldsa44SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa44SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa44SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {
@@ -672,7 +672,7 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
   if (rnd.len != kOtcryptoMldsa65SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa65SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa65SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {
@@ -1024,7 +1024,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
   if (rnd.len != kOtcryptoMldsa87SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa87SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa87SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {

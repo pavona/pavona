@@ -153,16 +153,40 @@ enum {
 // the final 32-byte word. The ACC reads these inputs as full 256-bit words, so
 // the bytes between `num_bytes` and the next 32-byte boundary must be
 // initialized; otherwise the ACC reads uninitialized DMEM and raises an
-// integrity violation.
+// integrity violation. Reads no more than `num_bytes` from `src`.
 OT_WARN_UNUSED_RESULT
 static status_t mldsa_dmem_write_padded(size_t num_bytes, const uint32_t *src,
                                         acc_addr_t dest) {
+  size_t full_words = num_bytes / sizeof(uint32_t);
+  size_t tail_bytes = num_bytes % sizeof(uint32_t);
   size_t num_words = ceil_div(num_bytes, sizeof(uint32_t));
   size_t padded_words = ceil_div(num_bytes, 32) * (32 / sizeof(uint32_t));
-  HARDENED_TRY(acc_dmem_write(num_words, src, dest));
+  HARDENED_TRY(acc_dmem_write(full_words, src, dest));
+  if (tail_bytes > 0) {
+    uint32_t tail = 0;
+    memcpy(&tail, &src[full_words], tail_bytes);
+    HARDENED_TRY(
+        acc_dmem_write(1, &tail, dest + full_words * sizeof(uint32_t)));
+  }
   if (padded_words > num_words) {
     HARDENED_TRY(acc_dmem_set(padded_words - num_words, 0,
                               dest + num_words * sizeof(uint32_t)));
+  }
+  return OTCRYPTO_OK;
+}
+
+// Read `num_bytes` from DMEM at `src` into `dest` without writing past
+// `num_bytes`.
+OT_WARN_UNUSED_RESULT
+static status_t mldsa_dmem_read_bytes(size_t num_bytes, acc_addr_t src,
+                                      uint32_t *dest) {
+  size_t full_words = num_bytes / sizeof(uint32_t);
+  size_t tail_bytes = num_bytes % sizeof(uint32_t);
+  HARDENED_TRY(acc_dmem_read(full_words, src, dest));
+  if (tail_bytes > 0) {
+    uint32_t tail;
+    HARDENED_TRY(acc_dmem_read(1, src + full_words * sizeof(uint32_t), &tail));
+    memcpy(&dest[full_words], &tail, tail_bytes);
   }
   return OTCRYPTO_OK;
 }
@@ -317,8 +341,7 @@ static status_t mldsa_sign_with_mu(
   HARDENED_TRY(acc_execute());
   HARDENED_TRY(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_read(ceil_div(sig_bytes, sizeof(uint32_t)), kAccVarSig, sig));
+  ACC_WIPE_IF_ERROR(mldsa_dmem_read_bytes(sig_bytes, kAccVarSig, sig));
   return acc_dmem_sec_wipe();
 }
 
@@ -742,8 +765,7 @@ static status_t mldsa_sign_hardened_with_mu(
   HARDENED_TRY(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
-  ACC_WIPE_IF_ERROR(
-      acc_dmem_read(ceil_div(sig_bytes, sizeof(uint32_t)), kAccVarSig, sig));
+  ACC_WIPE_IF_ERROR(mldsa_dmem_read_bytes(sig_bytes, kAccVarSig, sig));
   return acc_dmem_sec_wipe();
 }
 
