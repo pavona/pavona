@@ -415,9 +415,9 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
 
   // If this is the first part of the plaintext and we haven't finished the AAD
   // yet, process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
-    ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
+  size_t partial_aad_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  if (ctx->input_len == 0 && partial_aad_block_len != 0) {
+    ghash_update(&ctx->ghash_ctx, partial_aad_block_len,
                  (unsigned char *)ctx->partial_ghash_block.data);
   }
 
@@ -470,10 +470,9 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, size_t tag_len, uint32_t *tag,
 
   // If there was no input (we never entered the "update encrypted data"
   // stage), process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
-    size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-    ghash_update(&ctx->ghash_ctx, partial_ghash_block_len,
+  size_t partial_aad_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  if (ctx->input_len == 0 && partial_aad_block_len != 0) {
+    ghash_update(&ctx->ghash_ctx, partial_aad_block_len,
                  (unsigned char *)ctx->partial_ghash_block.data);
   }
 
