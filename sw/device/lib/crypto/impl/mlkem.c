@@ -53,6 +53,20 @@ _Static_assert(kOtcryptoMlkem1024WorkBufferEncapsWords * sizeof(uint32_t) ==
 _Static_assert(kOtcryptoMlkem1024WorkBufferDecapsWords * sizeof(uint32_t) ==
                    MLK_TOTAL_ALLOC_1024_DECAPS,
                "ML-KEM-1024 decaps work buffer size mismatch");
+
+/**
+ * Maps a non-zero mlkem-native return code to an error status.
+ *
+ * @param result mlkem-native return code.
+ * @return BAD_ARGS for an invalid key, or FATAL_ERR for any other failure.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_native_status(int result) {
+  if (result == MLK_ERR_INVALID_PK || result == MLK_ERR_INVALID_SK) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_FATAL_ERR;
+}
 #endif
 
 _Static_assert(kOtcryptoMlkem512MaskedSecretKeyBytes ==
@@ -233,7 +247,7 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem512SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -369,7 +383,7 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
                    (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem512SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -521,7 +535,7 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem768SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -657,7 +671,7 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
                    (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem768SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -809,7 +823,7 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem1024SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -945,7 +959,7 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
                              (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem1024SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 

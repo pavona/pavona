@@ -563,7 +563,11 @@ otcrypto_status_t otcrypto_mldsa44_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
@@ -921,7 +925,11 @@ otcrypto_status_t otcrypto_mldsa65_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
@@ -1278,7 +1286,11 @@ otcrypto_status_t otcrypto_mldsa87_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
