@@ -424,11 +424,12 @@ class FlowCfg():
         # Filter configurations
         filtered_cfgs = []
         for c in self.cfgs:
+            variant = getattr(c, "variant", None)
             for s in select:
                 if s == c.name:
                     filtered_cfgs.append(c)
                     break
-                if c.name in s and s == f"{c.name}_{c.variant}":
+                if variant and s == f"{c.name}_{variant}":
                     filtered_cfgs.append(c)
                     break
 
