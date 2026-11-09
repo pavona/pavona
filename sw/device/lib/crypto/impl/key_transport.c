@@ -304,8 +304,10 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
   // Check the that the keyblob word count in the plaintext is valid.
   if (unwrapped_key->config.hw_backed == kHardenedBoolFalse) {
     size_t keyblob_exp_words = 0;
-    keyblob_num_words(unwrapped_key->config, &keyblob_exp_words);
-    if (keyblob_words != keyblob_exp_words) {
+    status_t num_words_status =
+        keyblob_num_words(unwrapped_key->config, &keyblob_exp_words);
+    if (launder32(OT_UNSIGNED(num_words_status.value)) != kHardenedBoolTrue ||
+        keyblob_words != keyblob_exp_words) {
       hardened_memshred(work.data, wrapped_key.len);
       *success = kHardenedBoolFalse;
       return OTCRYPTO_OK;
