@@ -584,6 +584,37 @@ run_binary(
     ]
 ]
 
+[
+    run_binary(
+        name = "acvp_aes_{}_json".format(mode),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
+            "@acvp_vectors//:aes-{}/expectedResults.json".format(mode),
+            "@acvp_vectors//:aes-{}/prompt.json".format(mode),
+        ],
+        outs = [":acvp_aes_{}.json".format(mode)],
+        args = [
+            "--src",
+            "$(location @acvp_vectors//:aes-{}/prompt.json)".format(mode),
+            "--dst",
+            "$(location :acvp_aes_{}.json)".format(mode),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",
+            "--expected",
+            "$(location @acvp_vectors//:aes-{}/expectedResults.json)".format(mode),
+            "--test-type",
+            mode,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_block_parser",
+    )
+    for mode in [
+        "cbc",
+        "cfb128",
+        "ecb",
+        "ofb",
+    ]
+]
+
 run_binary(
     name = "acvp_aes_kwp_json",
     srcs = [
