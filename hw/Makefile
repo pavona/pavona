@@ -22,6 +22,7 @@ IPS ?= acc                 \
        aes                 \
        adc_ctrl            \
        aon_timer           \
+       ascon               \
        csrng               \
        dma                 \
        edn                 \
