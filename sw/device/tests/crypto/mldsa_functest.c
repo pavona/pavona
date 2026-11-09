@@ -204,7 +204,7 @@ static void test_mldsa44_derand(void) {
   otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
                                            .len = sizeof(kSignRnd)};
   otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
-                                         .len = sizeof(mldsa_signature)};
+                                         .len = kOtcryptoMldsa44SignatureBytes};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first
@@ -305,7 +305,7 @@ static void test_mldsa65_derand(void) {
   otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
                                            .len = sizeof(kSignRnd)};
   otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
-                                         .len = sizeof(mldsa_signature)};
+                                         .len = kOtcryptoMldsa65SignatureBytes};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first
@@ -406,7 +406,7 @@ static void test_mldsa87_derand(void) {
   otcrypto_const_aligned_byte_buf_t rnd = {.data = kSignRnd,
                                            .len = sizeof(kSignRnd)};
   otcrypto_aligned_byte_buf_t sig_buf = {.data = mldsa_signature,
-                                         .len = sizeof(mldsa_signature)};
+                                         .len = kOtcryptoMldsa87SignatureBytes};
 
 #ifdef MLDSA_BENCHMARK_MODE
   // Benchmark 2-iteration message first

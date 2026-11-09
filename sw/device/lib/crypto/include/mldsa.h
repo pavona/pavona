@@ -194,7 +194,8 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa44SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa44WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -215,7 +216,8 @@ otcrypto_status_t otcrypto_mldsa44_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa44SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa44SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa44WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -310,7 +312,8 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa65SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa65WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -331,7 +334,8 @@ otcrypto_status_t otcrypto_mldsa65_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa65SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa65SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa65WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -426,7 +430,8 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa87SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa87WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -447,7 +452,8 @@ otcrypto_status_t otcrypto_mldsa87_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa87SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa87SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa87WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
