@@ -60,6 +60,11 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem512KeygenSeedWords) {
@@ -71,6 +76,9 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem512PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem512SecretKeyBytes) {
@@ -136,6 +144,11 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem512PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -245,6 +258,11 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem512WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem512SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -264,7 +282,14 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
@@ -332,6 +357,11 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem768KeygenSeedWords) {
@@ -343,6 +373,9 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem768PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem768SecretKeyBytes) {
@@ -408,6 +441,11 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem768PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -517,6 +555,11 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem768WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem768SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -536,7 +579,14 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
@@ -604,6 +654,11 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem1024KeygenSeedWords) {
@@ -615,6 +670,9 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem1024PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem1024SecretKeyBytes) {
@@ -680,6 +738,11 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem1024PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -789,6 +852,11 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem1024WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem1024SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -808,7 +876,14 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
