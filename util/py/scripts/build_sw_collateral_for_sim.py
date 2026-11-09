@@ -687,7 +687,7 @@ def _copy_files_to_run_dir(files: list[str], run_dir: Path, exec_root: Path) -> 
         # If we are copying a .bin file, and the corresponding .elf file exists, also copy that
         maybe_elf = src.with_suffix(".elf")
         if src.suffix == ".bin" and maybe_elf.exists():
-            shutil.copy(maybe_elf, run_dir)
+            shutil.copyfile(maybe_elf, run_dir / maybe_elf.name)
 
 
 def _space_sep_str(value):
