@@ -351,6 +351,7 @@ cc_library(
 )
 
 _MLKEM_COMMON_DEPS = [
+    "//sw/device/lib/base:hardened_memory",
     "//sw/device/lib/crypto/impl:integrity",
     "//sw/device/lib/crypto/impl:keyblob",
     "//sw/device/lib/crypto/impl:status",
@@ -405,6 +406,7 @@ cc_library(
 )
 
 _MLDSA_COMMON_DEPS = [
+    "//sw/device/lib/base:hardened_memory",
     "//sw/device/lib/crypto/impl:integrity",
     "//sw/device/lib/crypto/impl:keyblob",
     "//sw/device/lib/crypto/impl:sha2",
