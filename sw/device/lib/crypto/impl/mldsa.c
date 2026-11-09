@@ -55,6 +55,16 @@ _Static_assert(kOtcryptoMldsa87WorkBufferVerifyWords * sizeof(uint32_t) ==
                "ML-DSA-87 verify work buffer size mismatch");
 #endif  // ACC_HAS_PQC
 
+_Static_assert(kOtcryptoMldsa44MaskedSecretKeyBytes ==
+                   kMldsa44MaskedKeyblobBytes,
+               "ML-DSA-44 masked secret key size mismatch");
+_Static_assert(kOtcryptoMldsa65MaskedSecretKeyBytes ==
+                   kMldsa65MaskedKeyblobBytes,
+               "ML-DSA-65 masked secret key size mismatch");
+_Static_assert(kOtcryptoMldsa87MaskedSecretKeyBytes ==
+                   kMldsa87MaskedKeyblobBytes,
+               "ML-DSA-87 masked secret key size mismatch");
+
 enum {
   // Largest pre-hash digest among the supported HashML-DSA modes
   // (SHA2-512/SHA3-512/SHAKE256).

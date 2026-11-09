@@ -54,6 +54,16 @@ _Static_assert(kOtcryptoMlkem1024WorkBufferDecapsWords * sizeof(uint32_t) ==
                "ML-KEM-1024 decaps work buffer size mismatch");
 #endif
 
+_Static_assert(kOtcryptoMlkem512MaskedSecretKeyBytes ==
+                   kMlkem512MaskedKeyblobBytes,
+               "ML-KEM-512 masked secret key size mismatch");
+_Static_assert(kOtcryptoMlkem768MaskedSecretKeyBytes ==
+                   kMlkem768MaskedKeyblobBytes,
+               "ML-KEM-768 masked secret key size mismatch");
+_Static_assert(kOtcryptoMlkem1024MaskedSecretKeyBytes ==
+                   kMlkem1024MaskedKeyblobBytes,
+               "ML-KEM-1024 masked secret key size mismatch");
+
 // ML-KEM-512 functions
 
 otcrypto_status_t otcrypto_mlkem512_keygen_derand(
