@@ -49,7 +49,7 @@ struct AesTestCase {
     plaintext: Vec<u8>,
 }
 
-const AES_CMD_MAX_MSG_BYTES: usize = 64;
+const AES_CMD_MAX_MSG_BYTES: usize = 16000;
 const AES_CMD_MAX_KEY_BYTES: usize = 256 / 8;
 const AES_BLOCK_BYTES: usize = 128 / 8;
 
