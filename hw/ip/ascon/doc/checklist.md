@@ -1,8 +1,8 @@
 Ascon Checklist
 
 
-This checklist is for [Hardware Stage](/doc/contributing/hw/development_stages.md) transitions for the [Ascon peripheral.](../README.md)
-All checklist items refer to the content in the [Checklist.](/doc/contributing/hw/checklist/README.md)
+This checklist is for [Hardware Stage](../../../../doc/contributing/hw/development_stages.md) transitions for the [Ascon peripheral.](../README.md)
+All checklist items refer to the content in the [Checklist.](../../../../doc/contributing/hw/checklist/README.md)
 
 # Design Checklist
 
