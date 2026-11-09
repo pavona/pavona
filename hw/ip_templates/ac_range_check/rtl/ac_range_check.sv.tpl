@@ -422,9 +422,9 @@ module ${module_instance_name}
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
-                                                 alert_tx_o[0])
+                                                 alert_tx_o[AlertFatalFaultIdx])
   // Deny Counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DenyCountCheck_A, u_deny_count,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultIdx])
 
 endmodule
