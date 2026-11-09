@@ -1,0 +1,9 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Verible waiver file for rv_timer
+
+# The reset-safe sequences create their parameter objects with the names used by
+# dv_rand_rst_safe_base_vseq, which differ from the handle names.
+waive --rule=create-object-name-match --location="rv_timer_rst_safe_.*_vseq\.sv"

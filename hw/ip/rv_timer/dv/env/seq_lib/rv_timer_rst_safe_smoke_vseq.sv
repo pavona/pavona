@@ -170,8 +170,9 @@ task rv_timer_rst_safe_smoke_vseq::main_thread();
   `DV_CHECK_RANDOMIZE_FATAL(del_seq)
   del_seq.start(p_sequencer.delay_sequencer_h);
   if ($test$plusargs("rv_timer_rst_safe_seq_debug")) begin
-    `uvm_info(`gfn, $sformatf("RV_TIMER_RST_SAFE_SEQ_DEBUG main_thread exit: outstanding_csr_accesses=%0d",
-                              csr_utils_pkg::outstanding_accesses), UVM_LOW)
+    `uvm_info(`gfn, $sformatf(
+                    "RV_TIMER_RST_SAFE_SEQ_DEBUG main_thread exit: outstanding_csr_accesses=%0d",
+                    csr_utils_pkg::outstanding_accesses), UVM_LOW)
   end
   `uvm_info(`gfn, "Exiting main_thread()", UVM_LOW)
 endtask : main_thread
