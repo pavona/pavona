@@ -27,9 +27,9 @@
         "type": "integer"
       },
       "algorithm": {
-        "description": "aes, or the ACVP algorithm the test came from",
+        "description": "The ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["aes", "ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB"]
+        "enum": ["ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB"]
       },
       "revision": {
         "description": "ACVP algorithm revision the test came from",
@@ -57,20 +57,10 @@
         "type": "string",
         "enum": ["encrypt", "decrypt"]
       },
-      "key_len": {
-        "description": "Length in bits of the key",
-        "type": "integer",
-        "enum": [128, 192, 256]
-      },
       "mode": {
         "description": "Block cipher mode of operation",
         "type": "string",
-        "enum": ["cbc", "cfb1", "cfb8", "cfb128", "ecb", "ofb"]
-      },
-      "padding": {
-        "description": "Padding scheme",
-        "type": "string",
-        "enum": ["null", "pkcs7", "iso9797m2"]
+        "enum": ["cbc", "cfb128", "ecb", "ofb"]
       },
       "key": {
         "description": "AES key",
