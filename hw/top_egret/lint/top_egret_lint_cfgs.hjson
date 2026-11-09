@@ -137,7 +137,13 @@
                   rel_path: "hw/ip/keymgr/lint/{tool}"
              },
              {    name: acc
-                  fusesoc_core: lowrisc:ip:acc
+                  fusesoc_core: lowrisc:ip:acc_nopqc_lint
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_egret:0.1"
+                  rel_path: "hw/ip/acc/lint/{tool}"
+             },
+             {    name: acc_pqc
+                  fusesoc_core: lowrisc:ip:acc_pqc_lint
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_egret:0.1"
                   rel_path: "hw/ip/acc/lint/{tool}"
