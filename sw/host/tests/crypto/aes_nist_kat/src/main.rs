@@ -54,18 +54,15 @@ struct MctResult {
 
 #[derive(Debug, Deserialize)]
 struct AesTestCase {
-    #[serde(default)]
     vendor: String,
-    #[serde(default)]
     test_case_id: u64,
     #[serde(flatten)]
     acvp: AcvpIds,
-    #[serde(default)]
     test_type: String,
     operation: String,
     mode: String,
     key: Vec<u8>,
-    iv: Option<Vec<u8>>,
+    iv: Vec<u8>,
     /// The expected output of an encryption, or the input of a decryption.
     #[serde(default)]
     ciphertext: Vec<u8>,
@@ -101,10 +98,7 @@ fn aes_operation(operation: &str) -> CryptotestAesOperation {
 
 fn aes_data(test_case: &AesTestCase, input: &[u8]) -> Result<CryptotestAesData> {
     let mut iv: ArrayVec<u8, AES_BLOCK_BYTES> = ArrayVec::new();
-    match &test_case.iv {
-        Some(iv_val) => iv.try_extend_from_slice(iv_val)?,
-        None => iv = ArrayVec::from([0; AES_BLOCK_BYTES]),
-    }
+    iv.try_extend_from_slice(&test_case.iv)?;
     let mut key: ArrayVec<u8, AES_CMD_MAX_KEY_BYTES> = ArrayVec::new();
     key.try_extend_from_slice(&test_case.key)?;
     let mut data: ArrayVec<u8, AES_CMD_MAX_MSG_BYTES> = ArrayVec::new();
