@@ -24,7 +24,11 @@ def change_link_ext(
         """Swaps the extension of the file being linked to if it is a ip block config."""
         try:
             # relative_to can fail with a value error, if it isn't a local link
-            book_relative_path = (page_path / match.group(2)).resolve().relative_to(book_root)
+            book_relative_path = (
+                book_root / page_path / match.group(2)
+            ).resolve().relative_to(book_root)
+            if not (book_root / book_relative_path).exists():
+                raise ValueError
         except ValueError:
             return match.group(0)
 
