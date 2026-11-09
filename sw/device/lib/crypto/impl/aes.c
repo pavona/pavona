@@ -273,7 +273,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
-  size_t input_nblocks;
+  size_t input_nblocks = 0;
   if (aes_operation == kOtcryptoAesOperationEncrypt) {
     HARDENED_TRY(
         num_padded_blocks_get(cipher_input.len, aes_padding, &input_nblocks));

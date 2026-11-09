@@ -835,14 +835,14 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
  */
 #define VERIFY_FIPS_THRESH(name, exp)                                     \
   do {                                                                    \
-    uint32_t reg = abs_mmio_read32(                                       \
+    uint32_t thresh_reg_ = abs_mmio_read32(                               \
         entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
-    uint32_t act = bitfield_field32_read(                                 \
-        reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);          \
-    if (launder32(act) != exp) {                                          \
+    uint32_t thresh_act_ = bitfield_field32_read(                         \
+        thresh_reg_, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);  \
+    if (launder32(thresh_act_) != exp) {                                  \
       return OTCRYPTO_RECOV_ERR;                                          \
     }                                                                     \
-    HARDENED_CHECK_EQ(act, exp);                                          \
+    HARDENED_CHECK_EQ(thresh_act_, exp);                                  \
   } while (false);
 
 /**

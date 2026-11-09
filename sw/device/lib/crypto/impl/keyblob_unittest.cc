@@ -207,10 +207,10 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
 
   // Unmask the key and check that it matches the original.
   for (size_t i = 0; i < test_key.size(); i++) {
-    uint32_t share0 = keyblob[i];
-    uint32_t share1 = keyblob[test_key.size() + i];
-    EXPECT_EQ(share1, test_mask[i]);
-    EXPECT_EQ(share0 ^ share1, test_key[i]);
+    uint32_t share0_word = keyblob[i];
+    uint32_t share1_word = keyblob[test_key.size() + i];
+    EXPECT_EQ(share1_word, test_mask[i]);
+    EXPECT_EQ(share0_word ^ share1_word, test_key[i]);
   }
 }
 

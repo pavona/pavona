@@ -14,11 +14,6 @@
 namespace test {
 extern "C" {
 
-const entropy_seed_material_t kEntropyEmptySeed = {
-    .len = 0,
-    .data = {0},
-};
-
 status_t entropy_complex_init(void) { return OTCRYPTO_OK; }
 
 status_t entropy_complex_check(void) { return OTCRYPTO_OK; }
