@@ -21,25 +21,35 @@ status_t entropy_complex_check(void) { return OTCRYPTO_OK; }
 status_t entropy_csrng_instantiate(
     hardened_bool_t disable_trng_input,
     const entropy_seed_material_t *seed_material) {
+  (void)disable_trng_input;
+  (void)seed_material;
   return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
+  (void)disable_trng_input;
+  (void)seed_material;
   return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_update(const entropy_seed_material_t *seed_material) {
+  (void)seed_material;
   return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_generate_start(
     const entropy_seed_material_t *seed_material, size_t len) {
+  (void)seed_material;
+  (void)len;
   return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
                                          hardened_bool_t fips_check) {
+  (void)buf;
+  (void)len;
+  (void)fips_check;
   // This mock does not support actually generating random values.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
@@ -47,6 +57,10 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
 status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
                                 uint32_t *buf, size_t len,
                                 hardened_bool_t fips_check) {
+  (void)seed_material;
+  (void)buf;
+  (void)len;
+  (void)fips_check;
   // This mock does not support actually generating random values.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
