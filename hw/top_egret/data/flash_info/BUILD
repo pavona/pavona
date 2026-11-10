@@ -5,7 +5,13 @@
 load("//hw/top:defs.bzl", "pavona_require_top")
 load("//rules:flash.bzl", "flash_info_json", "flash_info_page")
 
-FLASH_PAGE_SIZE = 0x800
+package(default_visibility = ["//visibility:public"])
+
+# All otp_json targets are marked as compatible only with Egret to avoid
+# using them on other tops by mistake
+TARGET_COMPATIBLE_WITH = pavona_require_top("egret")
+
+exports_files(["flash_info_mmap.hjson"])
 
 flash_info_json(
     name = "flash_info_json_factory_id",
@@ -15,6 +21,7 @@ flash_info_json(
             items = {},
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -27,6 +34,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -39,6 +47,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -50,7 +59,8 @@ flash_info_json(
                 "WAFER_AUTH_SECRET": "<random>",
             },
         ),
-    ]
+    ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -65,6 +75,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -77,6 +88,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -89,6 +101,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -101,6 +114,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -113,6 +127,7 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 flash_info_json(
@@ -125,4 +140,5 @@ flash_info_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )

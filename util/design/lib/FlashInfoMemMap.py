@@ -8,7 +8,7 @@ documentation, and memory images for preloading.
 import logging as log
 from math import ceil, log2
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from basegen.typing import ConfigT
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int
@@ -73,6 +73,7 @@ def _dist_page_unused(page: Dict):
 def _validate_page(page: Dict, generate_fresh_keys: bool):
     '''Validates a page within the Flash Info memory map'''
     page.setdefault("name", "unknown_name")
+    page.setdefault("desc", "")
     log.info("Validating page {}".format(page["name"]))
 
     if not isinstance(page['items'], list):
@@ -104,6 +105,7 @@ def _validate_item(item: Dict, generate_fresh_keys: bool):
     item.setdefault("size", "0")
     item.setdefault("ismubi", "false")
     item.setdefault("absorb", False)
+    item.setdefault("desc", "")
 
     # make sure these have the correct types
     item["ismubi"] = check_bool(item["ismubi"])
@@ -239,14 +241,6 @@ def _validate_mmap(config: Dict, generate_fresh_keys: bool) -> Dict:
 
     # return the bank[type[page->item]] data structure
     return bank_list
-
-
-def get_page_by_name(name: str, pages: list[Dict]) -> Dict:
-    """Return page by the given name, or raise an exception"""
-    target_pages = [p for p in pages if p["name"] == name]
-    if len(target_pages) != 1:
-        raise RuntimeError(f"Expected a single page named {name}")
-    return target_pages[0]
 
 
 class FlashInfoMemMap():
@@ -402,26 +396,19 @@ class FlashInfoMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def get_page(self, bank_num, type_num, page_name) -> str:
-        ''' Get page by name, return None if it does not exist'''
-        if len(self.bank_list) <= bank_num:
-            return None
-        if len(self.bank_list[bank_num]) <= type_num:
-            return None
-        entry = self.bank_list[bank_num][type_num].get(page_name)
-        return (None if entry is None else
-                self.config['pages'][entry['index']])
+    def all_pages(self) -> List[Tuple[int, int, int, Dict]]:
+        ''' Get metadata for all pages across all banks/types'''
+        return [
+            (bank_num, type_num, page_num, len(ty["pages"]) == 1, page)
+            for bank_num, bank in enumerate(self.config["banks"])
+            for type_num, ty in enumerate(bank["types"])
+            for page_num, page in enumerate(ty["pages"])
+        ]
 
-    def get_item(self, bank_num, type_num, page_name, item_name) -> str:
-        ''' Get item by name, return None if it does not exist'''
-        if len(self.bank_list) <= bank_num:
-            return None
-        if len(self.bank_list[bank_num]) <= type_num:
-            return None
-        entry = self.bank_list[bank_num][type_num].get(page_name)
-        if entry is not None:
-            idx = entry['items'].get(item_name, None)
-            return (None if idx is None else
-                    self.config['page'][entry['index']]['items'][idx])
-        else:
-            return None
+    def all_items(self) -> List[Tuple[Dict, Dict]]:
+        ''' Get page name and item metadata of all items'''
+        return [
+            (page, item)
+            for _, _, _, _, page in self.all_pages()
+            for item in page["items"]
+        ]

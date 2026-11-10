@@ -39,7 +39,6 @@ filegroup(
     srcs = [
         "flash_ctrl.c",
         "flash_ctrl.h",
-        "flash_ctrl_info_pages.c",
         "lifecycle.h",
         "otp.h",
         "rstmgr.h",
@@ -170,7 +169,6 @@ dual_cc_library(
     srcs = dual_inputs(
         device = ["flash_ctrl.c"],
         host = ["mock_flash_ctrl.cc"],
-        shared = ["flash_ctrl_info_pages.c"],
     ),
     hdrs = dual_inputs(
         host = ["mock_flash_ctrl.h"],
@@ -194,6 +192,7 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:multibits",
+            "//sw/device/lib/mmap:flash_info",
             "//sw/device/silicon_creator/lib:error",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/drivers:otp",
