@@ -55,6 +55,10 @@ void kmac_process(void) {}
 
 status_t kmac_squeeze_blocks(size_t nblocks, hardened_bool_t read_masked,
                              uint32_t *blocks_share0, uint32_t *blocks_share1) {
+  (void)nblocks;
+  (void)read_masked;
+  (void)blocks_share0;
+  (void)blocks_share1;
   // Not implemented for simplicity, existing unit tests don't currently use
   // this function.
   return OTCRYPTO_NOT_IMPLEMENTED;
@@ -78,31 +82,51 @@ status_t kmac_squeeze_end(size_t digest_wordlen, hardened_bool_t read_masked,
 
 status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
   return OTCRYPTO_OK;
 }
 
 status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
   return OTCRYPTO_OK;
 }
 
 status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
   return OTCRYPTO_OK;
 }
 
 status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
   return OTCRYPTO_OK;
 }
 
 status_t kmac_shake_128(const uint8_t *message, size_t message_len,
                         uint32_t *digest, size_t digest_len) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 
 status_t kmac_shake_256(const uint8_t *message, size_t message_len,
                         uint32_t *digest, size_t digest_len) {
+  (void)message;
+  (void)message_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 
@@ -110,6 +134,14 @@ status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
+  (void)message;
+  (void)message_len;
+  (void)func_name;
+  (void)func_name_len;
+  (void)cust_str;
+  (void)cust_str_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 
@@ -117,6 +149,14 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
+  (void)message;
+  (void)message_len;
+  (void)func_name;
+  (void)func_name_len;
+  (void)cust_str;
+  (void)cust_str_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 
@@ -124,6 +164,14 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        const uint8_t *message, size_t message_len,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len) {
+  (void)key;
+  (void)masked_digest;
+  (void)message;
+  (void)message_len;
+  (void)cust_str;
+  (void)cust_str_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 
@@ -131,6 +179,14 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        const uint8_t *message, size_t message_len,
                        const unsigned char *cust_str, size_t cust_str_len,
                        uint32_t *digest, size_t digest_len) {
+  (void)key;
+  (void)masked_digest;
+  (void)message;
+  (void)message_len;
+  (void)cust_str;
+  (void)cust_str_len;
+  (void)digest;
+  (void)digest_len;
   return OTCRYPTO_OK;
 }
 }
