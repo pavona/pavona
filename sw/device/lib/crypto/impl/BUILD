@@ -152,8 +152,11 @@ cc_library(
         ":integrity",
         ":keyblob",
         ":status",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
