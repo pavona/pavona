@@ -5,7 +5,10 @@
 
 load(":cryptotest.bzl", "FIRMWARE_DEPS", "cryptotest")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_base_warnings"],
+)
 
 filegroup(
     name = "doc_files",
