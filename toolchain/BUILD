@@ -74,6 +74,7 @@ cc_toolchain(
         ":feat_minsize",
     ],
     known_features = [
+        ":feat_cryptolib_base_warnings",
         ":feat_cryptolib_warnings",
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
@@ -491,10 +492,37 @@ filegroup(
     srcs = ["README.md"],
 )
 
+# All cryptolib warnings.
 cc_feature(
     name = "feat_cryptolib_warnings",
-    args = [":cryptolib_warnings_args"],
+    args = [
+        ":cryptolib_base_warnings_args",
+        ":cryptolib_warnings_args",
+    ],
     feature_name = "cryptolib_warnings",
+)
+
+# Base cryptolib warnings, for code that does not build with all yet.
+cc_feature(
+    name = "feat_cryptolib_base_warnings",
+    args = [":cryptolib_base_warnings_args"],
+    feature_name = "cryptolib_base_warnings",
+)
+
+# Host variant of cryptolib_warnings with only the base warnings.
+cc_feature(
+    name = "feat_cryptolib_warnings_host",
+    args = [":cryptolib_base_warnings_args"],
+    feature_name = "cryptolib_warnings",
+)
+
+cc_args(
+    name = "cryptolib_base_warnings_args",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Wunreachable-code",
+        "-Wunused-parameter",
+    ],
 )
 
 cc_args(

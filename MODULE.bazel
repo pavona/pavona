@@ -284,6 +284,12 @@ llvm.toolchain(
         "-nostdinc++",
         "-isystem=/usr/include/c++/v1",
     ]},
+    # Add the cryptolib warning features to the host toolchain; the device
+    # toolchain lists them in //toolchain:pavona_toolchain.
+    extra_known_features = [
+        "//toolchain:feat_cryptolib_base_warnings",
+        "//toolchain:feat_cryptolib_warnings_host",
+    ],
     # Clang only reads the SDK version from `-isysroot`, not from `--sysroot`.
     extra_link_flags = {"darwin-aarch64": [
         "-isysroot",

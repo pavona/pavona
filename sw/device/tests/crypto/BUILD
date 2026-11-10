@@ -22,7 +22,10 @@ load(
 load("@ot_python_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_binary")
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_base_warnings"],
+)
 
 CRYPTOTEST_EXEC_ENVS = dicts.add(
     EGRET_TEST_ENVS,

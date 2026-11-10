@@ -6,7 +6,10 @@ load(
     "pavona_binary",
 )
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_base_warnings"],
+)
 
 cc_library(
     name = "aes",
