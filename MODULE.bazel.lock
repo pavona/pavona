@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "lNGM6kNMcOJswVeIAs5YyoLtmdfC23YAagWSi0Fbo/g=",
+        "bzlTransitiveDigest": "B4wV2E/XLm+H7olwIz+QWXdNCyWhgsya0is1fTtGcrc=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
