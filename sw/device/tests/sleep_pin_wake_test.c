@@ -122,7 +122,7 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEgretMuxedPadsIoc3,
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
-#endif
+#elif defined(OPENTITAN_IS_DRAGONFLY)
     // The mios should have a pull-down enabled, or the input will be undefined
     // causing assertion failures. The indices need to start at 0, so this
     // subtract the first index to skip over constant pads.
@@ -132,6 +132,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
           &pinmux, i - kDtPadMio0, kDifPinmuxPadKindMio, in_attr, &out_attr));
     }
+#endif
 
     // This print is placed here on purpose.
     // sv sequence is waiting for this print log followed by
