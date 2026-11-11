@@ -24,6 +24,7 @@ exports_files([
     "hkdf_schema.json",
     "hmac_schema.json",
     "kdf_hmac_schema.json",
+    "kdf_kmac_schema.json",
     "kmac_schema.json",
     "mldsa_schema.json",
     "mlkem_schema.json",

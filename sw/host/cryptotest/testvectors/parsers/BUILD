@@ -276,6 +276,15 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_kdf_kmac_parser",
+    srcs = ["nist_acvp_kdf_kmac_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_acvp_mlkem_parser",
     srcs = ["nist_acvp_mlkem_parser.py"],
     deps = [
