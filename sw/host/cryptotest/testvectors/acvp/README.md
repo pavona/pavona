@@ -160,3 +160,32 @@ The ACC backends are built into the firmware by default; `--no-acc-pqc` tests th
 
 The parser rejects any test case this cryptolib cannot answer.
 Pass `--skip-unsupported` to tolerate and skip unsupported vectors, e.g., when testing against NIST's samples which cover every capability.
+
+## Generating test vectors
+
+NIST's sample vector sets are generated from sample registrations, which sometimes cover capabilities the cryptolib does not implement.
+In such cases, it can make sense to generate our own test vectors that match the capabilities of the cryptolib exactly.
+This can be done with the [registration files](registration/) in this repository and NIST's [ACVP-Server](https://github.com/usnistgov/ACVP-Server).
+
+To generate test vectors, we provide a [genval container](/util/acvp/genval/Dockerfile).
+It can be built with:
+
+```sh
+docker build -t acvp-genval util/acvp/genval
+```
+
+It provides two main functions:
+
+- `genval check` checks a registration file.
+- `genval vectors` generates a vector set from a registration file.
+
+For example, to generate test vectors for a registration, run:
+
+```sh
+docker run --rm --user $(id -u):$(id -g) -v $PWD:/work acvp-genval \
+    vectors /work/sw/host/cryptotest/testvectors/acvp/registration/<registration>.json /work/acvp-vectors
+```
+
+It writes the set to `acvp-vectors/<version>/<algorithm>/<registration hash>/`, where the hash is the SHA-256 of the registration file.
+
+We host the generated test vectors in a [public bucket](https://storage.googleapis.com/pavona-test-vectors).
