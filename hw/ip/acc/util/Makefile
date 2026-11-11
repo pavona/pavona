@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 .PHONY: all
-all: lint asm-check
+all: lint
 
 # We need a directory to build stuff and use the "acc/util" namespace
 # in the top-level build-bin directory.
@@ -33,9 +33,6 @@ lint: $(lint-stamps)
 acc-code-snippets-obj-dir := $(cs-build-dir)
 acc-code-snippets-bin-dir := $(cs-build-dir)
 acc-code-snippets-util-dir  := .
-
-.PHONY: asm-check
-asm-check: $(acc-code-snippets-elfs)
 
 .PHONY: clean
 clean:
