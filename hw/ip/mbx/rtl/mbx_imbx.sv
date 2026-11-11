@@ -5,38 +5,38 @@
 `include "prim_assert.sv"
 
 module mbx_imbx #(
-  parameter int unsigned CfgSramAddrWidth = 32,
-  parameter int unsigned CfgSramDataWidth = 32
+    parameter int unsigned CfgSramAddrWidth = 32,
+    parameter int unsigned CfgSramDataWidth = 32
 ) (
-  input  logic                        clk_i,
-  input  logic                        rst_ni,
-  output logic                        imbx_state_error_o,
-  output logic                        imbx_pending_o,
-  output logic                        imbx_irq_ready_o,
-  output logic                        imbx_irq_abort_o,
-  output logic                        imbx_status_busy_update_o,
-  output logic                        imbx_status_busy_o,
-  output logic                        imbx_overflow_error_set_o,
-  // Access to the control and status registers of the host interface
-  // Writing a 1 to control.abort register clears the abort condition
-  input  logic                        hostif_control_abort_clear_i,
-  input  logic                        mbx_error_set_i,
-  // Range configuration for the private SRAM
-  input  logic                        hostif_range_valid_write_i,
-  input  logic                        hostif_range_valid_i,
-  input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
-  input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
-  input  logic                        sys_read_all_i,
-  // Device interface from the system side
-  input  logic                        sysif_status_busy_i,
-  input  logic                        sysif_control_go_set_i,
-  input  logic                        sysif_control_abort_set_i,
-  input  logic                        sysif_data_write_valid_i,
-  // Host interface to the private SRAM
-  output logic                        hostif_sram_write_req_o,
-  input  logic                        hostif_sram_write_gnt_i,
-  input  logic                        hostif_sram_all_vld_rcvd_i,
-  output logic [CfgSramAddrWidth-1:0] hostif_sram_write_ptr_o
+    input  logic                        clk_i,
+    input  logic                        rst_ni,
+    output logic                        imbx_state_error_o,
+    output logic                        imbx_pending_o,
+    output logic                        imbx_irq_ready_o,
+    output logic                        imbx_irq_abort_o,
+    output logic                        imbx_status_busy_update_o,
+    output logic                        imbx_status_busy_o,
+    output logic                        imbx_overflow_error_set_o,
+    // Access to the control and status registers of the host interface
+    // Writing a 1 to control.abort register clears the abort condition
+    input  logic                        hostif_control_abort_clear_i,
+    input  logic                        mbx_error_set_i,
+    // Range configuration for the private SRAM
+    input  logic                        hostif_range_valid_write_i,
+    input  logic                        hostif_range_valid_i,
+    input  logic [CfgSramAddrWidth-1:0] hostif_base_i,
+    input  logic [CfgSramAddrWidth-1:0] hostif_limit_i,
+    input  logic                        sys_read_all_i,
+    // Device interface from the system side
+    input  logic                        sysif_status_busy_i,
+    input  logic                        sysif_control_go_set_i,
+    input  logic                        sysif_control_abort_set_i,
+    input  logic                        sysif_data_write_valid_i,
+    // Host interface to the private SRAM
+    output logic                        hostif_sram_write_req_o,
+    input  logic                        hostif_sram_write_gnt_i,
+    input  logic                        hostif_sram_all_vld_rcvd_i,
+    output logic [CfgSramAddrWidth-1:0] hostif_sram_write_ptr_o
 );
   localparam int unsigned LCFG_SRM_ADDRINC = CfgSramDataWidth / 8;
 
@@ -45,12 +45,16 @@ module mbx_imbx #(
   // Status signals from the FSM
   logic mbx_empty, mbx_write, mbx_read, mbx_sys_abort;
 
+  logic imbx_range_invalid;
+  assign imbx_range_invalid = hostif_base_i > hostif_limit_i;
+
   // hostif_sram_write_req_o is actually sticky because the sys-side tlul_adapter_reg is
   // NOT ack'ed until the command is granted by the host-side tlul_adapter_host
   // RW2A = sticky from DEC/RW-stage to (srm command) ACK
   logic write_req;
-  assign write_req = (mbx_empty & sysif_data_write_valid_i) |
-                     (mbx_write & sysif_data_write_valid_i & (sram_write_ptr_q <= hostif_limit_i));
+  assign write_req = (mbx_empty & sysif_data_write_valid_i & !imbx_range_invalid) |
+                     (mbx_write & sysif_data_write_valid_i &
+                      (sram_write_ptr_q <= hostif_limit_i) & !imbx_range_invalid);
 
   // Waiting for a write request to be accepted onto the TL-UL bus; reset state if the host side
   // is acknowledging an Abort request from the SoC side.
@@ -59,20 +63,20 @@ module mbx_imbx #(
                        ~hostif_control_abort_clear_i;
 
   // Raise an error if the requester tries to write beyond the limit
-  assign imbx_overflow_error_set_o = mbx_write & sysif_data_write_valid_i &
-                                    (sram_write_ptr_q > hostif_limit_i);
+  assign imbx_overflow_error_set_o = sysif_data_write_valid_i &
+      (imbx_range_invalid | (mbx_write & (sram_write_ptr_q > hostif_limit_i)));
 
   // Create a sticky TL-UL write request until it's granted
   logic req_q;
   assign hostif_sram_write_req_o = write_req | req_q;
 
   prim_flop #(
-    .Width(1)
+      .Width(1)
   ) u_req_state (
-    .clk_i ( clk_i        ),
-    .rst_ni( rst_ni       ),
-    .d_i   ( awaiting_gnt ),
-    .q_o   ( req_q        )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (awaiting_gnt),
+      .q_o   (req_q)
   );
 
   // The abort requested was handled by the host. This re-initializes the write pointer
@@ -101,13 +105,13 @@ module mbx_imbx #(
   end
 
   prim_flop_en #(
-    .Width(CfgSramAddrWidth)
+      .Width(CfgSramAddrWidth)
   ) u_sram_write_ptr (
-    .clk_i ( clk_i                              ),
-    .rst_ni( rst_ni                             ),
-    .en_i  ( load_write_ptr | advance_write_ptr ),
-    .d_i   ( sram_write_ptr_d                   ),
-    .q_o   ( sram_write_ptr_q                   )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .en_i  (load_write_ptr | advance_write_ptr),
+      .d_i   (sram_write_ptr_d),
+      .q_o   (sram_write_ptr_q)
   );
   assign hostif_sram_write_ptr_o = sram_write_ptr_q;
 
@@ -120,12 +124,12 @@ module mbx_imbx #(
   assign clear_pending = hostif_sram_write_gnt_i | hostif_control_abort_clear_i;
 
   prim_flop #(
-    .Width(1)
+      .Width(1)
   ) u_pending (
-    .clk_i ( clk_i                                           ),
-    .rst_ni( rst_ni                                          ),
-    .d_i   ( ~clear_pending & (set_pending | imbx_pending_o) ),
-    .q_o   ( imbx_pending_o                                  )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (~clear_pending & (set_pending | imbx_pending_o)),
+      .q_o   (imbx_pending_o)
   );
 
   // Busy logic
@@ -148,31 +152,31 @@ module mbx_imbx #(
 
   // External busy update interface
   assign imbx_status_busy_update_o = imbx_set_busy | imbx_clear_busy;
-  assign imbx_status_busy_o        = imbx_set_busy;
+  assign imbx_status_busy_o = imbx_set_busy;
 
   mbx_fsm #(
-    .CfgOmbx ( 0 )
-  ) u_mbxfsm(
-    .clk_i                     ( clk_i                        ),
-    .rst_ni                    ( rst_ni                       ),
-    .mbx_range_valid_i         ( hostif_range_valid_i         ),
-    .hostif_abort_ack_i        ( hostif_control_abort_clear_i ),
-    .mbx_error_set_i           ( mbx_error_set_i              ),
-    .sysif_control_abort_set_i ( sysif_control_abort_set_i    ),
-    .sys_read_all_i            ( sys_read_all_i               ),
-    .writer_close_mbx_i        ( sysif_control_go_set_i       ),
-    .writer_last_word_written_i( hostif_sram_all_vld_rcvd_i   ),
-    .writer_write_valid_i      ( sysif_data_write_valid_i     ),
-    // Status signals
-    .mbx_empty_o               ( mbx_empty                    ),
-    .mbx_write_o               ( mbx_write                    ),
-    .mbx_read_o                ( mbx_read                     ),
-    .mbx_sys_abort_o           ( mbx_sys_abort                ),
-    .mbx_ready_update_o        (                              ),
-    .mbx_ready_o               (                              ),
-    .mbx_irq_ready_o           ( imbx_irq_ready_o             ),
-    .mbx_irq_abort_o           ( imbx_irq_abort_o             ),
-    .mbx_state_error_o         ( imbx_state_error_o           )
+      .CfgOmbx(0)
+  ) u_mbxfsm (
+      .clk_i                     (clk_i),
+      .rst_ni                    (rst_ni),
+      .mbx_range_valid_i         (hostif_range_valid_i),
+      .hostif_abort_ack_i        (hostif_control_abort_clear_i),
+      .mbx_error_set_i           (mbx_error_set_i),
+      .sysif_control_abort_set_i (sysif_control_abort_set_i),
+      .sys_read_all_i            (sys_read_all_i),
+      .writer_close_mbx_i        (sysif_control_go_set_i),
+      .writer_last_word_written_i(hostif_sram_all_vld_rcvd_i),
+      .writer_write_valid_i      (sysif_data_write_valid_i),
+      // Status signals
+      .mbx_empty_o               (mbx_empty),
+      .mbx_write_o               (mbx_write),
+      .mbx_read_o                (mbx_read),
+      .mbx_sys_abort_o           (mbx_sys_abort),
+      .mbx_ready_update_o        (),
+      .mbx_ready_o               (),
+      .mbx_irq_ready_o           (imbx_irq_ready_o),
+      .mbx_irq_abort_o           (imbx_irq_abort_o),
+      .mbx_state_error_o         (imbx_state_error_o)
   );
 
   //////////////////////////////////////////////////////////////////////////////
@@ -180,29 +184,30 @@ module mbx_imbx #(
   //////////////////////////////////////////////////////////////////////////////
 
   // Don't write to the mailbox if it is full
-  `ASSERT_NEVER(NeverWriteMbxIfFull_A, hostif_sram_write_req_o &
-                (sram_write_ptr_q > hostif_limit_i))
+  `ASSERT_NEVER(NeverWriteMbxIfFull_A,
+                hostif_sram_write_req_o & (sram_write_ptr_q > hostif_limit_i))
 
 `ifdef INC_ASSERT
-  logic[CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
+  logic [CfgSramAddrWidth-1:0] sram_write_ptr_assert_q;
   prim_flop #(
-    .Width(CfgSramAddrWidth)
+      .Width(CfgSramAddrWidth)
   ) u_sram_write_ptr_assert (
-    .clk_i ( clk_i             ),
-    .rst_ni( rst_ni            ),
-    .d_i   ( sram_write_ptr_d        ),
-    .q_o   ( sram_write_ptr_assert_q )
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (sram_write_ptr_d),
+      .q_o   (sram_write_ptr_assert_q)
   );
   // A granted write by the host adapter must advance the write pointer unless it's being reloaded
   // because an abort request has been processed.
-  `ASSERT_IF(GntMustAdvanceWritePtr_A, (advance_write_ptr &
-             (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC)) | host_clear_abort,
-             hostif_sram_write_gnt_i)
+  `ASSERT_IF(
+      GntMustAdvanceWritePtr_A,
+      (advance_write_ptr & (sram_write_ptr_d == sram_write_ptr_assert_q + LCFG_SRM_ADDRINC)) | host_clear_abort,
+      hostif_sram_write_gnt_i)
 `endif
 
   // Ready IRQ to core should not be asserted whilst there is still pending write traffic
-  `ASSERT_NEVER(WrEverythingBeforeReadyIRQ, imbx_irq_ready_o &
-                hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
+  `ASSERT_NEVER(WrEverythingBeforeReadyIRQ,
+                imbx_irq_ready_o & hostif_sram_write_req_o & ~hostif_sram_write_gnt_i)
 
   // The write pointer should not be advanced if the request has not yet been granted.
   `ASSERT_IF(WrPtrShouldNotAdvanceIfNoAck_A, hostif_sram_write_gnt_i,
