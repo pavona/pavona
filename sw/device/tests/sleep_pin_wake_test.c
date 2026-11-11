@@ -124,13 +124,12 @@ bool test_main(void) {
                                             &out_attr));
 #elif defined(OPENTITAN_IS_DRAGONFLY)
     // The mios should have a pull-down enabled, or the input will be undefined
-    // causing assertion failures. The indices need to start at 0, so this
-    // subtract the first index to skip over constant pads.
+    // causing assertion failures.
     in_attr.flags = kDifPinmuxPadAttrPullResistorEnable;
-    for (dif_pinmux_index_t i = kDtPadMio0; i < kDtPadMio11; ++i) {
-      LOG_INFO("Setting attrs for mio %d", i - kDtPadMio0);
-      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
-          &pinmux, i - kDtPadMio0, kDifPinmuxPadKindMio, in_attr, &out_attr));
+    for (dif_pinmux_index_t i = 0; i < PINMUX_PARAM_N_MIO_PADS; ++i) {
+      LOG_INFO("Setting attrs for mio %d", i);
+      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, i, kDifPinmuxPadKindMio,
+                                              in_attr, &out_attr));
     }
 #endif
 
