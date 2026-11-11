@@ -334,12 +334,37 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "1iC+xSIuCkwtTgoPEWZENItWemnuHMYuaVJyencjRJ4=",
+        "bzlTransitiveDigest": "lNGM6kNMcOJswVeIAs5YyoLtmdfC23YAagWSi0Fbo/g=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "acvp_vectors_kdf-kmac_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "2288cfebf99593c67315337cfc2299612ce1bdfdf55f2b59f19b24624e531855",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/expectedResults.json"
+            }
+          },
+          "acvp_vectors_kdf-kmac_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
+            }
+          },
+          "acvp_vectors": {
+            "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
+            "attributes": {
+              "files": {
+                "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
+                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json"
+              }
+            }
+          },
           "acvp_testvectors": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {

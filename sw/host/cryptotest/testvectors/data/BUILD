@@ -505,6 +505,29 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_hmac_parser",
 )
 
+run_binary(
+    name = "acvp_kdf_kmac_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json",
+        "@acvp_vectors//:kdf-kmac/expectedResults.json",
+        "@acvp_vectors//:kdf-kmac/prompt.json",
+    ],
+    outs = [":acvp_kdf_kmac.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:kdf-kmac/prompt.json)",
+        "--dst",
+        "$(location :acvp_kdf_kmac.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:kdf-kmac/expectedResults.json)",
+        "--test-type",
+        "kdf_kmac",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_kmac_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
