@@ -437,7 +437,7 @@ wycheproof = use_extension("//third_party/wycheproof:extensions.bzl", "wycheproo
 use_repo(wycheproof, "wycheproof")
 
 acvp_testvectors = use_extension("//third_party/acvp_testvectors:extensions.bzl", "acvp_testvectors")
-use_repo(acvp_testvectors, "acvp_testvectors")
+use_repo(acvp_testvectors, "acvp_testvectors", "acvp_vectors")
 
 sphincsplus = use_extension("//third_party/sphincsplus:extensions.bzl", "sphincsplus")
 use_repo(

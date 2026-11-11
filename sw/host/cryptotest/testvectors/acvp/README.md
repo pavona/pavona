@@ -31,6 +31,7 @@ The supported algorithms below mark those with deferred test cases.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
 - [KDA HKDF](https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-kdf-hkdf.html) with SHA2-256, SHA2-384 and SHA2-512: AFT, VAL, revision Sp800-56Cr2.
 - [KDF](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with HMAC-SHA2-256, HMAC-SHA2-384 and HMAC-SHA2-512: counter and feedback mode, AFT (deferred), revision 1.0.
+- [KDF KMAC](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with KMAC-128 and KMAC-256: AFT, revision Sp800-108r1.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
 - [SHA2-256, SHA2-384, SHA2-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha.html): AFT, MCT.
@@ -84,6 +85,16 @@ The two revisions derive keys the same way.
   The cryptolib derives bytes.
 
 The parser chooses the fixed data.
+
+### KDF KMAC (SP 800-108r1)
+
+- Key derivation keys other than 256, 384 and 512 bits.
+  The cryptolib supports keys of 128, 192, 256, 384 and 512 bits for KMAC-128, and of 256, 384 and 512 bits for KMAC-256.
+  A registration has one list of key lengths, which applies to both KMAC-128 and KMAC-256.
+- Labels longer than 32 bytes.
+  The KMAC hardware does not support them.
+- Derived key lengths that are not a multiple of 32 bits.
+  The cryptolib derives whole 32-bit words.
 
 ### ML-DSA
 
