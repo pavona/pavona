@@ -113,13 +113,14 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   virtual task check_ip_activity();
     logic spi_device_cio_csb_i;
     logic spi_host_0_cio_csb_o;
-    logic [csrng_pkg::MainSmStateWidth-1:0] csrng_main_fsm_state;
-    logic [5:0] aes_ctrl_fsm_state;
+    logic [2:0] csrng_acmd_q;
+    logic [3:0] aes_ctrl_rnd_ctr;
     logic [2:0] hmac_fsm_state;
     logic [5:0] kmac_fsm_state;
     logic [6:0] acc_fsm_state;
     logic [8:0] edn_0_fsm_state;
     logic [8:0] edn_1_fsm_state;
+    logic [8:0] entropy_src_fsm_state;
 
     // Wait for max-power indicator GPIO pin to go up.
     wait (cfg.chip_vif.dios[top_dragonfly_pkg::DioPadGpio0]);
@@ -128,13 +129,17 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
 
     `_DV_PROBE_AND_CHECK_IDLE(spi_device_cio_csb_i, 1'b1)
     `_DV_PROBE_AND_CHECK_IDLE(spi_host_0_cio_csb_o, 1'b1)
-    `_DV_PROBE_AND_CHECK_IDLE(csrng_main_fsm_state, csrng_pkg::MainSmIdle)
-    `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_fsm_state, aes_pkg::CTRL_IDLE)
+    `_DV_PROBE_AND_CHECK_IDLE(aes_ctrl_rnd_ctr, 4'b0000)
     `_DV_PROBE_AND_CHECK_IDLE(hmac_fsm_state, 3'b000)
     `_DV_PROBE_AND_CHECK_IDLE(kmac_fsm_state, 6'b011000)
     `_DV_PROBE_AND_CHECK_IDLE(acc_fsm_state, acc_pkg::AccStartStopStateInitial)
     `_DV_PROBE_AND_CHECK_IDLE(edn_0_fsm_state, edn_pkg::Idle)
     `_DV_PROBE_AND_CHECK_IDLE(edn_1_fsm_state, edn_pkg::Idle)
+    `_DV_PROBE_AND_CHECK_IDLE(entropy_src_fsm_state, entropy_src_main_sm_pkg::Idle)
+
+    csrng_acmd_q = cfg.chip_vif.signal_probe_csrng_acmd_q(SignalProbeSample);
+    `uvm_info(`gfn, $sformatf("%s = 0x%0x", "csrng_acmd_q",csrng_acmd_q), UVM_LOW);
+    `DV_CHECK_GE(csrng_acmd_q, 2);
   endtask
 
   task pre_start();
