@@ -57,7 +57,8 @@ def get_params(topcfg: Dict[str, object], module: Dict, cfg_path: Path) -> Param
         case "rstmgr":
             return get_rstmgr_params(topcfg)
         case "flash_ctrl":
-            return get_flash_ctrl_params(topcfg)
+            # complete top config should be within hw/top_*/data/autogen
+            return get_flash_ctrl_params(topcfg, cfg_path)
         case "otp_ctrl":
             # complete top config should be within hw/top_*/data/autogen
             return get_otp_ctrl_params(topcfg, cfg_path)

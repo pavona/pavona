@@ -12,6 +12,7 @@ from pathlib import Path
 from basegen.typing import ConfigT, ParamsT
 from typing import Any, Dict, List
 from collections import OrderedDict, defaultdict
+from design.lib.FlashInfoMemMap import FlashInfoMemMap
 from design.lib.OtpMemMap import OtpMemMap
 from topgen.clocks import Clocks
 from topgen.resets import Resets
@@ -265,8 +266,14 @@ def get_rstmgr_params(top: ConfigT) -> ParamsT:
     return ipgen_params
 
 
-def get_flash_ctrl_params(top: ConfigT) -> ParamsT:
+def get_flash_ctrl_params(top: ConfigT, out_path: Path) -> ParamsT:
     """Extracts parameters for flash_ctrl ipgen."""
+
+    flash_info_mmap_path = out_path / "data" / "flash_info" / "flash_info_mmap.hjson"
+    flash_info_mmap = FlashInfoMemMap.from_mmap_path(
+        flash_info_mmap_path,
+        generate_fresh_keys=True,
+    ).config
 
     # Parameters needed for generation
     flash_mems = find_modules(top["module"], "flash_ctrl", True)
@@ -278,6 +285,9 @@ def get_flash_ctrl_params(top: ConfigT) -> ParamsT:
             "In _get_flash_ctrl_params for design with no flash_ctrl")
 
     ipgen_params = get_ipgen_params(flash_mems[0])
+    ipgen_params.update({
+        "flash_info_mmap": flash_info_mmap,
+    })
     mem_cfg = flash_mems[0]["memory"]["mem"]["config"]
     ipgen_params.update(vars(mem_cfg) or mem_cfg)  # mem_cfg either EFlash obj or dict
     ipgen_params.pop('base_addrs', None)
