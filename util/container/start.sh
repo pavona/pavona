@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -14,4 +14,4 @@ usermod -o -u "$DEV_UID" dev >/dev/null 2>&1
 test -f "${USER_CONFIG}" && export BASH_ENV=${USER_CONFIG}
 
 cd /home/dev || exit
-exec gosu dev:dev /bin/bash -c "$@"
+exec gosu dev:dev bash -c "$@"

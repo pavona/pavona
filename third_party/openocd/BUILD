@@ -20,7 +20,7 @@ genrule(
     name = "openocd",
     outs = ["openocd.sh"],
     cmd = """
-    echo '#!/bin/bash' > $@
+    echo '#!/usr/bin/env bash' > $@
     echo './$(execpath :openocd_bin) "$$@"' >> $@
     """,
     executable = True,
