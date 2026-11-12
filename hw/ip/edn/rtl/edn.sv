@@ -46,7 +46,7 @@ module edn
   logic [NumAlerts-1:0] alert;
 
   logic [NumAlerts-1:0] intg_err_alert;
-  assign intg_err_alert[0] = 1'b0;
+  assign intg_err_alert[AlertRecovAlertIdx] = 1'b0;
 
 
   // SEC_CM: CONFIG.REGWEN
@@ -59,7 +59,7 @@ module edn
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(intg_err_alert[1]) // Assign this alert to the fatal alert index.
+    .intg_err_o(intg_err_alert[AlertFatalAlertIdx])
   );
 
   edn_core #(
@@ -78,11 +78,11 @@ module edn
 
     // Alerts
 
-    .recov_alert_o(alert[0]),
-    .fatal_alert_o(alert[1]),
+    .recov_alert_o(alert[AlertRecovAlertIdx]),
+    .fatal_alert_o(alert[AlertFatalAlertIdx]),
 
-    .recov_alert_test_o(alert_test[0]),
-    .fatal_alert_test_o(alert_test[1]),
+    .recov_alert_test_o(alert_test[AlertRecovAlertIdx]),
+    .fatal_alert_test_o(alert_test[AlertFatalAlertIdx]),
 
     .intr_edn_cmd_req_done_o,
     .intr_edn_fatal_err_o
@@ -131,7 +131,7 @@ module edn
     `ASSERT(EdnDataStableDisable_A,
         !(|u_edn_core.edn_enable_fo) |=> ##1 $stable(edn_o[i].edn_bus))
 
-    `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
+    `ASSERT(EdnFatalAlertNoRsp_A, alert[AlertFatalAlertIdx] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts
 
   // CSRNG Asserts
@@ -145,32 +145,33 @@ module edn
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
     u_edn_core.u_prim_count_max_reqs_cntr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(MainFsmCheck_A,
     u_edn_core.u_edn_main_sm.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_fsm_asserts
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AckFsmCheck_A,
       u_edn_core.gen_ep_blk[i].u_edn_ack_sm_ep.u_state_regs,
-      alert_tx_o[1])
+      alert_tx_o[AlertFatalAlertIdx])
   end
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoWptrCheck_A,
     u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoRptrCheck_A,
     u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoWptrCheck_A,
     u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoRptrCheck_A,
     u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalAlertIdx])
 endmodule

@@ -696,26 +696,22 @@ end
   logic [NumAlerts-1:0] alert_test;
   logic fatal_prim_otp_alert, recov_prim_otp_alert;
 
-  assign alerts = {
-    recov_prim_otp_alert,
-    fatal_prim_otp_alert,
-    fatal_bus_integ_error_q,
-    fatal_check_error_q,
-    fatal_macro_error_q
-  };
+  assign alerts[AlertFatalMacroErrorIdx]    = fatal_macro_error_q;
+  assign alerts[AlertFatalCheckErrorIdx]    = fatal_check_error_q;
+  assign alerts[AlertFatalBusIntegErrorIdx] = fatal_bus_integ_error_q;
+  assign alerts[AlertFatalPrimOtpAlertIdx]  = fatal_prim_otp_alert;
+  assign alerts[AlertRecovPrimOtpAlertIdx]  = recov_prim_otp_alert;
 
-  assign alert_test = {
-    reg2hw.alert_test.recov_prim_otp_alert.q &
-    reg2hw.alert_test.recov_prim_otp_alert.qe,
-    reg2hw.alert_test.fatal_prim_otp_alert.q &
-    reg2hw.alert_test.fatal_prim_otp_alert.qe,
-    reg2hw.alert_test.fatal_bus_integ_error.q &
-    reg2hw.alert_test.fatal_bus_integ_error.qe,
-    reg2hw.alert_test.fatal_check_error.q &
-    reg2hw.alert_test.fatal_check_error.qe,
-    reg2hw.alert_test.fatal_macro_error.q &
-    reg2hw.alert_test.fatal_macro_error.qe
-  };
+  assign alert_test[AlertFatalMacroErrorIdx]    = reg2hw.alert_test.fatal_macro_error.q &
+                                                  reg2hw.alert_test.fatal_macro_error.qe;
+  assign alert_test[AlertFatalCheckErrorIdx]    = reg2hw.alert_test.fatal_check_error.q &
+                                                  reg2hw.alert_test.fatal_check_error.qe;
+  assign alert_test[AlertFatalBusIntegErrorIdx] = reg2hw.alert_test.fatal_bus_integ_error.q &
+                                                  reg2hw.alert_test.fatal_bus_integ_error.qe;
+  assign alert_test[AlertFatalPrimOtpAlertIdx]  = reg2hw.alert_test.fatal_prim_otp_alert.q &
+                                                  reg2hw.alert_test.fatal_prim_otp_alert.qe;
+  assign alert_test[AlertRecovPrimOtpAlertIdx]  = reg2hw.alert_test.recov_prim_otp_alert.q &
+                                                  reg2hw.alert_test.recov_prim_otp_alert.qe;
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -1248,7 +1244,7 @@ end
 
       // Alert assertion for sparse FSM.
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartUnbufFsmCheck_A,
-          u_part_unbuf.u_state_regs, alert_tx_o[1])
+          u_part_unbuf.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
@@ -1305,9 +1301,9 @@ end
 
       // Alert assertion for sparse FSM.
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartBufFsmCheck_A,
-          u_part_buf.u_state_regs, alert_tx_o[1])
+          u_part_buf.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
       `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartBufCheck_A,
-          u_part_buf.u_prim_count, alert_tx_o[1])
+          u_part_buf.u_prim_count, alert_tx_o[AlertFatalCheckErrorIdx])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
@@ -1376,9 +1372,9 @@ end
                                          part_scrmbl_rsp_valid[k]};
       // Alert assertion for sparse FSM.
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlPartLcFsmCheck_A,
-          u_part_buf.u_state_regs, alert_tx_o[1])
+          u_part_buf.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
       `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntPartLcCheck_A,
-          u_part_buf.u_prim_count, alert_tx_o[1])
+          u_part_buf.u_prim_count, alert_tx_o[AlertFatalCheckErrorIdx])
     ////////////////////////////////////////////////////////////////////////////////////////////////
     end else begin : gen_invalid
       // This is invalid and should break elaboration
@@ -1575,38 +1571,39 @@ end
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDaiFsmCheck_A,
-      u_otp_ctrl_dai.u_state_regs, alert_tx_o[1])
+      u_otp_ctrl_dai.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKdiFsmCheck_A,
-      u_otp_ctrl_kdi.u_state_regs, alert_tx_o[1])
+      u_otp_ctrl_kdi.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLciFsmCheck_A,
-      u_otp_ctrl_lci.u_state_regs, alert_tx_o[1])
+      u_otp_ctrl_lci.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLfsrTimerFsmCheck_A,
-      u_otp_ctrl_lfsr_timer.u_state_regs, alert_tx_o[1])
+      u_otp_ctrl_lfsr_timer.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlScrambleFsmCheck_A,
-      u_otp_ctrl_scrmbl.u_state_regs, alert_tx_o[1])
+      u_otp_ctrl_scrmbl.u_state_regs, alert_tx_o[AlertFatalCheckErrorIdx])
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntIntegCheck_A,
-      u_otp_ctrl_lfsr_timer.u_prim_count_integ, alert_tx_o[1])
+      u_otp_ctrl_lfsr_timer.u_prim_count_integ, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCnstyCheck_A,
-      u_otp_ctrl_lfsr_timer.u_prim_count_cnsty, alert_tx_o[1])
+      u_otp_ctrl_lfsr_timer.u_prim_count_cnsty, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntDaiCheck_A,
-      u_otp_ctrl_dai.u_prim_count, alert_tx_o[1])
+      u_otp_ctrl_dai.u_prim_count, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiSeedCheck_A,
-      u_otp_ctrl_kdi.u_prim_count_seed, alert_tx_o[1])
+      u_otp_ctrl_kdi.u_prim_count_seed, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntKdiEntropyCheck_A,
-      u_otp_ctrl_kdi.u_prim_count_entropy, alert_tx_o[1])
+      u_otp_ctrl_kdi.u_prim_count_entropy, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntLciCheck_A,
-      u_otp_ctrl_lci.u_prim_count, alert_tx_o[1])
+      u_otp_ctrl_lci.u_prim_count, alert_tx_o[AlertFatalCheckErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
-      u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
+      u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[AlertFatalCheckErrorIdx])
 
   // Alert assertions for double LFSR.
   `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
-      u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[1])
+      u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[AlertFatalCheckErrorIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core,
+                                                 alert_tx_o[AlertFatalBusIntegErrorIdx])
 
   // IMPORTANT TODO:
   //   Add checks that the incoming fatal conditions from prim_otp trigger alerts.
@@ -1614,10 +1611,10 @@ end
   // Assertions for countermeasures inside prim_otp
   // if (prim_pkg::PrimTechName == "Generic") begin : gen_reg_we_assert_generic
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
-  //       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
+  //       u_tlul_lc_gate.u_state_regs, alert_tx_o[AlertFatalBusIntegErrorIdx])
   //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
-  //       u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
+  //       u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[AlertFatalPrimOtpAlertIdx])
   //   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-  //       u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
+  //       u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[AlertFatalPrimOtpAlertIdx])
   // end
 endmodule : otp_ctrl

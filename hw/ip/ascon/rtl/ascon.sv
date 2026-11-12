@@ -81,7 +81,7 @@ module ascon
     .alert_fatal_o(ascon_fatal_alert),
 
     .error_recov_i(shadowed_update_err),
-    .error_fatal_i(alert[1]),
+    .error_fatal_i(alert[AlertFatalFaultIdx]),
 
     .keymgr_key_i,
 
@@ -121,16 +121,15 @@ module ascon
 
 
   // Alerts
-  assign alert[1] = ascon_fatal_alert | intg_err_alert |shadowed_storage_err;
-  assign alert[0] = ascon_recov_alert | shadowed_update_err;
+  assign alert[AlertFatalFaultIdx]         = ascon_fatal_alert | intg_err_alert |
+                                             shadowed_storage_err;
+  assign alert[AlertRecovCtrlUpdateErrIdx] = ascon_recov_alert | shadowed_update_err;
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[AlertFatalFaultIdx]         = reg2hw.alert_test.fatal_fault.q &
+                                                  reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(

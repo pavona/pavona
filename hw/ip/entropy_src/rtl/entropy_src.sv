@@ -154,7 +154,7 @@ module entropy_src
   ///////////////////////////
 
   logic [NumAlerts-1:0] intg_err_alert;
-  assign intg_err_alert[0] = 1'b0;
+  assign intg_err_alert[AlertRecovAlertIdx] = 1'b0;
 
   // SEC_CM: CONFIG.REGWEN
   // SEC_CM: TILE_LINK.BUS.INTEGRITY
@@ -166,7 +166,7 @@ module entropy_src
     .tl_o,
     .reg2hw,
     .hw2reg(hw2reg),
-    .intg_err_o(intg_err_alert[1]) // Assign this alert to the fatal alert index.
+    .intg_err_o(intg_err_alert[AlertFatalAlertIdx])
   );
 
   entropy_src_core #(
@@ -205,11 +205,11 @@ module entropy_src
     .cs_aes_halt_o(core_aes_halt),
     .cs_aes_halt_i,
 
-    .recov_alert_o(core_alert[0]),
-    .fatal_alert_o(core_alert[1]),
+    .recov_alert_o(core_alert[AlertRecovAlertIdx]),
+    .fatal_alert_o(core_alert[AlertFatalAlertIdx]),
 
-    .recov_alert_test_o(core_alert_test[0]),
-    .fatal_alert_test_o(core_alert_test[1]),
+    .recov_alert_test_o(core_alert_test[AlertRecovAlertIdx]),
+    .fatal_alert_test_o(core_alert_test[AlertFatalAlertIdx]),
 
     .intr_es_entropy_valid_o(core_intr_es_entropy_valid),
     .intr_es_health_test_failed_o(core_intr_es_health_test_failed),
@@ -324,169 +324,170 @@ module entropy_src
   // prim_count alerts
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck0_A,
     u_entropy_src_core.u_prim_count_window_cntr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_bit_cntrs
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck1_A,
       u_entropy_src_core.u_entropy_src_adaptp_ht.gen_cntrs[sh].u_prim_count_test_cnt,
-      alert_tx_o[1])
+      alert_tx_o[AlertFatalAlertIdx])
   end : gen_bit_cntrs
 
   for (genvar j = 0; j < NumBucketHtInst; j = j + 1) begin : gen_symbol_match_inst_loop
     for (genvar i = 0; i < NumBuckets; i = i + 1) begin : gen_symbol_match
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_entropy_src_core.gen_health_test[j].u_entropy_src_bucket_ht.gen_symbol_match[i].
-      u_prim_count_bin_cntr, alert_tx_o[1])
+      u_prim_count_bin_cntr, alert_tx_o[AlertFatalAlertIdx])
     end : gen_symbol_match
   end : gen_symbol_match_inst_loop
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_markov_ht.gen_cntrs[sh].u_prim_count_pair_cntr,
-     alert_tx_o[1])
+     alert_tx_o[AlertFatalAlertIdx])
   end : gen_pair_cntrs
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_rep_cntrs
    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
      u_entropy_src_core.u_entropy_src_repcnt_ht.gen_cntrs[sh].u_prim_count_rep_cntr,
-     alert_tx_o[1])
+     alert_tx_o[AlertFatalAlertIdx])
   end : gen_rep_cntrs
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck7_A,
     u_entropy_src_core.u_entropy_src_repcnts_ht.u_prim_count_rep_cntr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
     u_entropy_src_core.u_entropy_src_main_sm.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlAckFsmCheck_A,
     u_entropy_src_core.u_entropy_src_ack_sm.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PipelineDepthCheck_A,
-    u_entropy_src_core.u_prim_count_pipeline_depth, alert_tx_o[1])
+    u_entropy_src_core.u_prim_count_pipeline_depth, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A,
-    u_entropy_src_core.u_sha3.u_state_regs, alert_tx_o[1])
+    u_entropy_src_core.u_sha3.u_state_regs, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccakRoundFsmCheck_A,
-    u_entropy_src_core.u_sha3.u_keccak.u_state_regs, alert_tx_o[1])
+    u_entropy_src_core.u_sha3.u_keccak.u_state_regs, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A,
-    u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[1])
+    u_entropy_src_core.u_sha3.u_pad.u_state_regs, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A,
-    u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[1])
+    u_entropy_src_core.u_sha3.u_pad.u_sentmsg_count, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A,
-    u_entropy_src_core.u_sha3.u_keccak.u_round_count, alert_tx_o[1])
+    u_entropy_src_core.u_sha3.u_keccak.u_round_count, alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck8_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnt.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck9_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnts.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck10_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_hi.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck11_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_lo.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck12_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_bucket.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck13_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_hi.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck14_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_lo.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck15_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_hi.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck16_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck17_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_any_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck18_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnt_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck19_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_repcnts_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck20_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_hi_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck21_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_adaptp_lo_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck22_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_bucket_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck23_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_hi_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck24_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_markov_lo_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck25_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_hi_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck26_A,
     u_entropy_src_core.u_entropy_src_cntr_reg_extht_lo_alert_fails.u_prim_count_cntr_reg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esrng.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsrngFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esrng.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_distr.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DistrFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_distr.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_observe.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ObserveFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_observe.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoWptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esfinal.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EsfinalFifoRptrCheck_A,
     u_entropy_src_core.u_prim_fifo_sync_esfinal.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalAlertIdx])
 
 endmodule

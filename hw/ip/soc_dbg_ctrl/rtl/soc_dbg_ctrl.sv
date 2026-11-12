@@ -56,14 +56,15 @@ module soc_dbg_ctrl
   logic policy_shadowed_storage_err, policy_shadowed_update_err;
   logic [NumAlerts-1:0] alert_test, alert;
 
-  assign alert[0] = core_tl_intg_err | jtag_tl_intg_err | shadowed_storage_err |
-                    policy_shadowed_storage_err | halt_fsm_err;
-  assign alert[1] = shadowed_update_err | policy_shadowed_update_err;
+  assign alert[AlertFatalFaultIdx]         = core_tl_intg_err | jtag_tl_intg_err |
+                                             shadowed_storage_err | policy_shadowed_storage_err |
+                                             halt_fsm_err;
+  assign alert[AlertRecovCtrlUpdateErrIdx] = shadowed_update_err | policy_shadowed_update_err;
 
-  assign alert_test[0] = core_reg2hw.alert_test.fatal_fault.q &
-                         core_reg2hw.alert_test.fatal_fault.qe;
-  assign alert_test[1] = core_reg2hw.alert_test.recov_ctrl_update_err.q &
-                         core_reg2hw.alert_test.recov_ctrl_update_err.qe;
+  assign alert_test[AlertFatalFaultIdx]         = core_reg2hw.alert_test.fatal_fault.q &
+                                                  core_reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = core_reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  core_reg2hw.alert_test.recov_ctrl_update_err.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -417,9 +418,12 @@ module soc_dbg_ctrl
   `ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 
   // Alert assertion for sparse FSM.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HaltStateFsmCheck_A, u_state_regs, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HaltStateFsmCheck_A, u_state_regs,
+                                       alert_tx_o[AlertFatalFaultIdx])
 endmodule
