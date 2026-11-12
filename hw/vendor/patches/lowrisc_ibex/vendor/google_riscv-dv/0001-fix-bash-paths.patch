@@ -1,0 +1,52 @@
+diff --git a/scripts/check-status b/scripts/check-status
+index ec76d7e371..b28845597e 100755
+--- a/scripts/check-status
++++ b/scripts/check-status
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+
+ # Check the return code of run.py in order to give a pass/fail indication to Metrics
+ echo "run.py return code:" $1
+diff --git a/scripts/lib.py b/scripts/lib.py
+index 872752f001..3636aedbd0 100644
+--- a/scripts/lib.py
++++ b/scripts/lib.py
+@@ -106,7 +106,7 @@ def run_cmd(cmd, timeout_s=999, exit_on_error=1, check_return_code=True,
+     try:
+         ps = subprocess.Popen("exec " + cmd,
+                               shell=True,
+-                              executable='/bin/bash',
++                              executable='bash',
+                               universal_newlines=True,
+                               start_new_session=True,
+                               env=os.environ,
+@@ -157,7 +157,7 @@ def run_parallel_cmd(cmd_list, timeout_s=999, exit_on_error=0,
+     for cmd in cmd_list:
+         ps = subprocess.Popen("exec " + cmd,
+                               shell=True,
+-                              executable='/bin/bash',
++                              executable='bash',
+                               universal_newlines=True,
+                               start_new_session=True,
+                               stdout=subprocess.PIPE,
+diff --git a/verilog_style/build-verible.sh b/verilog_style/build-verible.sh
+index 764af22df9..f466cc822f 100755
+--- a/verilog_style/build-verible.sh
++++ b/verilog_style/build-verible.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ #
+ # Copyright 2019 Google LLC
+ #
+diff --git a/verilog_style/run.sh b/verilog_style/run.sh
+index f67a5f9dba..15ccaf7566 100755
+--- a/verilog_style/run.sh
++++ b/verilog_style/run.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ #
+ # Copyright 2019 Google LLC
+ #
