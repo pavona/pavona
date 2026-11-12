@@ -177,9 +177,6 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -474,9 +471,6 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -769,9 +763,6 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     return OTCRYPTO_BAD_ARGS;
   }
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
