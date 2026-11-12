@@ -15,26 +15,19 @@ filegroup(
     srcs = glob(["**/*.md"]),
 )
 
-AES_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:acvp_aes_{}_json".format(mode)
+[
+    cryptotest(
+        name = "aes_{}_kat".format(mode),
+        extra_exec_envs = {
+            "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+        },
+        slow_test = True,
+        test_args = "--aes-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_aes_{}_json)\"".format(mode),
+        test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
+        test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_aes_{}_json".format(mode)],
+    )
     for mode in ("cbc", "cfb128", "ecb", "ofb")
 ]
-
-AES_TESTVECTOR_ARGS = " ".join([
-    "--aes-json=\"$(rootpath {})\"".format(target)
-    for target in AES_TESTVECTOR_TARGETS
-])
-
-cryptotest(
-    name = "aes_kat",
-    extra_exec_envs = {
-        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
-    },
-    slow_test = True,
-    test_args = AES_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
-    test_vectors = AES_TESTVECTOR_TARGETS,
-)
 
 AES_GCM_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(operation, key_len)
@@ -641,9 +634,12 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
+        ":aes_cbc_kat",
+        ":aes_cfb128_kat",
+        ":aes_ecb_kat",
         ":aes_gcm_kat",
-        ":aes_kat",
         ":aes_kwp_kat",
+        ":aes_ofb_kat",
         ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
