@@ -22,7 +22,7 @@ load(
     "qemu_params",
     "verilator_params",
 )
-load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
