@@ -623,29 +623,26 @@ module lc_ctrl
   logic [NumAlerts-1:0] alert_test;
   logic [NumAlerts-1:0] tap_dmi_alert_test;
 
-  assign alerts = {
-    fatal_bus_integ_error_q,
-    fatal_state_error_q,
-    fatal_prog_error_q
-  };
+  assign alerts[AlertFatalProgErrorIdx]     = fatal_prog_error_q;
+  assign alerts[AlertFatalStateErrorIdx]    = fatal_state_error_q;
+  assign alerts[AlertFatalBusIntegErrorIdx] = fatal_bus_integ_error_q;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_bus_integ_error.q &
-    reg2hw.alert_test.fatal_bus_integ_error.qe,
-    reg2hw.alert_test.fatal_state_error.q &
-    reg2hw.alert_test.fatal_state_error.qe,
-    reg2hw.alert_test.fatal_prog_error.q &
-    reg2hw.alert_test.fatal_prog_error.qe
-  };
+  assign alert_test[AlertFatalProgErrorIdx]     = reg2hw.alert_test.fatal_prog_error.q &
+                                                  reg2hw.alert_test.fatal_prog_error.qe;
+  assign alert_test[AlertFatalStateErrorIdx]    = reg2hw.alert_test.fatal_state_error.q &
+                                                  reg2hw.alert_test.fatal_state_error.qe;
+  assign alert_test[AlertFatalBusIntegErrorIdx] = reg2hw.alert_test.fatal_bus_integ_error.q &
+                                                  reg2hw.alert_test.fatal_bus_integ_error.qe;
 
-   assign tap_dmi_alert_test = {
-    tap_dmi_reg2hw.alert_test.fatal_bus_integ_error.q &
-    tap_dmi_reg2hw.alert_test.fatal_bus_integ_error.qe,
-    tap_dmi_reg2hw.alert_test.fatal_state_error.q &
-    tap_dmi_reg2hw.alert_test.fatal_state_error.qe,
-    tap_dmi_reg2hw.alert_test.fatal_prog_error.q &
-    tap_dmi_reg2hw.alert_test.fatal_prog_error.qe
-  };
+  assign tap_dmi_alert_test[AlertFatalProgErrorIdx] =
+      tap_dmi_reg2hw.alert_test.fatal_prog_error.q &
+      tap_dmi_reg2hw.alert_test.fatal_prog_error.qe;
+  assign tap_dmi_alert_test[AlertFatalStateErrorIdx] =
+      tap_dmi_reg2hw.alert_test.fatal_state_error.q &
+      tap_dmi_reg2hw.alert_test.fatal_state_error.qe;
+  assign tap_dmi_alert_test[AlertFatalBusIntegErrorIdx] =
+      tap_dmi_reg2hw.alert_test.fatal_bus_integ_error.q &
+      tap_dmi_reg2hw.alert_test.fatal_bus_integ_error.qe;
 
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -888,27 +885,29 @@ module lc_ctrl
 
   // Alert assertions for sparse FSMs.
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcFsmCheck_A,
-      u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[1])
+      u_lc_ctrl_fsm.u_fsm_state_regs, alert_tx_o[AlertFatalStateErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
-      u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1],
+      u_lc_ctrl_fsm.u_state_regs, alert_tx_o[AlertFatalStateErrorIdx],
       !$past(otp_lc_data_i.valid) ||
       u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
-      u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1],
+      u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[AlertFatalStateErrorIdx],
        !$past(otp_lc_data_i.valid) ||
       u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
-      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[1],
+      u_lc_ctrl_kmac_if.u_state_regs, alert_tx_o[AlertFatalStateErrorIdx],
       u_lc_ctrl_fsm.fsm_state_q inside {EscalateSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs,
+                                                 alert_tx_o[AlertFatalBusIntegErrorIdx])
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(TapDmiWeOnehotCheck_A,
-                                                 u_reg_tap_dmi, alert_tx_o[2], 0)
+                                                 u_reg_tap_dmi,
+                                                 alert_tx_o[AlertFatalBusIntegErrorIdx], 0)
 endmodule : lc_ctrl

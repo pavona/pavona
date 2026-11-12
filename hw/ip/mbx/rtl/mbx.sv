@@ -387,7 +387,7 @@ module mbx
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_sysif.u_regs_soc,
-                                                 alert_tx_o[0])
+                                                 alert_tx_o[AlertFatalFaultIdx])
   // All outputs should be known at all times after reset.
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(IntrMbxReadyKnown_A, intr_mbx_ready_o)

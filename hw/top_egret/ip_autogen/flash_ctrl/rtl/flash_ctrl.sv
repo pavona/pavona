@@ -927,21 +927,22 @@ module flash_ctrl
   lc_ctrl_pkg::lc_tx_t local_esc;
   assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(fatal_std_err);
 
-  assign alert_srcs = {
-    flash_macro_status_i.recov_alert,
-    flash_macro_status_i.fatal_alert,
-    fatal_err,
-    fatal_std_err,
-    recov_err
-  };
+  assign alert_srcs[AlertRecovErrIdx]            = recov_err;
+  assign alert_srcs[AlertFatalStdErrIdx]         = fatal_std_err;
+  assign alert_srcs[AlertFatalErrIdx]            = fatal_err;
+  assign alert_srcs[AlertFatalPrimFlashAlertIdx] = flash_macro_status_i.fatal_alert;
+  assign alert_srcs[AlertRecovPrimFlashAlertIdx] = flash_macro_status_i.recov_alert;
 
-  assign alert_tests = {
-    reg2hw.alert_test.recov_prim_flash_alert.q & reg2hw.alert_test.recov_prim_flash_alert.qe,
-    reg2hw.alert_test.fatal_prim_flash_alert.q & reg2hw.alert_test.fatal_prim_flash_alert.qe,
-    reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
-    reg2hw.alert_test.fatal_std_err.q & reg2hw.alert_test.fatal_std_err.qe,
-    reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
-  };
+  assign alert_tests[AlertRecovErrIdx]            = reg2hw.alert_test.recov_err.q &
+                                                    reg2hw.alert_test.recov_err.qe;
+  assign alert_tests[AlertFatalStdErrIdx]         = reg2hw.alert_test.fatal_std_err.q &
+                                                    reg2hw.alert_test.fatal_std_err.qe;
+  assign alert_tests[AlertFatalErrIdx]            = reg2hw.alert_test.fatal_err.q &
+                                                    reg2hw.alert_test.fatal_err.qe;
+  assign alert_tests[AlertFatalPrimFlashAlertIdx] = reg2hw.alert_test.fatal_prim_flash_alert.q &
+                                                    reg2hw.alert_test.fatal_prim_flash_alert.qe;
+  assign alert_tests[AlertRecovPrimFlashAlertIdx] = reg2hw.alert_test.recov_prim_flash_alert.q &
+                                                    reg2hw.alert_test.recov_prim_flash_alert.qe;
 
   // The alert generated for errors reported in the fault status CSR (fatal_err) is not fatal.
   // This is to enable firmware dealing with multi-bit ECC errors (phy_relbl_err) as well as ICV
@@ -1366,37 +1367,38 @@ module flash_ctrl
 
   // add more assertions
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedCntAlertCheck_A, u_flash_hw_if.u_seed_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(AddrCntAlertCheck_A, u_flash_hw_if.u_addr_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PageCntAlertCheck_A, u_flash_hw_if.u_page_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WordCntAlertCheck_A, u_flash_hw_if.u_word_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(WipeIdx_A, u_flash_hw_if.u_wipe_idx_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ProgCnt_A, u_flash_ctrl_prog.u_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdCnt_A, u_flash_ctrl_rd.u_cnt,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlFsmCheck_A,
-    u_flash_hw_if.u_state_regs, alert_tx_o[1])
+    u_flash_hw_if.u_state_regs, alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcCtrlRmaFsmCheck_A,
-    u_flash_hw_if.u_rma_state_regs, alert_tx_o[1])
+    u_flash_hw_if.u_rma_state_regs, alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ArbFsmCheck_A,
-    u_ctrl_arb.u_state_regs, alert_tx_o[1])
+    u_ctrl_arb.u_state_regs, alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
-    u_tl_gate.u_state_regs, alert_tx_o[1])
+    u_tl_gate.u_state_regs, alert_tx_o[AlertFatalStdErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A,
-    u_prog_tl_gate.u_state_regs, alert_tx_o[1])
+    u_prog_tl_gate.u_state_regs, alert_tx_o[AlertFatalStdErrIdx])
 
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,
-       u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[1])
+       u_eflash.gen_flash_cores[i].u_core.u_state_regs, alert_tx_o[AlertFatalStdErrIdx])
 
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyProgFsmCheck_A,
-       u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs, alert_tx_o[1])
+       u_eflash.gen_flash_cores[i].u_core.gen_prog_data.u_prog.u_state_regs,
+       alert_tx_o[AlertFatalStdErrIdx])
    end
 
   `ifdef INC_ASSERT
@@ -1405,49 +1407,50 @@ module flash_ctrl
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_cnt_errs
      `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(PhyRspFifo,
                                                   `PHY.u_host_rsp_fifo,
-                                                  alert_tx_o[1])
+                                                  alert_tx_o[AlertFatalStdErrIdx])
 
      `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdRspFifo,
                                                  `PHY_CORE.u_rd.u_rsp_order_fifo,
-                                                 alert_tx_o[1])
+                                                 alert_tx_o[AlertFatalStdErrIdx])
 
      `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdDataFifo,
                                                  `PHY_CORE.u_rd.u_rd_storage,
-                                                 alert_tx_o[1])
+                                                 alert_tx_o[AlertFatalStdErrIdx])
 
      // Outstanding count error is merged into host_gnt_err instead of being an
      // individual count error.
      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyHostCnt_A,
-       `PHY_CORE.u_host_outstanding_cnt, alert_tx_o[2])
+       `PHY_CORE.u_host_outstanding_cnt, alert_tx_o[AlertFatalErrIdx])
    end
    `endif
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
                                                u_to_rd_fifo.u_rspfifo,
-                                               alert_tx_o[1])
+                                               alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdSramReqFifo,
                                                u_to_rd_fifo.u_sramreqfifo,
-                                               alert_tx_o[1])
+                                               alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdReqFifo,
                                                u_to_rd_fifo.u_reqfifo,
-                                               alert_tx_o[1])
+                                               alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashRspFifo,
                                               u_tl_adapter_eflash.u_rspfifo,
-                                              alert_tx_o[1])
+                                              alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashSramReqFifo,
                                               u_tl_adapter_eflash.u_sramreqfifo,
-                                              alert_tx_o[1])
+                                              alert_tx_o[AlertFatalStdErrIdx])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashReqFifo,
                                               u_tl_adapter_eflash.u_reqfifo,
-                                              alert_tx_o[1])
+                                              alert_tx_o[AlertFatalStdErrIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core,
+                                                 alert_tx_o[AlertFatalStdErrIdx])
 
 endmodule

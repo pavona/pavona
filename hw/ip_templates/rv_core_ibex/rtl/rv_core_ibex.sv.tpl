@@ -916,31 +916,31 @@ module ${module_instance_name}
   ///////////////////////
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test[0] = reg2hw.alert_test.fatal_sw_err.q &
-                         reg2hw.alert_test.fatal_sw_err.qe;
-  assign alert_test[1] = reg2hw.alert_test.recov_sw_err.q &
-                         reg2hw.alert_test.recov_sw_err.qe;
-  assign alert_test[2] = reg2hw.alert_test.fatal_hw_err.q &
-                         reg2hw.alert_test.fatal_hw_err.qe;
-  assign alert_test[3] = reg2hw.alert_test.recov_hw_err.q &
-                         reg2hw.alert_test.recov_hw_err.qe;
+  assign alert_test[AlertFatalSwErrIdx] = reg2hw.alert_test.fatal_sw_err.q &
+                                          reg2hw.alert_test.fatal_sw_err.qe;
+  assign alert_test[AlertRecovSwErrIdx] = reg2hw.alert_test.recov_sw_err.q &
+                                          reg2hw.alert_test.recov_sw_err.qe;
+  assign alert_test[AlertFatalHwErrIdx] = reg2hw.alert_test.fatal_hw_err.q &
+                                          reg2hw.alert_test.fatal_hw_err.qe;
+  assign alert_test[AlertRecovHwErrIdx] = reg2hw.alert_test.recov_hw_err.q &
+                                          reg2hw.alert_test.recov_hw_err.qe;
 
   logic [NumAlerts-1:0] alert_events;
   logic [NumAlerts-1:0] alert_acks;
 
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_t;
-  assign alert_events[0] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
-  assign alert_events[1] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
-  assign alert_events[2] = cfg_reg_intg_err | cfg_reg_intg_err_shadow |
-                           fatal_intg_err | fatal_core_err;
-  assign alert_events[3] = recov_core_err;
+  assign alert_events[AlertFatalSwErrIdx] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_fatal_err.q));
+  assign alert_events[AlertRecovSwErrIdx] = mubi4_test_true_loose(mubi4_t'(reg2hw.sw_recov_err.q));
+  assign alert_events[AlertFatalHwErrIdx] = cfg_reg_intg_err | cfg_reg_intg_err_shadow |
+                                            fatal_intg_err | fatal_core_err;
+  assign alert_events[AlertRecovHwErrIdx] = recov_core_err;
 
   logic unused_alert_acks;
   assign unused_alert_acks = |alert_acks;
 
   // recoverable alerts are sent once and silenced until activated again.
-  assign hw2reg.sw_recov_err.de = alert_acks[1];
+  assign hw2reg.sw_recov_err.de = alert_acks[AlertRecovSwErrIdx];
   assign hw2reg.sw_recov_err.d = prim_mubi_pkg::MuBi4False;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
@@ -1466,10 +1466,11 @@ module ${module_instance_name}
       $past(!fatal_core_err))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg,
+                                                 alert_tx_o[AlertFatalHwErrIdx])
   if (SecureIbex) begin : gen_u_reg_cfg_shadow_assert
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheckShdw_A,
-        gen_tlul_lockstep.u_reg_cfg_shadow, alert_tx_o[2])
+        gen_tlul_lockstep.u_reg_cfg_shadow, alert_tx_o[AlertFatalHwErrIdx])
   end
 
 `ifdef INC_ASSERT
@@ -1521,22 +1522,23 @@ module ${module_instance_name}
         30, // MAX_CYCLES_, use a large value as ibex clock is 4x faster than clk in alert_handler ${"\\"}
         __error_name)
 
-  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexPcMismatchCheck_A, alert_tx_o[2],
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexPcMismatchCheck_A, alert_tx_o[AlertFatalHwErrIdx],
       u_ibex_core.if_stage_i, pc_mismatch_alert_o)
-  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexRfEccErrCheck_A, alert_tx_o[2], u_ibex_core,
-      rf_ecc_err_comb)
-  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexLoadRespIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
-      lsu_load_resp_intg_err)
-  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexStoreRespIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
-      lsu_store_resp_intg_err)
-  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
-      instr_intg_err)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexRfEccErrCheck_A, alert_tx_o[AlertFatalHwErrIdx],
+      u_ibex_core, rf_ecc_err_comb)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexLoadRespIntgErrCheck_A,
+      alert_tx_o[AlertFatalHwErrIdx], u_ibex_core, lsu_load_resp_intg_err)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexStoreRespIntgErrCheck_A,
+      alert_tx_o[AlertFatalHwErrIdx], u_ibex_core, lsu_store_resp_intg_err)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A,
+      alert_tx_o[AlertFatalHwErrIdx], u_ibex_core, instr_intg_err)
   if (LockstepOffset > 1) begin: gen_lockstep_rst_cnt_assert
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
-      u_core.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[2])
+      u_core.gen_lockstep.u_ibex_lockstep.gen_reset_counter.u_rst_shadow_cnt,
+      alert_tx_o[AlertFatalHwErrIdx])
   end
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
-      u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
+      u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[AlertFatalHwErrIdx])
 
 `endif // ifdef INC_ASSERT
 endmodule

@@ -210,15 +210,15 @@ module rstmgr
   logic [NumAlerts-1:0] alert_test, alerts;
 
   // All of these are fatal alerts
-  assign alerts[0] = reg2hw.err_code.reg_intg_err.q |
-                     (|reg2hw.err_code.fsm_err.q);
+  assign alerts[AlertFatalFaultIdx] = reg2hw.err_code.reg_intg_err.q |
+                                      (|reg2hw.err_code.fsm_err.q);
 
-  assign alerts[1] = reg2hw.err_code.reset_consistency_err.q;
+  assign alerts[AlertFatalCnstyFaultIdx] = reg2hw.err_code.reset_consistency_err.q;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe,
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
-  };
+  assign alert_test[AlertFatalFaultIdx]      = reg2hw.alert_test.fatal_fault.q &
+                                               reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertFatalCnstyFaultIdx] = reg2hw.alert_test.fatal_cnsty_fault.q &
+                                               reg2hw.alert_test.fatal_cnsty_fault.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -344,7 +344,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D${domain.capitalize()}${rst_name_camel}FsmCheck_A,
     u_d${domain.lower()}_${name}.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   % endif
       % else:
@@ -481,5 +481,6 @@ module rstmgr
 % endfor
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule // rstmgr

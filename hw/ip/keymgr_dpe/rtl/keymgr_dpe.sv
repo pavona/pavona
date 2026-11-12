@@ -760,9 +760,9 @@ module keymgr_dpe
   assign fault_alert_test = reg2hw.alert_test.fatal_fault_err.q &
                             reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[1]),
+    .AsyncOn(AlertAsyncOn[AlertFatalFaultErrIdx]),
     .SkewCycles(AlertSkewCycles),
-    .IsFatal(AlertIsFatal[1])
+    .IsFatal(AlertIsFatal[AlertFatalFaultErrIdx])
   ) u_fault_alert (
     .clk_i,
     .rst_ni,
@@ -770,17 +770,17 @@ module keymgr_dpe
     .alert_req_i(fault_err_req_q),
     .alert_ack_o(fault_err_ack),
     .alert_state_o(),
-    .alert_rx_i(alert_rx_i[1]),
-    .alert_tx_o(alert_tx_o[1])
+    .alert_rx_i(alert_rx_i[AlertFatalFaultErrIdx]),
+    .alert_tx_o(alert_tx_o[AlertFatalFaultErrIdx])
   );
 
   logic op_err_alert_test;
   assign op_err_alert_test = reg2hw.alert_test.recov_operation_err.q &
                              reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
+    .AsyncOn(AlertAsyncOn[AlertRecovOperationErrIdx]),
     .SkewCycles(AlertSkewCycles),
-    .IsFatal(AlertIsFatal[0])
+    .IsFatal(AlertIsFatal[AlertRecovOperationErrIdx])
   ) u_op_err_alert (
     .clk_i,
     .rst_ni,
@@ -788,8 +788,8 @@ module keymgr_dpe
     .alert_req_i(op_err_req_q),
     .alert_ack_o(op_err_ack),
     .alert_state_o(),
-    .alert_rx_i(alert_rx_i[0]),
-    .alert_tx_o(alert_tx_o[0])
+    .alert_rx_i(alert_rx_i[AlertRecovOperationErrIdx]),
+    .alert_tx_o(alert_tx_o[AlertRecovOperationErrIdx])
   );
 
   // known asserts
@@ -824,19 +824,24 @@ module keymgr_dpe
   `ASSERT_INIT(FaultCntMatch_A, FaultLastPos == AsyncFaultLastIdx + SyncFaultLastIdx)
   `ASSERT_INIT(ErrCntMatch_A, ErrLastPos == AsyncErrLastIdx + SyncErrLastIdx)
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt, alert_tx_o[1])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt, alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrlCntAlertCheck_A, u_ctrl.u_cnt,
+                                         alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KmacIfCntAlertCheck_A, u_kmac_if.u_cnt,
+                                         alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReseedCtrlCntAlertCheck_A, u_reseed_ctrl.u_reseed_cnt,
-                                         alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs, alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A, u_ctrl.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlDataFsmCheck_A,
-      u_ctrl.u_data_en.u_state_regs, alert_tx_o[1])
+      u_ctrl.u_data_en.u_state_regs, alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlOpFsmCheck_A,
-      u_ctrl.u_op_state.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs, alert_tx_o[1])
+      u_ctrl.u_op_state.u_state_regs, alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacIfFsmCheck_A, u_kmac_if.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SideloadCtrlFsmCheck_A,
-      u_sideload_ctrl.u_state_regs, alert_tx_o[1])
+      u_sideload_ctrl.u_state_regs, alert_tx_o[AlertFatalFaultErrIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultErrIdx])
 endmodule // keymgr_dpe

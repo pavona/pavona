@@ -259,10 +259,10 @@
   // Alerts
   ////////////////////////////////////////////////////
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe
-  };
+  assign alert_test[AlertRecovFaultIdx] = reg2hw.alert_test.recov_fault.q &
+                                          reg2hw.alert_test.recov_fault.qe;
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
+                                          reg2hw.alert_test.fatal_fault.qe;
 
   logic recov_alert;
   assign recov_alert =
@@ -278,10 +278,8 @@
     hw2reg.recov_err_code.usb_timeout_err.de |
     hw2reg.recov_err_code.shadow_update_err.de;
 
-  assign alerts = {
-    |reg2hw.fatal_err_code,
-    recov_alert
-  };
+  assign alerts[AlertRecovFaultIdx] = recov_alert;
+  assign alerts[AlertFatalFaultIdx] = |reg2hw.fatal_err_code;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -992,7 +990,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAccCountCheck_A,
     u_clk_main_acc_trans.u_idle_cnt,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalFaultIdx])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1014,7 +1012,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainAesCountCheck_A,
     u_clk_main_aes_trans.u_idle_cnt,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalFaultIdx])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
@@ -1036,7 +1034,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainHmacCountCheck_A,
     u_clk_main_hmac_trans.u_idle_cnt,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalFaultIdx])
 
   clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -1058,7 +1056,7 @@
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
     ClkMainKmacCountCheck_A,
     u_clk_main_kmac_trans.u_idle_cnt,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalFaultIdx])
   assign hw2reg.fatal_err_code.idle_cnt.d = 1'b1;
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
@@ -1092,5 +1090,6 @@
   `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule // clkmgr

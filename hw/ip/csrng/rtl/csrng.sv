@@ -63,7 +63,7 @@ module csrng
   logic [NumAlerts-1:0] alert;
 
   logic [NumAlerts-1:0] intg_err_alert;
-  assign intg_err_alert[0] = 1'b0;
+  assign intg_err_alert[AlertRecovAlertIdx] = 1'b0;
 
   // SEC_CM: CONFIG.REGWEN
   // SEC_CM: TILE_LINK.BUS.INTEGRITY
@@ -75,7 +75,7 @@ module csrng
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(intg_err_alert[1])
+    .intg_err_o(intg_err_alert[AlertFatalAlertIdx])
   );
 
   csrng_core #(
@@ -106,10 +106,10 @@ module csrng
     .csrng_cmd_o,
 
     // Alerts
-    .recov_alert_test_o(alert_test[0]),
-    .fatal_alert_test_o(alert_test[1]),
-    .recov_alert_o(alert[0]),
-    .fatal_alert_o(alert[1]),
+    .recov_alert_test_o(alert_test[AlertRecovAlertIdx]),
+    .fatal_alert_test_o(alert_test[AlertFatalAlertIdx]),
+    .recov_alert_o(alert[AlertRecovAlertIdx]),
+    .fatal_alert_o(alert[AlertFatalAlertIdx]),
 
     .intr_cs_cmd_req_done_o,
     .intr_cs_entropy_req_o,
@@ -167,58 +167,59 @@ module csrng
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgUpdAlertCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CtrDrbgGenAlertCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
-      alert_tx_o[1])
+      alert_tx_o[AlertFatalAlertIdx])
 
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_state_regs,
-      alert_tx_o[1])
+      alert_tx_o[AlertFatalAlertIdx])
   end
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlMainFsmCheck_A,
     u_csrng_core.u_csrng_main_sm.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_cmd.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgGenFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_gen.u_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdBlkEncFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_upd.u_blk_enc_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgUpdOutBlkFsmCheck_A,
     u_csrng_core.u_csrng_ctr_drbg_upd.u_outblk_state_regs,
-    alert_tx_o[1])
+    alert_tx_o[AlertFatalAlertIdx])
 
   for (genvar i = 0; i < aes_pkg::Sp2VWidth; i++) begin : gen_aes_cipher_control_fsm_svas
     if (aes_pkg::SP2V_LOGIC_HIGH[i] == 1'b1) begin : gen_aes_cipher_control_fsm_svas_p
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].
               gen_fsm_p.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
-          alert_tx_o[1])
+          alert_tx_o[AlertFatalAlertIdx])
     end else begin : gen_aes_cipher_control_fsm_svas_n
       `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(AesCipherControlFsmCheck_A,
           u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.gen_fsm[i].
               gen_fsm_n.u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm.u_state_regs,
-          alert_tx_o[1])
+          alert_tx_o[AlertFatalAlertIdx])
     end
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalAlertIdx])
 
   // The total number of application interfaces defined in the hjson must be at least two:
   // One SW interface and at least one HW interface. Zero HW interfaces is currently not supported.
