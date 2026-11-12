@@ -264,18 +264,18 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   EXPECT_CALL(ownership_key_, seal_page(1));
 
   // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));
   // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));
@@ -334,18 +334,18 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0MinSecVer) {
   EXPECT_CALL(ownership_key_, seal_page(1));
 
   // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));
   // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));
@@ -400,18 +400,18 @@ TEST_P(OwnershipActivateNextBl0Slot, UpdateBootdataPrimaryBl0Slot) {
   EXPECT_CALL(ownership_key_, seal_page(1));
 
   // The sealed page will be written into flash owner slot 1 first.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));
   // The sealed page will be written into flash owner slot 0 second.
-  EXPECT_CALL(flash_ctrl_,
-              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+  EXPECT_CALL(flash_ctrl_, InfoErase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
+                                     kFlashCtrlEraseTypePage))
       .WillOnce(Return(kErrorOk));
-  EXPECT_CALL(flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  EXPECT_CALL(flash_ctrl_, InfoWrite(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                                      sizeof(owner_page[1]) / sizeof(uint32_t),
                                      &owner_page[1]))
       .WillOnce(Return(kErrorOk));

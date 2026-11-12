@@ -322,7 +322,7 @@ rom_error_t dice_chain_attestation_creator(
       &static_dice_cdi_0.cdi_0_pubkey));
 
   // Switch page for the device generated CDI_0.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
+  RETURN_IF_ERROR(dice_chain_load_flash(&FLASH_CTRL_INFO_PAGE_DICE_CERTS));
 
   // Check if the current CDI_0 cert is valid.
   dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
@@ -352,7 +352,7 @@ rom_error_t dice_chain_attestation_creator(
 // cached in the flash.
 static rom_error_t dice_chain_attestation_check_uds(void) {
   // Switch page for the factory provisioned UDS cert.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
+  RETURN_IF_ERROR(dice_chain_load_flash(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS));
 
   // Check if the UDS cert is valid.
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.uds_pubkey_id;
@@ -378,7 +378,7 @@ static rom_error_t dice_chain_attestation_check_uds(void) {
 // Refresh the cache if a new CDI_0 is generated.
 static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Switch page for the device CDI chain.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
+  RETURN_IF_ERROR(dice_chain_load_flash(&FLASH_CTRL_INFO_PAGE_DICE_CERTS));
 
   // Set the endorsement key for the next cert.
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
@@ -412,12 +412,14 @@ static rom_error_t dice_chain_seal_page_check(
 }
 
 rom_error_t dice_chain_rom_ext_check(void) {
-  if (dice_chain_seal_page_check(&kFlashCtrlInfoPageFactoryCerts) != kErrorOk) {
+  if (dice_chain_seal_page_check(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS) !=
+      kErrorOk) {
     dbg_puts("warning: corrupted FactoryCerts page\r\n");
   }
 
   // Retry if the current cache is corrupted.
-  rom_error_t error = dice_chain_seal_page_check(&kFlashCtrlInfoPageDiceCerts);
+  rom_error_t error =
+      dice_chain_seal_page_check(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
   if (error == kErrorDicePageCorrupted) {
     dbg_puts("warning: corrupted DiceCerts page\r\n");
     // Clear the corrupted page and reboot.
@@ -529,9 +531,9 @@ rom_error_t dice_chain_init(void) {
   dice_chain_reset_cert_obj();
 
   // Configure DICE certificate flash info page and buffer it into RAM.
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS,
                           kCertificateInfoPageCfg);
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
+  flash_ctrl_cert_info_page_owner_restrict(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS);
   return kErrorOk;
 }

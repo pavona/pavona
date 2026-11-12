@@ -258,7 +258,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+  flash_ctrl_cert_info_page_owner_restrict(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
 
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.

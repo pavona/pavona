@@ -144,9 +144,9 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   bootdata->ownership_state = kOwnershipStateLockedOwner;
 
   // Write the configuration to page 0.
-  OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+  OT_DISCARD(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
                                    kFlashCtrlEraseTypePage));
-  OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  OT_DISCARD(flash_ctrl_info_write(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                                    sizeof(owner_page[0]) / sizeof(uint32_t),
                                    &owner_page[0]));
   owner_page_valid[0] = kOwnerPageStatusSealed;

@@ -174,7 +174,7 @@ static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
       .write = (uint8_t)write,
       .erase = (uint8_t)write,
   };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSecret, perm);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET, perm);
 }
 
 rom_error_t ownership_secret_new(uint32_t prior_key_alg,
@@ -183,7 +183,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
 
   secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
   rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret, 0,
+      flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET, 0,
                            sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
     if (kDeviceType == kDeviceSilicon) {
@@ -195,7 +195,7 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
       // transfer.
       HARDENED_CHECK_NE(error, kErrorOk);
       HARDENED_CHECK_NE(kDeviceType, kDeviceSilicon);
-      error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
+      error = flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET,
                                     kFlashCtrlEraseTypePage);
       memset(&secret, 0xFF, sizeof(secret));
     }
@@ -238,11 +238,11 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
-  error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
+  error = flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET,
                                 kFlashCtrlEraseTypePage);
   if (error != kErrorOk)
     goto exitproc;
-  error = flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSecret, 0,
+  error = flash_ctrl_info_write(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET, 0,
                                 sizeof(secret) / sizeof(uint32_t), &secret);
 
 exitproc:
@@ -255,7 +255,7 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
   secret_page_enable(/*read=*/kMultiBitBool4True,
                      /*write=*/kMultiBitBool4False);
   rom_error_t error =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret,
+      flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET,
                            offsetof(owner_secret_page_t, owner_history),
                            sizeof(*history) / sizeof(uint32_t), history);
   if (error != kErrorOk) {

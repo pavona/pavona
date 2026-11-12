@@ -184,14 +184,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .used = true,
         .need_digest = true,
         .group_name = "FACTORY",
-        .info_page = &kFlashCtrlInfoPageFactoryCerts,
+        .info_page = &FLASH_CTRL_INFO_PAGE_FACTORY_CERTS,
         .num_certs = 1,
     },
     {
         .used = true,
         .need_digest = true,
         .group_name = "DICE",
-        .info_page = &kFlashCtrlInfoPageDiceCerts,
+        .info_page = &FLASH_CTRL_INFO_PAGE_DICE_CERTS,
         .num_certs = 2,
     },
     // These flash info pages can be used by provisioning extensions to store
@@ -200,14 +200,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         .used = false,
         .need_digest = false,
         .group_name = "Ext0",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved6,
+        .info_page = &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6,
         .num_certs = 0,
     },
     {
         .used = false,
         .need_digest = false,
         .group_name = "Ext1",
-        .info_page = &kFlashCtrlInfoPageOwnerReserved7,
+        .info_page = &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED7,
         .num_certs = 0,
     },
 };
@@ -295,14 +295,15 @@ static void sw_reset(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
-  // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,
+  flash_ctrl_cert_info_page_creator_cfg(
+      &FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS);
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS);
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
+  // No need to erase the FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS page as it
+  // is erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
+  TRY(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS,
                             kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
+  TRY(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_DICE_CERTS,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
@@ -312,10 +313,14 @@ static status_t config_and_erase_certificate_flash_pages(void) {
  */
 static status_t erase_owner_info_pages(owner_config_t *config) {
   const flash_ctrl_info_page_t *pages[] = {
-      &kFlashCtrlInfoPageOwnerReserved0, &kFlashCtrlInfoPageOwnerReserved1,
-      &kFlashCtrlInfoPageOwnerReserved2, &kFlashCtrlInfoPageOwnerReserved3,
-      &kFlashCtrlInfoPageOwnerReserved4, &kFlashCtrlInfoPageOwnerReserved5,
-      &kFlashCtrlInfoPageOwnerReserved6, &kFlashCtrlInfoPageOwnerReserved7,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED0,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED1,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED2,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED3,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED4,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED5,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6,
+      &FLASH_CTRL_INFO_PAGE_OWNER_RESERVED7,
   };
 
   // First, initialize all of the owner INFO pages with ECC & Scrambling.
@@ -775,14 +780,14 @@ static status_t boot_data_cfg_initialize(void) {
   // Erase the BootData pages. This is necessary to ensure that the owner
   // block is written to a clean page and to avoid ECC errors in the
   // next boot.
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0, perm);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, perm);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, boot_data_cfg);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, boot_data_cfg);
 
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData0,
+  TRY(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
                             kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData1,
+  TRY(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
                             kFlashCtrlEraseTypePage));
 
   return OK_STATUS();
@@ -806,10 +811,10 @@ static status_t install_owner(owner_config_t *config,
       .ecc = kMultiBitBool4True,
       .he = kMultiBitBool4False,
   };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, cfg);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, cfg);
 
   // Initializes the boot data flash configuration in OTP, and erases the boot
   // data pages to avoid integrity errors in the next boot.

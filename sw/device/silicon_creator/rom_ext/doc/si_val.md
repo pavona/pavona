@@ -65,17 +65,17 @@ controller configuration is locked by the `ROM_EXT`.
 The FLASH info pages designed for `silicon_creator` use are locked as
 no-access.
 
-Page ID                               | Bank | Page
---------------------------------------|------|------
-kFlashCtrlInfoPageFactoryId           | 0    | 0
-kFlashCtrlInfoPageCreatorSecret       | 0    | 1
-kFlashCtrlInfoPageOwnerSecret         | 0    | 2
-kFlashCtrlInfoPageWaferAuthSecret     | 0    | 3
-kFlashCtrlInfoPageAttestationKeySeeds | 0    | 4
-kFlashCtrlInfoPageBootData0           | 1    | 0
-kFlashCtrlInfoPageBootData1           | 1    | 1
-kFlashCtrlInfoPageOwnerSlot0          | 1    | 2
-kFlashCtrlInfoPageOwnerSlot1          | 1    | 3
+Page ID                                      | Bank | Page
+---------------------------------------------|------|------
+`FLASH_CTRL_INFO_PAGE_FACTORY_ID`            | 0    | 0
+`FLASH_CTRL_INFO_PAGE_CREATOR_SECRET`        | 0    | 1
+`FLASH_CTRL_INFO_PAGE_OWNER_SECRET`          | 0    | 2
+`FLASH_CTRL_INFO_PAGE_WAFER_AUTH_SECRET`     | 0    | 3
+`FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS` | 0    | 4
+`FLASH_CTRL_INFO_PAGE_BOOT_DATA0`            | 1    | 0
+`FLASH_CTRL_INFO_PAGE_BOOT_DATA1`            | 1    | 1
+`FLASH_CTRL_INFO_PAGE_OWNER_SLOT0`           | 1    | 2
+`FLASH_CTRL_INFO_PAGE_OWNER_SLOT1`           | 1    | 3
 
 The canonical info flash reference used by the ROM and the ROM\_EXT is available
 in the `sw/device/silicon_creator/lib/drivers/flash_ctrl.h` module.
