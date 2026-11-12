@@ -1,0 +1,50 @@
+diff --git a/ci/download-pulp-gcc.sh b/ci/download-pulp-gcc.sh
+index eaab8ada43..45aacaf69d 100755
+--- a/ci/download-pulp-gcc.sh
++++ b/ci/download-pulp-gcc.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ set -o pipefail
+ set -e
+
+diff --git a/ci/install-verilator.sh b/ci/install-verilator.sh
+index 2dae38513e..24b8c4d534 100755
+--- a/ci/install-verilator.sh
++++ b/ci/install-verilator.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ set -e
+ ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+ cd $ROOT/tmp
+diff --git a/ci/make-tmp.sh b/ci/make-tmp.sh
+index a3c34c1e88..ea42ca24d4 100755
+--- a/ci/make-tmp.sh
++++ b/ci/make-tmp.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ set -e
+ cd "$(dirname "${BASH_SOURCE[0]}")/.."
+ [ -d tmp ] || rm -rf tmp
+diff --git a/tb/jtag_dmi/run_vsim.sh b/tb/jtag_dmi/run_vsim.sh
+index 384a749de6..ead20eca53 100755
+--- a/tb/jtag_dmi/run_vsim.sh
++++ b/tb/jtag_dmi/run_vsim.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ # Copyright 2020-2021 ETH Zurich and University of Bologna.
+ # Solderpad Hardware License, Version 0.51, see LICENSE for details.
+ # SPDX-License-Identifier: SHL-0.51
+diff --git a/tb/jtag_dmi/run_vsim_xilinx.sh b/tb/jtag_dmi/run_vsim_xilinx.sh
+index 535113f93e..50654dbb8d 100755
+--- a/tb/jtag_dmi/run_vsim_xilinx.sh
++++ b/tb/jtag_dmi/run_vsim_xilinx.sh
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ # Copyright 2020-2021 ETH Zurich and University of Bologna.
+ # Solderpad Hardware License, Version 0.51, see LICENSE for details.
+ # SPDX-License-Identifier: SHL-0.51

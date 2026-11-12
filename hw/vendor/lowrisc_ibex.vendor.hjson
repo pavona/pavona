@@ -26,7 +26,11 @@
     }
     "syn",
     "util",
-    "vendor/google_riscv-dv",
+    {
+      from: "vendor/google_riscv-dv",
+      to  : "vendor/google_riscv-dv",
+      patch_dir : "vendor/google_riscv-dv"
+    }
 
     "ibex_configs.yaml",
 
