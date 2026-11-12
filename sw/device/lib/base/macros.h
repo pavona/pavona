@@ -233,8 +233,8 @@ extern "C++" {
  * @param member A member of the struct.
  * @param size Expected size of the type.
  */
-#define OT_ASSERT_MEMBER_SIZE(type, member, size)             \
-  static_assert(sizeof(((type){0}).member) == UINT32_C(size), \
+#define OT_ASSERT_MEMBER_SIZE(type, member, size)              \
+  static_assert(sizeof(((type *)0)->member) == UINT32_C(size), \
                 "Unexpected size for " #type)
 
 /**
@@ -248,7 +248,7 @@ extern "C++" {
  * @param enum_size Expected size of the type as an enum constant.
  */
 #define OT_ASSERT_MEMBER_SIZE_AS_ENUM(type, member, enum_size) \
-  static_assert(sizeof(((type){0}).member) == enum_size,       \
+  static_assert(sizeof(((type *)0)->member) == enum_size,      \
                 "Unexpected size for " #type)
 
 /**
