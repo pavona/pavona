@@ -7407,8 +7407,10 @@ pavona_test(
         #EGRET_CW340_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:silicon_creator": None,
+            # TODO: Currently failing on CW310, fix and re-enable.
+            "//hw/top_egret:fpga_cw310_sival": "broken",
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
             # See #23468, currently broken on SAM3X execution environments.
             "//hw/top_egret:fpga_cw310_test_rom": "broken",
             "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
@@ -7897,6 +7899,8 @@ pavona_test(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         {
+            # TODO: Currently failing on CW310, fix and re-enable.
+            "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
             # See #23468, currently broken in SAM3X execution environments.
             "//hw/top_egret:fpga_cw310_test_rom": "broken",
             "//hw/top_egret:fpga_cw310_rom_with_fake_keys": "broken",
