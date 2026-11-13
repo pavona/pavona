@@ -122,9 +122,9 @@ package top_dragonfly_rnd_cnst_pkg;
       64'h1F2A6BD606D55F72,
       256'h58B183F3D37975B4A9524DE21084A9D64BBA835C10B5E29043022273F7AFBF68
     }),
-    30144'({
+    30080'({
       64'h0,
-      30080'h0
+      30016'h0
     }),
     33856'({
       64'h6FB88C3B4FD535BD,
@@ -250,10 +250,12 @@ package top_dragonfly_rnd_cnst_pkg;
       32'h0,
       32'h0
     }),
-    2176'({
+    2240'({
       64'h0,
       64'h9521702FCBCF4F54,
+      32'h0, // unallocated space
       256'h0,
+      32'h0,
       32'h0,
       32'h0,
       32'h0,
