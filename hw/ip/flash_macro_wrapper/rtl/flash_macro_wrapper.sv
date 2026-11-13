@@ -13,14 +13,14 @@ module flash_macro_wrapper
   import flash_macro_wrapper_pkg::*;
   import flash_phy_macro_pkg::*;
 #(
-  parameter int NumBanks       = 2,  // number of banks
-  parameter int InfosPerBank   = 1,  // info pages per bank
-  parameter int InfoTypes      = 1,  // different info types
-  parameter int InfoTypesWidth = 1,  // different info types
-  parameter int PagesPerBank   = 256,// data pages per bank
-  parameter int WordsPerPage   = 256,// words per page
-  parameter int DataWidth      = 32, // bits per word
-  parameter int TestModeWidth  = 2
+  parameter int NumBanks       = flash_phy_macro_pkg::NumBanks,       // number of banks
+  parameter int InfosPerBank   = flash_phy_macro_pkg::InfosPerBank,   // info pages per bank
+  parameter int InfoTypes      = flash_phy_macro_pkg::InfoTypes,      // different info types
+  parameter int InfoTypesWidth = flash_phy_macro_pkg::InfoTypesWidth, // different info types
+  parameter int PagesPerBank   = flash_phy_macro_pkg::PagesPerBank,   // data pages per bank
+  parameter int WordsPerPage   = flash_phy_macro_pkg::WordsPerPage,   // words per page
+  parameter int DataWidth      = flash_phy_macro_pkg::DataWidth,      // bits per word
+  parameter int TestModeWidth  = flash_phy_macro_pkg::TestModeWidth
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -187,6 +187,13 @@ module flash_macro_wrapper
   `ASSERT_KNOWN_IF(PrimRspPayLoad_A,    tl_o, tl_o.d_valid)
   `ASSERT_KNOWN(TdoKnown_A,             cio_tdo_o        )
   `ASSERT(TdoOeIsOne_A,                 cio_tdo_en_o === 1'b1)
+
+  // flash_i and flash_o use the flash_phy_macro_pkg structs, so the sizes must match.
+  `ASSERT_INIT(NumBanksMatches_A, NumBanks == flash_phy_macro_pkg::NumBanks)
+  `ASSERT_INIT(PagesPerBankMatches_A, PagesPerBank == flash_phy_macro_pkg::PagesPerBank)
+  `ASSERT_INIT(WordsPerPageMatches_A, WordsPerPage == flash_phy_macro_pkg::WordsPerPage)
+  `ASSERT_INIT(InfoTypesWidthMatches_A, InfoTypesWidth == flash_phy_macro_pkg::InfoTypesWidth)
+  `ASSERT_INIT(DataWidthMatches_A, DataWidth == flash_phy_macro_pkg::DataWidth)
 
   `ASSERT_ERROR_TRIGGER_ERR(PrimRegWeOnehotCheck_A,
       u_reg_top.u_prim_reg_we_check.u_prim_onehot_check, status_o.fatal_alert, 0,
