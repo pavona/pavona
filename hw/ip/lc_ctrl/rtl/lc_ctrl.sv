@@ -398,8 +398,8 @@ module lc_ctrl
     tap_dmi_hw2reg = hw2reg;
 
     // Assignments gated by mutex. Again, the DMI has priority.
-    tap_dmi_hw2reg.claim_transition_if = tap_dmi_claim_transition_if_q;
-    hw2reg.claim_transition_if = sw_claim_transition_if_q;
+    tap_dmi_hw2reg.claim_transition_if.d = tap_dmi_claim_transition_if_q;
+    hw2reg.claim_transition_if.d = sw_claim_transition_if_q;
     if (mubi8_test_true_strict(tap_dmi_claim_transition_if_q)) begin
       tap_dmi_hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
       tap_dmi_hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;

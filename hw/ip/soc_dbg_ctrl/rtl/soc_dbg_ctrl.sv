@@ -285,7 +285,7 @@ module soc_dbg_ctrl
       jtag_hw2reg.jtag_boot_status.io_clk_status.d    = boot_status_i.clk_status.io_status;
       jtag_hw2reg.jtag_boot_status.otp_done.d         = boot_status_i.otp_done;
       jtag_hw2reg.jtag_boot_status.lc_done.d          = boot_status_i.lc_done;
-      jtag_hw2reg.jtag_boot_status.halt_fsm_state     = halt_state_q;
+      jtag_hw2reg.jtag_boot_status.halt_fsm_state.d   = halt_state_q;
       jtag_hw2reg.jtag_boot_status.cpu_fetch_en.d     =
         lc_tx_test_true_strict(boot_status_i.cpu_fetch_en);
       jtag_hw2reg.jtag_boot_status.boot_greenlight_done.d[0] =
