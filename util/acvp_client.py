@@ -34,6 +34,7 @@ VECTOR_SETS = {
     ("ACVP-AES-CFB128", ""): ("aes_cfb128", "cfb128"),
     ("ACVP-AES-CTR", ""): ("aes_ctr", "ctr"),
     ("ACVP-AES-ECB", ""): ("aes_ecb", "ecb"),
+    ("ACVP-AES-GCM", ""): ("aes_gcm", "gcm"),
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
     ("ACVP-AES-OFB", ""): ("aes_ofb", "ofb"),
     ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),

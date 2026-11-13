@@ -9,6 +9,9 @@ use std::fs;
 use std::time::Duration;
 
 use serde::Deserialize;
+use serde_json::json;
+
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex};
 
 use cryptotest_commands::aes_gcm_commands::{
     AesGcmSubcommand, CryptotestAesGcmData, CryptotestAesGcmOperation, CryptotestAesGcmOutput,
@@ -33,20 +36,37 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     aes_gcm_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct AesGcmTestCase {
+    #[serde(default)]
+    vendor: String,
+    #[serde(default)]
+    test_case_id: u64,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     mode: String,
     operation: String,
     key_len: usize,
     key: Vec<u8>,
     aad: Vec<u8>,
     iv: Vec<u8>,
+    #[serde(default)]
     tag: Vec<u8>,
+    /// Length in bytes of the tag an ACVP test asks for.
+    #[serde(default)]
+    tag_len: usize,
+    #[serde(default)]
     ciphertext: Vec<u8>,
+    #[serde(default)]
     plaintext: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in an ACVP prompt.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
 const AES_GCM_CMD_MAX_MSG_BYTES: usize = 8192;
@@ -57,6 +77,7 @@ fn run_aes_gcm_testcase(
     test_case: &AesGcmTestCase,
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     assert_eq!(test_case.mode.as_str(), "gcm");
     CryptotestCommand::AesGcm.send(spi_console)?;
@@ -112,11 +133,34 @@ fn run_aes_gcm_testcase(
         aad: ArrayVec::try_from(test_case.aad.as_slice()).unwrap(),
         aad_length: test_case.aad.len(),
         tag: ArrayVec::try_from(test_case.tag.as_slice()).unwrap(),
-        tag_length: test_case.tag.len(),
+        tag_length: if test_case.tag_len != 0 {
+            test_case.tag_len
+        } else {
+            test_case.tag.len()
+        },
     }
     .send(spi_console)?;
 
     let aes_gcm_output = CryptotestAesGcmOutput::recv(spi_console, opts.timeout, false, false)?;
+
+    if test_case.vendor == "acvp" {
+        let output = &aes_gcm_output.output[0..input_length];
+        let mut fields = Fields::new();
+        if test_case.operation == "encrypt" {
+            fields.insert("ct".to_string(), json!(hex(output)));
+            let tag = &aes_gcm_output.tag[0..test_case.tag_len];
+            fields.insert("tag".to_string(), json!(hex(tag)));
+        } else if aes_gcm_output.tag_valid {
+            fields.insert("pt".to_string(), json!(hex(output)));
+        } else {
+            fields.insert("testPassed".to_string(), json!(false));
+        }
+        responses.add(&test_case.acvp, test_case.test_case_id, fields);
+    }
+
+    let Some(expected_tag_check) = expected_tag_check else {
+        return Ok(());
+    };
 
     // Check if the tag comparison matches.
     assert_eq!(aes_gcm_output.tag_valid, expected_tag_check);
@@ -145,7 +189,8 @@ fn test_aes_gcm(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let test_vector_files = &opts.aes_gcm_json;
+    let mut responses = ResponseBuilder::new();
+    let test_vector_files = opts.acvp.vectors(&opts.aes_gcm_json);
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let aes_gcm_tests: Vec<AesGcmTestCase> = serde_json::from_str(&raw_json)?;
@@ -153,10 +198,10 @@ fn test_aes_gcm(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for aes_gcm_test in &aes_gcm_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_aes_gcm_testcase(aes_gcm_test, opts, &spi_console_device)?;
+            run_aes_gcm_testcase(aes_gcm_test, opts, &spi_console_device, &mut responses)?;
         }
     }
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

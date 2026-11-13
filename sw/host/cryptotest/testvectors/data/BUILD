@@ -617,6 +617,29 @@ run_binary(
 ]
 
 run_binary(
+    name = "acvp_aes_gcm_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json",
+        "@acvp_vectors//:aes-gcm/expectedResults.json",
+        "@acvp_vectors//:aes-gcm/prompt.json",
+    ],
+    outs = [":acvp_aes_gcm.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:aes-gcm/prompt.json)",
+        "--dst",
+        "$(location :acvp_aes_gcm.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:aes-gcm/expectedResults.json)",
+        "--test-type",
+        "gcm",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_gcm_parser",
+)
+
+run_binary(
     name = "acvp_aes_kwp_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:aes_kwp_schema.json",

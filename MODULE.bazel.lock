@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "NK0E2No3HRQ7KIEiankn7dgmTnAOEta2/ketEPREsOk=",
+        "bzlTransitiveDigest": "V5mxH6M+lt68xvMCNfjUhtkAO8E5nChIQbTZIkSwz08=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -404,6 +404,22 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-ECB-1.0/b09c94a18cbdd2bc5c050686e4bbe50bc1a01fc490e009fbe2e58743a9a60500/prompt.json"
             }
           },
+          "acvp_vectors_aes-gcm_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "cda8343aa4c4addc5b047cc0e6f41b425b494705ba6d35aba2fd7b99dabd2fb6",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-GCM-1.0/27bf37c4d3d2d9ea0ae80de3a861ba77d299ef6d9497bb298d84d2c6174402de/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-gcm_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "3a0b2104b8cddbf1209b2520455dd2dd62e45a6dda1df1800f5722569625824a",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-GCM-1.0/27bf37c4d3d2d9ea0ae80de3a861ba77d299ef6d9497bb298d84d2c6174402de/prompt.json"
+            }
+          },
           "acvp_vectors_aes-ofb_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -448,6 +464,8 @@
                 "aes-ctr/prompt.json": "acvp_vectors_aes-ctr_prompt.json",
                 "aes-ecb/expectedResults.json": "acvp_vectors_aes-ecb_expectedResults.json",
                 "aes-ecb/prompt.json": "acvp_vectors_aes-ecb_prompt.json",
+                "aes-gcm/expectedResults.json": "acvp_vectors_aes-gcm_expectedResults.json",
+                "aes-gcm/prompt.json": "acvp_vectors_aes-gcm_prompt.json",
                 "aes-ofb/expectedResults.json": "acvp_vectors_aes-ofb_expectedResults.json",
                 "aes-ofb/prompt.json": "acvp_vectors_aes-ofb_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",

@@ -42,6 +42,14 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "9b610aa8bde02f436850aa76fef24f9f4cc8afda8cb8935dcd82b5274c9067a6",
         },
     },
+    "aes-gcm": {
+        "algorithm": "ACVP-AES-GCM-1.0",
+        "registration_sha256": "27bf37c4d3d2d9ea0ae80de3a861ba77d299ef6d9497bb298d84d2c6174402de",
+        "files": {
+            "expectedResults.json": "cda8343aa4c4addc5b047cc0e6f41b425b494705ba6d35aba2fd7b99dabd2fb6",
+            "prompt.json": "3a0b2104b8cddbf1209b2520455dd2dd62e45a6dda1df1800f5722569625824a",
+        },
+    },
     "aes-ofb": {
         "algorithm": "ACVP-AES-OFB-1.0",
         "registration_sha256": "81f0c7b6bc03b87b77b046e415c0b31fee5b893e6ec1782d9dac72539df33d88",
