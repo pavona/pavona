@@ -241,6 +241,25 @@ cc_library(
 )
 
 cc_library(
+    name = "kdf_kmac",
+    srcs = ["kdf_kmac.c"],
+    hdrs = ["kdf_kmac.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:kmac_kdf",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:kdf_kmac_commands",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
@@ -368,12 +387,14 @@ FIRMWARE_DEPS = [
     ":hkdf",
     ":hmac",
     ":kdf_hmac",
+    ":kdf_kmac",
     ":kmac",
     ":rsa",
     ":sphincsplus",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/crypto/drivers:kmac",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",

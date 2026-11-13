@@ -15,25 +15,19 @@ filegroup(
     srcs = glob(["**/*.md"]),
 )
 
-AES_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
-    for alg in ("cbc", "cfb128", "ecb", "ofb")
-    for kat_type in ("varkey", "gfsbox", "vartxt", "keysbox")
-    for key_len in ("128", "192", "256")
+[
+    cryptotest(
+        name = "aes_{}_kat".format(mode),
+        extra_exec_envs = {
+            "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+        },
+        slow_test = True,
+        test_args = "--aes-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_aes_{}_json)\"".format(mode),
+        test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
+        test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_aes_{}_json".format(mode)],
+    )
+    for mode in ("cbc", "cfb128", "ctr", "ecb", "ofb")
 ]
-
-AES_TESTVECTOR_ARGS = " ".join([
-    "--aes-json=\"$(rootpath {})\"".format(target)
-    for target in AES_TESTVECTOR_TARGETS
-])
-
-cryptotest(
-    name = "aes_kat",
-    slow_test = True,
-    test_args = AES_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
-    test_vectors = AES_TESTVECTOR_TARGETS,
-)
 
 AES_GCM_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(operation, key_len)
@@ -559,6 +553,16 @@ cryptotest(
     test_vectors = KDF_HMAC_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "kdf_kmac_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    test_args = "--kdf-kmac-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_kdf_kmac_json)\"",
+    test_harness = "//sw/host/tests/crypto/kdf_kmac_kat:harness",
+    test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_kdf_kmac_json"],
+)
+
 KMAC_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_kmac_{}.json".format(config)
     for config in [
@@ -630,9 +634,13 @@ cryptotest(
 test_suite(
     name = "crypto_kat_test_suite",
     tests = [
+        ":aes_cbc_kat",
+        ":aes_cfb128_kat",
+        ":aes_ctr_kat",
+        ":aes_ecb_kat",
         ":aes_gcm_kat",
-        ":aes_kat",
         ":aes_kwp_kat",
+        ":aes_ofb_kat",
         ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
@@ -643,6 +651,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kdf_hmac_kat",
+        ":kdf_kmac_kat",
         ":kmac_kat",
         ":mldsa_kat",
         ":mlkem_kat",

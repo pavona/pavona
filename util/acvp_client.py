@@ -30,12 +30,18 @@ CRYPTOTEST = "sw/device/tests/crypto/cryptotest"
 PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 
 VECTOR_SETS = {
+    ("ACVP-AES-CBC", ""): ("aes_cbc", "cbc"),
+    ("ACVP-AES-CFB128", ""): ("aes_cfb128", "cfb128"),
+    ("ACVP-AES-CTR", ""): ("aes_ctr", "ctr"),
+    ("ACVP-AES-ECB", ""): ("aes_ecb", "ecb"),
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
+    ("ACVP-AES-OFB", ""): ("aes_ofb", "ofb"),
     ("HMAC-SHA2-256", ""): ("hmac_sha256", "hmac"),
     ("KDA", "HKDF"): ("hkdf", "hkdf"),
     ("HMAC-SHA2-384", ""): ("hmac_sha384", "hmac"),
     ("HMAC-SHA2-512", ""): ("hmac_sha512", "hmac"),
     ("KDF", ""): ("kdf_hmac", "kdf_hmac"),
+    ("KDF", "KMAC"): ("kdf_kmac", "kdf_kmac"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
@@ -54,6 +60,11 @@ VECTOR_SETS = {
 
 # Harnesses whose parser and schema are named differently.
 PARSER_NAMES = {
+    "aes_cbc": "aes_block",
+    "aes_cfb128": "aes_block",
+    "aes_ctr": "aes_block",
+    "aes_ecb": "aes_block",
+    "aes_ofb": "aes_block",
     "hmac_sha256": "hmac",
     "hmac_sha384": "hmac",
     "hmac_sha512": "hmac",
@@ -130,7 +141,7 @@ def convert(prompt, answers, out_dir, skip_unsupported):
     # Only the AES-KWP, hash, HKDF, HMAC, KDF and ML-DSA parsers take
     # --skip-unsupported.
     if skip_unsupported and parser in ("aes_kwp", "hash", "hkdf", "hmac",
-                                       "kdf_hmac", "mldsa"):
+                                       "kdf_hmac", "kdf_kmac", "mldsa"):
         args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None

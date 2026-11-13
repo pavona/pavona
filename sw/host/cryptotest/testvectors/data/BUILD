@@ -505,6 +505,29 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_hmac_parser",
 )
 
+run_binary(
+    name = "acvp_kdf_kmac_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json",
+        "@acvp_vectors//:kdf-kmac/expectedResults.json",
+        "@acvp_vectors//:kdf-kmac/prompt.json",
+    ],
+    outs = [":acvp_kdf_kmac.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:kdf-kmac/prompt.json)",
+        "--dst",
+        "$(location :acvp_kdf_kmac.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:kdf-kmac/expectedResults.json)",
+        "--test-type",
+        "kdf_kmac",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_kmac_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
@@ -558,6 +581,38 @@ run_binary(
         ("hmac_sha3_256_test.json", "sha3-256", "wycheproof_hmac_sha3_256"),
         ("hmac_sha3_384_test.json", "sha3-384", "wycheproof_hmac_sha3_384"),
         ("hmac_sha3_512_test.json", "sha3-512", "wycheproof_hmac_sha3_512"),
+    ]
+]
+
+[
+    run_binary(
+        name = "acvp_aes_{}_json".format(mode),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
+            "@acvp_vectors//:aes-{}/expectedResults.json".format(mode),
+            "@acvp_vectors//:aes-{}/prompt.json".format(mode),
+        ],
+        outs = [":acvp_aes_{}.json".format(mode)],
+        args = [
+            "--src",
+            "$(location @acvp_vectors//:aes-{}/prompt.json)".format(mode),
+            "--dst",
+            "$(location :acvp_aes_{}.json)".format(mode),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",
+            "--expected",
+            "$(location @acvp_vectors//:aes-{}/expectedResults.json)".format(mode),
+            "--test-type",
+            mode,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_block_parser",
+    )
+    for mode in [
+        "cbc",
+        "cfb128",
+        "ctr",
+        "ecb",
+        "ofb",
     ]
 ]
 
@@ -1034,48 +1089,3 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:hjson_kmac_parser",
 )
-
-################################################################################
-# NIST CAVP AES KAT
-################################################################################
-
-# NIST provides the AES KAT testvectors as RSP files which are named as
-# "{aes_mode}{test_type}{size}.rsp" (e.g. CBCGFSbox128.rsp)
-# The corresponding conventional cryptotest name uses snakecase:
-# "{aes_mode}_{test_type}_{size}" (e.g. cbc_gfsbox_128)
-NIST_CAVP_AES_KAT_TESTVECTORS = [
-    # (testname, rsp_filename, mode, size)
-    (
-        "{}_{}_{}".format(
-            mode.lower(),
-            test.lower(),
-            size.lower(),
-        ),
-        "{}{}{}.rsp".format(mode, test, size),
-        mode.lower(),
-        size.lower(),
-    )
-    for mode in ("CBC", "CFB128", "ECB", "OFB")
-    for test in ("GFSbox", "KeySbox", "VarKey", "VarTxt")
-    for size in ("128", "192", "256")
-]
-
-[
-    run_binary(
-        name = "nist_cavp_aes_kat_{}_json".format(testname),
-        srcs = [
-            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
-            "@nist_cavp_aes_kat//:{}".format(rsp_filename),
-        ],
-        outs = ["nist_cavp_aes_kat_{}.json".format(testname)],
-        args = [
-            "$(location @nist_cavp_aes_kat//:{})".format(rsp_filename),  # src
-            "$(location :nist_cavp_aes_kat_{}.json)".format(testname),  # dst
-            mode,
-            size,
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",  # schema
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_aes_parser",
-    )
-    for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
-]

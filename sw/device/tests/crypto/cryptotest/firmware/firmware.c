@@ -5,6 +5,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -25,6 +26,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/hkdf_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kdf_hmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/kdf_kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/mldsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/mlkem_commands.h"
@@ -43,6 +45,7 @@
 #include "hkdf.h"
 #include "hmac.h"
 #include "kdf_hmac.h"
+#include "kdf_kmac.h"
 #include "kmac.h"
 #include "mldsa.h"
 #include "mlkem.h"
@@ -51,10 +54,12 @@
 
 // Scratch buffers for crypto tests.
 static union {
+  aes_test_scratch_t aes;
   hash_test_scratch_t hash;
   hkdf_test_scratch_t hkdf;
   hmac_test_scratch_t hmac;
   kdf_hmac_test_scratch_t kdf_hmac;
+  kdf_kmac_test_scratch_t kdf_kmac;
   mlkem_test_scratch_t mlkem;
   mldsa_test_scratch_t mldsa;
   sphincsplus_test_scratch_t sphincsplus;
@@ -70,7 +75,7 @@ status_t process_cmd(ujson_t *uj) {
     TRY(ujson_deserialize_cryptotest_cmd_t(uj, &cmd));
     switch (cmd) {
       case kCryptotestCommandAes:
-        RESP_ERR(uj, handle_aes(uj));
+        RESP_ERR(uj, handle_aes(uj, &cryptotest_scratch.aes));
         break;
       case kCryptotestCommandAesGcm:
         RESP_ERR(uj, handle_aes_gcm(uj));
@@ -102,6 +107,9 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandKdfHmac:
         RESP_ERR(uj, handle_kdf_hmac(uj, &cryptotest_scratch.kdf_hmac));
         break;
+      case kCryptotestCommandKdfKmac:
+        RESP_ERR(uj, handle_kdf_kmac(uj, &cryptotest_scratch.kdf_kmac));
+        break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));
         break;
@@ -131,6 +139,7 @@ status_t process_cmd(ujson_t *uj) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
+  CHECK_STATUS_OK(kmac_hwip_default_configure());
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }
