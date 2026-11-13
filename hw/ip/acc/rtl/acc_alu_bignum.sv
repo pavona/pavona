@@ -1135,7 +1135,6 @@ generate
   // MSG INTERFACE
   sha3_pkg::sha3_mode_e           kmac_cfg_sha3_mode;
   sha3_pkg::keccak_strength_e     kmac_cfg_keccak_strength;
-  logic [10:0]                    kmac_cfg_unused_msg_len;
   logic [14:0]                    kmac_cfg_msg_len;
   logic [11:0]                    kmac_cfg_msg_len_words;
   logic [2:0]                     kmac_cfg_msg_len_bytes;
