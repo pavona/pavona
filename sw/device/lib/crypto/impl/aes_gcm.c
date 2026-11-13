@@ -598,6 +598,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
   gcm_context_restore(ctx, &internal_ctx);
+  if (internal_ctx.is_encrypt != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
@@ -651,6 +654,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   // Restore the AES-GCM context object and load the key if needed.
   aes_gcm_context_t internal_ctx;
   gcm_context_restore(ctx, &internal_ctx);
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
