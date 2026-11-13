@@ -1133,13 +1133,13 @@ module aes_core
   `ASSERT(AesSecCmDataRegLocalEscDataOut, $changed(data_out_q) && alert_fatal_o &&
       ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
       ($past(data_out_q) != $past(state_done_transposed, 2)) &&
-      ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&
-      ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2)))
+      ($past(data_out_q) != ($past(state_done_transposed, 2) ^ $past(iv_q, 2))) &&
+      ($past(data_out_q) != ($past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2))))
 
   `ASSERT(AesSecCmDataRegLocalEscIv, $changed(iv_q) && alert_fatal_o &&
       ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
       ($past(iv_q) != $past(state_done_transposed, 2)) &&
-      ($past(iv_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&
-      ($past(iv_q) != $past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2)))
+      ($past(iv_q) != ($past(state_done_transposed, 2) ^ $past(iv_q, 2))) &&
+      ($past(iv_q) != ($past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2))))
 
 endmodule
