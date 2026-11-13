@@ -32,24 +32,6 @@ py_test(
 )
 
 py_binary(
-    name = "nist_aes_parser",
-    srcs = ["nist_aes_parser.py"],
-    deps = [
-        ":cryptotest_util",
-        requirement("jsonschema"),
-    ],
-)
-
-py_binary(
-    name = "nist_cavp_aes_gcm_parser",
-    srcs = ["nist_cavp_aes_gcm_parser.py"],
-    deps = [
-        ":cryptotest_util",
-        requirement("jsonschema"),
-    ],
-)
-
-py_binary(
     name = "nist_cavp_drbg_parser",
     srcs = ["nist_cavp_drbg_parser.py"],
     deps = [
@@ -231,6 +213,24 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_aes_block_parser",
+    srcs = ["nist_acvp_aes_block_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "nist_acvp_aes_gcm_parser",
+    srcs = ["nist_acvp_aes_gcm_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_acvp_aes_kwp_parser",
     srcs = ["nist_acvp_aes_kwp_parser.py"],
     deps = [
@@ -269,6 +269,15 @@ py_binary(
 py_binary(
     name = "nist_acvp_kdf_hmac_parser",
     srcs = ["nist_acvp_kdf_hmac_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "nist_acvp_kdf_kmac_parser",
+    srcs = ["nist_acvp_kdf_kmac_parser.py"],
     deps = [
         ":acvp_util",
         requirement("jsonschema"),

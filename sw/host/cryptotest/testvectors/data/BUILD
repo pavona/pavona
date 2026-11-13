@@ -505,6 +505,29 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_hmac_parser",
 )
 
+run_binary(
+    name = "acvp_kdf_kmac_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json",
+        "@acvp_vectors//:kdf-kmac/expectedResults.json",
+        "@acvp_vectors//:kdf-kmac/prompt.json",
+    ],
+    outs = [":acvp_kdf_kmac.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:kdf-kmac/prompt.json)",
+        "--dst",
+        "$(location :acvp_kdf_kmac.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:kdf-kmac/expectedResults.json)",
+        "--test-type",
+        "kdf_kmac",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_kmac_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
@@ -560,6 +583,61 @@ run_binary(
         ("hmac_sha3_512_test.json", "sha3-512", "wycheproof_hmac_sha3_512"),
     ]
 ]
+
+[
+    run_binary(
+        name = "acvp_aes_{}_json".format(mode),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
+            "@acvp_vectors//:aes-{}/expectedResults.json".format(mode),
+            "@acvp_vectors//:aes-{}/prompt.json".format(mode),
+        ],
+        outs = [":acvp_aes_{}.json".format(mode)],
+        args = [
+            "--src",
+            "$(location @acvp_vectors//:aes-{}/prompt.json)".format(mode),
+            "--dst",
+            "$(location :acvp_aes_{}.json)".format(mode),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",
+            "--expected",
+            "$(location @acvp_vectors//:aes-{}/expectedResults.json)".format(mode),
+            "--test-type",
+            mode,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_block_parser",
+    )
+    for mode in [
+        "cbc",
+        "cfb128",
+        "ctr",
+        "ecb",
+        "ofb",
+    ]
+]
+
+run_binary(
+    name = "acvp_aes_gcm_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json",
+        "@acvp_vectors//:aes-gcm/expectedResults.json",
+        "@acvp_vectors//:aes-gcm/prompt.json",
+    ],
+    outs = [":acvp_aes_gcm.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:aes-gcm/prompt.json)",
+        "--dst",
+        "$(location :acvp_aes_gcm.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:aes-gcm/expectedResults.json)",
+        "--test-type",
+        "gcm",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_aes_gcm_parser",
+)
 
 run_binary(
     name = "acvp_aes_kwp_json",
@@ -738,48 +816,6 @@ run_binary(
         ("87", "verify", "mldsa_87_verify_test.json"),
         ("87", "sign_seed", "mldsa_87_sign_seed_test.json"),
         ("87", "sign_noseed", "mldsa_87_sign_noseed_test.json"),
-    ]
-]
-
-[
-    run_binary(
-        name = "nist_cavp_aes_gcm_{}_{}_json".format(
-            ext_operation.lower(),
-            key_len,
-        ),
-        srcs = [
-            "@nist_cavp_aes_gcm//:gcm{}{}.rsp".format(ext_operation, key_len),
-            "//sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json",
-        ],
-        outs = [":nist_gcm_{}_{}.json".format(
-            operation.lower(),
-            key_len,
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_aes_gcm//:gcm{}{}.rsp)".format(ext_operation, key_len),
-            "--dst",
-            "$(location :nist_gcm_{}_{}.json)".format(
-                operation.lower(),
-                key_len,
-            ),
-            "--operation",
-            "{}".format(operation),
-            "--key_len",
-            "{}".format(key_len),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json)",
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_aes_gcm_parser",
-    )
-    for operation, ext_operation in [
-        ("Decrypt", "Decrypt"),
-        ("Encrypt", "EncryptExtIV"),
-    ]
-    for key_len in [
-        "128",
-        "192",
-        "256",
     ]
 ]
 
@@ -1034,48 +1070,3 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:hjson_kmac_parser",
 )
-
-################################################################################
-# NIST CAVP AES KAT
-################################################################################
-
-# NIST provides the AES KAT testvectors as RSP files which are named as
-# "{aes_mode}{test_type}{size}.rsp" (e.g. CBCGFSbox128.rsp)
-# The corresponding conventional cryptotest name uses snakecase:
-# "{aes_mode}_{test_type}_{size}" (e.g. cbc_gfsbox_128)
-NIST_CAVP_AES_KAT_TESTVECTORS = [
-    # (testname, rsp_filename, mode, size)
-    (
-        "{}_{}_{}".format(
-            mode.lower(),
-            test.lower(),
-            size.lower(),
-        ),
-        "{}{}{}.rsp".format(mode, test, size),
-        mode.lower(),
-        size.lower(),
-    )
-    for mode in ("CBC", "CFB128", "ECB", "OFB")
-    for test in ("GFSbox", "KeySbox", "VarKey", "VarTxt")
-    for size in ("128", "192", "256")
-]
-
-[
-    run_binary(
-        name = "nist_cavp_aes_kat_{}_json".format(testname),
-        srcs = [
-            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
-            "@nist_cavp_aes_kat//:{}".format(rsp_filename),
-        ],
-        outs = ["nist_cavp_aes_kat_{}.json".format(testname)],
-        args = [
-            "$(location @nist_cavp_aes_kat//:{})".format(rsp_filename),  # src
-            "$(location :nist_cavp_aes_kat_{}.json)".format(testname),  # dst
-            mode,
-            size,
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",  # schema
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_aes_parser",
-    )
-    for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
-]

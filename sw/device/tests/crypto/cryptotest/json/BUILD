@@ -23,6 +23,7 @@ cc_library(
         ":hkdf_commands",
         ":hmac_commands",
         ":kdf_hmac_commands",
+        ":kdf_kmac_commands",
         ":kmac_commands",
         ":mldsa_commands",
         ":mlkem_commands",
@@ -91,6 +92,13 @@ cc_library(
     name = "kdf_hmac_commands",
     srcs = ["kdf_hmac_commands.c"],
     hdrs = ["kdf_hmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "kdf_kmac_commands",
+    srcs = ["kdf_kmac_commands.c"],
+    hdrs = ["kdf_kmac_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

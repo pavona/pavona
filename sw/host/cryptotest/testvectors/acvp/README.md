@@ -27,10 +27,14 @@ The supported algorithms below mark those with deferred test cases.
 
 ## Supported algorithms
 
+- [AES-CBC, AES-CFB128, AES-ECB, AES-OFB](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, MCT.
+- [AES-CTR](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, counter tests.
+- [AES-GCM](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, external IV generation.
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
 - [KDA HKDF](https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-kdf-hkdf.html) with SHA2-256, SHA2-384 and SHA2-512: AFT, VAL, revision Sp800-56Cr2.
 - [KDF](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with HMAC-SHA2-256, HMAC-SHA2-384 and HMAC-SHA2-512: counter and feedback mode, AFT (deferred), revision 1.0.
+- [KDF KMAC](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with KMAC-128 and KMAC-256: AFT, revision Sp800-108r1.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
 - [SHA2-256, SHA2-384, SHA2-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha.html): AFT, MCT.
@@ -38,6 +42,28 @@ The supported algorithms below mark those with deferred test cases.
 - [SHAKE-128, SHAKE-256](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, revision FIPS202.
 
 ## Unsupported capabilities
+
+### AES-CBC, AES-CFB128, AES-ECB, AES-OFB
+
+- AES-CFB1 and AES-CFB8.
+  The cryptolib implements CFB with 128-bit segments only.
+
+The device runs the whole Monte Carlo test.
+
+### AES-CTR
+
+- Payloads shorter than one block.
+  The cryptolib encrypts whole 16-byte blocks only.
+- RFC 3686 conformance tests.
+
+### AES-GCM
+
+- IV lengths other than 96 and 128 bits, and tag lengths other than 32, 64, 96 and 128 bits.
+  The cryptolib does not support them.
+- Payloads and AAD that are not a whole number of bytes.
+  The cryptolib processes bytes.
+- Internal IV generation.
+  The cryptolib takes the IV from the caller.
 
 ### AES-KWP
 
@@ -84,6 +110,16 @@ The two revisions derive keys the same way.
   The cryptolib derives bytes.
 
 The parser chooses the fixed data.
+
+### KDF KMAC (SP 800-108r1)
+
+- Key derivation keys other than 256, 384 and 512 bits.
+  The cryptolib supports keys of 128, 192, 256, 384 and 512 bits for KMAC-128, and of 256, 384 and 512 bits for KMAC-256.
+  A registration has one list of key lengths, which applies to both KMAC-128 and KMAC-256.
+- Labels longer than 32 bytes.
+  The KMAC hardware does not support them.
+- Derived key lengths that are not a multiple of 32 bits.
+  The cryptolib derives whole 32-bit words.
 
 ### ML-DSA
 
@@ -160,3 +196,32 @@ The ACC backends are built into the firmware by default; `--no-acc-pqc` tests th
 
 The parser rejects any test case this cryptolib cannot answer.
 Pass `--skip-unsupported` to tolerate and skip unsupported vectors, e.g., when testing against NIST's samples which cover every capability.
+
+## Generating test vectors
+
+NIST's sample vector sets are generated from sample registrations, which sometimes cover capabilities the cryptolib does not implement.
+In such cases, it can make sense to generate our own test vectors that match the capabilities of the cryptolib exactly.
+This can be done with the [registration files](registration/) in this repository and NIST's [ACVP-Server](https://github.com/usnistgov/ACVP-Server).
+
+To generate test vectors, we provide a [genval container](/util/acvp/genval/Dockerfile).
+It can be built with:
+
+```sh
+docker build -t acvp-genval util/acvp/genval
+```
+
+It provides two main functions:
+
+- `genval check` checks a registration file.
+- `genval vectors` generates a vector set from a registration file.
+
+For example, to generate test vectors for a registration, run:
+
+```sh
+docker run --rm --user $(id -u):$(id -g) -v $PWD:/work acvp-genval \
+    vectors /work/sw/host/cryptotest/testvectors/acvp/registration/<registration>.json /work/acvp-vectors
+```
+
+It writes the set to `acvp-vectors/<version>/<algorithm>/<registration hash>/`, where the hash is the SHA-256 of the registration file.
+
+We host the generated test vectors in a [public bucket](https://storage.googleapis.com/pavona-test-vectors).
