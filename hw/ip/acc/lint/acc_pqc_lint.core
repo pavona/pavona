@@ -1,0 +1,37 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:acc_pqc_lint:0.1"
+description: "Lint target for ACC with PQC extensions enabled"
+
+filesets:
+  files_acc:
+    depend:
+      - lowrisc:ip:acc
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - files_acc
+    toplevel: acc
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-GAccPQCEn=1"
+      slang:
+        slang_options:
+          - "-GAccPQCEn=1"
