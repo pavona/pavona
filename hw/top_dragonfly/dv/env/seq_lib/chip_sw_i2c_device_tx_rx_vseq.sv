@@ -43,6 +43,13 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     byte_count inside {[30 : 60]};
   }
 
+  // The device only matches on an address whose mask is non zero, so keep both masks non zero
+  // once the address has been folded into them.
+  constraint i2c_device_mask_c {
+    (i2c_device_address_0 | i2c_device_mask_0) != '0;
+    (i2c_device_address_1 | i2c_device_mask_1) != '0;
+  }
+
   /////////////
   // METHODS //
   /////////////
@@ -56,10 +63,11 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     bit[7:0] i2c_clock_period_nanos_arr[4] = {<<byte{i2c_clock_period_nanos}};
     bit[7:0] i2c_idx_arr[1];
 
+    // The device compares the received address against the register without masking it, so an
+    // address bit outside the mask can never match. Fold the address into the mask.
     bit[7:0] i2c_device_address_0_arr[1]  = {i2c_device_address_0};
-    bit[7:0] i2c_device_address_1_arr[1] = {i2c_device_address_1};
-    // if an address bit is 1, the corresponding mask bit must also be 1
     bit[7:0] i2c_device_mask_0_arr[1] = {i2c_device_address_0 | i2c_device_mask_0};
+    bit[7:0] i2c_device_address_1_arr[1]  = {i2c_device_address_1};
     bit[7:0] i2c_device_mask_1_arr[1] = {i2c_device_address_1 | i2c_device_mask_1};
     bit[7:0] byte_count_arr[1] = {byte_count};
 

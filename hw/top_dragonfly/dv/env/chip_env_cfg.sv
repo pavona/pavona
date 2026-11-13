@@ -259,6 +259,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Set the 'correct' IDCODE register value to the JTAG DTM RAL.
     m_jtag_agent_cfg.jtag_dtm_ral.idcode.set_reset(RV_DM_JTAG_IDCODE);
     m_jtag_riscv_agent_cfg.m_jtag_agent_cfg = m_jtag_agent_cfg;
+    debugger.set_cfg(m_jtag_agent_cfg);
 
     // Create the DMI register block. Because use_jtag_dmi was false at the start of the function,
     // we know it is currently null.
@@ -300,6 +301,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     super.post_build_ral_settings(ral);
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
+
+    // The RV_DM debug memory is implemented inside dm_top and accepts both read and fetch accesses
+    // through the same path. Match the RV_DM block-level RAL configuration for chip DV paths that
+    // work directly with the rv_dm_mem sub-block.
+    chip_ral.rv_dm_mem.set_allows_csr_fetch(1'b1);
 
     chip_ral.rv_dm_mem.get_registers(regs);
     foreach (regs[i]) begin

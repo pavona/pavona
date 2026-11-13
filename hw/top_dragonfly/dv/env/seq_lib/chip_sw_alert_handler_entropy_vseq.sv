@@ -19,6 +19,16 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
+    // This test injects a fault on purpose. The fatal alert it raises stays asserted
+    // until reset, and some blocks raise their own alerts once escalation starts, so the
+    // sweep at the end of cip_base_vseq would call every one of them unexpected.
+    expect_fatal_alerts = 1'b1;
+
+    // That same path re-initializes the chip once the body task exits, which resets it while
+    // accesses are still in flight. pre_start has already done the initial init, so clearing
+    // the bit here only stops the one at the end.
+    do_dut_init = 1'b0;
+
     fork begin : isolation_fork
       int num_alerts = NUM_ALERTS;
       foreach (LIST_OF_ALERTS[i]) begin

@@ -30,6 +30,16 @@ class chip_sw_fault_base_vseq extends chip_sw_base_vseq;
 
     // This sequence will trigger a fatal sec_cm failure.
     super.body();
+
+    // This test injects a fault on purpose. The fatal alert it raises stays asserted
+    // until reset, and some blocks raise their own alerts once escalation starts, so the
+    // sweep at the end of cip_base_vseq would call every one of them unexpected.
+    expect_fatal_alerts = 1'b1;
+
+    // That same path re-initializes the chip once the body task exits, which resets it while
+    // accesses are still in flight. pre_start has already done the initial init, so clearing
+    // the bit here only stops the one at the end.
+    do_dut_init = 1'b0;
     set_fault_parameters();
     `uvm_info(`gfn, $sformatf(
               "Will inject fault for %s, expecting alert %0d", if_path, alert_id),

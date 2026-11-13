@@ -7,11 +7,18 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  virtual task dut_init(string reset_kind = "HARD");
-    // We want to control the SoC external reset request signal directly.
-    cfg.monitor_internal_resets = 1'b0;
-    super.dut_init();
-  endtask
+  // Duration of the external reset request. The filter in `soc_proxy` swallows anything shorter
+  // than five AON clock cycles, but the floor here is higher than that. The power manager drives
+  // the reset requests it reports combinationally from the live request, while the reset cause
+  // beside them is registered, so the pair is only true together for as long as the request
+  // outlasts the fast FSM reaching `FastPwrStateResetPrep`. Checks on that pair sample on the AON
+  // clock, and a request that only just clears the filter holds the pair together for less than
+  // one of its periods, which can fall between two edges and never be seen.
+  rand int unsigned rst_req_clks;
+
+  constraint rst_req_clks_c {
+    rst_req_clks inside {[8:18]};
+  }
 
   virtual task body();
     super.body();
@@ -32,28 +39,28 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
       end
     join_none
 
+    // Trigger the external reset request in the background
+    fork
+      begin
+        `uvm_info(`gfn, $sformatf("Applying SoC reset request for %0d cycle(s)", rst_req_clks),
+                  UVM_LOW)
+        apply_soc_reset_request(rst_req_clks);
+      end
+    join_none
+
     // Ensure that the desired reset domains get cycled now.
     `DV_SPINWAIT_EXIT(
-      // Wait threads: wait until all desired reset domains have been cycled.
-      fork
-        begin
-          // Trigger the external reset request; note that because of synchronization delays and
-          // 4-cycle filtering (on both assertion and deassertion) we need to allow circa 12
-          // additional cycles before the 32-cycle timeout below.
-          int unsigned clks = $urandom_range(18, 5);
-          `uvm_info(`gfn, $sformatf("Applying SoC reset request for %0d cycle(s)", clks),
-                    UVM_MEDIUM)
-          apply_soc_reset_request(clks);
-        end
-        begin
-          cfg.chip_vif.cpu_clk_rst_if.wait_for_reset();
-          `uvm_info(`gfn, $sformatf("CPU reset cycled."), UVM_LOW)
-        end
-      join
+      // Wait thread: wait until the CPU reset domain has been cycled.
+      begin
+        cfg.chip_vif.cpu_clk_rst_if.wait_for_reset();
+        `uvm_info(`gfn, "CPU reset cycled.", UVM_LOW)
+      end
       ,
-      // Exit thread: allow at most 20 AON clock cycles until the above domains must reset, but it
-      // may take 12 cycles for the reset to be seen within the DUT; see above.
-      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(32);
+      // Exit thread: the power manager holds the chip in reset until the external request has
+      // been withdrawn and acknowledged, so the budget has to cover the request itself, the
+      // filter and synchronizers on both of its edges, and the traversal of the fast FSM from
+      // FastPwrStateActive back round to FastPwrStateReleaseLcRst
+      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(rst_req_clks + 64);
       `dv_error("Resets did not complete within required time!")
     )
 

@@ -18,7 +18,6 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -38,8 +37,10 @@
 #include "hw/top/i2c_regs.h"
 #include "hw/top/kmac_regs.h"
 #include "hw/top/spi_host_regs.h"
+#if defined(OPENTITAN_IS_EGRET)
+#include "sw/device/lib/dif/dif_usbdev.h"
 #include "hw/top/usbdev_regs.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
+#endif
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -48,15 +49,21 @@ static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
 static dif_spi_host_t spi_host0;
+#if defined(OPENTITAN_IS_EGRET)
 static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
+#endif
 static dif_aes_t aes;
 static dif_hmac_t hmac;
 static dif_kmac_t kmac;
 static dif_acc_t acc;
 static dif_rstmgr_t rstmgr;
 
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t kPlicTarget = kTopEgretPlicTargetIbex0;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t kPlicTarget = kTopDragonflyPlicTargetIbex0;
+#endif
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
@@ -69,68 +76,78 @@ static plic_isr_ctx_t plic_ctx = {
  * So we allow class A interrupt to fire after the real timeout interrupt is
  * triggered.
  */
+#if defined(OPENTITAN_IS_EGRET)
 static alert_handler_isr_ctx_t alert_handler_ctx = {
     .alert_handler = &alert_handler,
     .plic_alert_handler_start_irq_id = kTopEgretPlicIrqIdAlertHandlerClassa,
     .expected_irq = kDifAlertHandlerIrqClassb,
     .is_only_irq = false,
 };
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static alert_handler_isr_ctx_t alert_handler_ctx = {
+    .alert_handler = &alert_handler,
+    .plic_alert_handler_start_irq_id = kTopDragonflyPlicIrqIdAlertHandlerClassa,
+    .expected_irq = kDifAlertHandlerIrqClassb,
+    .is_only_irq = false,
+};
+#endif
 
 /**
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EGRET_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 
-  base_addr = mmio_region_from_addr(TOP_EGRET_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &plic));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_spi_host_init_from_dt((dt_spi_host_t)0, &spi_host0));
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kDtHmac, &hmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
+  CHECK_DIF_OK(dif_acc_init_from_dt(kDtAcc, &acc));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
 
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EGRET_CLKMGR_AON_BASE_ADDR), &clkmgr));
-
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_HOST0_BASE_ADDR), &spi_host0));
-
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EGRET_SPI_HOST1_BASE_ADDR), &spi_host1));
-
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EGRET_USBDEV_BASE_ADDR), &usbdev));
-
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EGRET_AES_BASE_ADDR), &aes));
-
-  CHECK_DIF_OK(
-      dif_hmac_init(mmio_region_from_addr(TOP_EGRET_HMAC_BASE_ADDR), &hmac));
-
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EGRET_KMAC_BASE_ADDR), &kmac));
-
-  CHECK_DIF_OK(
-      dif_acc_init(mmio_region_from_addr(TOP_EGRET_ACC_BASE_ADDR), &acc));
-
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
+#if defined(OPENTITAN_IS_EGRET)
+  CHECK_DIF_OK(dif_spi_host_init_from_dt((dt_spi_host_t)1, &spi_host1));
+  CHECK_DIF_OK(dif_usbdev_init_from_dt(kDtUsbdev, &usbdev));
+#endif
 }
 
 // List of alerts
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t aes_alerts[] = {kTopEgretAlertIdAesFatalFault,
                                       kTopEgretAlertIdAesRecovCtrlUpdateErr};
 static const uint32_t hmac_alerts[] = {kTopEgretAlertIdHmacFatalFault};
-static const uint32_t kmac_alerts[] = {kTopEgretAlertIdKmacFatalFaultErr,
-                                       kTopEgretAlertIdKmacRecovOperationErr};
+static const uint32_t kmac_alerts[] = {
+    kTopEgretAlertIdKmacFatalFaultErr,
+    kTopEgretAlertIdKmacRecovOperationErr};
 static const uint32_t acc_alerts[] = {kTopEgretAlertIdAccFatal,
                                       kTopEgretAlertIdAccRecov};
-static const uint32_t spihost0_alerts[] = {kTopEgretAlertIdSpiHost0FatalFault};
-static const uint32_t spihost1_alerts[] = {kTopEgretAlertIdSpiHost1FatalFault};
+static const uint32_t spihost0_alerts[] = {
+    kTopEgretAlertIdSpiHost0FatalFault};
+static const uint32_t spihost1_alerts[] = {
+    kTopEgretAlertIdSpiHost1FatalFault};
 static const uint32_t usbdev_alerts[] = {kTopEgretAlertIdUsbdevFatalFault};
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const uint32_t aes_alerts[] = {kTopDragonflyAlertIdAesFatalFault,
+                                      kTopDragonflyAlertIdAesRecovCtrlUpdateErr};
+static const uint32_t hmac_alerts[] = {kTopDragonflyAlertIdHmacFatalFault};
+static const uint32_t kmac_alerts[] = {
+    kTopDragonflyAlertIdKmacFatalFaultErr,
+    kTopDragonflyAlertIdKmacRecovOperationErr};
+static const uint32_t acc_alerts[] = {kTopDragonflyAlertIdAccFatal,
+                                      kTopDragonflyAlertIdAccRecov};
+static const uint32_t spihost0_alerts[] = {
+    kTopDragonflyAlertIdSpiHost0FatalFault};
+#endif
 
 static const uint32_t num_aes_alerts = ARRAYSIZE(aes_alerts);
 static const uint32_t num_hmac_alerts = ARRAYSIZE(hmac_alerts);
 static const uint32_t num_kmac_alerts = ARRAYSIZE(kmac_alerts);
 static const uint32_t num_acc_alerts = ARRAYSIZE(acc_alerts);
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
+
+#if defined(OPENTITAN_IS_EGRET)
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
 static const uint32_t num_usbdev_alerts = ARRAYSIZE(usbdev_alerts);
 
@@ -138,6 +155,11 @@ static const size_t num_alerts =
     ARRAYSIZE(aes_alerts) + ARRAYSIZE(hmac_alerts) + ARRAYSIZE(kmac_alerts) +
     ARRAYSIZE(acc_alerts) + ARRAYSIZE(spihost0_alerts) +
     ARRAYSIZE(spihost1_alerts) + ARRAYSIZE(usbdev_alerts);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+static const size_t num_alerts =
+    ARRAYSIZE(aes_alerts) + ARRAYSIZE(hmac_alerts) + ARRAYSIZE(kmac_alerts) +
+    ARRAYSIZE(acc_alerts) + ARRAYSIZE(spihost0_alerts);
+#endif
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -186,60 +208,101 @@ static const test_t kPeripherals[] = {
     // Hintable clock IPS
     {
         .name = "AES",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_AES_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_AES_BASE_ADDR,
+#endif
         .offset = AES_ALERT_TEST_REG_OFFSET,
         .dif = &aes,
         .fatal_alert_bit = kDifAesAlertFatalFault,
         .alert_ids = aes_alerts,
         .num_alert_peri = num_aes_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .clk_index = kTopEgretHintableClocksMainAes,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .clk_index = kTopDragonflyHintableClocksMainAes,
+#endif
         .is_hintable = true,
     },
     {
         .name = "HMAC",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_HMAC_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_HMAC_BASE_ADDR,
+#endif
         .offset = HMAC_ALERT_TEST_REG_OFFSET,
         .dif = &hmac,
         .fatal_alert_bit = kDifHmacAlertFatalFault,
         .alert_ids = hmac_alerts,
         .num_alert_peri = num_hmac_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .clk_index = kTopEgretHintableClocksMainHmac,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .clk_index = kTopDragonflyHintableClocksMainHmac,
+#endif
         .is_hintable = true,
     },
     {
         .name = "KMAC",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_KMAC_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_KMAC_BASE_ADDR,
+#endif
         .offset = KMAC_ALERT_TEST_REG_OFFSET,
         .dif = &kmac,
         .fatal_alert_bit = kDifKmacAlertFatalFault,
         .alert_ids = kmac_alerts,
         .num_alert_peri = num_kmac_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .clk_index = kTopEgretHintableClocksMainKmac,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .clk_index = kTopDragonflyHintableClocksMainKmac,
+#endif
         .is_hintable = true,
     },
     {
         .name = "ACC",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_ACC_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_ACC_BASE_ADDR,
+#endif
         .offset = ACC_ALERT_TEST_REG_OFFSET,
         .dif = &acc,
         .fatal_alert_bit = kDifAccAlertFatal,
         .alert_ids = acc_alerts,
         .num_alert_peri = num_acc_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .clk_index = kTopEgretHintableClocksMainAcc,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .clk_index = kTopDragonflyHintableClocksMainAcc,
+#endif
         .is_hintable = true,
     },
     // Gateable clock IPs
     {
         .name = "SPI_HOST0",
+#if defined(OPENTITAN_IS_EGRET)
         .base = TOP_EGRET_SPI_HOST0_BASE_ADDR,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .base = TOP_DRAGONFLY_SPI_HOST0_BASE_ADDR,
+#endif
         .offset = SPI_HOST_ALERT_TEST_REG_OFFSET,
         .dif = &spi_host0,
         .fatal_alert_bit = 0,
         .alert_ids = spihost0_alerts,
         .num_alert_peri = num_spihost0_alerts,
+#if defined(OPENTITAN_IS_EGRET)
         .clk_index = kTopEgretGateableClocksIoPeri,
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+        .clk_index = kTopDragonflyGateableClocksIoPeri,
+#endif
         .is_hintable = false,
     },
+#if defined(OPENTITAN_IS_EGRET)
     {
         .name = "SPI_HOST1",
         .base = TOP_EGRET_SPI_HOST1_BASE_ADDR,
@@ -262,6 +325,7 @@ static const test_t kPeripherals[] = {
         .clk_index = kTopEgretGateableClocksUsbPeri,
         .is_hintable = false,
     },
+#endif
 };
 
 /**
@@ -399,12 +463,21 @@ void wait_enough_for_alert_ping(void) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
+#if defined(OPENTITAN_IS_EGRET)
   top_egret_plic_peripheral_t peripheral_serviced;
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  top_dragonfly_plic_peripheral_t peripheral_serviced;
+#endif
   dif_alert_handler_irq_t irq_serviced;
   isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
                                   &peripheral_serviced, &irq_serviced);
+#if defined(OPENTITAN_IS_EGRET)
   CHECK(peripheral_serviced == kTopEgretPlicPeripheralAlertHandler,
         "Interrupt from unexpected peripheral: %d", peripheral_serviced);
+#elif defined(OPENTITAN_IS_DRAGONFLY)
+  CHECK(peripheral_serviced == kTopDragonflyPlicPeripheralAlertHandler,
+        "Interrupt from unexpected peripheral: %d", peripheral_serviced);
+#endif
 }
 
 enum {

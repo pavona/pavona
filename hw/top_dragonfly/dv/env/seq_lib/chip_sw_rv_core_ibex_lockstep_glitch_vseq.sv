@@ -181,6 +181,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     string glitch_core_path;
     string glitch_path;
     string glitch_path_lockstep;
+    string port_name_lockstep;
     bit glitched_port_is_inp;
     int unsigned unpacked_idx;
     val_t orig_val;
@@ -203,7 +204,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
 
     // List of all ports and their bit widths (or the name of the parameter that defines the width
     // and/or the unpacked dimension).
-    ports = new[45];
+    ports = new[39];
     ports = '{
       // `hart_id_i` and `boot_addr_i` are not glitch-protected by the lockstep core.
       // '{"hart_id_i",               1, "", 0},
@@ -220,15 +221,20 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       '{"data_we_o",               1, "", 0},
       '{"data_be_o",               1, "", 0},
       '{"data_addr_o",            32, "", 0},
-      '{"data_wdata_o",            0, "MemDataWidth", 0},
+      // Only the low 32 bits are compared. The bits above carry memory integrity, which the
+      // memory checks instead.
+      '{"data_wdata_o",           32, "", 0},
       '{"data_rdata_i",            0, "MemDataWidth", 0},
       '{"data_err_i",              1, "", 0},
-      '{"dummy_instr_id_o",        1, "", 0},
-      '{"rf_raddr_a_o",            5, "", 0},
-      '{"rf_raddr_b_o",            5, "", 0},
-      '{"rf_waddr_wb_o",           5, "", 0},
-      '{"rf_we_wb_o",              1, "", 0},
-      '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0},
+      // No expectation can be stated for the register file ports. They are covered by the shadow
+      // core's ECC check, which only sees a fault if the signal is in use that cycle, so whether
+      // an alert comes depends on the instruction the core happens to be running.
+      // '{"dummy_instr_id_o",        1, "", 0},
+      // '{"rf_raddr_a_o",            5, "", 0},
+      // '{"rf_raddr_b_o",            5, "", 0},
+      // '{"rf_waddr_wb_o",           5, "", 0},
+      // '{"rf_we_wb_o",              1, "", 0},
+      // '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0},
       '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0},
       '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0},
       '{"ic_tag_req_o",            ibex_pkg::IC_NUM_WAYS, "", 0},
@@ -281,7 +287,14 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     glitch_core_path = glitch_lockstep_core ? lockstep_core_path : core_path;
     port_name = ports[port_idx].name;
     glitch_path = $sformatf("%s.%s", glitch_core_path, port_name);
-    glitch_path_lockstep = $sformatf("%s.%s", lockstep_path, port_name);
+    // The two modules name these ports differently, so translate, or the force below has no path
+    // to write.
+    case (port_name)
+      "rf_rdata_a_ecc_i": port_name_lockstep = "rf_rdata_a_i";
+      "rf_rdata_b_ecc_i": port_name_lockstep = "rf_rdata_b_i";
+      default:            port_name_lockstep = port_name;
+    endcase
+    glitch_path_lockstep = $sformatf("%s.%s", lockstep_path, port_name_lockstep);
     glitched_port_is_inp = (uvm_re_match("*_i", port_name) == 0);
 
     // If the port is an unpacked array, pick an index of the unpacked dimension to glitch and apply
@@ -511,20 +524,17 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     glitch_mask = 1 << bit_idx;
     glitched_val = orig_val ^ glitch_mask;
 
-    // When glitching an input of a core, disable all assertions inside that core.  The rationale is
+    // When glitching a port of a core, disable all assertions inside that core.  The rationale is
     // that the glitch is not bound to any interface specifications, so it may (and frequently will)
     // cause assertions to fail.  In silicon, however, there are no assertions, so we don't want
     // assertions to get into our way of testing countermeasures, which are part of silicon, in
     // simulation.
-    if (glitched_port_is_inp) begin
-      if (glitch_lockstep_core) begin
-        // The path to the core unfortunately has to be duplicated for `$assertoff()` because that
-        // system task only accepts literal strings.
-        $assertoff(0, "tb.dut.top_dragonfly.u_rv_core_ibex.u_core.gen_lockstep.u_ibex_lockstep");
-      end else begin
-        $assertoff(0, "tb.dut.top_dragonfly.u_rv_core_ibex.u_core.u_ibex_core");
-      end
-    end
+    // Turn them off in both cores. A forced bus output makes the memory reply, and that reply
+    // reaches the core that was not glitched, which has nothing outstanding to match it. It can
+    // arrive after the alert is checked, so they stay off until the test ends. The paths are
+    // spelled out because $assertoff only takes a literal string.
+    $assertoff(0, "tb.dut.top_dragonfly.u_rv_core_ibex.u_core.u_ibex_core");
+    $assertoff(0, "tb.dut.top_dragonfly.u_rv_core_ibex.u_core.gen_lockstep.u_ibex_lockstep");
 
     if (!glitch_lockstep_core) begin
       case (port_name)

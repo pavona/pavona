@@ -6,6 +6,7 @@
 #include "hw/top/dt/pinmux.h"
 #include "hw/top/dt/spi_host.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_dma.h"
@@ -33,11 +34,15 @@ enum {
 // This location will be update from SV
 static volatile const uint8_t kSoftwareBarrier = 0;
 
-// Expected digest value gets backdoor'ed from the hardware
-// Although not used, we need to keep it here as the shared vseq
-// wants to write it.
-static volatile uint32_t kShaDigestExpData[16];
-static volatile uint8_t kShaMode;
+// Expected digest value gets backdoor'ed from the hardware.
+//
+// const places the array with the read only data loaded from the test image,
+// which the testbench can write. A writable copy would sit in main SRAM, where
+// the backdoor write does not survive the memory scrambling. used and retain
+// keep the symbol, which nothing else does here because the array is only read.
+static volatile const uint32_t kShaDigestExpData[16] OT_USED
+    __attribute__((retain));
+static volatile const uint8_t kShaMode;
 
 uint32_t digest[16];
 uint8_t received_data[TX_SIZE] __attribute__((aligned(4)));
@@ -65,9 +70,6 @@ bool test_main(void) {
   // DV sync message
   LOG_INFO("spi host configuration complete");
 
-  // Dummy assignment to avoid any unused variable warnings
-  kShaDigestExpData[0] = 0;
-
   setup_spi_dma_transaction(&spi_host, &dma, &received_data[0], CHUNK_SIZE,
                             TX_SIZE);
 
@@ -78,10 +80,10 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_dma_abort(&dma));
 
-  dif_dma_status_t status;
-  CHECK_DIF_OK(dif_dma_status_get(&dma, &status));
-
-  CHECK(status & kDifDmaStatusAborted, "Abort bit not set");
+  // The abort is not complete when the write returns: the hardware first
+  // finishes the access it has in flight. Wait for the status rather than
+  // sampling it once.
+  CHECK_DIF_OK(dif_dma_status_poll(&dma, kDifDmaStatusAborted));
 
   // Reset and re-init the SPI
   init_spi_host(&spi_host, (uint32_t)kClockFreqHiSpeedPeripheralHz,
@@ -98,7 +100,17 @@ bool test_main(void) {
 
   uint32_t digest_len;
   CHECK_DIF_OK(dif_dma_get_digest_length(kShaMode, &digest_len));
-  CHECK_ARRAYS_EQ((uint8_t *)digest, (uint8_t *)kShaDigestExpData, digest_len);
+
+  // Copy the expected digest out first. Only the testbench writes the array, so
+  // the compiler treats it as a const nothing initializes and folds reads that
+  // drop the volatile qualifier, which is what the comparison below does when
+  // it casts to a byte pointer. Reading each word volatile forces a real load.
+  uint32_t expected_digest[ARRAYSIZE(digest)];
+  for (size_t i = 0; i < ARRAYSIZE(expected_digest); ++i) {
+    expected_digest[i] = kShaDigestExpData[i];
+  }
+
+  CHECK_ARRAYS_EQ((uint8_t *)digest, (uint8_t *)expected_digest, digest_len);
 
   return true;
 }

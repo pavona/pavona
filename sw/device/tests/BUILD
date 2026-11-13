@@ -342,6 +342,7 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:silicon_creator": None,
@@ -351,24 +352,36 @@ pavona_test(
         timeout = "long",
     ),
     deps = [
+        "//hw/top/dt",
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:keymgr",
+                "//sw/device/lib/testing:keymgr_testutils",
+                "//hw/top_egret/sw/autogen:top_egret",
+            ],
+            "dragonfly": [
+                "//sw/device/lib/dif:keymgr_dpe",
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
+                "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(
@@ -403,6 +416,7 @@ pavona_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
     exec_env = dicts.add(
+        DRAGONFLY_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
         # The test requires the Ibex core to wait long enough
         # before checking for the ping_timeout error.
@@ -422,8 +436,8 @@ pavona_test(
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
+        "//hw/top/dt",
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:acc",
@@ -435,7 +449,6 @@ pavona_test(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
@@ -446,7 +459,15 @@ pavona_test(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:usbdev",
+            ],
+            "dragonfly": [],
+        },
+        []
+    ),
 )
 
 pavona_test(
@@ -455,6 +476,7 @@ pavona_test(
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             # See #23038, this test requires a provisioned flash in sival.
             "//hw/top_egret:fpga_cw310_sival_rom_ext": "broken",
@@ -466,12 +488,10 @@ pavona_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:alert_handler_c_regs",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -481,12 +501,22 @@ pavona_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/testing:keymgr_testutils",
+            ],
+            "dragonfly": [
+                "//sw/device/lib/testing:keymgr_dpe_testutils",
+            ],
+        },
+        []
+    ),
 )
 
 pavona_test(
@@ -3930,12 +3960,14 @@ pavona_test(
     exec_env = dicts.add(
         EGRET_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
+        "//hw/top/dt",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -4173,6 +4205,7 @@ pavona_test(
     srcs = ["spi_device_tpm_tx_rx_test.c"],
     exec_env = dicts.add(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:sim_dv": None,
             "//hw/top_egret:sim_verilator": None,
@@ -4200,7 +4233,7 @@ pavona_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
@@ -5954,20 +5987,32 @@ pavona_test(
 
 otp_json(
     name = "power_virus_systemtest_otp_overlay",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                # Enable flash scrambling and ECC.
-                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
-            },
-        ),
-    ],
+    partitions = pavona_select_top(
+        {
+            "egret": [
+                otp_partition(
+                    name = "CREATOR_SW_CFG",
+                    items = {
+                        # Enable flash scrambling and ECC.
+                        "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
+                    },
+                ),
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 otp_image(
     name = "power_virus_systemtest_otp_img_rma",
-    src = "//hw/top_egret/data/otp:otp_json_rma",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+        },
+        "//hw/top_egret/data/otp:otp_json_rma",
+    ),
     overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
     visibility = ["//visibility:private"],
 )
@@ -5980,6 +6025,7 @@ pavona_test(
     ),
     exec_env = dicts.add(
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             # This test does not support the fpga_cw310_sival target because the
             # test program doesn't fit inside the ROM_EXT partition size (~64KB).
@@ -6004,7 +6050,6 @@ pavona_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
         "//hw/top:entropy_src_c_regs",
@@ -6012,29 +6057,22 @@ pavona_test(
         "//hw/top:hmac_c_regs",
         "//hw/top:i2c_c_regs",
         "//hw/top:kmac_c_regs",
-        "//hw/top:pattgen_c_regs",
-        "//hw/top:pwm_c_regs",
         "//hw/top:spi_host_c_regs",
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:acc",
-        "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:pattgen",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwm",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
@@ -6051,7 +6089,24 @@ pavona_test(
         "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//hw/top:adc_ctrl_c_regs",
+                "//hw/top:pattgen_c_regs",
+                "//hw/top:pwm_c_regs",
+                "//hw/top_egret/sw/autogen:top_egret",
+                "//sw/device/lib/dif:adc_ctrl",
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/dif:pattgen",
+                "//sw/device/lib/dif:pwm",
+            ],
+            "dragonfly": [
+                "//hw/top_dragonfly/sw/autogen:top_dragonfly",
+            ],
+        },
+        [],
+    ),
 )
 
 pavona_test(
@@ -7406,6 +7461,7 @@ pavona_test(
         EGRET_TEST_ENVS,
         #EGRET_CW340_TEST_ENVS,
         EGRET_SILICON_OWNER_ROM_EXT_ENVS,
+        DRAGONFLY_TEST_ENVS,
         {
             "//hw/top_egret:fpga_cw310_sival": None,
             "//hw/top_egret:silicon_creator": None,
@@ -8127,14 +8183,13 @@ pavona_test(
     srcs = ["soc_proxy_external_wakeup.c"],
     exec_env = DRAGONFLY_TEST_ENVS,
     deps = [
-        "//hw/top_dragonfly/sw/autogen:top_dragonfly",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:soc_proxy",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:status",

@@ -36,6 +36,37 @@ class chip_base_vseq #(
     chip_soc_dbg_ral = cfg.chip_soc_dbg_ral;
   endfunction // set_handles
 
+  local function bit is_rv_dm_debug_mem_addr(bit [BUS_AW-1:0] addr);
+    return addr inside {[top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_BASE_ADDR :
+                         top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_BASE_ADDR +
+                         top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_SIZE_BYTES - 1]};
+  endfunction
+
+  virtual function bit [BUS_AW-1:0] pick_rand_csr_addr(string ral_name,
+                                                       dv_base_reg_block block);
+    uvm_reg_addr_t csr_addrs[$];
+
+    if (ral_name != "chip_reg_block") begin
+      return super.pick_rand_csr_addr(ral_name, block);
+    end
+
+    // RV_DM block DV allows CSR fetches from the debug memory. At chip level the generic TL
+    // error sequence runs against chip_reg_block, so the rv_dm_mem sub-block setting is not
+    // visible when the base sequence picks a no-fetch CSR. Filter this window here while
+    // preserving no-fetch CSR coverage for the rest of the chip.
+    foreach (block.csr_addrs[i]) begin
+      if (!is_rv_dm_debug_mem_addr(block.csr_addrs[i])) begin
+        csr_addrs.push_back(block.csr_addrs[i]);
+      end
+    end
+
+    if (csr_addrs.size() == 0) begin
+      return super.pick_rand_csr_addr(ral_name, block);
+    end
+
+    return csr_addrs[$urandom_range(0, csr_addrs.size() - 1)];
+  endfunction
+
   task post_start();
     do_clear_all_interrupts = 0;
     super.post_start();

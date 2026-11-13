@@ -28,14 +28,17 @@ rv_core_ibex_rnd_read_and_immediately_check_status:
   ret // Return status
 
 /**
- * Read RND data to invalidate status, read status then read RND again,
- * followed by read status. If both status reads are low and you read the same
- * data then it means read data does not block when status is invalid. Check
- * that the RND status reads are equal and the invalid RND data read is zero.
+ * Read RND data to invalidate status, read status, then read RND data again.
+ * A read taken while the status is invalid must return zero rather than block,
+ * which is what this checks.
  *
- * @return -1 if the second load does not equal the fourth or if the
- * intermediate RND read is not zero. Otherwise return the value of the RND
- * status.
+ * The status is not read a second time. EDN may answer the pending request at
+ * any point, so the status can go valid again within an instruction or two of
+ * the invalidating read, and requiring it to still read invalid would be
+ * asking for something the design does not promise.
+ *
+ * @return -1 if the status was not invalid before the second read, or if that
+ * read did not return zero. Otherwise return zero.
  */
   .globl rv_core_ibex_check_rnd_read_possible_while_status_invalid
   .type rv_core_ibex_check_rnd_read_possible_while_status_invalid, @function
@@ -44,11 +47,11 @@ rv_core_ibex_check_rnd_read_possible_while_status_invalid:
   lw t1, RV_CORE_IBEX_RND_DATA_REG_OFFSET(t0) // Read RND to invalidate status
   lw t2, RV_CORE_IBEX_RND_STATUS_REG_OFFSET(t0) // Get RND status
   lw t3, RV_CORE_IBEX_RND_DATA_REG_OFFSET(t0) // Read RND data
-  lw a0, RV_CORE_IBEX_RND_STATUS_REG_OFFSET(t0) // Get RND status
-  sub t2, t2, a0 // Calculate difference between first and last status
-  or t2, t2, t3 // Check whether intermediate RND data is 0
+  andi t2, t2, 1 // Keep the valid bit of the status taken before the read
+  or t2, t2, t3 // Check whether that read returned 0
   bnez t2, error_return // Check whether to return -1
-  ret // Return status value
+  mv a0, x0 // Return 0
+  ret
 error_return:
   addi a0, x0, -1 // Put -1 in a0
   ret // Return -1
