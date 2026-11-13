@@ -19,6 +19,7 @@ import sys
 import jsonschema
 
 from acvp_util import acvp_common, load_vector_set, report_skipped
+from cryptotest_util import str_to_byte_array
 from Crypto.PublicKey import ECC
 
 # Accepted ECC curves and corresponding scalar sizes in bytes.
@@ -66,14 +67,14 @@ def parse_siggen(data, skip_unsupported):
         curve, scalar_bytes = CURVES[group["curve"]]
         hash_alg = HASH_ALGS[group["hashAlg"]]
         if "d" in group:
-            qx = group["qx"]
-            qy = group["qy"]
-            d = group["d"]
+            qx = str_to_byte_array(group["qx"])
+            qy = str_to_byte_array(group["qy"])
+            d = str_to_byte_array(group["d"])
         else:
             key = ECC.generate(curve=curve)
-            qx = key.pointQ.x.to_bytes(scalar_bytes, "big").hex().upper()
-            qy = key.pointQ.y.to_bytes(scalar_bytes, "big").hex().upper()
-            d = key.d.to_bytes(scalar_bytes, "big").hex().upper()
+            qx = list(key.pointQ.x.to_bytes(scalar_bytes, "big"))
+            qy = list(key.pointQ.y.to_bytes(scalar_bytes, "big"))
+            d = list(key.d.to_bytes(scalar_bytes, "big"))
         if (curve, hash_alg) not in VALID_CURVE_HASH_PAIRS:
             skipped_curve_hash_pair += len(group["tests"])
             continue
@@ -124,10 +125,10 @@ def parse_sigver(data, skip_unsupported):
                 "curve": curve,
                 "hash_alg": hash_alg,
                 "message": list(bytes.fromhex(test["message"])),
-                "qx": test["qx"],
-                "qy": test["qy"],
-                "r": test["r"],
-                "s": test["s"],
+                "qx": str_to_byte_array(test["qx"]),
+                "qy": str_to_byte_array(test["qy"]),
+                "r": str_to_byte_array(test["r"]),
+                "s": str_to_byte_array(test["s"]),
             })
     report_skipped("parse_sigver", {
         "the hash algorithm is not implemented": skipped_hash_alg,

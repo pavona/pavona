@@ -72,23 +72,23 @@
       },
       "qx": {
         "description": "Public key x-coordinate",
-        "type": "string"
+        "$ref": "#/$defs/byte_array"
       },
       "qy": {
         "description": "Public key y-coordinate",
-        "type": "string"
+        "$ref": "#/$defs/byte_array"
       },
       "r": {
         "description": "Signature r parameter",
-        "type": "string"
+        "$ref": "#/$defs/byte_array"
       },
       "s": {
         "description": "Signature s parameter",
-        "type": "string"
+        "$ref": "#/$defs/byte_array"
       },
       "d": {
         "description": "Secret key",
-        "type": "string"
+        "$ref": "#/$defs/byte_array"
       },
       "result": {
         "description": "Verification result",
