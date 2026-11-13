@@ -38,15 +38,6 @@ def _nist_cavp_repos():
         ],
     )
     http_archive(
-        name = "nist_cavp_aes_gcm",
-        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
-        sha256 = "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
-        urls = [
-            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
-            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/gcmtestvectors.zip",
-        ],
-    )
-    http_archive(
         name = "nist_cavp_ecdh_sp_800_56a",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",

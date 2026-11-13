@@ -844,7 +844,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "LYhhJO+QvqGNuEgsg5/pCttvXUy0j/7N3uIMnkdS+lI=",
+        "bzlTransitiveDigest": "dJxFKH3T03wF3mXlXNPx5QzpPw26ccPckk6XSyG4en8=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -870,17 +870,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-4ecdsatestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-4ecdsatestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_aes_gcm": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/gcmtestvectors.zip"
               ]
             }
           },

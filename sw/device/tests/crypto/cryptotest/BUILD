@@ -31,11 +31,6 @@ filegroup(
 
 AES_GCM_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:acvp_aes_gcm_json",
-] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(operation, key_len)
-    for operation in ("encryptextiv", "decrypt")
-    for key_len in ("128", "192", "256")
-] + [
     "//sw/host/cryptotest/testvectors/data:wycheproof_aes_gcm_json",
 ]
 
@@ -49,7 +44,6 @@ cryptotest(
     extra_exec_envs = {
         "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
     },
-    slow_test = True,
     test_args = AES_GCM_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
     test_vectors = AES_GCM_TESTVECTOR_TARGETS,

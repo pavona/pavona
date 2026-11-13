@@ -425,7 +425,6 @@ use_repo(hsm, "cloud_kms_hsm", "opensc", "sc_hsm", "softhsm2")
 nist_cavp = use_extension("//third_party/nist_cavp_testvectors:extensions.bzl", "nist_cavp")
 use_repo(
     nist_cavp,
-    "nist_cavp_aes_gcm",
     "nist_cavp_drbg_sp_800_90a_root",
     "nist_cavp_ecdh_sp_800_56a",
     "nist_cavp_ecdsa_fips_186_4",
