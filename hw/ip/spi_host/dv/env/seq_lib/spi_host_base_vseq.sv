@@ -103,26 +103,19 @@ class spi_host_base_vseq extends cip_base_vseq #(
     // This is because the sim may go through multiple resets and if we don't
     // re-set it's value it may not be useful as a timeout value
     cfg.set_default_csr_timeout();
-    case(spi_config_regs.clkdiv) inside
-      // After randomization we set a different timeout based on the clock divider
-      [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]: ;
-      [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv]: begin
-        cfg.csr_spinwait_timeout_ns *= 1.5;
-      end
-      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : cfg.seq_cfg.host_spi_upper_middle_clkdiv]: begin
-        cfg.csr_spinwait_timeout_ns *= 3;
-      end
-      [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : begin
-        cfg.csr_spinwait_timeout_ns *= 5;
-      end
-      [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : begin
-        cfg.csr_spinwait_timeout_ns *= 10;
-      end
-      default : begin
-        `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out of range",
-                                   spi_config_regs.clkdiv))
-      end
-    endcase
+    // Size the timeout from how long the longest transaction can take. Scaling on clkdiv alone
+    // does not know how much data is queued behind it, so a high-clkdiv seed that also draws long
+    // segments outruns a fixed multiplier while still making progress.
+    begin
+      longint unsigned bytes   = cfg.seq_cfg.host_spi_max_trans *
+                                 cfg.seq_cfg.host_spi_max_num_seg *
+                                 cfg.seq_cfg.host_spi_max_len;
+      longint unsigned cycles  = bytes * 8 * 2 * (spi_config_regs.clkdiv + 1);
+      longint unsigned xfer_ns = (cycles * cfg.clk_rst_vif.clk_period_ps) / 1000;
+      // Twice the worst case, capped so a large clkdiv cannot ask for more than the test timeout.
+      cfg.csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns +
+                                    ((2 * xfer_ns) > 100_000_000 ? 100_000_000 : (2 * xfer_ns));
+    end
     `uvm_info(`gfn, $sformatf("%m: CSR_SPINWAIT Timeout set to %0dns", cfg.csr_spinwait_timeout_ns),
               UVM_DEBUG)
   endfunction
@@ -209,7 +202,6 @@ class spi_host_base_vseq extends cip_base_vseq #(
     csr_field_t csr_or_fld;
 
     while ( (clk_cycles * clk_cycle_period_ns) <= timeout_ns) begin
-      clk_cycles++;
       #(clk_cycle_period_ns * 1ns);
       if (start_stop_spinwait_ev.is_on()) begin
         uvm_object ev_obj;
@@ -218,17 +210,12 @@ class spi_host_base_vseq extends cip_base_vseq #(
         if (!$cast(obj, ev_obj))
           `uvm_fatal($sformatf("%m()"), "CAST FAILED")
 
-        if (obj.stop) begin
-          start_stop_spinwait_ev.wait_ptrigger_data(ev_obj);
-          `uvm_info($sformatf("%m"), "Event triggered to halt the timeout", UVM_DEBUG)
-          if (!$cast(obj, ev_obj))
-            `uvm_fatal($sformatf("%m()"), "CAST FAILED")
-          if(obj.stop)
-            `uvm_fatal($sformatf("%m"), "Event has already been triggered with stop=1")
-        end
+        // Halted, so hold the count. Poll the event state every tick: a release triggered before
+        // this process reached a blocking wait would leave it stuck until the next reset.
+        if (obj.stop) continue;
       end
+      clk_cycles++;
     end
-
     csr_or_fld = decode_csr_or_field(ptr);
     `uvm_fatal($sformatf("%m()"),
                $sformatf({"timeout = %0dns %0s (addr=0x%0h,",
@@ -345,7 +332,6 @@ class spi_host_base_vseq extends cip_base_vseq #(
     spinwait_ctrl_obj.stop = 0;
     start_stop_spinwait_ev.trigger(spinwait_ctrl_obj);
     `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to SW_RST=0", UVM_DEBUG)
-
     start_stop_spinwait_ev.reset();
     `uvm_info(`gfn, "Resetting 'start_stop_spinwait_ev'", UVM_DEBUG)
   endtask : program_spi_host_sw_reset
@@ -615,6 +601,15 @@ class spi_host_base_vseq extends cip_base_vseq #(
                         .blocking(1'b1));
       end
     end else if (rw == READ) begin
+      // The availability check upstream can pass long before this read issues, leaving room for
+      // a SW_RST to empty the FIFO in between. Reading it then underflows and disables the core.
+      // A backdoor read costs no simulated time, so it cannot be overtaken the same way. Callers
+      // that waive the availability check are provoking the underflow deliberately.
+      if (fifo_avail_chk) begin
+        uvm_reg_data_t rx_is_empty;
+        csr_rd(.ptr(ral.status.rxempty), .value(rx_is_empty), .backdoor(1));
+        if (rx_is_empty) return;
+      end
       // Read a single 32-bit word
       tl_access_inner(.addr(align_addr), .data(data), .write(READ), .mask(mask), .blocking(1'b1));
       data_q = {<<8{data}};

@@ -40,7 +40,7 @@ class spi_host_overflow_underflow_vseq extends spi_host_tx_rx_vseq;
         disable fork;
       end
       begin
-        read_rx_fifo();
+        read_rx_fifo(.producer_running(1));
       end
     join
 

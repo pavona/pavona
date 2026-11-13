@@ -12,16 +12,20 @@ interface spi_host_fsm_if ();
   // greater than 1 (currently hardcoded at 16 when in fast_mode)
   bit fast_mode;
 
-  always @(posedge u_fsm.clk_i) begin
-    if (u_fsm.rst_ni && fast_mode) begin
-      if (!(u_fsm.sw_rst_i || !u_fsm.clk_cntr_en ||
-            u_fsm.new_command || u_fsm.is_idle || !u_fsm.clk_cntr_q)) begin
-        // This check matches the one defining clk_cntr_d in spi_host_fsm.sv. It expects to
-        // decrement by 1. If we are in "fast mode", we should decrement by 16 instead.
-        force u_fsm.clk_cntr_d = u_fsm.clk_cntr_q - 16;
-        @(posedge u_fsm.clk_i or negedge u_fsm.rst_ni);
-        release u_fsm.clk_cntr_d;
-      end
+  localparam int unsigned FastDecrement = 16;
+
+  // Re-evaluated every edge, since suspending this process on an edge would apply the force on
+  // alternate cycles only and decrement by 17 every two cycles. Saturates at zero, the only value
+  // at which the FSM advances and reloads clkdiv, so the 16-bit counter never wraps past it.
+  always @(posedge u_fsm.clk_i or negedge u_fsm.rst_ni) begin
+    // Matches the condition defining clk_cntr_d in spi_host_fsm.sv, which decrements by 1.
+    if (u_fsm.rst_ni && fast_mode &&
+        !(u_fsm.sw_rst_i || !u_fsm.clk_cntr_en ||
+          u_fsm.new_command || u_fsm.is_idle || !u_fsm.clk_cntr_q)) begin
+      force u_fsm.clk_cntr_d = (u_fsm.clk_cntr_q > FastDecrement) ?
+                               (u_fsm.clk_cntr_q - FastDecrement) : '0;
+    end else begin
+      release u_fsm.clk_cntr_d;
     end
   end
 endinterface
