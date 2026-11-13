@@ -10,6 +10,7 @@ rust_binary(
     name = "harness",
     srcs = ["src/main.rs"],
     deps = [
+        "//sw/host/cryptotest/acvp:cryptotest_acvp",
         "//sw/host/cryptotest/ujson_lib:cryptotest_commands",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",

@@ -26,6 +26,27 @@
         "description": "Incremental test case ID -- used for debugging",
         "type": "integer"
       },
+      "algorithm": {
+        "description": "The ACVP algorithm the test came from",
+        "type": "string",
+        "enum": ["ACVP-AES-GCM"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
       "mode": {
         "description": "Should be GCM",
         "type": "string",
@@ -64,6 +85,11 @@
       "plaintext": {
         "description": "Plaintext",
         "$ref": "#/$defs/byte_array"
+      },
+      "tag_len": {
+        "description": "Length in bytes of the tag an ACVP test asks for",
+        "type": "integer",
+        "enum": [4, 8, 12, 16]
       },
       "result": {
         "description": "Derivation result",

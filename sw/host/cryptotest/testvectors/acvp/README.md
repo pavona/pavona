@@ -29,6 +29,7 @@ The supported algorithms below mark those with deferred test cases.
 
 - [AES-CBC, AES-CFB128, AES-ECB, AES-OFB](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, MCT.
 - [AES-CTR](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, counter tests.
+- [AES-GCM](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, external IV generation.
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [ctrDRBG](https://pages.nist.gov/ACVP/draft-vassilev-acvp-drbg.html) with AES-256 and without a derivation function: AFT, revision SP800-90Ar1.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
@@ -55,6 +56,18 @@ The device runs the whole Monte Carlo test.
 - Payloads shorter than one block.
   The cryptolib encrypts whole 16-byte blocks only.
 - RFC 3686 conformance tests.
+
+### AES-GCM
+
+- IV lengths other than 96 bits.
+  The software implementation also supports 128-bit IVs.
+  We register 96-bit IVs, which both the software implementation and the AES-GCM hardware support.
+- Tag lengths other than 32, 64, 96 and 128 bits.
+  The cryptolib does not support them.
+- Payloads and AAD that are not a whole number of bytes.
+  The cryptolib processes bytes.
+- Internal IV generation.
+  The cryptolib takes the IV from the caller.
 
 ### AES-KWP
 
