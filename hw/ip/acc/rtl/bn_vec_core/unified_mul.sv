@@ -118,6 +118,10 @@ module unified_mul #(
   end
 
   always_comb begin
+    // A32 and B32 are only used in MODE_64, default them to avoid latches in the other modes.
+    A32 = '0;
+    B32 = '0;
+
     unique case (word_mode)
       MODE_16: begin
         for (int i = 0; i < NHALF; i++) begin
