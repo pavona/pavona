@@ -23,6 +23,7 @@ extern "C" {
     value(_, Hkdf) \
     value(_, Hmac) \
     value(_, KdfHmac) \
+    value(_, KdfKmac) \
     value(_, Kmac) \
     value(_, Mldsa) \
     value(_, Mlkem) \
