@@ -346,7 +346,7 @@ module spid_status
 
       for (int unsigned i = 0 ; i <= 2 ; i++) begin
         if (cmd_info_idx_i == CmdInfoIdxW'(StatusCmdIdx[i])) begin
-          byte_sel_d = i;
+          byte_sel_d = 2'(i);
         end
       end
     end
