@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -10,6 +11,7 @@ import sys
 
 import jsonschema
 from Crypto.Util.asn1 import DerSequence
+from cryptotest_util import str_to_byte_array
 
 # Mapping from the curve names used by Wycheproof to those used by cryptotest
 EC_NAME_MAPPING = {
@@ -67,10 +69,8 @@ def parse_test_vectors(raw_data):
                 "curve": EC_NAME_MAPPING[key["curve"]],
                 "hash_alg": group["sha"].lower(),
                 "message": list(bytes.fromhex(test["msg"])),
-                # Encode qx and qy as a string because downstream test vector
-                # consumers may incorrectly handle large integers.
-                "qx": key["wx"],
-                "qy": key["wy"],
+                "qx": str_to_byte_array(key["wx"]),
+                "qy": str_to_byte_array(key["wy"]),
             }
 
             # Parse r and s from DER-encoded signature
@@ -90,11 +90,9 @@ def parse_test_vectors(raw_data):
                 )
                 continue
 
-            # Encode r and s as hex strings since downstream test vector
-            # consumers may incorrectly handle large values.
-            # [2:] removes the "0x" prefix.
             test_vec["r"], test_vec["s"] = [
-                hex(val)[2:] for val in signature_seq
+                list(val.to_bytes(EC_SIGNATURE_PARAM_LEN[key["curve"]], "big"))
+                for val in signature_seq
             ]
 
             # Parse the expected result

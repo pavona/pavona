@@ -68,14 +68,14 @@ def parse_siggen(data):
         curve, scalar_bytes = CURVES[group["curve"]]
         hash_alg = HASH_ALGS[group["hashAlg"]]
         if "d" in group:
-            qx = group["qx"]
-            qy = group["qy"]
-            d = group["d"]
+            qx = str_to_byte_array(group["qx"])
+            qy = str_to_byte_array(group["qy"])
+            d = str_to_byte_array(group["d"])
         else:
             key = ECC.generate(curve=curve)
-            qx = key.pointQ.x.to_bytes(scalar_bytes, "big").hex().upper()
-            qy = key.pointQ.y.to_bytes(scalar_bytes, "big").hex().upper()
-            d = key.d.to_bytes(scalar_bytes, "big").hex().upper()
+            qx = list(key.pointQ.x.to_bytes(scalar_bytes, "big"))
+            qy = list(key.pointQ.y.to_bytes(scalar_bytes, "big"))
+            d = list(key.d.to_bytes(scalar_bytes, "big"))
         if (curve, hash_alg) not in VALID_CURVE_HASH_PAIRS:
             skipped_curve_hash_pair += len(group["tests"])
             continue
@@ -121,10 +121,10 @@ def parse_sigver(data):
                 "curve": curve,
                 "hash_alg": hash_alg,
                 "message": list(bytes.fromhex(test["message"])),
-                "qx": test["qx"],
-                "qy": test["qy"],
-                "r": test["r"],
-                "s": test["s"],
+                "qx": str_to_byte_array(test["qx"]),
+                "qy": str_to_byte_array(test["qy"]),
+                "r": str_to_byte_array(test["r"]),
+                "s": str_to_byte_array(test["s"]),
             })
     return test_vectors
 

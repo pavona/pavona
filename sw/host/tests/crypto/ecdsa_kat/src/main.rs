@@ -6,8 +6,7 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
-use num_bigint_dig::BigInt;
-use num_traits::Num;
+use num_bigint_dig::{BigInt, Sign};
 use p256::U256;
 use p256::ecdsa::signature::hazmat::PrehashVerifier;
 use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
@@ -50,10 +49,6 @@ struct Opts {
     acvp: AcvpOpts,
 }
 
-fn scalar_zero() -> String {
-    String::from("00")
-}
-
 #[derive(Debug, Deserialize)]
 struct EcdsaTestCase {
     vendor: String,
@@ -64,16 +59,16 @@ struct EcdsaTestCase {
     curve: String,
     hash_alg: String,
     message: Vec<u8>,
-    #[serde(default = "scalar_zero")]
-    qx: String,
-    #[serde(default = "scalar_zero")]
-    qy: String,
-    #[serde(default = "scalar_zero")]
-    r: String,
-    #[serde(default = "scalar_zero")]
-    s: String,
-    #[serde(default = "scalar_zero")]
-    d: String,
+    #[serde(default)]
+    qx: Vec<u8>,
+    #[serde(default)]
+    qy: Vec<u8>,
+    #[serde(default)]
+    r: Vec<u8>,
+    #[serde(default)]
+    s: Vec<u8>,
+    #[serde(default)]
+    d: Vec<u8>,
     // Absent where the outcome is the answer, e.g. ACVP sigVer
     #[serde(default)]
     result: Option<bool>,
@@ -90,6 +85,9 @@ const ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P256: usize = 32;
 const ECDSA_CMD_MAX_COORDINATE_BYTES_P256: usize = 32;
 const ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384: usize = 48;
 const ECDSA_CMD_MAX_COORDINATE_BYTES_P384: usize = 48;
+
+const ECDSA_MAX_SCALAR_BYTES_P256: usize = 32;
+const ECDSA_MAX_SCALAR_BYTES_P384: usize = 48;
 
 // These values were generated randomly for testing purposes.
 // Each value must be less than the modulus for its respective curve.
@@ -194,20 +192,16 @@ fn run_ecdsa_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let mut qx: Vec<u8> = BigInt::from_str_radix(&test_case.qx, 16)
-        .unwrap()
+    let mut qx: Vec<u8> = BigInt::from_bytes_be(Sign::Plus, test_case.qx.as_slice())
         .to_bytes_le()
         .1;
-    let mut qy: Vec<u8> = BigInt::from_str_radix(&test_case.qy, 16)
-        .unwrap()
+    let mut qy: Vec<u8> = BigInt::from_bytes_be(Sign::Plus, test_case.qy.as_slice())
         .to_bytes_le()
         .1;
-    let r: Vec<u8> = BigInt::from_str_radix(&test_case.r, 16)
-        .unwrap()
+    let r: Vec<u8> = BigInt::from_bytes_be(Sign::Plus, test_case.r.as_slice())
         .to_bytes_le()
         .1;
-    let s: Vec<u8> = BigInt::from_str_radix(&test_case.s, 16)
-        .unwrap()
+    let s: Vec<u8> = BigInt::from_bytes_be(Sign::Plus, test_case.s.as_slice())
         .to_bytes_le()
         .1;
 
@@ -281,13 +275,11 @@ fn run_ecdsa_testcase(
                     // Calculate masked private key
 
                     // Pad private key `d` to 32 bytes
-                    let mut padded_d = String::with_capacity(64);
-                    for _ in 0..(64 - test_case.d.len()) {
-                        padded_d.push('0');
-                    }
-                    padded_d.push_str(&test_case.d);
+                    let mut padded_d = vec![0; ECDSA_MAX_SCALAR_BYTES_P256];
+                    padded_d[ECDSA_MAX_SCALAR_BYTES_P256 - test_case.d.len()..]
+                        .copy_from_slice(test_case.d.as_slice());
                     let d = p256::Scalar::from(
-                        ScalarPrimitiveP256::new(U256::from_be_hex(&padded_d)).unwrap(),
+                        ScalarPrimitiveP256::new(U256::from_be_slice(padded_d.as_slice())).unwrap(),
                     );
                     let d0 = p256::Scalar::from(
                         ScalarPrimitiveP256::new(U256::from_be_hex(RANDOM_MASK_P256)).unwrap(),
@@ -341,13 +333,11 @@ fn run_ecdsa_testcase(
                     // Calculate masked private key
 
                     // Pad private key `d` to 48 bytes
-                    let mut padded_d = String::with_capacity(96);
-                    for _ in 0..(96 - test_case.d.len()) {
-                        padded_d.push('0');
-                    }
-                    padded_d.push_str(&test_case.d);
+                    let mut padded_d = vec![0; ECDSA_MAX_SCALAR_BYTES_P384];
+                    padded_d[ECDSA_MAX_SCALAR_BYTES_P384 - test_case.d.len()..]
+                        .copy_from_slice(test_case.d.as_slice());
                     let d = p384::Scalar::from(
-                        ScalarPrimitiveP384::new(U384::from_be_hex(&padded_d)).unwrap(),
+                        ScalarPrimitiveP384::new(U384::from_be_slice(padded_d.as_slice())).unwrap(),
                     );
                     let d0 = p384::Scalar::from(
                         ScalarPrimitiveP384::new(U384::from_be_hex(RANDOM_MASK_P384)).unwrap(),

@@ -54,6 +54,7 @@ py_binary(
     srcs = ["nist_acvp_ecdsa_parser.py"],
     deps = [
         ":acvp_util",
+        ":cryptotest_util",
         requirement("jsonschema"),
         requirement("pycryptodome"),
     ],
