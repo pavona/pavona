@@ -334,12 +334,55 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "1iC+xSIuCkwtTgoPEWZENItWemnuHMYuaVJyencjRJ4=",
+        "bzlTransitiveDigest": "iCjI/15+Jr12MfgxhJ+vrCtI3MEaKXkPhzT6RmvG5WQ=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "acvp_vectors_ctr-drbg_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "feaee0d9e2387fa88e6e9502336ac9d60a16d785ce3dd53fd97978deb871b433",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ctrDRBG-SP800-90Ar1/052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ctr-drbg_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7d760e84600e8eb4befbfd12cd09fda7313b07f2d1f48c5104a9a9866a4501d9",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ctrDRBG-SP800-90Ar1/052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9/prompt.json"
+            }
+          },
+          "acvp_vectors_kdf-kmac_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "2288cfebf99593c67315337cfc2299612ce1bdfdf55f2b59f19b24624e531855",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/expectedResults.json"
+            }
+          },
+          "acvp_vectors_kdf-kmac_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
+            }
+          },
+          "acvp_vectors": {
+            "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
+            "attributes": {
+              "files": {
+                "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
+                "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
+                "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
+                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json"
+              }
+            }
+          },
           "acvp_testvectors": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
@@ -711,23 +754,12 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "43wYR4/M+eLBl6Fyey2YdKl4ZQrCghSGxqGlUfyf670=",
+        "bzlTransitiveDigest": "IOSS2+nsp2l83k2FPuhchrr9p4CePW3MNg9RvNwkHHA=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "nist_cavp_drbg_sp_800_90a_root": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "5f7e5658ebd5b4e6785a7b12fa32333511d2acc2f2d9c5ae1ffa16b699377769",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/drbgtestvectors.zip"
-              ]
-            }
-          },
           "nist_cavp_ecdsa_fips_186_4": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {

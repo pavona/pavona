@@ -9,44 +9,28 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(["cshake_hardcoded.hjson"])
 
-# Strip the inner layer of the DRBG repository, which is a zip of zips
-genrule(
-    name = "nist_cavp_drbg_sp_800_90a_reseed",
-    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip"],
-    outs = [":CTR_DRBG_RESEED.rsp"],
-    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip) CTR_DRBG.rsp > $(location :CTR_DRBG_RESEED.rsp)",
+run_binary(
+    name = "acvp_ctr_drbg_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json",
+        "@acvp_vectors//:ctr-drbg/expectedResults.json",
+        "@acvp_vectors//:ctr-drbg/prompt.json",
+    ],
+    outs = [":acvp_ctr_drbg.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:ctr-drbg/prompt.json)",
+        "--dst",
+        "$(location :acvp_ctr_drbg.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:ctr-drbg/expectedResults.json)",
+        "--test-type",
+        "ctr_drbg",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_drbg_parser",
 )
-
-genrule(
-    name = "nist_cavp_drbg_sp_800_90a_no_reseed",
-    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip"],
-    outs = [":CTR_DRBG_NO_RESEED.rsp"],
-    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip) CTR_DRBG.rsp > $(location :CTR_DRBG_NO_RESEED.rsp)",
-)
-
-[
-    run_binary(
-        name = "nist_cavp_drbg_sp_800_90a_{}_json".format(mode),
-        srcs = [
-            ":CTR_DRBG_{}.rsp".format(mode.upper()),
-            "//sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json",
-        ],
-        outs = [":nist_cavp_drbg_sp_800_90a_{}.json".format(mode)],
-        args = [
-            "--src",
-            "$(location :CTR_DRBG_{}.rsp)".format(mode.upper()),
-            "--dst",
-            "$(location :nist_cavp_drbg_sp_800_90a_{}.json)".format(mode),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json)",
-        ] + (["--reseed"] if reseed else []),
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_drbg_parser",
-    )
-    for mode, reseed in [
-        ("reseed", True),
-        ("no_reseed", False),
-    ]
-]
 
 run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
@@ -503,6 +487,29 @@ run_binary(
         "--skip-unsupported",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_hmac_parser",
+)
+
+run_binary(
+    name = "acvp_kdf_kmac_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json",
+        "@acvp_vectors//:kdf-kmac/expectedResults.json",
+        "@acvp_vectors//:kdf-kmac/prompt.json",
+    ],
+    outs = [":acvp_kdf_kmac.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:kdf-kmac/prompt.json)",
+        "--dst",
+        "$(location :acvp_kdf_kmac.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_kmac_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:kdf-kmac/expectedResults.json)",
+        "--test-type",
+        "kdf_kmac",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_kmac_parser",
 )
 
 [

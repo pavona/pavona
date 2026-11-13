@@ -429,8 +429,7 @@ cryptotest(
 )
 
 DRBG_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_reseed_json",
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_no_reseed_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_ctr_drbg_json",
 ]
 
 DRBG_TESTVECTOR_ARGS = " ".join([
@@ -440,7 +439,9 @@ DRBG_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "drbg_kat",
-    slow_test = True,
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     test_args = DRBG_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
     test_vectors = DRBG_TESTVECTOR_TARGETS,
@@ -559,6 +560,16 @@ cryptotest(
     test_vectors = KDF_HMAC_TESTVECTOR_TARGETS,
 )
 
+cryptotest(
+    name = "kdf_kmac_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    test_args = "--kdf-kmac-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_kdf_kmac_json)\"",
+    test_harness = "//sw/host/tests/crypto/kdf_kmac_kat:harness",
+    test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_kdf_kmac_json"],
+)
+
 KMAC_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_kmac_{}.json".format(config)
     for config in [
@@ -643,6 +654,7 @@ test_suite(
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
         ":kdf_hmac_kat",
+        ":kdf_kmac_kat",
         ":kmac_kat",
         ":mldsa_kat",
         ":mlkem_kat",

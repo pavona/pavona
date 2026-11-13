@@ -50,15 +50,6 @@ py_binary(
 )
 
 py_binary(
-    name = "nist_cavp_drbg_parser",
-    srcs = ["nist_cavp_drbg_parser.py"],
-    deps = [
-        ":cryptotest_util",
-        requirement("jsonschema"),
-    ],
-)
-
-py_binary(
     name = "nist_cavp_ecdsa_parser",
     srcs = ["nist_cavp_ecdsa_parser.py"],
     deps = [
@@ -249,6 +240,15 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_acvp_drbg_parser",
+    srcs = ["nist_acvp_drbg_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_acvp_hkdf_parser",
     srcs = ["nist_acvp_hkdf_parser.py"],
     deps = [
@@ -269,6 +269,15 @@ py_binary(
 py_binary(
     name = "nist_acvp_kdf_hmac_parser",
     srcs = ["nist_acvp_kdf_hmac_parser.py"],
+    deps = [
+        ":acvp_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
+    name = "nist_acvp_kdf_kmac_parser",
+    srcs = ["nist_acvp_kdf_kmac_parser.py"],
     deps = [
         ":acvp_util",
         requirement("jsonschema"),

@@ -8,7 +8,7 @@ load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = ["//sw/host/cryptotest/testvectors/acvp:doc_files"],
 )
 
 rust_library(
