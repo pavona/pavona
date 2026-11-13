@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  # Needed for workload identity federation
+  id-token: write
 
 jobs:
   benchmarks:
