@@ -116,8 +116,9 @@ class soc_dbg_ctrl_base_vseq extends cip_base_vseq #(
   extern function void set_handles();
   extern virtual task dut_init(string reset_kind = "HARD");
 
-  extern virtual task          pre_start();
-  extern virtual task          reset_trigger_thread();
+  extern virtual task pre_start();
+  extern virtual task reset_trigger_thread();
+  extern task wait_delay(int unsigned num_clks);
   // TODO:
   // Reset-safe framework overrides kept commented for future migration.
   // extern virtual function void handle_reset_assertion();
@@ -135,15 +136,6 @@ function void soc_dbg_ctrl_base_vseq::set_handles();
 endfunction : set_handles
 
 task soc_dbg_ctrl_base_vseq::dut_init(string reset_kind = "HARD");
-  // Drive DUT external inputs to safe defaults before super.dut_init() applies reset.
-  cfg.misc_vif.set_soc_dbg_state_blank();
-  cfg.misc_vif.set_lc_dft_en_off();
-  cfg.misc_vif.set_lc_hw_debug_en_off();
-  cfg.misc_vif.set_lc_raw_test_rma_off();
-  cfg.misc_vif.set_lc_cpu_en_off();
-  cfg.misc_vif.set_lc_rma_state_off();
-  cfg.misc_vif.init_boot_status();
-  cfg.misc_vif.enable_halt_cpu_boot();
   super.dut_init(reset_kind);
 endtask : dut_init
 
@@ -151,6 +143,13 @@ task soc_dbg_ctrl_base_vseq::pre_start();
   super.pre_start();
   `downcast(jtag_ral, cfg.ral_models[cfg.jtag_ral_name]);
 endtask : pre_start
+
+task soc_dbg_ctrl_base_vseq::wait_delay(int unsigned num_clks);
+  delay_seq del_seq;
+  del_seq = delay_seq::type_id::create("del_seq");
+  del_seq.delay_time_steps = num_clks;
+  del_seq.start(p_sequencer.delay_sequencer_h);
+endtask : wait_delay
 
 task soc_dbg_ctrl_base_vseq::reset_trigger_thread();
   delay_seq del_seq;

@@ -11,8 +11,16 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:tl_agent
       - lowrisc:dv:dv_base_reg
+      - lowrisc:dragonfly_ip:pwrmgr_pkg
     files:
       - soc_dbg_ctrl_env_pkg.sv
+      - soc_dbg_ctrl_misc_item.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_agent_cfg.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_sequencer.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_monitor.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_driver.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_agent.sv: {is_include_file: true}
+      - soc_dbg_ctrl_misc_seq.sv: {is_include_file: true}
       - soc_dbg_ctrl_env_cfg.sv: {is_include_file: true}
       - soc_dbg_ctrl_env_cov.sv: {is_include_file: true}
       - soc_dbg_ctrl_virtual_sequencer.sv: {is_include_file: true}

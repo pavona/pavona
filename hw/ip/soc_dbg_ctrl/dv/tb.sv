@@ -22,7 +22,7 @@ module tb;
   rst_shadowed_if         rst_shad_if   (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   tl_if                   tl_csr_if     (.clk(clk), .rst_n(rst_n));
   tl_if                   tl_jtag_if    (.clk(clk), .rst_n(rst_n));
-  soc_dbg_ctrl_misc_io_if misc_if       ();
+  soc_dbg_ctrl_misc_io_if misc_if       (.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT()
 

@@ -16,6 +16,8 @@ package soc_dbg_ctrl_env_pkg;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import prim_mubi_pkg::*;
+  import pwrmgr_pkg::*;
+  import rom_ctrl_pkg::*;
   import soc_dbg_ctrl_pkg::*;
   import soc_dbg_ctrl_core_ral_pkg::*;
   import soc_dbg_ctrl_jtag_ral_pkg::*;
@@ -41,6 +43,13 @@ package soc_dbg_ctrl_env_pkg;
   // Functions
 
   // Package sources
+  `include "soc_dbg_ctrl_misc_item.sv"
+  `include "soc_dbg_ctrl_misc_agent_cfg.sv"
+  `include "soc_dbg_ctrl_misc_sequencer.sv"
+  `include "soc_dbg_ctrl_misc_monitor.sv"
+  `include "soc_dbg_ctrl_misc_driver.sv"
+  `include "soc_dbg_ctrl_misc_agent.sv"
+  `include "soc_dbg_ctrl_misc_seq.sv"
   `include "soc_dbg_ctrl_env_cfg.sv"
   `include "soc_dbg_ctrl_env_cov.sv"
   `include "soc_dbg_ctrl_virtual_sequencer.sv"
