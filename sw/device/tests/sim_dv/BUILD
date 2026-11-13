@@ -187,9 +187,12 @@ pavona_test(
 pavona_test(
     name = "otp_ctrl_vendor_test_csr_access_test",
     srcs = ["otp_ctrl_vendor_test_csr_access_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -402,8 +405,12 @@ pavona_test(
 pavona_test(
     name = "pwrmgr_main_power_glitch_test",
     srcs = ["pwrmgr_main_power_glitch_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
@@ -523,9 +530,12 @@ pavona_test(
 pavona_test(
     name = "spi_host_tx_rx_test",
     srcs = ["spi_host_tx_rx_test.c"],
-    exec_env = {"//hw/top_egret:sim_dv": None},
+    exec_env = {
+        "//hw/top_dragonfly:sim_dv": None,
+        "//hw/top_egret:sim_dv": None,
+    },
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
@@ -536,7 +546,15 @@ pavona_test(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + pavona_select_top(
+        {
+            "egret": [
+                "//hw/top_egret/sw/autogen:top_egret",
+            ],
+            "dragonfly": [],
+        },
+        [],
+    ),
 )
 
 pavona_test(

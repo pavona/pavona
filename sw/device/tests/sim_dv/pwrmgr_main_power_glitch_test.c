@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,9 +10,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
 
 // When the test first runs the rstmgr's `reset_info` CSR should have the POR
 // bit set, the code clears reset_info and calls wait_for_interrupt(). The WFI
@@ -23,8 +25,7 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
 
   // Initialize rstmgr since this will check some registers.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EGRET_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Notice we are clearing rstmgr's RESET_INFO, so after the power glitch there
   // is only one bit set.
