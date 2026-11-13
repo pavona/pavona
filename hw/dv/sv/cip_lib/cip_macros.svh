@@ -101,7 +101,7 @@
 
 `ifndef DV_MUBI16_DIST
 `define DV_MUBI16_DIST(VAR_, T_WEIGHT_ = 2, F_WEIGHT_ = 2, OTHER_WEIGHT_ = 1) \
-  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, (1 << 16) - 1, F_WEIGHT_, OTHER_WEIGHT_)
+  `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, (1 << 16) - 1, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
 
