@@ -4,7 +4,7 @@
 * **DV**
   * Verify all ALERT_HANDLER IP features by running dynamic simulations with a SV/UVM based testbench
   * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
-  * Verify transmitter and receiver pairs for alert (/hw/ip/prim/dv/prim_alert) and escalation (/hw/ip/prim/dv/prim_esc) via direct stimulus.
+  * Verify transmitter and receiver pairs for alert (../../../../ip/prim/dv/prim_alert) and escalation (../../../../ip/prim/dv/prim_esc) via direct stimulus.
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
   * Verify transmitter and receiver pairs for alert and escalator

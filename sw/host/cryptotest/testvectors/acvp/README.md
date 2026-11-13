@@ -9,7 +9,7 @@ It registers the capabilities, hands over the vector sets it downloads, and subm
 A session therefore arrives as one vector set per algorithm and mode, each needing a response in return.
 
 We aim to make answering those vector sets as close to a single command as we can.
-The registration below records what the cryptolib claims, and [`util/acvp_client.py`](/util/acvp_client.py) runs a session's vector sets on the device and produces the responses to submit.
+The registration below records what the cryptolib claims, and [`util/acvp_client.py`](../../../../../util/acvp_client.py) runs a session's vector sets on the device and produces the responses to submit.
 
 `registration/` documents the ACVP capabilities supported by the cryptolib ACVP harness, one file per algorithm and mode.
 Each file is a self-contained JSON object in the format defined by the [ACVP specification](https://pages.nist.gov/ACVP/).
@@ -141,7 +141,7 @@ The `_hardened` variants of the ML-DSA and ML-KEM targets always test the harden
 
 ### Running your own ACVP test vectors
 
-For running your own vector sets (e.g., during certification) [`util/acvp_client.py`](/util/acvp_client.py) can be used.
+For running your own vector sets (e.g., during certification) [`util/acvp_client.py`](../../../../../util/acvp_client.py) can be used.
 It converts ACVP prompts into test vector files and runs them through the cryptolib implementations.
 Optionally, expected results can be passed (e.g., during testing).
 
