@@ -76,7 +76,7 @@ module pinmux
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alerts[0])
+    .intg_err_o(alerts[AlertFatalFaultIdx])
   );
 
   ////////////
@@ -503,9 +503,10 @@ module pinmux
   // Check that an integrity error in the register block will cause the alert sender to be told to
   // send an alert. This is equivalent to ASSERT_ERROR_TRIGGER_ALERT_IN (but doesn't set
   // unused_assert_connected, because that signal doesn't exist).
-  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[0])
+  `ASSERT(FpvSecCmBusIntegrity_A, $rose(u_reg.intg_err) |-> ##[0:1] alerts[AlertFatalFaultIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 
 endmodule : pinmux
