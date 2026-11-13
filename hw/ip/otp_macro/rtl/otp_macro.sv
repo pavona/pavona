@@ -10,11 +10,11 @@ module otp_macro
   import otp_macro_pkg::*;
 #(
   // Native OTP word size. This determines the size_i granule.
-  parameter  int    Width            = 16,
-  parameter  int    Depth            = 1024,
+  parameter  int    Width            = otp_ctrl_macro_pkg::OtpWidth,
+  parameter  int    Depth            = otp_ctrl_macro_pkg::OtpDepth,
   // This determines the maximum number of native words that
   // can be transferred across the interface in one cycle.
-  parameter  int    SizeWidth        = 2,
+  parameter  int    SizeWidth        = otp_ctrl_macro_pkg::OtpSizeWidth,
   // VMEM file to initialize the memory with
   parameter         MemInitFile   = "",
   // Vendor test partition offset and size (both in bytes)
@@ -541,6 +541,7 @@ module otp_macro
   // Check all parameters are as expected.
   `ASSERT_INIT(WidthMatches_A, Width == otp_ctrl_macro_pkg::OtpWidth)
   `ASSERT_INIT(DepthMatches_A, Depth == otp_ctrl_macro_pkg::OtpDepth)
+  `ASSERT_INIT(AddrWidthMatches_A, prim_util_pkg::vbits(Depth) == otp_ctrl_macro_pkg::OtpAddrWidth)
   `ASSERT_INIT(SizeWidthMatches_A, SizeWidth == otp_ctrl_macro_pkg::OtpSizeWidth)
   `ASSERT_INIT(VendorTestOffsetMatches_A, VendorTestOffset == otp_ctrl_reg_pkg::VendorTestOffset)
   `ASSERT_INIT(VendorTestSizeMatches_A, VendorTestSize == otp_ctrl_reg_pkg::VendorTestSize)
