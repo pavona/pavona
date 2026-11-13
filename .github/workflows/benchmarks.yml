@@ -1,0 +1,41 @@
+# Copyright zeroRISC Inc.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Benchmarks
+on:
+  schedule:
+    # Saturdays at 2:00a GMT.
+    - cron: "00 02 * * SAT"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmarks:
+    name: Benchmarks
+    # Do not run in forks
+    if: github.repository == 'pavona/pavona'
+    runs-on:
+      group: pavona-basic
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      # Each benchmark writes its results to results/<benchmark>.
+      - name: Collect ACC benchmarks
+        run: |
+          bench/acc/collect_stats.sh //sw/acc/crypto/tests:benchmarks
+          mkdir -p results/acc
+          bench/acc/analyze_stats.py "bench/acc/logs/$(git log -n1 --pretty=%h)" \
+            --csv results/acc/cycles.csv --size-csv results/acc/sizes.csv
+      - uses: actions/checkout@v7
+        with:
+          repository: pavona/performance-dashboard
+          ref: main
+          path: performance-dashboard
+          ssh-key: ${{ secrets.PERF_DASHBOARD_DEPLOY_KEY }}
+      - name: Publish
+        run: performance-dashboard/add_run.py . results
