@@ -533,6 +533,16 @@ typedef enum otcrypto_lib_version {
 } otcrypto_lib_version_t;
 
 /**
+ * CDI values used to determine the key manager secret chain to use for
+ * hardware-backed keys. Attestation keys are designed to rotate across
+ * firmware upgrades, while sealing keys are not.
+ */
+typedef enum otcrypto_key_cdi {
+  kOtcryptoKeyCdiSealing = 0x0,
+  kOtcryptoKeyCdiAttestation = 0x1,
+} otcrypto_key_cdi_t;
+
+/**
  * Struct to represent the configuration of a blinded key.
  */
 typedef struct otcrypto_key_config {
@@ -559,6 +569,11 @@ typedef struct otcrypto_key_config {
    * Whether the key can be exported (always false if `hw_backed` is true).
    */
   hardened_bool_t exportable;
+  /**
+   * Key manager CDI to use for hardware-backed keys (ignored if `hw_backed` is
+   * false).
+   */
+  otcrypto_key_cdi_t cdi;
   /**
    * Key security level.
    */

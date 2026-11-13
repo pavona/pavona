@@ -11,8 +11,6 @@
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/ecc/p256_insn_counts.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '2', 'r')
 
