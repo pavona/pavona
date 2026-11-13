@@ -317,8 +317,8 @@ class BootDataReadTest : public BootDataTest {};
 
 TEST_F(BootDataReadTest, ReadBothValidTest1) {
   // Expect both pages to be checked, with both giving valid entries.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, EntryPage(kValidEntry0));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, EntryPage(kValidEntry1));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -328,8 +328,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest1) {
 
 TEST_F(BootDataReadTest, ReadBothValidTest2) {
   // Same as above, but swap which page contains `test_entry_1`.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry1));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry0));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, EntryPage(kValidEntry1));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, EntryPage(kValidEntry0));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -339,8 +339,8 @@ TEST_F(BootDataReadTest, ReadBothValidTest2) {
 
 TEST_F(BootDataReadTest, ReadOneEntryTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, EntryPage(kValidEntry0));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, ErasedPage());
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
@@ -349,20 +349,21 @@ TEST_F(BootDataReadTest, ReadOneEntryTest) {
 
 TEST_F(BootDataReadTest, ReadOneValidTest) {
   // Expect both pages to be searched, but give only a valid entry for one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, EntryPage(kValidEntry0));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
+                 EntryPage(kValidEntry1, false));
 
   boot_data_t boot_data = {{0}};
   EXPECT_EQ(boot_data_read(kLcStateTest, &boot_data), kErrorOk);
-  // `...BootData1` had an entry with a higher `.counter`, but it has an
+  // `...BOOT_DATA1` had an entry with a higher `.counter`, but it has an
   // invalid digest and should not be chosen.
   EXPECT_EQ(boot_data, kValidEntry0);
 }
 
 TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
   // Expect both pages to be searched, but give no entry for either.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, ErasedPage());
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, ErasedPage());
 
   // Expect to fall back to loading the default entry.
   ExpectDefaultEntryRead();
@@ -374,8 +375,10 @@ TEST_F(BootDataReadTest, ReadErasedDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
   // Expect both pages to be searched, but give invalid entries for both.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntry0, false));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, EntryPage(kValidEntry1, false));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
+                 EntryPage(kValidEntry0, false));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
+                 EntryPage(kValidEntry1, false));
 
   // Expect to fall back to loading the default entry.
   ExpectDefaultEntryRead();
@@ -391,8 +394,8 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
 //
 // TEST_F(BootDataReadTest, ReadDefaultNotAllowedInProdTest) {
 //  // Expect both pages to be searched, but give no entry for either.
-//  ExpectPageScan(&kFlashCtrlInfoPageBootData0, ErasedPage());
-//  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+//  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, ErasedPage());
+//  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, ErasedPage());
 //
 //  // Do not expect the default entry to be read.
 //  boot_data_t boot_data = {{0}};
@@ -401,8 +404,8 @@ TEST_F(BootDataReadTest, ReadInvalidDefaultTest) {
 
 TEST_F(BootDataReadTest, ReadV1AsV2Test) {
   // Expect both to be searched, but only provide an entry in one.
-  ExpectPageScan(&kFlashCtrlInfoPageBootData0, EntryPage(kValidEntryV1));
-  ExpectPageScan(&kFlashCtrlInfoPageBootData1, ErasedPage());
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, EntryPage(kValidEntryV1));
+  ExpectPageScan(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, ErasedPage());
 
   // Expect a new digest computation on version 2 of the boot data.
   ExpectDigestCompute(kValidEntry0, true);

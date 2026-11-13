@@ -1,0 +1,536 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+    flash_info: {
+        width: "8", // bytes
+        depth: "5120", // 20 2KiB pages = 5120 `width`-byte words.
+        page_size: "2048", // bytes
+    }
+    banks: [
+        {
+            types: [
+                {
+                    // Bank 0 Type 0 pages
+                    pages: [
+                        {
+                            name: "FACTORY_ID",
+                            items: [
+                                {
+                                    name: "FACTORY_ID_LOT_NAME_PADDING",
+                                    size: "80",
+                                },
+                                {
+                                    name: "FACTORY_ID_LOT_NAME",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_NUMBER_PADDING",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_NUMBER",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_X_COORD_PADDING",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_X_COORD",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_Y_COORD_PADDING",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_WAFER_Y_COORD",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_PROCESS_DATA_PADDING",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_PROCESS_DATA",
+                                    size: "8",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_CALIBRATION_DATA_PADDING",
+                                    size: "8",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_CALIBRATION_DATA",
+                                    size: "156",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_CFG_VERSION_PADDING",
+                                    size: "20",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_CFG_VERSION",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_CP_DEVICE_ID_PADDING",
+                                    size: "76",
+                                },
+                                {
+                                    name: "FACTORY_ID_CP_DEVICE_ID",
+                                    size: "16",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_INDIV_PATCH_ADDR",
+                                    size: "4",
+                                },
+                                {
+                                    name: "FACTORY_ID_AST_INDIV_PATCH_VAL",
+                                    size: "4",
+                                },
+                            ],
+                        },
+                        {
+                            name: "CREATOR_SECRET",
+                            items: [
+                                {
+                                    name: "CREATOR_SECRET_KEY_SEED",
+                                    size: "32",
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_SECRET",
+                            items: [
+                                {
+                                    name: "OWNER_SECRET_KEY_SEED",
+                                    size: "32",
+                                }
+                            ],
+                        },
+                        {
+                            name: "WAFER_AUTH_SECRET",
+                            items: [
+                                {
+                                    name: "WAFER_AUTH_SECRET",
+                                    size: "32",
+                                    desc: "Wafer authentication secret used during provisioning.",
+                                }
+                            ],
+                        },
+                        {
+                            name: "ATTESTATION_KEY_SEEDS",
+                            items: [
+                                {
+                                    "name": "ATTESTATION_KEY_SEEDS_UDS_KEY_SEED",
+                                    size: "40",
+                                }
+                                {
+                                    "name": "ATTESTATION_KEY_SEEDS_CDI0_KEY_SEED",
+                                    size: "40",
+                                }
+                                {
+                                    "name": "ATTESTATION_KEY_SEEDS_CDI1_KEY_SEED",
+                                    size: "40",
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED0",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED0",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED1",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED1",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED2",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED2",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED3",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "FACTORY_CERTS",
+                            items: [
+                                {
+                                    name: "DICE_UDS_CERTIFCATE",
+                                    absorb: true,
+                                    desc: '''
+                                          DICE certificate endorsing the Unique Device Secret (UDS) of the chip.
+                                          This certificate is endorsed at manufacturing time and should never be
+                                          modified post-provisioning.
+                                          ''',
+                                }
+                            ],
+                        },
+                    ],
+                },
+                {
+                    // Bank 0 Type 1 pages
+                    pages: [
+                        {
+                            name: "UNALLOCATED0",
+                            items: [],
+                        },
+                    ]
+                },
+                {
+                    // Bank 0 Type 2 pages
+                    pages: [
+                        {
+                            name: "UNALLOCATED1",
+                            absorb: true,
+                            items: [],
+                        },
+                        {
+                            name: "UNALLOCATED2",
+                            absorb: true,
+                            items: [],
+                        },
+                    ]
+                },
+            ],
+        },
+        {
+            types: [
+                {
+                    // Bank 1 Type 0 pages
+                    pages: [
+                        {
+                            name: "BOOT_DATA0",
+                            items: [
+                                {
+                                    name: "BOOT_DATA0",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "BOOT_DATA1",
+                            items: [
+                                {
+                                    name: "BOOT_DATA1",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_SLOT0",
+                            items: [
+                                {
+                                    name: "OWNER_SLOT0_TLV_HEADER_TAG",
+                                    size: "4",
+                                    desc: '''
+                                          Tag identifying the data structure as an owner block.
+                                          Should always be set to 'OWNR'; all other values are invalid.
+                                          ''',
+                                },
+                                {
+                                    name: "OWNER_SLOT0_TLV_HEADER_LENGTH",
+                                    size: "2",
+                                    desc: "Specifies the length of the owner block.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_TLV_HEADER_VERSION_MAJOR",
+                                    size: "1",
+                                    desc: "Owner block structure major version number.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_TLV_HEADER_VERSION_MINOR",
+                                    size: "1",
+                                    desc: "Owner block structure minor version number.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_CONFIG_VERSION",
+                                    size: "4",
+                                    desc: "Configuration version (monotonically increasing per owner).",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_SRAM_EXEC_MODE",
+                                    size: "4",
+                                    desc: "SRAM execution configuration (DisabledLocked, Disabled, Enabled).",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_OWNERSHIP_KEY_ALG",
+                                    size: "4",
+                                    desc: "Ownership key algorithm (currently, only ECDSA is supported).",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_UPDATE_MODE",
+                                    size: "4",
+                                    desc: "Ownership update mode (one of OPEN, SELF, NEWV)",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_MIN_SECURITY_VERSION_BL0",
+                                    size: "4",
+                                    desc: "Set the minimum security version to this value (UINT32_MAX: no change)",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_LOCK_CONSTRAINT",
+                                    size: "4",
+                                    desc: "The device ID locking constraint.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_DEVICE_ID",
+                                    size: "32",
+                                    desc: "The device ID to which this config applies.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_RESERVED",
+                                    size: "64",
+                                    desc: "Reserved space for future use.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_FIRMWARE_CODESIGN_ECDSA_KEY",
+                                    size: "64",
+                                    desc: "ECDSA-P256 public key for owner firmware verification.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_FIRMWARE_CODESIGN_SPX_KEY",
+                                    size: "32",
+                                    desc: "SPHINCS+-128s public key for owner firmware verification.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_UNLOCK_ECDSA_KEY",
+                                    size: "64",
+                                    desc: "ECDSA-P256 public key for owner unlock.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_UNLOCK_SPX_KEY",
+                                    size: "32",
+                                    desc: "SPHINCS+-128s public key for owner unlock.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_DATA",
+                                    size: "1536",
+                                    desc: "Data region to hold the other configuration structs.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_OWNER_ECDSA_SIGNATURE",
+                                    size: "64",
+                                    desc: "ECDSA-P256 signature over the owner block with the owner private key.",
+                                },
+                                {
+                                    name: "OWNER_SLOT0_SEAL",
+                                    size: "32",
+                                    desc: "A sealing value to seal the owner block to a specific chip.",
+                                },
+                            ],
+                        },
+                        {
+                            name: "OWNER_SLOT1",
+                            items: [
+                                {
+                                    name: "OWNER_SLOT1_TLV_HEADER_TAG",
+                                    size: "4",
+                                    desc: '''
+                                          Tag identifying the data structure as an owner block.
+                                          Should always be set to 'OWNR'; all other values are invalid.
+                                          ''',
+                                },
+                                {
+                                    name: "OWNER_SLOT1_TLV_HEADER_LENGTH",
+                                    size: "2",
+                                    desc: "Specifies the length of the owner block.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_TLV_HEADER_VERSION_MAJOR",
+                                    size: "1",
+                                    desc: "Owner block structure major version number.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_TLV_HEADER_VERSION_MINOR",
+                                    size: "1",
+                                    desc: "Owner block structure minor version number.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_CONFIG_VERSION",
+                                    size: "4",
+                                    desc: "Configuration version (monotonically increasing per owner).",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_SRAM_EXEC_MODE",
+                                    size: "4",
+                                    desc: "SRAM execution configuration (DisabledLocked, Disabled, Enabled).",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_OWNERSHIP_KEY_ALG",
+                                    size: "4",
+                                    desc: "Ownership key algorithm (currently, only ECDSA is supported).",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_UPDATE_MODE",
+                                    size: "4",
+                                    desc: "Ownership update mode (one of OPEN, SELF, NEWV)",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_MIN_SECURITY_VERSION_BL0",
+                                    size: "4",
+                                    desc: "Set the minimum security version to this value (UINT32_MAX: no change)",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_LOCK_CONSTRAINT",
+                                    size: "4",
+                                    desc: "The device ID locking constraint.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_DEVICE_ID",
+                                    size: "32",
+                                    desc: "The device ID to which this config applies.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_RESERVED",
+                                    size: "64",
+                                    desc: "Reserved space for future use.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_FIRMWARE_CODESIGN_ECDSA_KEY",
+                                    size: "64",
+                                    desc: "ECDSA-P256 public key for owner firmware verification.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_FIRMWARE_CODESIGN_SPX_KEY",
+                                    size: "32",
+                                    desc: "SPHINCS+-128s public key for owner firmware verification.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_UNLOCK_ECDSA_KEY",
+                                    size: "64",
+                                    desc: "ECDSA-P256 public key for ownership unlock.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_UNLOCK_SPX_KEY",
+                                    size: "32",
+                                    desc: "SPHINCS+-128s public key for ownership unlock.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_DATA",
+                                    size: "1536",
+                                    desc: "Data region to hold the other configuration structs.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_OWNER_ECDSA_SIGNATURE",
+                                    size: "64",
+                                    desc: "ECDSA-P256 signature over the owner block with the owner private key.",
+                                },
+                                {
+                                    name: "OWNER_SLOT1_SEAL",
+                                    size: "32",
+                                    desc: "A sealing value to seal the owner block to a specific chip.",
+                                },
+                            ],
+                        },
+                        {
+                            name: "CREATOR_RESERVED0",
+                            items: [
+                                {
+                                    name: "CREATOR_RESERVED0",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED4",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED4",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED5",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED5",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED6",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED6",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "OWNER_RESERVED7",
+                            items: [
+                                {
+                                    name: "OWNER_RESERVED7",
+                                    absorb: true,
+                                }
+                            ],
+                        },
+                        {
+                            name: "DICE_CERTS",
+                            items: [
+                                {
+                                    name: "DICE_CERTIFCATES",
+                                    absorb: true,
+                                    desc: '''
+                                          DICE certificate chain endorsing the secure boot stages following UDS:
+                                          (Owner Intermediate (CDI_0), Silicon Owner (CDI_1), ...). Certificates
+                                          are variable length and stored without any zero-padding in between.
+
+                                          The certificates may be updated in-field to correspond to changes to
+                                          chip state modifiable post-provisioning, such as the silicon creator
+                                          firmware.
+                                          ''',
+                                },
+                            ],
+                        },
+                    ],
+                },
+                {
+                    // Bank 1 Type 1 pages
+                    pages: [
+                        {
+                            name: "UNALLOCATED3",
+                            items: [],
+                        },
+                    ]
+                },
+                {
+                    // Bank 1 Type 2 pages
+                    pages: [
+                        {
+                            name: "UNALLOCATED4",
+                            items: [],
+                        },
+                        {
+                            name: "UNALLOCATED5",
+                            items: [],
+                        },
+                    ]
+                },
+            ],
+        },
+    ],
+}

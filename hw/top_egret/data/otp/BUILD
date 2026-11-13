@@ -43,6 +43,11 @@ otp_json(
                 # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
+                # Default values for flash scramble / ecc / he_en. This OTP word
+                # contains byte-aligned, packed, 4-bit mubi values.  See the
+                # flash_ctrl driver bitfield definitions in
+                # sw/device/silicon_creator/lib/drivers/flash_ctrl.h.
+                "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": otp_hex(0x0),
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_TRUE),

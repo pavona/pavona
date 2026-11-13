@@ -75,5 +75,11 @@
       type: "string"
       default: "flash_ctrl"
     }
+    {
+      name: "flash_info_mmap"
+      desc: "An object containing the flash info memory map and all attributes"
+      type: "object"
+      default: {}
+    }
   ]
 }

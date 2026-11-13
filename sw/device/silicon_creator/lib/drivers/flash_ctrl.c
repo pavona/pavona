@@ -285,8 +285,8 @@ void flash_ctrl_init(void) {
   flash_ctrl_data_default_cfg_set(data_default_cfg);
   // Configure scrambling, ECC, and HE for `boot_data` pages.
   flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_boot_data_cfg_get();
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, boot_data_cfg);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, boot_data_cfg);
 }
 
 void flash_ctrl_disable(void) {
@@ -663,14 +663,14 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
  */
 static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
     // Bank 0
-    &kFlashCtrlInfoPageFactoryId,
-    &kFlashCtrlInfoPageCreatorSecret,
-    &kFlashCtrlInfoPageOwnerSecret,
-    &kFlashCtrlInfoPageWaferAuthSecret,
+    &FLASH_CTRL_INFO_PAGE_FACTORY_ID,
+    &FLASH_CTRL_INFO_PAGE_CREATOR_SECRET,
+    &FLASH_CTRL_INFO_PAGE_OWNER_SECRET,
+    &FLASH_CTRL_INFO_PAGE_WAFER_AUTH_SECRET,
     // Bank 1
-    &kFlashCtrlInfoPageBootData0,
-    &kFlashCtrlInfoPageBootData1,
-    &kFlashCtrlInfoPageCreatorReserved0,
+    &FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
+    &FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
+    &FLASH_CTRL_INFO_PAGE_CREATOR_RESERVED0,
 };
 
 enum {

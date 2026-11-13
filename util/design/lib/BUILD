@@ -24,6 +24,22 @@ py_test(
 )
 
 py_library(
+    name = "flash_info_mem_map",
+    srcs = ["FlashInfoMemMap.py"],
+    imports = [
+        "../",
+        "../../",
+    ],
+    deps = [
+        ":common",
+        "//util/basegen",
+        "//util/design/mubi:prim_mubi",
+        "//util/topgen",
+        requirement("tabulate"),
+    ],
+)
+
+py_library(
     name = "immutable_section_processor",
     srcs = ["ImmutableSectionProcessor.py"],
     imports = ["../../"],

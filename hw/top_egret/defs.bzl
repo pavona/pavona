@@ -5,6 +5,7 @@
 
 load("//rules/pavona:hw.bzl", "pavona_top")
 load("//hw/top_egret/data/autogen:defs.bzl", "EGRET_IPS")
+load("//hw/top_egret/data/flash_info:defs.bzl", "EGRET_STD_FLASH_INFO_OVERLAYS")
 load("//hw/top_egret/data/otp:defs.bzl", "EGRET_OTP_SIGVERIFY_FAKE_KEYS", "EGRET_STD_OTP_OVERLAYS")
 
 EGRET = pavona_top(
@@ -16,7 +17,9 @@ EGRET = pavona_top(
     top_verilator_binary = {"binary": ["lowrisc_dv_top_egret_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"]},
     top_ld = "//hw/top_egret/sw/autogen:top_egret_memory",
     otp_map = "//hw/top_egret/data/otp:otp_ctrl_mmap.hjson",
+    flash_info_map = "//hw/top_egret/data/flash_info:flash_info_mmap.hjson",
     std_otp_overlay = EGRET_STD_OTP_OVERLAYS,
+    std_flash_info_overlay = EGRET_STD_FLASH_INFO_OVERLAYS,
     otp_sigverify_fake_keys = EGRET_OTP_SIGVERIFY_FAKE_KEYS,
     ips = EGRET_IPS,
     secret_cfgs = {

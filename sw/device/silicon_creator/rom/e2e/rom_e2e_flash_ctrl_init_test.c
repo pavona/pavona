@@ -48,34 +48,46 @@ typedef struct flash_cfg_reg {
 } flash_cfg_reg_t;
 
 /**
- * Check that an info page is in the expected bank.
- */
-static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
-                                 uint32_t expected_bank) {
-#define INFO_PAGE_BANK_CASE_(name_, bank_, page_) \
-  if (&name_ == info_page) {                      \
-    CHECK(bank_ == expected_bank);                \
-    return;                                       \
-  }
-
-  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_BANK_CASE_);
-  CHECK(false);
-
-#undef INFO_PAGE_BANK_CASE_
-}
-
-/**
  * Check that an info page has the expected page number.
  */
 static void check_info_page_pagenum(const flash_ctrl_info_page_t *info_page,
+                                    uint32_t expected_banknum,
+                                    uint32_t expected_typenum,
                                     uint32_t expected_pagenum) {
-#define INFO_PAGE_PAGENUM_CASE_(name_, bank_, page_) \
-  if (&name_ == info_page) {                         \
-    CHECK(page_ == expected_pagenum);                \
-    return;                                          \
+#define INFO_PAGE_PAGENUM_CASE_(name_, bank_, type_, page_) \
+  if (&name_ == info_page) {                                \
+    CHECK(bank_ == expected_banknum);                       \
+    CHECK(type_ == expected_typenum);                       \
+    CHECK(page_ == expected_pagenum);                       \
+    return;                                                 \
   }
 
-  FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_PAGENUM_CASE_);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_FACTORY_ID, 0, 0, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_CREATOR_SECRET, 0, 0, 1);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_SECRET, 0, 0, 2);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_WAFER_AUTH_SECRET, 0, 0, 3);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS, 0, 0, 4);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED0, 0, 0, 5);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED1, 0, 0, 6);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED2, 0, 0, 7);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED3, 0, 0, 8);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_FACTORY_CERTS, 0, 0, 9);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED0, 0, 1, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED1, 0, 2, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED2, 0, 2, 1);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_BOOT_DATA0, 1, 0, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_BOOT_DATA1, 1, 0, 1);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 1, 0, 2);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 1, 0, 3);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_CREATOR_RESERVED0, 1, 0, 4);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED4, 1, 0, 5);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED5, 1, 0, 6);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6, 1, 0, 7);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED7, 1, 0, 8);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_DICE_CERTS, 1, 0, 9);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED3, 1, 1, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED4, 1, 2, 0);
+  INFO_PAGE_PAGENUM_CASE_(FLASH_CTRL_INFO_PAGE_UNALLOCATED5, 1, 2, 1);
   CHECK(false);
 
 #undef INFO_PAGE_PAGENUM_CASE_
@@ -137,8 +149,8 @@ static void default_cfg_test(void) {
  *
  * The `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP value should match the
  * scrambling, ecc, and he settings in info0 for the boot partitions
- * `kFlashCtrlInfoPageBootData0` (bank 1, page 0) and
- * `kFlashCtrlInfoPageBootData1` (bank 1, page 1).
+ * `FLASH_CTRL_INFO_PAGE_BOOT_DATA0` (bank 1, page 0) and
+ * `FLASH_CTRL_INFO_PAGE_BOOT_DATA1` (bank 1, page 1).
  */
 static void boot_info_cfg_test(void) {
   // Double-check the expected bank and page number for the boot info pages.
@@ -146,12 +158,10 @@ static void boot_info_cfg_test(void) {
   // that construct the page-specific constants.
   //
   // Expected values:
-  // * kFlashCtrlInfoPageBootData0 -> bank 1, page 0
-  // * kFlashCtrlInfoPageBootData1 -> bank 1, page 1
-  check_info_page_bank(&kFlashCtrlInfoPageBootData0, 1);
-  check_info_page_pagenum(&kFlashCtrlInfoPageBootData0, 0);
-  check_info_page_bank(&kFlashCtrlInfoPageBootData1, 1);
-  check_info_page_pagenum(&kFlashCtrlInfoPageBootData1, 1);
+  // * FLASH_CTRL_INFO_PAGE_BOOT_DATA0 -> bank 1, type 0, page 0
+  // * FLASH_CTRL_INFO_PAGE_BOOT_DATA1 -> bank 1, type 0, page 1
+  check_info_page_pagenum(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0, 1, 0, 0);
+  check_info_page_pagenum(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1, 1, 0, 1);
 
   // Extract expected values from OTP.
   uint32_t otp_boot_info_cfg_value =
