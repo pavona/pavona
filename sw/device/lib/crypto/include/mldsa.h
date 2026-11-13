@@ -17,8 +17,8 @@
  *   keyblob = rho(32) || K(32) || tr(64) || s1(L*pe) || s2(K*pe) || t0(K*416)
  *
  * The hardened ACC implementation stores the key masked, in a component-major
- * layout: the public key material, then the two Boolean shares of each packed
- * secret polynomial (interleaved), then the two shares of K:
+ * layout: the public key material, then the two Boolean shares of each
+ * bit-sliced secret polynomial (interleaved), then the two shares of K:
  *
  *   keyblob = sk_public(128 + K*416) || s1s2_shares(2*(L+K)*pe) || K_shares(64)
  *
@@ -27,8 +27,12 @@
  *                 key material (rho, tr, t0), unmasked; the 32-byte K slot is
  *                 zeroed (K is carried masked in K_shares)
  *   s1s2_shares = per eta polynomial [share0|share1], each `pe` bytes (Boolean
- *                 shares of the packed s1/s2, L+K polynomials)
+ *                 shares of the bit-sliced s1/s2, L+K polynomials)
  *   K_shares    = K_share0(32) || K_share1(32)  (Boolean shares, K0 ^ K1 == K)
+ *
+ * A bit-sliced polynomial holds the b-bit values eta - c of its 256
+ * coefficients c (b = 3 for eta=2, 4 for eta=4) as b bit planes of 32 bytes:
+ * bit p of byte j in plane i is bit i of the value for coefficient 8*j + p.
  *
  * `pe` is POLYETA_PACKEDBYTES (96 for eta=2, 128 for eta=4). The masked blob is
  * 128 + K*416 + 2*(L+K)*pe + 64 bytes (3392/5504/6400 for ML-DSA-44/65/87), and
@@ -88,18 +92,21 @@ typedef enum otcrypto_mldsa_sign_mode {
 enum {
   kOtcryptoMldsa44PublicKeyBytes = 1312,
   kOtcryptoMldsa44SecretKeyBytes = 2560,
+  kOtcryptoMldsa44MaskedSecretKeyBytes = 128 + 4 * 416 + 2 * 8 * 96 + 64,
   kOtcryptoMldsa44SignatureBytes = 2420,
   kOtcryptoMldsa44SeedBytes = 32,
   kOtcryptoMldsa44SeedWords = kOtcryptoMldsa44SeedBytes / sizeof(uint32_t),
 
   kOtcryptoMldsa65PublicKeyBytes = 1952,
   kOtcryptoMldsa65SecretKeyBytes = 4032,
+  kOtcryptoMldsa65MaskedSecretKeyBytes = 128 + 6 * 416 + 2 * 11 * 128 + 64,
   kOtcryptoMldsa65SignatureBytes = 3309,
   kOtcryptoMldsa65SeedBytes = 32,
   kOtcryptoMldsa65SeedWords = kOtcryptoMldsa65SeedBytes / sizeof(uint32_t),
 
   kOtcryptoMldsa87PublicKeyBytes = 2592,
   kOtcryptoMldsa87SecretKeyBytes = 4896,
+  kOtcryptoMldsa87MaskedSecretKeyBytes = 128 + 8 * 416 + 2 * 15 * 96 + 64,
   kOtcryptoMldsa87SignatureBytes = 4627,
   kOtcryptoMldsa87SeedBytes = 32,
   kOtcryptoMldsa87SeedWords = kOtcryptoMldsa87SeedBytes / sizeof(uint32_t),
@@ -140,8 +147,10 @@ enum {
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-44. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa44SecretKeyBytes / sizeof(uint32_t)) = 1280 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa44SecretKeyBytes / sizeof(uint32_t)) = 640 words, or
+ * ceil(kOtcryptoMldsa44MaskedSecretKeyBytes / sizeof(uint32_t)) = 848 words
+ * for the masked key of a hardened build.
  *
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
@@ -161,8 +170,10 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-44. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa44SecretKeyBytes / sizeof(uint32_t)) = 1280 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa44SecretKeyBytes / sizeof(uint32_t)) = 640 words, or
+ * ceil(kOtcryptoMldsa44MaskedSecretKeyBytes / sizeof(uint32_t)) = 848 words
+ * for the masked key of a hardened build.
  *
  * If an unhardened backend is used (either the Ibex-only implementation
  * or the unhardened ACC implementation), then `seed` must have a length of
@@ -194,7 +205,8 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa44SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa44WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -215,7 +227,8 @@ otcrypto_status_t otcrypto_mldsa44_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa44SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa44SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa44WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -256,8 +269,10 @@ otcrypto_status_t otcrypto_mldsa44_verify(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-65. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa65SecretKeyBytes / sizeof(uint32_t)) = 2016 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa65SecretKeyBytes / sizeof(uint32_t)) = 1008 words, or
+ * ceil(kOtcryptoMldsa65MaskedSecretKeyBytes / sizeof(uint32_t)) = 1376
+ * words for the masked key of a hardened build.
  *
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
@@ -277,8 +292,10 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-65. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa65SecretKeyBytes / sizeof(uint32_t)) = 2016 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa65SecretKeyBytes / sizeof(uint32_t)) = 1008 words, or
+ * ceil(kOtcryptoMldsa65MaskedSecretKeyBytes / sizeof(uint32_t)) = 1376
+ * words for the masked key of a hardened build.
  *
  * If an unhardened backend is used (either the Ibex-only implementation
  * or the unhardened ACC implementation), then `seed` must have a length of
@@ -310,7 +327,8 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa65SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa65WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -331,7 +349,8 @@ otcrypto_status_t otcrypto_mldsa65_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa65SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa65SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa65WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -372,8 +391,10 @@ otcrypto_status_t otcrypto_mldsa65_verify(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-87. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa87SecretKeyBytes / sizeof(uint32_t)) = 2448 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa87SecretKeyBytes / sizeof(uint32_t)) = 1224 words, or
+ * ceil(kOtcryptoMldsa87MaskedSecretKeyBytes / sizeof(uint32_t)) = 1600
+ * words for the masked key of a hardened build.
  *
  * @param[out] public_key Generated public key.
  * @param[out] secret_key Generated secret key.
@@ -393,8 +414,10 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
  * The caller should allocate and partially populate the key structs, including
  * populating the key configuration and allocating space for the keyblob and
  * public key data. The key modes should both indicate ML-DSA-87. The key
- * blob for the secret key should have a length of 2x
- * ceil(kOtcryptoMldsa87SecretKeyBytes / sizeof(uint32_t)) = 2448 words.
+ * blob for the secret key should have a length of
+ * ceil(kOtcryptoMldsa87SecretKeyBytes / sizeof(uint32_t)) = 1224 words, or
+ * ceil(kOtcryptoMldsa87MaskedSecretKeyBytes / sizeof(uint32_t)) = 1600
+ * words for the masked key of a hardened build.
  *
  * If an unhardened backend is used (either the Ibex-only implementation
  * or the unhardened ACC implementation), then `seed` must have a length of
@@ -426,7 +449,8 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
  * @param message Message to sign.
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa87SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa87WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */
@@ -447,7 +471,8 @@ otcrypto_status_t otcrypto_mldsa87_sign(
  * @param context Context string (optional, may be empty).
  * @param sign_mode Signature mode.
  * @param rnd Randomness for signing (`kOtcryptoMldsa87SeedBytes` bytes).
- * @param[out] signature Pointer to the generated signature.
+ * @param[out] signature Generated signature, exactly
+ *     `kOtcryptoMldsa87SignatureBytes` bytes long.
  * @param work Work buffer (`kOtcryptoMldsa87WorkBufferSignWords` words).
  * @return Status code (OK or error).
  */

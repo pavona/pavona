@@ -6,6 +6,7 @@
 #include "sw/device/lib/crypto/include/mlkem.h"
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -52,7 +53,56 @@ _Static_assert(kOtcryptoMlkem1024WorkBufferEncapsWords * sizeof(uint32_t) ==
 _Static_assert(kOtcryptoMlkem1024WorkBufferDecapsWords * sizeof(uint32_t) ==
                    MLK_TOTAL_ALLOC_1024_DECAPS,
                "ML-KEM-1024 decaps work buffer size mismatch");
+
+/**
+ * Maps a non-zero mlkem-native return code to an error status.
+ *
+ * @param result mlkem-native return code.
+ * @return BAD_ARGS for an invalid key, or FATAL_ERR for any other failure.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_native_status(int result) {
+  if (result == MLK_ERR_INVALID_PK || result == MLK_ERR_INVALID_SK) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_FATAL_ERR;
+}
 #endif
+
+_Static_assert(kOtcryptoMlkem512MaskedSecretKeyBytes ==
+                   kMlkem512MaskedKeyblobBytes,
+               "ML-KEM-512 masked secret key size mismatch");
+_Static_assert(kOtcryptoMlkem768MaskedSecretKeyBytes ==
+                   kMlkem768MaskedKeyblobBytes,
+               "ML-KEM-768 masked secret key size mismatch");
+_Static_assert(kOtcryptoMlkem1024MaskedSecretKeyBytes ==
+                   kMlkem1024MaskedKeyblobBytes,
+               "ML-KEM-1024 masked secret key size mismatch");
+
+/**
+ * Fills `buf` from a fresh CSRNG instance, uninstantiating it on every exit.
+ *
+ * Shreds `buf` on failure.
+ *
+ * @param[out] buf Destination buffer.
+ * @param len Length of `buf` in words.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t mlkem_csrng_generate(uint32_t *buf, size_t len) {
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+  status_t status = entropy_csrng_generate(&kEntropyEmptySeed, buf, len,
+                                           /*fips_check=*/kHardenedBoolTrue);
+  status_t uninstantiate_status = entropy_csrng_uninstantiate();
+  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
+    status = uninstantiate_status;
+  }
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(buf, len);
+  }
+  return status;
+}
 
 // ML-KEM-512 functions
 
@@ -60,6 +110,11 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem512WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem512KeygenSeedWords) {
@@ -71,6 +126,9 @@ otcrypto_status_t otcrypto_mlkem512_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem512PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem512) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem512SecretKeyBytes) {
@@ -136,6 +194,11 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem512WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem512PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -164,9 +227,6 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -187,7 +247,7 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem512SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -207,17 +267,14 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem512KeygenSeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem512_keygen_derand(randomness_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status = otcrypto_mlkem512_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem512_encapsulate(
@@ -227,17 +284,14 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem512EncapsSeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem512_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem512_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem512_decapsulate(
@@ -245,6 +299,11 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem512WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem512SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -264,7 +323,14 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
@@ -317,7 +383,7 @@ otcrypto_status_t otcrypto_mlkem512_decapsulate(
                    (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem512SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -332,6 +398,11 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem768WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem768KeygenSeedWords) {
@@ -343,6 +414,9 @@ otcrypto_status_t otcrypto_mlkem768_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem768PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem768) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem768SecretKeyBytes) {
@@ -408,6 +482,11 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem768WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem768PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -436,9 +515,6 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -459,7 +535,7 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem768SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -479,17 +555,14 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem768KeygenSeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem768_keygen_derand(randomness_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status = otcrypto_mlkem768_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem768_encapsulate(
@@ -499,17 +572,14 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem768EncapsSeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem768_encapsulate_derand(public_key, randomness_buf,
-                                              ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem768_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem768_decapsulate(
@@ -517,6 +587,11 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem768WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem768SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -536,7 +611,14 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
@@ -589,7 +671,7 @@ otcrypto_status_t otcrypto_mlkem768_decapsulate(
                    (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem768SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -604,6 +686,11 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
     otcrypto_const_word32_buf_t randomness,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMlkem1024WorkBufferKeypairWords]) {
+  if (randomness.data == NULL || public_key == NULL ||
+      public_key->key == NULL || secret_key == NULL ||
+      secret_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 #if defined(ACC_MLKEM_HARDENED)
   // Randomness is masked, so buffer must be twice as long.
   if (randomness.len != 2 * kOtcryptoMlkem1024KeygenSeedWords) {
@@ -615,6 +702,9 @@ otcrypto_status_t otcrypto_mlkem1024_keygen_derand(
   }
 #endif
   if (public_key->key_length != kOtcryptoMlkem1024PublicKeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (public_key->key_mode != kOtcryptoKeyModeMlkem1024) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_length != kOtcryptoMlkem1024SecretKeyBytes) {
@@ -680,6 +770,11 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
     otcrypto_const_word32_buf_t randomness, otcrypto_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem1024WorkBufferEncapsWords]) {
+  if (public_key == NULL || public_key->key == NULL ||
+      randomness.data == NULL || ciphertext.data == NULL ||
+      shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (public_key->key_length != kOtcryptoMlkem1024PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -708,9 +803,6 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
   if (integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (integrity_blinded_key_check(shared_secret) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Write the unmasked shared secret into the first share of the keyblob.
   uint32_t *ss_share0;
@@ -731,7 +823,7 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate_derand(
       (unsigned char *)public_key->key, (const uint8_t *)randomness.data, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem1024SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 
@@ -751,17 +843,14 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem1024KeygenSeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem1024_keygen_derand(randomness_buf, public_key,
-                                          secret_key, work);
+  otcrypto_status_t status = otcrypto_mlkem1024_keygen_derand(
+      randomness_buf, public_key, secret_key, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem1024_encapsulate(
@@ -771,17 +860,14 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem1024EncapsSeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, randomness,
-                                      ARRAYSIZE(randomness),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
-  return otcrypto_mlkem1024_encapsulate_derand(public_key, randomness_buf,
-                                               ciphertext, shared_secret, work);
+  otcrypto_status_t status = otcrypto_mlkem1024_encapsulate_derand(
+      public_key, randomness_buf, ciphertext, shared_secret, work);
+  hardened_memshred(randomness, ARRAYSIZE(randomness));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mlkem1024_decapsulate(
@@ -789,6 +875,11 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     otcrypto_const_word32_buf_t ciphertext,
     otcrypto_blinded_key_t *shared_secret,
     uint32_t work[kOtcryptoMlkem1024WorkBufferDecapsWords]) {
+  if (secret_key == NULL || secret_key->keyblob == NULL ||
+      ciphertext.data == NULL || shared_secret == NULL ||
+      shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (secret_key->config.key_length != kOtcryptoMlkem1024SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -808,7 +899,14 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
     // Shared secret cannot be a hardware-backed key.
     return OTCRYPTO_BAD_ARGS;
   }
-#ifndef ACC_MLKEM_HARDENED
+#if defined(ACC_MLKEM_HARDENED)
+  if (shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassiveRemote &&
+      shared_secret->config.security_level !=
+          kOtcryptoKeySecurityLevelPassivePhysical) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#else
   if (shared_secret->config.security_level !=
       kOtcryptoKeySecurityLevelPassiveRemote) {
     // Reject high-security keys; the underlying implementation is not masked
@@ -861,7 +959,7 @@ otcrypto_status_t otcrypto_mlkem1024_decapsulate(
                              (unsigned char *)secret_key->keyblob, &ctx);
   if (result != 0) {
     memset(ss_share0, 0, kOtcryptoMlkem1024SharedSecretBytes);
-    return OTCRYPTO_FATAL_ERR;
+    return mlkem_native_status(result);
   }
 #endif
 

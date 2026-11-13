@@ -95,6 +95,9 @@ otcrypto_status_t otcrypto_kmac_kdf(
   }
   HARDENED_CHECK_EQ(output_key_material->config.hw_backed, kHardenedBoolFalse);
 
+  // Ensure that the derived key is a symmetric key masked with XOR.
+  HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
+
   // Check the keyblob length.
   HARDENED_TRY(check_keyblob_length(output_key_material));
 

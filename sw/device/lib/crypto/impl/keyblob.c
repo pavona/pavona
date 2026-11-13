@@ -55,16 +55,6 @@ size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   return ceil_div(len_bytes, sizeof(uint32_t));
 }
 
-// Masked PQC secret-key blob sizes: the ACC key layout (see mlkem.h/mldsa.h).
-enum {
-  kMlkem512MaskedKeyblobBytes = 1152 * 2 + 128,
-  kMlkem768MaskedKeyblobBytes = 1152 * 3 + 128,
-  kMlkem1024MaskedKeyblobBytes = 1152 * 4 + 128,
-  kMldsa44MaskedKeyblobBytes = 128 + 4 * 416 + 2 * 8 * 96 + 64,
-  kMldsa65MaskedKeyblobBytes = 128 + 6 * 416 + 2 * 11 * 128 + 64,
-  kMldsa87MaskedKeyblobBytes = 128 + 8 * 416 + 2 * 15 * 96 + 64,
-};
-
 status_t keyblob_num_words(const otcrypto_key_config_t config,
                            size_t *num_words) {
   if (launder32(config.hw_backed) == kHardenedBoolTrue) {
@@ -108,10 +98,13 @@ status_t keyblob_num_words(const otcrypto_key_config_t config,
           return OTCRYPTO_BAD_ARGS;
       }
       *num_words = ceil_div(masked_bytes, sizeof(uint32_t));
-    } else {
+    } else if (launder32(config.security_level) ==
+               kOtcryptoKeySecurityLevelPassiveRemote) {
       HARDENED_CHECK_EQ(config.security_level,
                         kOtcryptoKeySecurityLevelPassiveRemote);
       *num_words = ceil_div(config.key_length, sizeof(uint32_t));
+    } else {
+      return OTCRYPTO_BAD_ARGS;
     }
     return OTCRYPTO_OK;
   }
@@ -126,7 +119,7 @@ status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   } else {
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolFalse);
     size_t num_words = 0;
-    keyblob_num_words(key->config, &num_words);
+    HARDENED_TRY(keyblob_num_words(key->config, &num_words));
     if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
       HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
       HARDENED_CHECK_LE(key->keyblob_length / sizeof(uint32_t), num_words);
@@ -138,6 +131,8 @@ status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
 
 status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1) {
+  HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
+
   // Double-check the length of the keyblob.
   HARDENED_TRY(check_keyblob_length(key));
 
@@ -155,6 +150,7 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
+  HARDENED_TRY(keyblob_ensure_xor_masked(config));
 
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
@@ -248,10 +244,6 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
     case kOtcryptoKeyTypeKdf:
       HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeKdf);
       result ^= launder32(kOtcryptoKeyTypeKdf);
-      break;
-    case kOtcryptoKeyTypeMlkem:
-      HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeMlkem);
-      result ^= launder32(kOtcryptoKeyTypeMlkem);
       break;
     case kOtcryptoKeyTypeEcc:
       // Asymmetric!

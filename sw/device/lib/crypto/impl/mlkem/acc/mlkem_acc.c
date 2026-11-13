@@ -146,19 +146,23 @@ static status_t mlkem_keygen_hardened(uint32_t mode, uint32_t min_insn_count,
 
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
   HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, d0, kAccVarCoins));
-  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, d1,
-                              kAccVarCoins + kMlkemSeedShareBytes));
-  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, z0,
-                              kAccVarCoins + 2 * kMlkemSeedShareBytes));
-  HARDENED_TRY(acc_dmem_write(kMlkemSeedShareWords, z1,
-                              kAccVarCoins + 3 * kMlkemSeedShareBytes));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemSeedShareWords, d0, kAccVarCoins));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemSeedShareWords, d1,
+                                   kAccVarCoins + kMlkemSeedShareBytes));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemSeedShareWords, z0,
+                                   kAccVarCoins + 2 * kMlkemSeedShareBytes));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemSeedShareWords, z1,
+                                   kAccVarCoins + 3 * kMlkemSeedShareBytes));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(pk_words, kAccVarEk, pk));
   ACC_WIPE_IF_ERROR(acc_dmem_read(sk_words, kAccVarDk, sk));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(sk, sk_words);
+  }
+  return status;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -170,8 +174,8 @@ static status_t mlkem_decap_hardened(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
   HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
   HARDENED_TRY(acc_dmem_write(ct_words, ct, kAccVarCt));
-  HARDENED_TRY(acc_dmem_write(sk_words, sk, kAccVarDk));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(sk_words, sk, kAccVarDk));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
 
   // Read the code indicating if the decapsulation key passed the FIPS 203
@@ -180,6 +184,7 @@ static status_t mlkem_decap_hardened(uint32_t mode, uint32_t min_insn_count,
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
   if (launder32(key_ok) != kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    acc_dmem_sec_wipe_nofail();
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
@@ -187,11 +192,13 @@ static status_t mlkem_decap_hardened(uint32_t mode, uint32_t min_insn_count,
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   uint32_t ss_shares[2 * kMlkemSsShareWords];
   ACC_WIPE_IF_ERROR(acc_dmem_read(ARRAYSIZE(ss_shares), kAccVarSs, ss_shares));
-  HARDENED_TRY(acc_dmem_sec_wipe());
-  memcpy(ss_share0, ss_shares, kMlkemSharedSecretBytes);
-  memcpy(ss_share1, &ss_shares[kMlkemSsShareWords], kMlkemSharedSecretBytes);
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
+    memcpy(ss_share0, ss_shares, kMlkemSharedSecretBytes);
+    memcpy(ss_share1, &ss_shares[kMlkemSsShareWords], kMlkemSharedSecretBytes);
+  }
   hardened_memshred(ss_shares, ARRAYSIZE(ss_shares));
-  return OTCRYPTO_OK;
+  return status;
 }
 
 #else  // !ACC_MLKEM_HARDENED
@@ -203,13 +210,17 @@ static status_t mlkem_keygen(uint32_t mode, uint32_t min_insn_count,
                              size_t sk_words) {
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
   HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(kMlkemKeygenSeedWords, coins, kAccVarCoins));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemKeygenSeedWords, coins, kAccVarCoins));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(pk_words, kAccVarEk, pk));
   ACC_WIPE_IF_ERROR(acc_dmem_read(sk_words, kAccVarDk, sk));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(sk, sk_words);
+  }
+  return status;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -221,8 +232,8 @@ static status_t mlkem_decap(uint32_t mode, uint32_t min_insn_count,
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
   HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
   HARDENED_TRY(acc_dmem_write(ct_words, ct, kAccVarCt));
-  HARDENED_TRY(acc_dmem_write(sk_words, sk, kAccVarDk));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(sk_words, sk, kAccVarDk));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
 
   // Read the code indicating if the decapsulation key passed the FIPS 203
@@ -231,13 +242,18 @@ static status_t mlkem_decap(uint32_t mode, uint32_t min_insn_count,
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
   if (launder32(key_ok) != kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    acc_dmem_sec_wipe_nofail();
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
 
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(ss, kMlkemSharedSecretWords);
+  }
+  return status;
 }
 
 #endif  // ACC_MLKEM_HARDENED
@@ -252,9 +268,9 @@ static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
                             uint32_t ss[kMlkemSharedSecretWords]) {
   HARDENED_TRY(acc_load_app(kAccAppMlkem));
   HARDENED_TRY(acc_dmem_write(kAccMlkemModeWords, &mode, kAccVarMode));
-  HARDENED_TRY(acc_dmem_write(kMlkemEncapSeedWords, coins, kAccVarCoins));
-  HARDENED_TRY(acc_dmem_write(pk_words, pk, kAccVarEk));
-  HARDENED_TRY(acc_execute());
+  ACC_WIPE_IF_ERROR(acc_dmem_write(kMlkemEncapSeedWords, coins, kAccVarCoins));
+  ACC_WIPE_IF_ERROR(acc_dmem_write(pk_words, pk, kAccVarEk));
+  ACC_WIPE_IF_ERROR(acc_execute());
   ACC_WIPE_IF_ERROR(acc_busy_wait_for_done());
 
   // Read the code indicating if the encapsulation key passed the FIPS 203
@@ -263,6 +279,7 @@ static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
   ACC_WIPE_IF_ERROR(acc_dmem_read(1, kAccVarKeyOk, &key_ok));
   if (launder32(key_ok) != kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(key_ok, kHardenedBoolFalse);
+    acc_dmem_sec_wipe_nofail();
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key_ok, kHardenedBoolTrue);
@@ -270,7 +287,11 @@ static status_t mlkem_encap(uint32_t mode, uint32_t min_insn_count,
   ACC_CHECK_INSN_COUNT(min_insn_count, max_insn_count);
   ACC_WIPE_IF_ERROR(acc_dmem_read(ct_words, kAccVarCt, ct));
   ACC_WIPE_IF_ERROR(acc_dmem_read(kMlkemSharedSecretWords, kAccVarSs, ss));
-  return acc_dmem_sec_wipe();
+  status_t status = acc_dmem_sec_wipe();
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(ss, kMlkemSharedSecretWords);
+  }
+  return status;
 }
 
 #ifndef ACC_MLKEM_HARDENED

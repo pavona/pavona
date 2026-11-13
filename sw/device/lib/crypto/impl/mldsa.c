@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -54,6 +55,16 @@ _Static_assert(kOtcryptoMldsa87WorkBufferVerifyWords * sizeof(uint32_t) ==
                    MLD_TOTAL_ALLOC_87_VERIFY,
                "ML-DSA-87 verify work buffer size mismatch");
 #endif  // ACC_HAS_PQC
+
+_Static_assert(kOtcryptoMldsa44MaskedSecretKeyBytes ==
+                   kMldsa44MaskedKeyblobBytes,
+               "ML-DSA-44 masked secret key size mismatch");
+_Static_assert(kOtcryptoMldsa65MaskedSecretKeyBytes ==
+                   kMldsa65MaskedKeyblobBytes,
+               "ML-DSA-65 masked secret key size mismatch");
+_Static_assert(kOtcryptoMldsa87MaskedSecretKeyBytes ==
+                   kMldsa87MaskedKeyblobBytes,
+               "ML-DSA-87 masked secret key size mismatch");
 
 enum {
   // Largest pre-hash digest among the supported HashML-DSA modes
@@ -178,6 +189,31 @@ static int mldsa_native_prehash_alg(otcrypto_mldsa_sign_mode_t sign_mode) {
 }
 #endif
 
+/**
+ * Fills `buf` from a fresh CSRNG instance, uninstantiating it on every exit.
+ *
+ * Shreds `buf` on failure.
+ *
+ * @param[out] buf Destination buffer.
+ * @param len Length of `buf` in words.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t mldsa_csrng_generate(uint32_t *buf, size_t len) {
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+  status_t status = entropy_csrng_generate(&kEntropyEmptySeed, buf, len,
+                                           /*fips_check=*/kHardenedBoolTrue);
+  status_t uninstantiate_status = entropy_csrng_uninstantiate();
+  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
+    status = uninstantiate_status;
+  }
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(buf, len);
+  }
+  return status;
+}
+
 otcrypto_status_t otcrypto_mldsa44_keygen(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMldsa44WorkBufferKeypairWords]) {
@@ -187,16 +223,14 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa44SeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
-  return otcrypto_mldsa44_keypair_derand(seed_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status =
+      otcrypto_mldsa44_keypair_derand(seed_buf, public_key, secret_key, work);
+  hardened_memshred(seed, ARRAYSIZE(seed));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa44_keypair_derand(
@@ -213,7 +247,8 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (public_key == NULL || secret_key == NULL) {
+  if (seed.data == NULL || public_key == NULL || public_key->key == NULL ||
+      secret_key == NULL || secret_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa44) {
@@ -221,6 +256,9 @@ otcrypto_status_t otcrypto_mldsa44_keypair_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa44) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (public_key->key_length != kOtcryptoMldsa44PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -284,15 +322,13 @@ otcrypto_status_t otcrypto_mldsa44_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa44SeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
-  return otcrypto_mldsa44_sign_derand(secret_key, message, context, sign_mode,
-                                      rnd_buf, signature, work);
+  otcrypto_status_t status = otcrypto_mldsa44_sign_derand(
+      secret_key, message, context, sign_mode, rnd_buf, signature, work);
+  hardened_memshred(rnd, ARRAYSIZE(rnd));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa44_sign_derand(
@@ -301,11 +337,16 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
     otcrypto_const_aligned_byte_buf_t rnd,
     otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa44WorkBufferSignWords]) {
-  if (secret_key == NULL) {
+  if (secret_key == NULL || secret_key->keyblob == NULL || rnd.data == NULL ||
+      signature.data == NULL || (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa44) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa44SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -313,7 +354,7 @@ otcrypto_status_t otcrypto_mldsa44_sign_derand(
   if (rnd.len != kOtcryptoMldsa44SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa44SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa44SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {
@@ -442,7 +483,13 @@ otcrypto_status_t otcrypto_mldsa44_verify(
     otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa44WorkBufferVerifyWords]) {
-  if (public_key == NULL || verification_result == NULL) {
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  *verification_result = kHardenedBoolFalse;
+  if (public_key == NULL || public_key->key == NULL || signature.data == NULL ||
+      (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa44) {
@@ -516,7 +563,11 @@ otcrypto_status_t otcrypto_mldsa44_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
@@ -534,16 +585,14 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa65SeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
-  return otcrypto_mldsa65_keypair_derand(seed_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status =
+      otcrypto_mldsa65_keypair_derand(seed_buf, public_key, secret_key, work);
+  hardened_memshred(seed, ARRAYSIZE(seed));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa65_keypair_derand(
@@ -560,7 +609,8 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (public_key == NULL || secret_key == NULL) {
+  if (seed.data == NULL || public_key == NULL || public_key->key == NULL ||
+      secret_key == NULL || secret_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa65) {
@@ -568,6 +618,9 @@ otcrypto_status_t otcrypto_mldsa65_keypair_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa65) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (public_key->key_length != kOtcryptoMldsa65PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -631,15 +684,13 @@ otcrypto_status_t otcrypto_mldsa65_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa65SeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
-  return otcrypto_mldsa65_sign_derand(secret_key, message, context, sign_mode,
-                                      rnd_buf, signature, work);
+  otcrypto_status_t status = otcrypto_mldsa65_sign_derand(
+      secret_key, message, context, sign_mode, rnd_buf, signature, work);
+  hardened_memshred(rnd, ARRAYSIZE(rnd));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa65_sign_derand(
@@ -648,11 +699,16 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
     otcrypto_const_aligned_byte_buf_t rnd,
     otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa65WorkBufferSignWords]) {
-  if (secret_key == NULL) {
+  if (secret_key == NULL || secret_key->keyblob == NULL || rnd.data == NULL ||
+      signature.data == NULL || (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa65) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa65SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -660,7 +716,7 @@ otcrypto_status_t otcrypto_mldsa65_sign_derand(
   if (rnd.len != kOtcryptoMldsa65SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa65SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa65SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {
@@ -789,7 +845,13 @@ otcrypto_status_t otcrypto_mldsa65_verify(
     otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa65WorkBufferVerifyWords]) {
-  if (public_key == NULL || verification_result == NULL) {
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  *verification_result = kHardenedBoolFalse;
+  if (public_key == NULL || public_key->key == NULL || signature.data == NULL ||
+      (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa65) {
@@ -863,7 +925,11 @@ otcrypto_status_t otcrypto_mldsa65_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
@@ -880,16 +946,14 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa87SeedWords];
 #endif
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, ARRAYSIZE(seed),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
-  return otcrypto_mldsa87_keypair_derand(seed_buf, public_key, secret_key,
-                                         work);
+  otcrypto_status_t status =
+      otcrypto_mldsa87_keypair_derand(seed_buf, public_key, secret_key, work);
+  hardened_memshred(seed, ARRAYSIZE(seed));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa87_keypair_derand(
@@ -906,7 +970,8 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (public_key == NULL || secret_key == NULL) {
+  if (seed.data == NULL || public_key == NULL || public_key->key == NULL ||
+      secret_key == NULL || secret_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa87) {
@@ -914,6 +979,9 @@ otcrypto_status_t otcrypto_mldsa87_keypair_derand(
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa87) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (public_key->key_length != kOtcryptoMldsa87PublicKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -977,15 +1045,13 @@ otcrypto_status_t otcrypto_mldsa87_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa87SeedWords];
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, rnd, ARRAYSIZE(rnd),
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
-  return otcrypto_mldsa87_sign_derand(secret_key, message, context, sign_mode,
-                                      rnd_buf, signature, work);
+  otcrypto_status_t status = otcrypto_mldsa87_sign_derand(
+      secret_key, message, context, sign_mode, rnd_buf, signature, work);
+  hardened_memshred(rnd, ARRAYSIZE(rnd));
+  return status;
 }
 
 otcrypto_status_t otcrypto_mldsa87_sign_derand(
@@ -994,11 +1060,16 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
     otcrypto_const_aligned_byte_buf_t rnd,
     otcrypto_aligned_byte_buf_t signature,
     uint32_t work[kOtcryptoMldsa87WorkBufferSignWords]) {
-  if (secret_key == NULL) {
+  if (secret_key == NULL || secret_key->keyblob == NULL || rnd.data == NULL ||
+      signature.data == NULL || (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (secret_key->config.key_mode != kOtcryptoKeyModeMldsa87) {
     return OTCRYPTO_BAD_ARGS;
+  }
+  if (secret_key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (secret_key->config.key_length != kOtcryptoMldsa87SecretKeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -1006,7 +1077,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_derand(
   if (rnd.len != kOtcryptoMldsa87SeedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (signature.len < kOtcryptoMldsa87SignatureBytes) {
+  if (signature.len != kOtcryptoMldsa87SignatureBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (context.len > 255) {
@@ -1135,7 +1206,13 @@ otcrypto_status_t otcrypto_mldsa87_verify(
     otcrypto_const_aligned_byte_buf_t signature,
     hardened_bool_t *verification_result,
     uint32_t work[kOtcryptoMldsa87WorkBufferVerifyWords]) {
-  if (public_key == NULL || verification_result == NULL) {
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  *verification_result = kHardenedBoolFalse;
+  if (public_key == NULL || public_key->key == NULL || signature.data == NULL ||
+      (message.data == NULL && message.len > 0) ||
+      (context.data == NULL && context.len > 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (public_key->key_mode != kOtcryptoKeyModeMldsa87) {
@@ -1209,7 +1286,11 @@ otcrypto_status_t otcrypto_mldsa87_verify(
         mldsa_native_prehash_alg(sign_mode), &ctx);
   }
 
-  *verification_result = (result == 0) ? kHardenedBoolTrue : kHardenedBoolFalse;
+  if (result == 0) {
+    *verification_result = kHardenedBoolTrue;
+  } else if (result != MLD_ERR_INVALID_SIGNATURE) {
+    return OTCRYPTO_FATAL_ERR;
+  }
 #endif
 
   return OTCRYPTO_OK;
