@@ -39,6 +39,11 @@ targets:
       slang:
         slang_options:
           - "-Wpedantic"
+          - "-Wextra"
+          - "-Wno-case-redundant-default"
+          - "-Wno-useless-cast"
+          - "-Wconditional-precedence"
+          - "-Wport-width-expand"
           - "-Werror"
           - "--allow-use-before-declare"
           - "!slang_separate_units ? (--single-unit)"

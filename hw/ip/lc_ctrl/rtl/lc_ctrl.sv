@@ -59,10 +59,10 @@ module lc_ctrl
   // Escalation inputs (severity 1 and 2).
   // These need not be synchronized since the alert handler is
   // in the same clock domain as the LC controller.
-  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state0_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_scrap_state0_rx_o,
-  input  prim_esc_pkg::esc_rx_t                      esc_scrap_state1_tx_i,
-  output prim_esc_pkg::esc_tx_t                      esc_scrap_state1_rx_o,
+  input  prim_esc_pkg::esc_tx_t                      esc_scrap_state0_tx_i,
+  output prim_esc_pkg::esc_rx_t                      esc_scrap_state0_rx_o,
+  input  prim_esc_pkg::esc_tx_t                      esc_scrap_state1_tx_i,
+  output prim_esc_pkg::esc_rx_t                      esc_scrap_state1_rx_o,
   // Power manager interface (inputs are synced to lifecycle clock domain).
   input  pwr_lc_req_t                                pwr_lc_i,
   output pwr_lc_rsp_t                                pwr_lc_o,
@@ -398,8 +398,8 @@ module lc_ctrl
     tap_dmi_hw2reg = hw2reg;
 
     // Assignments gated by mutex. Again, the DMI has priority.
-    tap_dmi_hw2reg.claim_transition_if = tap_dmi_claim_transition_if_q;
-    hw2reg.claim_transition_if = sw_claim_transition_if_q;
+    tap_dmi_hw2reg.claim_transition_if.d = tap_dmi_claim_transition_if_q;
+    hw2reg.claim_transition_if.d = sw_claim_transition_if_q;
     if (mubi8_test_true_strict(tap_dmi_claim_transition_if_q)) begin
       tap_dmi_hw2reg.transition_ctrl.ext_clock_en = use_ext_clock_q;
       tap_dmi_hw2reg.transition_ctrl.volatile_raw_unlock = volatile_raw_unlock_q;
