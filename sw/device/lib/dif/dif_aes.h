@@ -361,7 +361,8 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data);
  * @param aes AES state data.
  * @param phase The AES GCM phase we want to enter.
  * @param num_valid_bytes The number of valid bytes for the AES block.
- * @return The result of the operation.
+ * @return The result of the operation: `kDifBadArg` for an invalid phase or
+ * invalid number of valid bytes, `kDifUnavailable` if AES is not idle.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_set_gcm_phase(const dif_aes_t *aes, uint32_t phase,

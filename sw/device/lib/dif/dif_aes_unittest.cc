@@ -230,6 +230,76 @@ TEST_F(CTRTest, start) {
   EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
 }
 
+// GCM tests.
+class GcmTest : public AesTestInitialized {
+ protected:
+  GcmTest() { transaction_.mode = kDifAesModeGcm; }
+
+  void ExpectGcmPhase(uint32_t phase, uint32_t num_valid_bytes) {
+    EXPECT_WRITE32_SHADOWED(
+        AES_CTRL_GCM_SHADOWED_REG_OFFSET,
+        {{AES_CTRL_GCM_SHADOWED_PHASE_OFFSET, phase},
+         {AES_CTRL_GCM_SHADOWED_NUM_VALID_BYTES_OFFSET, num_valid_bytes}});
+  }
+};
+
+TEST_F(GcmTest, start) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, 1);
+  ExpectConfig({
+      .key_len = AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128,
+      .mode = AES_CTRL_SHADOWED_MODE_VALUE_AES_GCM,
+      .operation = AES_CTRL_SHADOWED_OPERATION_VALUE_AES_ENC,
+      .mask_reseed = AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_1,
+  });
+  ExpectAuxConfig({});
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+  ExpectGcmPhase(AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_INIT, 16);
+  ExpectKey(kKey, 8);
+  ExpectIv(kIv);
+
+  EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, &kKey, &kIv));
+}
+
+TEST_F(GcmTest, startNoIv) {
+  EXPECT_DIF_BADARG(dif_aes_start(&aes_, &transaction_, &kKey, nullptr));
+}
+
+TEST_F(GcmTest, SetPhase) {
+  const uint32_t kPhases[] = {
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_INIT,
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_RESTORE,
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD,
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_SAVE,
+      AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TAG,
+  };
+  for (uint32_t phase : kPhases) {
+    EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+    ExpectGcmPhase(phase, 5);
+    EXPECT_DIF_OK(dif_aes_set_gcm_phase(&aes_, phase, 5));
+  }
+}
+
+TEST_F(GcmTest, SetPhaseValidBytesLimits) {
+  for (uint32_t num_valid_bytes : {1, 16}) {
+    EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+    ExpectGcmPhase(AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT, num_valid_bytes);
+    EXPECT_DIF_OK(dif_aes_set_gcm_phase(
+        &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT, num_valid_bytes));
+  }
+}
+
+TEST_F(GcmTest, LoadTagLen) {
+  const uint64_t kLenAad = 0x0123456789abcdefULL;
+  const uint64_t kLenPtx = 0x13579bdf02468aceULL;
+  const uint32_t kExpected[4] = {0x67452301, 0xefcdab89, 0xdf9b5713,
+                                 0xce8a4602};
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_INPUT_READY_BIT, true}});
+  ExpectWriteMultreg(AES_DATA_IN_0_REG_OFFSET, kExpected, 4);
+  EXPECT_DIF_OK(dif_aes_load_gcm_tag_len(&aes_, kLenPtx, kLenAad));
+}
+
 // Decrypt tests.
 class DecryptTest : public AesTestInitialized {
  protected:
@@ -442,6 +512,12 @@ TEST_F(IVTest, Read) {
   EXPECT_DIF_OK(dif_aes_read_iv(&aes_, &iv));
 
   EXPECT_THAT(iv.iv, ElementsAreArray(kIv.iv));
+}
+
+TEST_F(IVTest, Load) {
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
+  ExpectWriteMultreg(AES_IV_0_REG_OFFSET, kIv.iv, ARRAYSIZE(kIv.iv));
+  EXPECT_DIF_OK(dif_aes_load_iv(&aes_, kIv));
 }
 
 // Trigger
@@ -794,6 +870,32 @@ TEST_F(DifBadArgError, ReadIV) {
   EXPECT_DIF_BADARG(dif_aes_read_iv(&aes_, nullptr));
 }
 
+TEST_F(DifBadArgError, LoadIV) {
+  EXPECT_DIF_BADARG(dif_aes_load_iv(nullptr, kIv));
+}
+
+TEST_F(DifBadArgError, SetGcmPhase) {
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
+      nullptr, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 16));
+  // Invalid phase tests: zero, two phases at once, invalid phase
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(&aes_, 0, 16));
+  EXPECT_DIF_BADARG(
+      dif_aes_set_gcm_phase(&aes_,
+                            AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD |
+                                AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                            16));
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(&aes_, 0x40, 16));
+  // The number of valid bytes must be 1 to 16.
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
+      &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 0));
+  EXPECT_DIF_BADARG(dif_aes_set_gcm_phase(
+      &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 17));
+}
+
+TEST_F(DifBadArgError, LoadGcmTagLen) {
+  EXPECT_DIF_BADARG(dif_aes_load_gcm_tag_len(nullptr, 128, 128));
+}
+
 TEST_F(DifBadArgError, ProcessData) {
   dif_aes_data_t data[1] = {};
   dif_aes_data_t out[1] = {};
@@ -827,6 +929,20 @@ TEST_F(DifUnavailableError, LoadData) {
 TEST_F(DifUnavailableError, ReadIV) {
   dif_aes_iv_t iv = {{0}};
   EXPECT_EQ(dif_aes_read_iv(&aes_, &iv), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, LoadIV) {
+  EXPECT_EQ(dif_aes_load_iv(&aes_, kIv), kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, SetGcmPhase) {
+  EXPECT_EQ(dif_aes_set_gcm_phase(
+                &aes_, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD, 16),
+            kDifUnavailable);
+}
+
+TEST_F(DifUnavailableError, LoadGcmTagLen) {
+  EXPECT_EQ(dif_aes_load_gcm_tag_len(&aes_, 128, 128), kDifUnavailable);
 }
 
 TEST_F(DifUnavailableError, ProcessData) {
