@@ -29,7 +29,7 @@
       "algorithm": {
         "description": "The ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB"]
+        "enum": ["ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB", "ACVP-AES-CTR"]
       },
       "revision": {
         "description": "ACVP algorithm revision the test came from",
@@ -48,9 +48,9 @@
         "type": "integer"
       },
       "test_type": {
-        "description": "aft for a single operation, mct for a Monte Carlo test",
+        "description": "aft for a single operation, ctr for a counter test, mct for a Monte Carlo test",
         "type": "string",
-        "enum": ["aft", "mct"]
+        "enum": ["aft", "ctr", "mct"]
       },
       "operation": {
         "description": "AES operation",
@@ -60,7 +60,7 @@
       "mode": {
         "description": "Block cipher mode of operation",
         "type": "string",
-        "enum": ["cbc", "cfb128", "ecb", "ofb"]
+        "enum": ["cbc", "cfb128", "ctr", "ecb", "ofb"]
       },
       "key": {
         "description": "AES key",

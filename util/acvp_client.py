@@ -32,6 +32,7 @@ PARSERS = "//sw/host/cryptotest/testvectors/parsers"
 VECTOR_SETS = {
     ("ACVP-AES-CBC", ""): ("aes_cbc", "cbc"),
     ("ACVP-AES-CFB128", ""): ("aes_cfb128", "cfb128"),
+    ("ACVP-AES-CTR", ""): ("aes_ctr", "ctr"),
     ("ACVP-AES-ECB", ""): ("aes_ecb", "ecb"),
     ("ACVP-AES-KWP", ""): ("aes_kwp", "kwp"),
     ("ACVP-AES-OFB", ""): ("aes_ofb", "ofb"),
@@ -61,6 +62,7 @@ VECTOR_SETS = {
 PARSER_NAMES = {
     "aes_cbc": "aes_block",
     "aes_cfb128": "aes_block",
+    "aes_ctr": "aes_block",
     "aes_ecb": "aes_block",
     "aes_ofb": "aes_block",
     "hmac_sha256": "hmac",
