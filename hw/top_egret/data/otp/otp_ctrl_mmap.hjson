@@ -123,6 +123,16 @@
                           '''
                 }
                 {
+                    name: "CREATOR_SW_CFG_AST_INIT_EN",
+                    size: "4",
+                    desc: '''
+                    Controls whether or not the CREATOR_SW_CFG_AST_CFG values
+                    get copied to the AST CSRs during ROM execution.
+                    A value of kMultiBitBool4True enables copying; all other
+                    values disable.
+                    '''
+                }
+                {
                     name: "CREATOR_SW_CFG_AST_INIT_SIZE",
                     size: "4",
                     desc: '''
