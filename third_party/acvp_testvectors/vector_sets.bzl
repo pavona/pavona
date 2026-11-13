@@ -26,6 +26,14 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "01f1957c2cef59737f292a085fe80fa28944522e0a8e5e83bfc7b278121cdf0a",
         },
     },
+    "aes-ctr": {
+        "algorithm": "ACVP-AES-CTR-1.0",
+        "registration_sha256": "bf3a2c69229dc51848de4f27241214598fa5331379aaa336a33901c1f958995e",
+        "files": {
+            "expectedResults.json": "b8ca8095eab78f09101dcf96e81f0dae37dbd36c7ada5e9cf66a148977acc909",
+            "prompt.json": "7522a338bc78d84f4eb0cf8993807b0288c807d714452f2a13cbf387d958f8c2",
+        },
+    },
     "aes-ecb": {
         "algorithm": "ACVP-AES-ECB-1.0",
         "registration_sha256": "b09c94a18cbdd2bc5c050686e4bbe50bc1a01fc490e009fbe2e58743a9a60500",

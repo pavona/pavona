@@ -84,6 +84,7 @@ fn aes_mode(mode: &str) -> CryptotestAesMode {
         "cfb128" => CryptotestAesMode::Cfb,
         "ecb" => CryptotestAesMode::Ecb,
         "ofb" => CryptotestAesMode::Ofb,
+        "ctr" => CryptotestAesMode::Ctr,
         _ => panic!("Invalid AES mode"),
     }
 }
