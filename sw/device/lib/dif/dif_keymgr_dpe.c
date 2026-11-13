@@ -340,6 +340,33 @@ dif_result_t dif_keymgr_dpe_read_output(const dif_keymgr_dpe_t *keymgr_dpe,
   return kDifOk;
 }
 
+dif_result_t dif_keymgr_dpe_read_binding(
+    const dif_keymgr_dpe_t *keymgr_dpe,
+    dif_keymgr_dpe_binding_value_t *output) {
+  if (keymgr_dpe == NULL || output == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_memcpy_from_mmio32(keymgr_dpe->base_addr,
+                                 KEYMGR_DPE_SW_BINDING_0_REG_OFFSET,
+                                 output->binding, sizeof(output->binding));
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_read_max_key_version(
+    const dif_keymgr_dpe_t *keymgr_dpe,
+    dif_keymgr_dpe_max_key_version_t *versions) {
+  if (keymgr_dpe == NULL || versions == NULL) {
+    return kDifBadArg;
+  }
+
+  versions->max_key_version = mmio_region_read32(
+      keymgr_dpe->base_addr, KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET);
+
+  return kDifOk;
+}
+
 dif_result_t dif_keymgr_dpe_get_status_codes(
     const dif_keymgr_dpe_t *keymgr_dpe,
     dif_keymgr_dpe_status_codes_t *status_codes) {

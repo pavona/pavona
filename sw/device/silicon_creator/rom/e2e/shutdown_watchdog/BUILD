@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "ecdsa_key_for_lc_state",
     "fpga_params",
@@ -81,7 +85,13 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(t["lc_state"]),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(t["lc_state"]),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(t["lc_state"]),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],

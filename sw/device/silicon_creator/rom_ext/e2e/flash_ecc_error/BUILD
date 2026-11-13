@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules:const.bzl",
     "CONST",
     "hex_digits",
@@ -69,7 +73,13 @@ otp_image(
 
 otp_image(
     name = "otp_img_flash_exc_handler_disabled",
-    src = "//hw/top_egret/data/otp:otp_json_prod",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_prod",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
         ":otp_json_flash_exc_handler_disabled",

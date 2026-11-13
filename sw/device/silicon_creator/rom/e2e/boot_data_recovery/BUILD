@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "ecdsa_key_for_lc_state",
@@ -105,7 +109,13 @@ BOOT_DATA_RECOVERY_CASES = [
             case["lc_state"],
             case["default_boot_data"],
         ),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(case["lc_state"]),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(case["lc_state"]),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(case["lc_state"]),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [":boot_data_recovery_creator_sw_cfg_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],

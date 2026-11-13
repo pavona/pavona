@@ -12,10 +12,14 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   localparam bit [2:0] EPMP_ACCESS_RX   = 3'b101; // Read-execute access.
   localparam bit [2:0] EPMP_ACCESS_RWX  = 3'b111; // Read-write-execute access.
 
-  localparam bit [31:0] RAM_STACK_GUARD_ADDRESS  = 32'h1001C000;
-  localparam bit [31:0] FLASH_TEXT_START_ADDRESS = 32'h20000400;
-  localparam bit [31:0] MMIO_START_ADDRESS       = 32'h40000000;
-  localparam bit [31:0] MMIO_END_ADDRESS         = 32'h50000000;
+  // Keep values in sync with hw/top_dragonfly/sw/autogen/top_dragonfly.h /
+  // hw/top_dragonfly/sw/autogen/top_dragonfly_memory.ld
+  localparam bit [31:0] RAM_STACK_GUARD_ADDRESS          = 32'h1000C000;
+  localparam bit [31:0] MMIO_START_ADDRESS               = 32'h21100000;
+  localparam bit [31:0] MMIO_END_ADDRESS                 = 32'h30601000;
+  localparam bit [31:0] CREATOR_FW_PHY_START_ADDRESS     = 32'h41000000;
+  localparam bit [31:0] CREATOR_FW_PHY_END_ADDRESS       = 32'h41080000;
+  localparam bit [31:0] ROM_CTRL1_ENTRY_POINT_OFFSET     = 32'h00000180;
 
   function logic [31:0] epmp_addr_napot(logic [31:0] addr, int unsigned length);
     return ((addr + (length >> 1) - 1) >> 2);
@@ -67,69 +71,79 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_CASE_EQ(cfg.chip_vif.pmp_mseccfg.mmwp, 1)
     `DV_CHECK_CASE_EQ(cfg.chip_vif.pmp_mseccfg.rlb, 1)
 
-    // ePMP regions 0, 3, 6 -- 10, and 12 are unused.
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[0].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[3].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[6].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[7].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[8].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[9].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[10].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12].mode, ibex_pkg::PMP_MODE_OFF)
+	// Check ePMP layout at the point in ROM0 execution after the initialization
+	// of the ROM ePMP regions but prior to unlocking the ROM1 regions.
+    //
+    // Expected ePMP configuration:
+    //
+    // ________________________________________________________________
+    // | Region | Memory Block  | Address Mode | AccessMode | Locked? |
+    // |________|_______________|______________|____________|_________|
+    // |   0    | ROM Text (lo) |     OFF*     |            |         |
+    // |   1    | ROM Text (hi) |     TOR      |     RX     |    X    |
+    // |   2    | ROM           |    NAPOT     |     R      |    X    |
+    // |   3    |               |     OFF      |            |         |
+    // |   4    |               |     OFF      |            |         |
+    // |   5    |               |     OFF      |            |         |
+    // |   6    |               |     OFF      |            |         |
+    // |   7    |               |     OFF      |            |         |
+    // |   8    |               |     OFF      |            |         |
+    // |   9    |               |     OFF      |            |         |
+    // |   10   | MMIO (lo)     |     OFF*     |            |         |
+    // |   11   | MMIO (hi)     |     TOR      |     RW     |    X    |
+    // |   12   |               |     OFF      |            |         |
+    // |   13   |               |     OFF      |            |         |
+    // |   14   | Stack Guard   |     NA4      |  NOACCESS  |    X    |
+    // |   15   | Main SRAM     |    NAPOT     |     RW     |    X    |
+    //
+    // Regions marked with a * are marked as OFF, but the address is still
+    // significant because it is the lower-bound of a TOR region.
 
-    // ePMP regions for ROM
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1].mode,  ibex_pkg::PMP_MODE_TOR)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2].mode,  ibex_pkg::PMP_MODE_NAPOT)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11].mode, ibex_pkg::PMP_MODE_TOR)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[1].lock)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[2].lock)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[11].lock)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1][2:0], EPMP_ACCESS_RX)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2][2:0], EPMP_ACCESS_RO)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11][2:0], EPMP_ACCESS_RW)
-
-    // ePMP regions for RAM
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14].mode, ibex_pkg::PMP_MODE_NA4)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15].mode, ibex_pkg::PMP_MODE_NAPOT)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[14].lock)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[15].lock)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_NONE)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15][2:0], EPMP_ACCESS_RW)
-
-    // ePMP regions for Flash
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4].mode, ibex_pkg::PMP_MODE_OFF)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5].mode, ibex_pkg::PMP_MODE_NAPOT)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[5].lock)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5][2:0], EPMP_ACCESS_RO)
-
-    // ePMP regions for Debug (only enabled in non-prod states)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[13].mode, ibex_pkg::PMP_MODE_NAPOT)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[13].lock)
-    if (lc_state inside {LcStProd, LcStProdEnd}) begin
-      `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[13][2:0], EPMP_ACCESS_NONE)
-    end else begin
-      `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[13][2:0], EPMP_ACCESS_RWX)
-    end
-
-    // ePMP address entries
+    // Check ePMP address entries
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
                  epmp_addr_tor(top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL0_ROM_BASE_ADDR))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
                  epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL0_ROM_BASE_ADDR,
                                  top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL0_ROM_SIZE_BYTES))
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[5],
-                 epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_BASE_ADDR,
-                                 top_dragonfly_pkg::TOP_DRAGONFLY_SOC_PROXY_RAM_CTN_SIZE_BYTES))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13],
-                 epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_BASE_ADDR,
-                                 top_dragonfly_pkg::TOP_DRAGONFLY_RV_DM_MEM_SIZE_BYTES))
     // PMP NA4 address calculation is the same as the TOR calculation.
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[14], epmp_addr_tor(RAM_STACK_GUARD_ADDRESS))
     `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[15],
                  epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
                                  top_dragonfly_pkg::TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES))
+
+    // Check address modes.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[0].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1].mode,  ibex_pkg::PMP_MODE_TOR)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2].mode,  ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[3].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[6].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[7].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[8].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[9].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[10].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11].mode, ibex_pkg::PMP_MODE_TOR)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[13].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14].mode, ibex_pkg::PMP_MODE_NA4)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15].mode, ibex_pkg::PMP_MODE_NAPOT)
+
+    // Check access modes.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1][2:0], EPMP_ACCESS_RX)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2][2:0], EPMP_ACCESS_RO)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11][2:0], EPMP_ACCESS_RW)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_NONE)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15][2:0], EPMP_ACCESS_RW)
+
+    // Check Locked fields.
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[1].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[2].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[11].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[14].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[15].lock)
 
     // Check interrupts.
     `DV_CHECK_EQ(cfg.chip_vif.mstatus_mie, 0)
@@ -150,11 +164,94 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest,
       "Timeout waiting to boot flash stage.", 200_000_000)
 
-    // ePMP is unlocked for flash once the signature verification succeeds.
+    // At this point, ROM0 and ROM1 have executed and we are now running the
+    // test in CTN in place of the silicon creator firmware.
+    //
+    // Expected ePMP configuration:
+    //
+    // ________________________________________________________________________
+    // | Region | Memory Block          | Address Mode | AccessMode | Locked? |
+    // |________|_______________________|______________|____________|_________|
+    // |   0    | Second ROM Text (lo)  |     OFF*     |            |         |
+    // |   1    | Second ROM Text (hi)  |     TOR      |     RX     |    X    |
+    // |   2    | Second ROM            |    NAPOT     |     R      |    X    |
+    // |   3    | Creator FW Text (lo)  |     OFF*     |            |         |
+    // |   4    | Creator FW Text (hi)  |     TOR      |     RX     |    X    |
+    // |   5    | Creator FW (Virtual)  |    NAPOT     |     R      |    X    |
+    // |   6    |                       |     OFF      |            |         |
+    // |   7    |                       |     OFF      |            |         |
+    // |   8    |                       |     OFF      |            |         |
+    // |   9    |                       |     OFF      |            |         |
+    // |   10   | MMIO (lo)             |     OFF*     |            |         |
+    // |   11   | MMIO (hi)             |     TOR      |     RW     |    X    |
+    // |   12   |                       |     OFF      |            |         |
+    // |   13   | CTN                   |    NAPOT     |     R      |    X    |
+    // |   14   | Stack Guard           |     NA4      |  NOACCESS  |    X    |
+    // |   15   | Main SRAM             |    NAPOT     |     RW     |    X    |
+    //
+    // Regions marked with a * are marked as OFF, but the address is still
+    // significant because it is the lower-bound of a TOR region.
+    //
+    // Note: Slots 6-7 are filled with a second ROM patch TOR region if a patch
+    // exists, but this test does not use one.
+
+    // Check ePMP address entries
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[0],
+                 epmp_addr_tor(top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL1_ROM_BASE_ADDR +
+                               ROM_CTRL1_ENTRY_POINT_OFFSET))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[2],
+                 epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL1_ROM_BASE_ADDR,
+                                 top_dragonfly_pkg::TOP_DRAGONFLY_ROM_CTRL1_ROM_SIZE_BYTES))
+	// Creator firmware region addresses are unchecked here because they
+	// depend on the size and linkage of the test binary.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[10], epmp_addr_tor(MMIO_START_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[11], epmp_addr_tor(MMIO_END_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[13], epmp_addr_napot(CREATOR_FW_PHY_START_ADDRESS,
+                                                            CREATOR_FW_PHY_END_ADDRESS))
+    // PMP NA4 address calculation is the same as the TOR calculation.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[14], epmp_addr_tor(RAM_STACK_GUARD_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[15],
+                 epmp_addr_napot(top_dragonfly_pkg::TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+                                 top_dragonfly_pkg::TOP_DRAGONFLY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES))
+
+    // Check address modes.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[0].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1].mode,  ibex_pkg::PMP_MODE_TOR)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2].mode,  ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[3].mode, ibex_pkg::PMP_MODE_OFF)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4].mode, ibex_pkg::PMP_MODE_TOR)
-    `DV_CHECK(cfg.chip_vif.pmp_cfg[4].lock)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5].mode, ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[6].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[7].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[8].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[9].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[10].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11].mode, ibex_pkg::PMP_MODE_TOR)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[12].mode, ibex_pkg::PMP_MODE_OFF)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[13].mode, ibex_pkg::PMP_MODE_NAPOT)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14].mode, ibex_pkg::PMP_MODE_NA4)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15].mode, ibex_pkg::PMP_MODE_NAPOT)
+
+    // Check access modes.
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[1][2:0], EPMP_ACCESS_RX)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[2][2:0], EPMP_ACCESS_RO)
     `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[4][2:0], EPMP_ACCESS_RX)
-    `DV_CHECK_EQ(cfg.chip_vif.pmp_addr[3], epmp_addr_tor(FLASH_TEXT_START_ADDRESS))
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[5][2:0], EPMP_ACCESS_RO)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[11][2:0], EPMP_ACCESS_RW)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_RO)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[14][2:0], EPMP_ACCESS_NONE)
+    `DV_CHECK_EQ(cfg.chip_vif.pmp_cfg[15][2:0], EPMP_ACCESS_RW)
+
+    // Check Locked fields.
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[1].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[2].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[4].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[5].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[11].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[13].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[14].lock)
+    `DV_CHECK(cfg.chip_vif.pmp_cfg[15].lock)
+
   endtask
 
 endclass : chip_sw_rom_e2e_asm_init_vseq

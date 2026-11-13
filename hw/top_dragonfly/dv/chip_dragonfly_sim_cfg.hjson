@@ -1749,5 +1749,33 @@
               "rom_e2e_smoke"
               ]
     }
+    {
+      name: e2e_debug
+      tests: [
+        "rom_e2e_smoke",
+        "rom_e2e_shutdown_output",
+        "rom_e2e_shutdown_exception_c",
+        "rom_e2e_sigverify_always_a_bad_b_bad_test_unlocked0",
+        "rom_e2e_sigverify_always_a_bad_b_bad_dev",
+        "rom_e2e_sigverify_always_a_bad_b_bad_prod",
+        "rom_e2e_sigverify_always_a_bad_b_bad_prod_end",
+        "rom_e2e_sigverify_always_a_bad_b_bad_rma",
+        "rom_e2e_sigverify_always_a_bad_b_nothing_test_unlocked0",
+        "rom_e2e_sigverify_always_a_bad_b_nothing_dev",
+        "rom_e2e_sigverify_always_a_bad_b_nothing_prod",
+        "rom_e2e_sigverify_always_a_bad_b_nothing_prod_end",
+        "rom_e2e_sigverify_always_a_bad_b_nothing_rma",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_test_unlocked0",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_dev",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod_end",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_rma",
+        "rom_e2e_asm_init_test_unlocked0",
+        "rom_e2e_asm_init_dev",
+        "rom_e2e_asm_init_prod",
+        "rom_e2e_asm_init_prod_end",
+        "rom_e2e_asm_init_rma",
+      ]
+    }
   ]
 }

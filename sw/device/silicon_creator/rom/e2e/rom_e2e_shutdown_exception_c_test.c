@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
-
-#include "hw/top_egret/sw/autogen/top_egret.h"
 
 // Note: Since this test program is written to verify the behavior of the ROM C
 // exception handlers,
@@ -17,5 +16,6 @@
 //   - `.static_critical`, required by the linker script.
 
 void _ottf_start(void) {
-  ((void (*)(void))TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
+  ((void (*)(void))dt_sram_ctrl_memory_base(kDtSramCtrlMain,
+                                            kDtSramCtrlMemoryRam))();
 }

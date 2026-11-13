@@ -15,7 +15,7 @@ ld_library(
     non_page_aligned_segments = True,
     script = "sram_program.ld",
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
@@ -29,11 +29,12 @@ pavona_binary(
         "//hw/top_egret:fpga_cw310_test_rom",
         "//hw/top_egret:sim_dv",
         "//hw/top_egret:sim_verilator",
+        "//hw/top_dragonfly:sim_dv",
+        "//hw/top_dragonfly:sim_verilator",
     ],
     kind = "ram",
     linker_script = ":sram_program_linker_script",
     deps = [
-        "//hw/top_egret/sw/autogen:top_egret",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:uart",

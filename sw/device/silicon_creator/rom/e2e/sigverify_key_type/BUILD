@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
 load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules/pavona:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
@@ -124,7 +128,13 @@ otp_json(
 [
     otp_image(
         name = "otp_img_sigverify_key_type_{}".format(lc_state),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(lc_state),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_enable_spx",
         ],

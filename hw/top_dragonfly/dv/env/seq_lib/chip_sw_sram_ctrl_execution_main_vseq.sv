@@ -15,6 +15,7 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
   localparam logic [7:0] MUBI8FALSE = prim_mubi_pkg::MuBi8False;
   localparam logic [31:0] SOC_DBG_RAW = '0;
   localparam logic [7:0] EN_CSRNG_SW_APP_READ = MUBI8FALSE;
+  localparam logic [7:0] DIS_RV_DM_LATE_DEBUG = MUBI8FALSE;
 
   virtual task do_test(logic [7:0] en_sram_ifetch, bit set_prod_lc);
 
@@ -29,7 +30,8 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     otp_write_hw_cfg1_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
-        .en_sram_ifetch(en_sram_ifetch));
+        .en_sram_ifetch(en_sram_ifetch),
+        .dis_rv_dm_late_debug(DIS_RV_DM_LATE_DEBUG));
     // This means SOC_DEBUG won't block debug access.
     otp_write_hw_cfg2_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),

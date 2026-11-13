@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
 load("//rules:const.bzl", "CONST", "hex")
 load(
     "//rules:manifest.bzl",
@@ -56,7 +60,13 @@ otp_json_immutable_rom_ext(
 otp_image(
     name = "otp_img_with_imm_romext_enabled",
     testonly = True,
-    src = "//hw/top_egret/data/otp:otp_json_prod",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_prod",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
         ":otp_json_with_imm_romext_enabled",

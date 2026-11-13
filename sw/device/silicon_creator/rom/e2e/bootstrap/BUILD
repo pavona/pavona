@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "ecdsa_key_for_lc_state",
     "fpga_params",
@@ -47,7 +51,13 @@ otp_json(
 # lifecycle state in order to test the transition from PROD to RMA.
 otp_image(
     name = "otp_img_bootstrap_rma",
-    src = "//hw/top_egret/data/otp:otp_json_prod",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_prod",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_bootstrap_rma",
     ],

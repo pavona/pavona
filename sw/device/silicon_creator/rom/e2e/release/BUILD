@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -12,41 +16,47 @@ package(default_visibility = ["//visibility:public"])
 
 otp_image(
     name = "otp_img_sigverify_spx_prod",
-    src = "//hw/top_egret/data/otp:otp_json_prod",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_prod",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
     visibility = ["//visibility:private"],
 )
 
-# The self hash test is disabled except when we're releasing a new ROM.
-#pavona_test(
-#    name = "rom_e2e_self_hash_test",
-#    srcs = ["rom_e2e_self_hash_test.c"],
-#    dv = dv_params(
-#        rom = "//sw/device/silicon_creator/rom",
-#        second_rom = "//sw/device/silicon_creator/second_rom",
-#    ),
-#    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-#    exec_env = {
-#        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
-#        "//hw/top_egret:sim_dv": None,
-#        "//hw/top_egret:silicon_creator": None,  # This is added to support GLS and bringup environments.
-#        "//hw/top_dragonfly:sim_dv": None,
-#    },
-#    fpga = fpga_params(
-#        otp = ":otp_img_sigverify_spx_prod",
-#    ),
-#    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-#    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-#    deps = [
-#        "//hw/top_egret/sw/autogen:top_egret",
-#        "//hw/top_egret/sw/autogen:top_egret_memory",
-#        "//sw/device/lib/base:status",
-#        "//sw/device/lib/runtime:print",
-#        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-#        "//sw/device/lib/testing/test_framework:ottf_main",
-#        "//sw/device/silicon_creator/lib:chip_info",
-#        "//sw/device/silicon_creator/lib/drivers:hmac",
-#    ],
-#)
+pavona_test(
+    name = "rom_e2e_self_hash_test",
+    srcs = ["rom_e2e_self_hash_test.c"],
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom",
+        second_rom = "//sw/device/silicon_creator/second_rom",
+    ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = {
+        "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_egret:sim_dv": None,
+        "//hw/top_egret:silicon_creator": None,  # This is added to support GLS and bringup environments.
+        "//hw/top_dragonfly:sim_dv": None,
+    },
+    fpga = fpga_params(
+        otp = ":otp_img_sigverify_spx_prod",
+        # This test is only used for DV or releasing a new ROM.
+        tags = ["skip_in_ci"],
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    deps = [
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:chip_info",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)

@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "fpga_params",
@@ -211,7 +215,13 @@ KEY_VALIDITY_TESTS = [
             test["name"],
             lc_state,
         ),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(lc_state),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_key_validity_{}".format(test["name"]),
         ],
