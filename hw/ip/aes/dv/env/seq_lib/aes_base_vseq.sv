@@ -1036,7 +1036,7 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task wait_for_fatal_alert_and_reset ();
     // According to spec, check period will append an 'hFF from the LSF. Add 10 cycle buffers for
     // register updates
-    int check_wait_cycles = 6 << 8 + 10;
+    int check_wait_cycles = (6 << 8) + 10;
 
     // Check for the fatal alert on the alert interface.
     `DV_SPINWAIT_EXIT(
