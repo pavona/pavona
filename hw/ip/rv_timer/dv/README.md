@@ -98,12 +98,35 @@ Interrupt pins are checked against expected at every read/write data channel.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset
 
 ## Building and running tests
+
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a smoke test:
+
+Select the integration explicitly so RTL and DV use the same top packages and coverage exclusions.
+Both configurations run the same tests with RACL disabled in the testbench.
+Their different RACL type widths require separate build and coverage directories.
+
+For Dragonfly:
+
 ```sh
-$REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson -i rv_timer_smoke
+./util/dvsim/dvsim.py hw/ip/rv_timer/dv/rv_timer_dragonfly_sim_cfg.hjson -i smoke
 ```
+
+For Egret:
+
+```sh
+./util/dvsim/dvsim.py hw/ip/rv_timer/dv/rv_timer_egret_sim_cfg.hjson -i smoke
+```
+
+Use `-i all --cov` instead of `-i smoke` for a full coverage regression.
+The shared test definitions are in `rv_timer_base_sim_cfg.hjson`, which both variants import.
+You can run the base file directly; it defaults to Egret and shares the Egret variant's output directory.
+Batch configurations list only the two variants, because the collection script skips base files.
+The top mapping applies to every build mode, including `default` and `cover_reg_top`.
+Do not merge Egret and Dragonfly databases or reuse databases from the older unpinned configuration.
+The RACL exclusions apply only to the testbench's disabled-RACL configuration, not to RACL verification.
+The top-specific toggle exclusions use module scope so module and instance reports agree for this block build; do not reuse them for chip-level or RACL-enabled coverage.
+Only the constant bits of the RACL error address are excluded; bits `[8:2]` remain measured.
 
 ## Testplan
 [Testplan](../data/rv_timer_testplan.hjson)

@@ -1,0 +1,14 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Select both the Dragonfly packages and their matching coverage exclusions.
+  variant: dragonfly
+  import_cfgs: ["{proj_root}/hw/ip/rv_timer/dv/rv_timer_base_sim_cfg.hjson"]
+  overrides: [
+    {
+      name: rv_timer_top
+      value: dragonfly
+    }
+  ]
+}
