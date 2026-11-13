@@ -49,45 +49,61 @@ genrule(
 ]
 
 run_binary(
-    name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
+    name = "acvp_ecdsa_siggen_json",
     srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
-        "@nist_cavp_ecdsa_fips_186_4//:SigVer.rsp",
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_testvectors//ECDSA-SigGen-FIPS186-5:expectedResults.json",
+        "@acvp_testvectors//ECDSA-SigGen-FIPS186-5:internalProjection.json",
     ],
-    outs = [":nist_cavp_ecdsa_fips_186_4_sig_ver.json"],
+    outs = [":acvp_ecdsa_siggen.json"],
     args = [
         "--src",
-        "$(location @nist_cavp_ecdsa_fips_186_4//:SigVer.rsp)",
+        "$(location @acvp_testvectors//ECDSA-SigGen-FIPS186-5:internalProjection.json)",
         "--dst",
-        "$(location :nist_cavp_ecdsa_fips_186_4_sig_ver.json)",
+        "$(location :acvp_ecdsa_siggen.json)",
         "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
-        "--operation",
-        "verify",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_testvectors//ECDSA-SigGen-FIPS186-5:expectedResults.json)",
+        "--test-type",
+        "siggen",
+        # NIST's published sample sets declare every capability the algorithm
+        # has, so they contain curves and hash algorithms this cryptolib does
+        # not implement.
+        "--skip-unsupported",
     ],
-    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
 )
 
 run_binary(
-    name = "nist_cavp_ecdsa_fips_186_4_sign_json",
+    name = "acvp_ecdsa_sigver_json",
     srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
-        # We use the .txt test vector file here, because the .rsp one does not
-        # include the private keys.
-        "@nist_cavp_ecdsa_fips_186_4//:SigGen.txt",
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json",
+        "@acvp_testvectors//ECDSA-SigVer-FIPS186-5:expectedResults.json",
+        "@acvp_testvectors//ECDSA-SigVer-FIPS186-5:internalProjection.json",
     ],
-    outs = ["nist_cavp_ecdsa_fips_186_4_sign.json"],
+    outs = [":acvp_ecdsa_sigver.json"],
     args = [
         "--src",
-        "$(location @nist_cavp_ecdsa_fips_186_4//:SigGen.txt)",
+        "$(location @acvp_testvectors//ECDSA-SigVer-FIPS186-5:internalProjection.json)",
         "--dst",
-        "$(location :nist_cavp_ecdsa_fips_186_4_sign.json)",
+        "$(location :acvp_ecdsa_sigver.json)",
         "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
-        "--operation",
-        "sign",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema.json)",
+        # The answers, folded onto the test cases the same way the
+        # Wycheproof vectors carry theirs.
+        "--expected",
+        "$(location @acvp_testvectors//ECDSA-SigVer-FIPS186-5:expectedResults.json)",
+        "--test-type",
+        "sigver",
+        # NIST's published sample sets declare every capability the algorithm
+        # has, so they contain curves and hash algorithms this cryptolib does
+        # not implement.
+        "--skip-unsupported",
     ],
-    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_ecdsa_parser",
 )
 
 [

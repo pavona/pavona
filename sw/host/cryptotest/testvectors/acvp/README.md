@@ -28,6 +28,7 @@ The supported algorithms below mark those with deferred test cases.
 ## Supported algorithms
 
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
+- [ECDSA](https://pages.nist.gov/ACVP/draft-fussell-acvp-ecdsa.html): sigGen, sigVer.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
 - [KDA HKDF](https://pages.nist.gov/ACVP/draft-hammett-acvp-kas-kdf-hkdf.html) with SHA2-256, SHA2-384 and SHA2-512: AFT, VAL, revision Sp800-56Cr2.
 - [KDF](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with HMAC-SHA2-256, HMAC-SHA2-384 and HMAC-SHA2-512: counter and feedback mode, AFT (deferred), revision 1.0.
@@ -46,6 +47,18 @@ The supported algorithms below mark those with deferred test cases.
 - Payloads of at most 64 bits.
   The cryptolib does not implement the single-block case.
 - AES-KW, the variant without padding.
+
+### ECDSA
+
+- Any curve except P-256 or P-384.
+  No other curves are implemented.
+- SHA2-224, SHA2-512/224 or SHA2-512/256 as hash algorithms.
+  Those hash functions are not implemented.
+- Hash algorithms with digests smaller than 256 bits for P-256 and 384 bits for P-384.
+  These are not supported in the cryptolib by design.
+- SP 800-106 message randomization.
+
+The parser chooses the public key for sigGen test vectors.
 
 ### HMAC
 
@@ -123,10 +136,11 @@ The device runs the whole Monte Carlo test, all 100 outer and 1000 inner iterati
 A vector set is answered the same way whether it comes from a certification session or from the pinned test data: the prompt goes in, and a response comes out.
 The parsers turn a prompt into the inputs the harness sends to the device, and the harness assembles the device's outputs into a response.
 
-The pinned vector sets run as part of the AES-KWP, HKDF, HMAC, KDF, ML-DSA, ML-KEM, SHA2, SHA3 and SHAKE known-answer tests:
+The pinned vector sets run as part of the AES-KWP, ECDSA, HKDF, HMAC, KDF, ML-DSA, ML-KEM, SHA2, SHA3 and SHAKE known-answer tests:
 
 ```sh
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:aes_kwp_kat_fpga_cw340_test_rom
+./bazelisk.sh test //sw/device/tests/crypto/cryptotest:ecdsa_kat_fpga_cw340_test_rom
 ./bazelisk.sh test --define=acc_has_pqc=true //sw/device/tests/crypto/cryptotest:mldsa_kat_fpga_cw340_pqc_test_rom
 ./bazelisk.sh test --define=acc_has_pqc=true //sw/device/tests/crypto/cryptotest:mlkem_kat_fpga_cw340_pqc_test_rom
 ./bazelisk.sh test //sw/device/tests/crypto/cryptotest:sha3_256_kat_fpga_cw340_test_rom

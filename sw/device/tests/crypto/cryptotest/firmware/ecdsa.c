@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -11,6 +13,8 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -320,38 +324,57 @@ status_t handle_ecdsa(ujson_t *uj) {
       .data = signature_mut.data,
   };
 
-  otcrypto_hash_mode_t mode;
+  uint8_t message_buf[ECDSA_CMD_MAX_MESSAGE_BYTES];
+  memset(message_buf, 0, digest_len * sizeof(uint32_t));
+  memcpy(message_buf, uj_message.input, uj_message.input_len);
+  otcrypto_const_byte_buf_t message = {
+      .data = message_buf,
+      .len = uj_message.input_len,
+  };
+
+  uint8_t digest_buf[kHmacMaxDigestBytes];
+  otcrypto_hash_digest_t message_digest;
+  message_digest.data = (uint32_t *)digest_buf;
+  status_t status;
   switch (uj_hash_alg) {
     case kCryptotestEcdsaHashAlgSha256:
-      mode = kOtcryptoHashModeSha256;
+      message_digest.mode = kOtcryptoHashModeSha256;
+      message_digest.len = kHmacSha256DigestWords;
+      status = otcrypto_sha2_256(message, &message_digest);
       break;
     case kCryptotestEcdsaHashAlgSha384:
-      mode = kOtcryptoHashModeSha384;
+      message_digest.mode = kOtcryptoHashModeSha384;
+      message_digest.len = kHmacSha384DigestWords;
+      status = otcrypto_sha2_384(message, &message_digest);
       break;
     case kCryptotestEcdsaHashAlgSha512:
-      mode = kOtcryptoHashModeSha512;
+      message_digest.mode = kOtcryptoHashModeSha512;
+      message_digest.len = kHmacSha512DigestWords;
+      status = otcrypto_sha2_512(message, &message_digest);
       break;
     case kCryptotestEcdsaHashAlgSha3_256:
-      mode = kOtcryptoHashModeSha3_256;
+      message_digest.mode = kOtcryptoHashModeSha3_256;
+      message_digest.len = kKmacSha3256DigestWords;
+      status = otcrypto_sha3_256(message, &message_digest);
       break;
     case kCryptotestEcdsaHashAlgSha3_384:
-      mode = kOtcryptoHashModeSha3_384;
+      message_digest.mode = kOtcryptoHashModeSha3_384;
+      message_digest.len = kKmacSha3384DigestWords;
+      status = otcrypto_sha3_384(message, &message_digest);
       break;
     case kCryptotestEcdsaHashAlgSha3_512:
-      mode = kOtcryptoHashModeSha3_512;
+      message_digest.mode = kOtcryptoHashModeSha3_512;
+      message_digest.len = kKmacSha3512DigestWords;
+      status = otcrypto_sha3_512(message, &message_digest);
       break;
     default:
       LOG_ERROR("Unrecognized ECDSA hash mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();
   }
-  uint8_t message_buf[ECDSA_CMD_MAX_MESSAGE_BYTES];
-  memset(message_buf, 0, digest_len * sizeof(uint32_t));
-  memcpy(message_buf, uj_message.input, uj_message.input_len);
-  const otcrypto_hash_digest_t message_digest = {
-      .mode = mode,
-      .len = digest_len,
-      .data = (uint32_t *)message_buf,
-  };
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  message_digest.len = digest_len;
 
   switch (uj_op) {
     case kCryptotestEcdsaOperationSign: {
