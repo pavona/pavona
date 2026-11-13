@@ -525,15 +525,29 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
                          const uint8_t *aad, const size_t tag_len,
                          const uint32_t *tag, uint8_t *plaintext,
                          hardened_bool_t *success) {
+  *success = kHardenedBoolFalse;
   aes_gcm_context_t ctx;
   HARDENED_TRY(aes_gcm_decrypt_init(key, iv_len, iv, &ctx));
   HARDENED_TRY(aes_gcm_update_aad(&ctx, aad_len, aad));
+  uint8_t *plaintext_base = plaintext;
   size_t plaintext_bytes_written;
   HARDENED_TRY(aes_gcm_update_encrypted_data(
       &ctx, ciphertext_len, ciphertext, &plaintext_bytes_written, plaintext));
   plaintext += plaintext_bytes_written;
-  return aes_gcm_decrypt_final(&ctx, tag_len, tag, &plaintext_bytes_written,
-                               plaintext, success);
+  status_t result = aes_gcm_decrypt_final(
+      &ctx, tag_len, tag, &plaintext_bytes_written, plaintext, success);
+  if (*success != kHardenedBoolTrue) {
+    // If authentication fails, zero the plaintext so that the caller does not
+    // use the unauthenticated decrypted data. We still use `OTCRYPTO_OK`
+    // because there was no internal error during the authentication check.
+    volatile uint8_t *p = plaintext_base;
+    // Use a volatile loop instead of a memset to ensure that the code persists
+    // even when compiler optimizations are enabled.
+    for (size_t i = 0; i < ciphertext_len; i++) {
+      p[i] = 0;
+    }
+  }
+  return result;
 }
 
 status_t aes_gcm_decrypt_init(const aes_key_t key, const size_t iv_len,
