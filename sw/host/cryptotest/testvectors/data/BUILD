@@ -594,6 +594,7 @@ run_binary(
     for mode in [
         "cbc",
         "cfb128",
+        "ctr",
         "ecb",
         "ofb",
     ]

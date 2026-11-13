@@ -3,8 +3,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parser for converting ACVP AES-ECB, AES-CBC, AES-CFB128 and AES-OFB
-prompts to JSON."""
+"""Parser for converting ACVP AES-ECB, AES-CBC, AES-CFB128, AES-OFB and
+AES-CTR prompts to JSON."""
 
 import argparse
 import json
@@ -19,6 +19,7 @@ MODES = {
     "ACVP-AES-CBC": "cbc",
     "ACVP-AES-CFB128": "cfb128",
     "ACVP-AES-OFB": "ofb",
+    "ACVP-AES-CTR": "ctr",
 }
 
 
@@ -49,7 +50,7 @@ def apply_expected(test_vectors, path):
 
 
 def parse_aes(data):
-    """Parse an AES-ECB, AES-CBC, AES-CFB128 or AES-OFB prompt."""
+    """Parse an AES-ECB, AES-CBC, AES-CFB128, AES-OFB or AES-CTR prompt."""
     if data["revision"] != "1.0":
         raise SystemExit("parse_aes: only revision 1.0 is implemented")
     mode = MODES[data["algorithm"]]
@@ -77,8 +78,8 @@ def parse_aes(data):
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Parsing utility for ACVP AES-ECB, AES-CBC, AES-CFB128 "
-        "and AES-OFB prompts.")
+        description="Parsing utility for ACVP AES-ECB, AES-CBC, AES-CFB128, "
+        "AES-OFB and AES-CTR prompts.")
     parser.add_argument(
         "--src",
         type=str,
