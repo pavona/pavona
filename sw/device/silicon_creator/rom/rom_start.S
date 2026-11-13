@@ -241,6 +241,14 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, 0x00000888
   csrc mie, t0
 
+  // Check if AST initialization should be skipped. This chicken bit exists to
+  // prevent AST register corruption in case ROM_EXEC_EN is set before AST_CFG.
+  li   a0, (TOPLEVEL_CONST(OTP_CTRL_CORE_BASE_ADDR) + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_TRUE
+  bne  t0, t1, .L_ast_init_end
+
   // Copy the AST configuration from OTP.
   li   a0, (TOPLEVEL_CONST(AST_BASE_ADDR))
   li   a1, (TOPLEVEL_CONST(AST_BASE_ADDR) + AST_REGAL_REG_OFFSET + 4)

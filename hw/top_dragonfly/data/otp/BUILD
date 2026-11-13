@@ -56,6 +56,8 @@ otp_json(
                 # Value of the min_security_version_bl0 field of the default
                 # boot data.
                 "CREATOR_SW_CFG_MIN_SEC_VER_BL0": otp_hex(0x0),
+                # Enable AST initialization.
+                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 # Entropy source health check default values. This needs to be
