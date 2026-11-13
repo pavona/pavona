@@ -205,18 +205,18 @@ module sram_ctrl
   assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert;
 
   prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
+    .AsyncOn(AlertAsyncOn[AlertFatalErrorIdx]),
     .SkewCycles(AlertSkewCycles),
-    .IsFatal(AlertIsFatal[0])
+    .IsFatal(AlertIsFatal[AlertFatalErrorIdx])
   ) u_prim_alert_sender_parity (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( alert_test    ),
-    .alert_req_i   ( alert_req     ),
-    .alert_ack_o   (               ),
-    .alert_state_o (               ),
-    .alert_rx_i    ( alert_rx_i[0] ),
-    .alert_tx_o    ( alert_tx_o[0] )
+    .alert_test_i  ( alert_test                     ),
+    .alert_req_i   ( alert_req                      ),
+    .alert_ack_o   (                                ),
+    .alert_state_o (                                ),
+    .alert_rx_i    ( alert_rx_i[AlertFatalErrorIdx] ),
+    .alert_tx_o    ( alert_tx_o[AlertFatalErrorIdx] )
   );
 
   /////////////////////////
@@ -728,39 +728,39 @@ module sram_ctrl
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
-      u_prim_count, alert_tx_o[0])
+      u_prim_count, alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcGateFsmCheck_A,
-      u_tlul_lc_gate.u_state_regs, alert_tx_o[0])
+      u_tlul_lc_gate.u_state_regs, alert_tx_o[AlertFatalErrorIdx])
 
   // Alert assertions for reg_we onehot check.
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-      u_reg_regs, alert_tx_o[0])
+      u_reg_regs, alert_tx_o[AlertFatalErrorIdx])
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoWptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_wptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
         .gen_secure_ptrs.u_rptr,
-      alert_tx_o[0])
+      alert_tx_o[AlertFatalErrorIdx])
 
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that
   // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored

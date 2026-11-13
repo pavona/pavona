@@ -1424,17 +1424,13 @@ module kmac
     };
 
   // Alerts
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault_err.q
-      & reg2hw.alert_test.fatal_fault_err.qe,    // [1]
-    reg2hw.alert_test.recov_operation_err.q
-      & reg2hw.alert_test.recov_operation_err.qe // [0]
-  };
+  assign alert_test[AlertRecovOperationErrIdx] = reg2hw.alert_test.recov_operation_err.q &
+                                                 reg2hw.alert_test.recov_operation_err.qe;
+  assign alert_test[AlertFatalFaultErrIdx]     = reg2hw.alert_test.fatal_fault_err.q &
+                                                 reg2hw.alert_test.fatal_fault_err.qe;
 
-  assign alerts = {
-    alert_fatal,           // Alerts[1]
-    alert_recov_operation  // Alerts[0]
-    };
+  assign alerts[AlertRecovOperationErrIdx] = alert_recov_operation;
+  assign alerts[AlertFatalFaultErrIdx]     = alert_fatal;
 
   assign alert_recov_operation = shadowed_update_err;
 
@@ -1496,31 +1492,31 @@ module kmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
   // break up the combinatorial path for local escalation
     if (!rst_ni) begin
-      alerts_q[1] <= 1'b0;
-    end else if (alerts[1]) begin
+      alerts_q[AlertFatalFaultErrIdx] <= 1'b0;
+    end else if (alerts[AlertFatalFaultErrIdx]) begin
       // fatal alerts cannot be cleared
-      alerts_q[1] <= 1'b1;
+      alerts_q[AlertFatalFaultErrIdx] <= 1'b1;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
   // break up the combinatorial path for local escalation
     if (!rst_ni) begin
-      alerts_q[0] <= 1'b0;
+      alerts_q[AlertRecovOperationErrIdx] <= 1'b0;
     end else begin
       // recoverable alerts can be cleared so just latch the value
-      alerts_q[0] <= alerts[0];
+      alerts_q[AlertRecovOperationErrIdx] <= alerts[AlertRecovOperationErrIdx];
     end
   end
 
   // Latched recoverable alert[0] is not used. Rather removing above,
   // keep alert_q[1:0] and make alert_q[0] unused (lint waive).
   logic unused_alerts_q0;
-  assign unused_alerts_q0 = alerts_q[0];
+  assign unused_alerts_q0 = alerts_q[AlertRecovOperationErrIdx];
 
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI, FSM.GLOBAL_ESC, FSM.LOCAL_ESC
   lc_ctrl_pkg::lc_tx_t alert_to_lc_tx;
-  assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[1]);
+  assign alert_to_lc_tx = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(alerts_q[AlertFatalFaultErrIdx]);
   for (genvar i = 0; i < NumLcSyncCopies; i++) begin : gen_or_alert_lc_sync
       assign lc_escalate_en[i] = lc_ctrl_pkg::lc_tx_or_hi(alert_to_lc_tx, lc_escalate_en_sync[i]);
   end
@@ -1559,69 +1555,76 @@ module kmac
 
   // redundant counter error
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SentMsgCountCheck_A, u_sha3.u_pad.u_sentmsg_count,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RoundCountCheck_A, u_sha3.u_keccak.u_round_count,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(KeyIndexCountCheck_A, u_kmac_core.u_key_index_count,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
 
   // Sparse FSM state error
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A, u_sha3.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A, u_sha3.u_pad.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacCoreFsmCheck_A, u_kmac_core.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacAppFsmCheck_A, u_app_intf.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3FsmCheck_A, u_sha3.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SHA3padFsmCheck_A, u_sha3.u_pad.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KeccackFsmCheck_A, u_sha3.u_keccak.u_state_regs,
-                                       alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacFsmCheck_A, u_state_regs, alert_tx_o[1])
+                                       alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(ErrorCheckFsmCheck_A, u_errchk.u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(KmacFsmCheck_A, u_state_regs,
+                                       alert_tx_o[AlertFatalFaultErrIdx])
 
   // prim is only instantiated if masking is enabled
   if (EnMasking == 1) begin : g_testassertion
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(EntropyFsmCheck_A, gen_entropy.u_entropy.u_state_regs,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
 
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
-                                         alert_tx_o[1])
+                                         alert_tx_o[AlertFatalFaultErrIdx])
 
     // MsgFifo.Packer
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       PackerCountCheck_A,
       u_msgfifo.u_packer_share0.g_pos_dupcnt.u_pos,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
 
     // MsgFifo.Packer
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       Packer1CountCheck_A,
       u_msgfifo.g_masked_msgfifo_share1.u_packer_share1.g_pos_dupcnt.u_pos,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
 
     // MsgFifo.Fifo
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoWptrCheck_A,
       u_msgfifo.u_msgfifo_share0.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifoRptrCheck_A,
       u_msgfifo.u_msgfifo_share0.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifo1WptrCheck_A,
       u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo
         .u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       MsgFifo1RptrCheck_A,
       u_msgfifo.g_masked_msgfifo_share1.u_msgfifo_share1.gen_normal_fifo
         .u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1]
+      alert_tx_o[AlertFatalFaultErrIdx]
     )
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultErrIdx])
 endmodule

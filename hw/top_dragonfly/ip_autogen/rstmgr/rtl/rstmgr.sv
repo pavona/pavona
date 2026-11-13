@@ -204,15 +204,15 @@ module rstmgr
   logic [NumAlerts-1:0] alert_test, alerts;
 
   // All of these are fatal alerts
-  assign alerts[0] = reg2hw.err_code.reg_intg_err.q |
-                     (|reg2hw.err_code.fsm_err.q);
+  assign alerts[AlertFatalFaultIdx] = reg2hw.err_code.reg_intg_err.q |
+                                      (|reg2hw.err_code.fsm_err.q);
 
-  assign alerts[1] = reg2hw.err_code.reset_consistency_err.q;
+  assign alerts[AlertFatalCnstyFaultIdx] = reg2hw.err_code.reset_consistency_err.q;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_cnsty_fault.q & reg2hw.alert_test.fatal_cnsty_fault.qe,
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
-  };
+  assign alert_test[AlertFatalFaultIdx]      = reg2hw.alert_test.fatal_fault.q &
+                                               reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertFatalCnstyFaultIdx] = reg2hw.alert_test.fatal_cnsty_fault.q &
+                                               reg2hw.alert_test.fatal_cnsty_fault.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -312,7 +312,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonPorFsmCheck_A,
     u_daon_por.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign resets_o.rst_por_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[0][Domain0Sel] = '0;
@@ -346,7 +346,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonPorIoFsmCheck_A,
     u_daon_por_io.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign resets_o.rst_por_io_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[1][Domain0Sel] = '0;
@@ -380,7 +380,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcFsmCheck_A,
     u_daon_lc.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -404,7 +404,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0LcFsmCheck_A,
     u_d0_lc.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -428,7 +428,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcShadowedFsmCheck_A,
     u_daon_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -452,7 +452,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0LcShadowedFsmCheck_A,
     u_d0_lc_shadowed.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
 
   // Generating resets for lc_aon
@@ -480,7 +480,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     DAonLcAonFsmCheck_A,
     u_daon_lc_aon.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign resets_o.rst_lc_aon_n[Domain0Sel] = '0;
   assign cnsty_chk_errs[3][Domain0Sel] = '0;
@@ -594,7 +594,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0SysFsmCheck_A,
     u_d0_sys.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign shadow_cnsty_chk_errs[5] = '0;
   assign shadow_fsm_errs[5] = '0;
@@ -628,7 +628,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0SpiDeviceFsmCheck_A,
     u_d0_spi_device.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign shadow_cnsty_chk_errs[6] = '0;
   assign shadow_fsm_errs[6] = '0;
@@ -662,7 +662,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0SpiHost0FsmCheck_A,
     u_d0_spi_host0.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign shadow_cnsty_chk_errs[7] = '0;
   assign shadow_fsm_errs[7] = '0;
@@ -696,7 +696,7 @@ module rstmgr
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D0I2c0FsmCheck_A,
     u_d0_i2c0.gen_rst_chk.u_rst_chk.u_state_regs,
-    alert_tx_o[0])
+    alert_tx_o[AlertFatalFaultIdx])
   end
   assign shadow_cnsty_chk_errs[8] = '0;
   assign shadow_fsm_errs[8] = '0;
@@ -811,5 +811,6 @@ module rstmgr
   `ASSERT_KNOWN(RstEnKnownO_A,       rst_en_o      )
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule // rstmgr

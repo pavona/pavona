@@ -80,13 +80,13 @@ module mbx_hostif
   logic tlul_intg_err;
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alert_test = {
-    reg2hw.alert_test.recov_fault.q & reg2hw.alert_test.recov_fault.qe,
-    reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe
-  };
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
+                                          reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovFaultIdx] = reg2hw.alert_test.recov_fault.q &
+                                          reg2hw.alert_test.recov_fault.qe;
 
-  assign alerts[0] = tlul_intg_err | intg_err_i;
-  assign alerts[1] = sram_err_i;
+  assign alerts[AlertFatalFaultIdx] = tlul_intg_err | intg_err_i;
+  assign alerts[AlertRecovFaultIdx] = sram_err_i;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -251,5 +251,5 @@ module mbx_hostif
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_regs_core,
-                                                 alert_tx_o[0])
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule

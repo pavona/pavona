@@ -379,9 +379,9 @@ module pwrmgr
     reg2hw.alert_test.qe
   };
 
-  assign alerts[0] = reg2hw.fault_status.reg_intg_err.q |
-                     reg2hw.fault_status.esc_timeout.q |
-                     reg2hw.fault_status.main_pd_glitch.q;
+  assign alerts[AlertFatalFaultIdx] = reg2hw.fault_status.reg_intg_err.q |
+                                      reg2hw.fault_status.esc_timeout.q |
+                                      reg2hw.fault_status.main_pd_glitch.q;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -760,5 +760,6 @@ module pwrmgr
       clk_slow_i, !rst_slow_ni)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule // pwrmgr

@@ -154,8 +154,8 @@ module rv_dm
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error | dbg_intg_error |
-                     sba_gate_intg_error | rom_gate_intg_error;
+  assign alerts[AlertFatalFaultIdx] = regs_intg_error | rom_intg_error | dmi_intg_error |
+                                      dbg_intg_error | sba_gate_intg_error | rom_gate_intg_error;
 
   assign alert_test = {
     regs_reg2hw.alert_test.q &
@@ -765,7 +765,8 @@ module rv_dm
   if (UseDmiInterface) begin : gen_dmi_assertions
     `ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
-      gen_dmi_gating.u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg.u_state_regs, alert_tx_o[0])
+      gen_dmi_gating.u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg.u_state_regs,
+      alert_tx_o[AlertFatalFaultIdx])
   end else begin : gen_jtag_assertions
     // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
     `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
@@ -773,11 +774,12 @@ module rv_dm
   end
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SbaTlLcGateFsm_A,
-    u_tlul_lc_gate_sba.u_state_regs, alert_tx_o[0])
+    u_tlul_lc_gate_sba.u_state_regs, alert_tx_o[AlertFatalFaultIdx])
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(RomTlLcGateFsm_A,
-    u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
+    u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[AlertFatalFaultIdx])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule

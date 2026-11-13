@@ -90,21 +90,21 @@ module ${module_instance_name}_peri
   ///////////////////////
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test[0] = reg2hw.alert_test.fatal_sw_err.q &
-                         reg2hw.alert_test.fatal_sw_err.qe;
-  assign alert_test[1] = reg2hw.alert_test.recov_sw_err.q &
-                         reg2hw.alert_test.recov_sw_err.qe;
-  assign alert_test[2] = reg2hw.alert_test.fatal_hw_err.q &
-                         reg2hw.alert_test.fatal_hw_err.qe;
-  assign alert_test[3] = reg2hw.alert_test.recov_hw_err.q &
-                         reg2hw.alert_test.recov_hw_err.qe;
+  assign alert_test[AlertFatalSwErrIdx] = reg2hw.alert_test.fatal_sw_err.q &
+                                          reg2hw.alert_test.fatal_sw_err.qe;
+  assign alert_test[AlertRecovSwErrIdx] = reg2hw.alert_test.recov_sw_err.q &
+                                          reg2hw.alert_test.recov_sw_err.qe;
+  assign alert_test[AlertFatalHwErrIdx] = reg2hw.alert_test.fatal_hw_err.q &
+                                          reg2hw.alert_test.fatal_hw_err.qe;
+  assign alert_test[AlertRecovHwErrIdx] = reg2hw.alert_test.recov_hw_err.q &
+                                          reg2hw.alert_test.recov_hw_err.qe;
 
   logic [NumAlerts-1:0] alert_events;
 
-  assign alert_events[0] = reg2hw.sw_alert[0].q != EventOff;
-  assign alert_events[1] = reg2hw.sw_alert[1].q != EventOff;
-  assign alert_events[2] = intg_err | fatal_intg_err | fatal_core_err;
-  assign alert_events[3] = recov_core_err;
+  assign alert_events[AlertFatalSwErrIdx] = reg2hw.sw_alert[0].q != EventOff;
+  assign alert_events[AlertRecovSwErrIdx] = reg2hw.sw_alert[1].q != EventOff;
+  assign alert_events[AlertFatalHwErrIdx] = intg_err | fatal_intg_err | fatal_core_err;
+  assign alert_events[AlertRecovHwErrIdx] = recov_core_err;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
@@ -124,5 +124,6 @@ module ${module_instance_name}_peri
   end
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalHwErrIdx])
 endmodule // ${module_instance_name}_peri
