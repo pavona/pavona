@@ -26,7 +26,7 @@ filegroup(
         test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
         test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_aes_{}_json".format(mode)],
     )
-    for mode in ("cbc", "cfb128", "ecb", "ofb")
+    for mode in ("cbc", "cfb128", "ctr", "ecb", "ofb")
 ]
 
 AES_GCM_TESTVECTOR_TARGETS = [
@@ -636,6 +636,7 @@ test_suite(
     tests = [
         ":aes_cbc_kat",
         ":aes_cfb128_kat",
+        ":aes_ctr_kat",
         ":aes_ecb_kat",
         ":aes_gcm_kat",
         ":aes_kwp_kat",
