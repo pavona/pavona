@@ -611,6 +611,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   virtual task clear_flash_busy_bit();
     bit busy;
     bit busy_unset_early;
+    int unsigned set_busy_cnt;
     uint num_sck_pulses = 5;
     uint wait_sck_count = num_sck_pulses;
     flash_status_t old_flash_status, new_flash_status;
@@ -640,7 +641,17 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     while (wait_sck_count > 0) begin
       `uvm_info(`gfn, $sformatf("Waiting 'wait_sck_count=%0d' SCK ticks",wait_sck_count), UVM_DEBUG)
 
-      @(posedge cfg.spi_host_agent_cfg.vif.sck);
+      // Wait for the next SCK edge, but stop waiting if the sequence finishes first. The busy
+      // clear only reaches the committed value after a few SCK ticks, so the edges are what this
+      // loop counts.
+      fork begin : isolation_fork
+        fork
+          cfg.spi_host_agent_cfg.wait_sck_edge(SamplingEdge, FW_FLASH_CSB_ID);
+          wait (cfg.vseq_txn_finished);
+        join_any
+        disable fork;
+      end join
+      if (cfg.vseq_txn_finished) return;
       `uvm_info(`gfn, "%m - WAITING FOR BUSY BIT TO CLEAR", UVM_DEBUG)
 
       if (cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID] == 0) begin
@@ -686,6 +697,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       end
     end
 
+    // The previous loop exits once clear reaches the SCK committed value. Record how many flash
+    // commands have set busy so far
+    set_busy_cnt = cfg.flash_cmd_set_busy_cnt;
 
     // Wait for the SPI transaction to end.
     @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
@@ -701,8 +715,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       // written_value on A-channel handshake, and if the back-pressure lasts for 1+ flash_commands
       // csr_update will block until D-channel handshake completes.
       // So, up to here when we wait for CSB becoming inactive, the busy bit may have been set again
-      if (!busy_unset_early && !cfg.last_flash_cmd_set_busy)
+      if (!busy_unset_early && cfg.flash_cmd_set_busy_cnt == set_busy_cnt) begin
         `DV_CHECK_EQ(busy, 0, "flash_status.busy == 1 expected to be 0")
+      end else begin
+        `uvm_info(`gfn, $sformatf(
+                  "Skipping busy check: busy_unset_early=%0d, cmds setting busy since clear=%0d",
+                  busy_unset_early, cfg.flash_cmd_set_busy_cnt - set_busy_cnt), UVM_MEDIUM)
+      end
     end
     `uvm_info(`gfn, "Cleared flash busy bit", UVM_MEDIUM)
   endtask

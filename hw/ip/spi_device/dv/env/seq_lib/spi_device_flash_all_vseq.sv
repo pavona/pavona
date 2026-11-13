@@ -40,6 +40,9 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
         main_seq_done = 1;
       end
     join
+
+    // The reader thread above stops with main_seq, so drain what the last command uploaded
+    read_upload_fifos();
   endtask : body
 
   // Empty task to be overridden by child sequences in case any different configuration is needed
@@ -48,6 +51,9 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
 
   virtual task main_seq();
     for (int i = 0; i < num_trans; ++i) begin
+      // Tell the upload reader this is the last round, so it does not start waiting on SPI
+      // activity that will not come once the loop ends.
+      cfg.vseq_txn_finished = (i == num_trans - 1);
       `uvm_info(`gfn, $sformatf("%m - running iteration %0d/%0d", i, num_trans), UVM_LOW)
 
       spi_device_flash_pass_init();
@@ -72,6 +78,5 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
       `uvm_info(`gfn, $sformatf("%m - END:running iteration %0d/%0d", i, num_trans), UVM_LOW)
 
     end // for (int i = 0; i < num_trans; ++i)
-    cfg.vseq_txn_finished = 1;
   endtask : main_seq
 endclass : spi_device_flash_all_vseq

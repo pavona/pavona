@@ -25,11 +25,18 @@ class spi_device_mem_parity_vseq extends spi_device_common_vseq;
     bit [TL_AW-1:0] offset = $urandom_range(0, (SRAM_INGRESS_SIZE / SRAM_WORD_SIZE) - 1);
     bit [TL_DW-1:0] data;
     logic [BitPerByte*BytePerWord-1:0] mem_data;
-    // TODO: Add support for the gen_ram1r1w variant.
-    string path_fmt =
-      "tb.dut.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem.mem[%0d]";
-    string egress_path = $sformatf(path_fmt, offset);
-    string ingress_path = $sformatf(path_fmt, ingress_sram_offset + offset);
+    // The 2p variant keeps both buffers in one memory, so the ingress index includes the ingress
+    // buffer position. The 1r1w variant has one memory per direction and each is indexed from its
+    // own buffer base, so both use the plain offset.
+    string ram2p_fmt   = "tb.dut.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem.mem[%0d]";
+    string egress_fmt  = "tb.dut.u_spid_dpram.gen_ram1r1w.u_sys2spi_mem.u_mem.mem[%0d]";
+    string ingress_fmt = "tb.dut.u_spid_dpram.gen_ram1r1w.u_spi2sys_mem.u_mem.mem[%0d]";
+    string egress_path  = `SRAM_TYPE == spi_device_pkg::SramType2p ?
+                          $sformatf(ram2p_fmt, offset) :
+                          $sformatf(egress_fmt, offset);
+    string ingress_path = `SRAM_TYPE == spi_device_pkg::SramType2p ?
+                          $sformatf(ram2p_fmt, ingress_sram_offset + offset) :
+                          $sformatf(ingress_fmt, offset);
 
     // Disable comparisons with the mirror values, since the egress area is
     // write-only, and the ingress area is read-only.
