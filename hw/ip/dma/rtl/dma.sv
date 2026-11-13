@@ -180,10 +180,10 @@ module dma
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
   assign alert_test = {reg2hw.alert_test.q & reg2hw.alert_test.qe};
-  assign alerts[0]  = reg_intg_error              ||
-                      dma_host_tlul_rsp_intg_err  ||
-                      dma_ctn_tlul_rsp_intg_err   ||
-                      dma_state_error;
+  assign alerts[AlertFatalFaultIdx] = reg_intg_error              ||
+                                      dma_host_tlul_rsp_intg_err  ||
+                                      dma_ctn_tlul_rsp_intg_err   ||
+                                      dma_state_error;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
@@ -1552,7 +1552,8 @@ module dma
   `ASSERT_KNOWN(SysValidKnownO_A, sys_o.vld_vec)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 
   // Handshake interrupt enable register must be expanded if there are more than 32 handshake
   // trigger wires
@@ -1569,5 +1570,6 @@ module dma
                    reg2hw.enabled_memory_range_limit.qe))
 
   // Alert assertion for sparse FSM.
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlStateFsmCheck_A, aff_ctrl_state_q, alert_tx_o[0])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlStateFsmCheck_A, aff_ctrl_state_q,
+                                       alert_tx_o[AlertFatalFaultIdx])
 endmodule

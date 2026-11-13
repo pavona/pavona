@@ -81,7 +81,7 @@ module i2c
     .racl_policies_i,
     .racl_error_o,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alerts[0])
+    .intg_err_o(alerts[AlertFatalFaultIdx])
   );
 
   assign alert_test = {
@@ -180,5 +180,6 @@ module i2c
   `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule

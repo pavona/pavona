@@ -93,16 +93,16 @@ module spi_host
   ) u_reg (
     .clk_i,
     .rst_ni,
-    .tl_i             ( tl_i                   ),
-    .tl_o             ( tl_o                   ),
-    .tl_win_o         ( fifo_win_h2d           ),
-    .tl_win_i         ( fifo_win_d2h           ),
+    .tl_i             ( tl_i                       ),
+    .tl_o             ( tl_o                       ),
+    .tl_win_o         ( fifo_win_h2d               ),
+    .tl_win_i         ( fifo_win_d2h               ),
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o       ( alerts[0]              ),
-    .racl_policies_i  ( racl_policies_i        ),
-    .racl_error_o     ( racl_error[0]          )
+    .intg_err_o       ( alerts[AlertFatalFaultIdx] ),
+    .racl_policies_i  ( racl_policies_i            ),
+    .racl_error_o     ( racl_error[0]              )
   );
 
   // Alerts
@@ -657,5 +657,6 @@ module spi_host
   `ASSERT(PassthroughConn_A, passthrough_o.s === cio_sd_i)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule : spi_host

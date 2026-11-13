@@ -45,7 +45,7 @@ module pattgen
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alerts[0])
+    .intg_err_o(alerts[AlertFatalFaultIdx])
   );
 
   assign alert_test = {
@@ -106,5 +106,6 @@ module pattgen
   `ASSERT(Pda1TxEnIsOne_A, cio_pda1_tx_en_o === 1'b1)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule : pattgen

@@ -364,7 +364,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
     .hw2reg,
 
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alerts[0])
+    .intg_err_o(alerts[AlertFatalFaultIdx])
   );
 
   // Assertions
@@ -399,13 +399,16 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   //    integrity error nor an alert signal for too many cycles".
   `ASSERT(FpvSecCmBusIntegrity_A,
           ($rose(u_reg.intg_err) &&
-           gen_alert_tx[0].u_prim_alert_sender.state_q == gen_alert_tx[0].u_prim_alert_sender.Idle)
+           gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.state_q ==
+               gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.Idle)
           |->
-          not ((!gen_alert_tx[0].u_prim_alert_sender.sigint_detected && !alert_tx_o[0].alert_p)
+          not ((!gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.sigint_detected &&
+                !alert_tx_o[AlertFatalFaultIdx].alert_p)
                [*`_SEC_CM_ALERT_MAX_CYC]))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
-                                                    u_reg,
-                                                    gen_alert_tx[0].u_prim_alert_sender.alert_req_i)
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+      RegWeOnehotCheck_A,
+      u_reg,
+      gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.alert_req_i)
 endmodule

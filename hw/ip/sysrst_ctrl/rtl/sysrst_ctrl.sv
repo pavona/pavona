@@ -96,7 +96,7 @@ module sysrst_ctrl
     .reg2hw,
     .hw2reg,
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(alerts[0])
+    .intg_err_o(alerts[AlertFatalFaultIdx])
   );
 
   ///////////////////////////////////////
@@ -383,5 +383,6 @@ module sysrst_ctrl
   `ASSERT(FlashWpOEnIsOne_A, cio_flash_wp_l_en_o === 1'b1)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg,
+                                                 alert_tx_o[AlertFatalFaultIdx])
 endmodule
