@@ -42,7 +42,7 @@ covergroup tl_a_chan_cov_cg(string name, int valid_source_width, string path) wi
     bins others       = default;
   }
   cp_source: coverpoint item.a_source {
-    bins valid_sources[] = {[0 : 2 << (valid_source_width - 1) - 1]};
+    bins valid_sources[] = {[0 : (2 << (valid_source_width - 1)) - 1]};
   }
   cross cp_opcode, cp_mask, cp_size;
 endgroup : tl_a_chan_cov_cg
