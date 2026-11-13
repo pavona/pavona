@@ -49,7 +49,7 @@ struct AesGcmTestCase {
     result: bool,
 }
 
-const AES_GCM_CMD_MAX_MSG_BYTES: usize = 64;
+const AES_GCM_CMD_MAX_MSG_BYTES: usize = 8192;
 const AES_GCM_CMD_MAX_KEY_BYTES: usize = 256 / 8;
 const AES_BLOCK_BYTES: usize = 128 / 8;
 
