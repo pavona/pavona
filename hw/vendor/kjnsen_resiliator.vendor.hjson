@@ -1,0 +1,27 @@
+// Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: "kjnsen_resiliator",
+  target_dir: "kjnsen_resiliator",
+
+  upstream: {
+    url: "https://github.com/kjnsen/resiliator",
+    rev: "main",
+  },
+
+  // Use Pavona's build flow and firmware. Exclude the upstream examples.
+  exclude_from_upstream: [
+    "rtl",
+    "Makefile",
+    "hw_config.cfg",
+    "tb_config.cfg",
+    "run_sim.sh",
+    "view_diff.py",
+    "firmware/link_rv.ld",
+    "firmware/start_core_rv.S",
+    // We always exclude .clang-format from upstream repos
+    ".clang-format",
+  ]
+}

@@ -1,0 +1,21 @@
+// Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Avoid backticks and comments starting with the tool name.
+
+`verilator_config
+
+// Firmware loading completes before clocked writes to mem begin.
+lint_off -rule MULTIDRIVEN -file "*/ibex_resiliator_top.sv" -match "*'mem'*"
+
+// The testbench memory is larger than any firmware image, so most of it is
+// never read, and $readmemh only fills the used portion.
+lint_off -rule UNUSEDSIGNAL -file "*/ibex_resiliator_top.sv" -match "*'firmware_file'*"
+
+// Ibex's controller and IF-stage feedback paths are flagged as combinational
+// loops by a conservative analysis. These are pre-existing in the core
+// and are resolved by the simulator's settle loop. 
+lint_off -rule UNOPTFLAT -file "*/ibex_controller.sv"
+lint_off -rule UNOPTFLAT -file "*/ibex_if_stage.sv"
+lint_off -rule UNOPTFLAT -file "*/ibex_id_stage.sv"

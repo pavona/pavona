@@ -92,6 +92,24 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+# Firmware-side header from the vendored Resiliator tree, used by the
+# fault-injection firmware in //hw/top_egret/dv/resiliator/fw. It defines the
+# magic words the firmware writes to GPIO, which sim_main.cpp decodes. The two
+# must come from the same source to stay in sync.
+#
+filegroup(
+    name = "resiliator_firmware_hdrs",
+    srcs = ["vendor/kjnsen_resiliator/firmware/injection.h"],
+    visibility = ["//visibility:public"],
+)
+
+# BIN -> $readmemh converter from the vendored Resiliator tree.
+filegroup(
+    name = "resiliator_makehex",
+    srcs = ["vendor/kjnsen_resiliator/firmware/makehex.py"],
+    visibility = ["//visibility:public"],
+)
+
 fusesoc_build(
     name = "verilator_real",
     srcs = [
