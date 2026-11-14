@@ -165,16 +165,6 @@
           clk_aon_timers: aon
         }
       }
-      {
-        name: proc
-        src: no
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_proc_main: main
-        }
-      }
     ]
   }
   unmanaged_resets: {}

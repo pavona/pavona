@@ -234,7 +234,7 @@
       ]
     }
     exported_clks: {}
-    number_of_clock_groups: 8
+    number_of_clock_groups: 7
     with_alert_handler: false
     topname: scafi_deprecated
     uniquified_modules: {}
