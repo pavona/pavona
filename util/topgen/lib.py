@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import hjson
+from hjson.decoder import HjsonDecoder, HjsonDecodeError, make_scanner
 from basegen.lib import Name
 from basegen.typing import ConfigT, ParamsT
 from mako.template import Template
@@ -332,8 +333,29 @@ class MemoryRegion(object):
             return self.name + Name(["size", "words"])
 
 
-def load_cfg(cfg_path: str) -> Dict[str, object]:
+class RawHjsonDecoder(HjsonDecoder):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.parse_mlstring = raw_mlscanstring
+        self.scan_once, self.scan_object_once = make_scanner(self)
+
+
+def raw_mlscanstring(s, start):
+    """Preserves and returns all characters between triple quotes,
+    without automatically removing whitespace"""
+
+    content_start = start + 3
+    content_end = s.find("'''", content_start)
+    if content_end == -1:
+        raise HjsonDecodeError("Bad multiline string", s, start)
+    return s[content_start:content_end], content_end + 3
+
+
+def load_cfg(cfg_path: str, load_raw: bool = False) -> Dict[str, object]:
     """Loads an hjson file and returns the dictionary.
+
+    If load_raw is set True, any multiline strings in the hjson will
+    be loaded raw (i.e. without normalizing left-hand-sided whitespace)
 
     This is suitable for the config files used by topgen.
     """
@@ -341,7 +363,8 @@ def load_cfg(cfg_path: str) -> Dict[str, object]:
         with open(cfg_path, "r") as fcfg:
             cfg = hjson.load(fcfg,
                              use_decimal=True,
-                             object_pairs_hook=OrderedDict)
+                             object_pairs_hook=OrderedDict,
+                             cls=RawHjsonDecoder if load_raw else None)
     except ValueError:
         raise SystemExit(f"Loading hjson at '{cfg_path}': {sys.exc_info()[1]}")
     except OSError:
@@ -372,6 +395,120 @@ def search_ips(ip_path: Path) -> List[str]:
     return ips
 
 
+def get_top_cfg(top: str, repotop: Path) -> ConfigT:
+    """Returns the top_cfg for a given top name"""
+
+    top_path = repotop / f"hw/top_{top}/data/top_{top}.hjson"
+    top_cfg = load_cfg(top_path)
+    return top_cfg
+
+
+def top_has_ip(top: str, ip: str, repotop: Path) -> bool:
+    """Returns True if the given top name contains an instance of the
+    given ip name"""
+
+    topcfg = get_top_cfg(top, repotop)
+    m = find_module(topcfg["module"], ip, use_base_template_type=False)
+    return m is not None
+
+
+def get_all_top_names(repotop: Path, exclude: set[str] = {"scafi_deprecated"}) -> List[str]:
+    """Return a sorted list of the name of every top with a config at
+    hw/top_<name>/data/top_<name>.hjson"""
+
+    names = set()
+    for p in repotop.glob("hw/top_*/data/top_*.hjson"):
+        top_name = p.parents[1].name.removeprefix("top_")
+        if top_name in exclude:
+            continue
+        names.add(top_name)
+    return sorted(names)
+
+
+def get_ip_attr(ip_name: str, repotop: Path) -> str:
+    """Returns the attribute for a given IP name. The options are
+    'generic', 'ipgen', 'reggen_only' or 'reggen_top'. An error is raised
+    if an IP's attribute differs across tops.
+    """
+
+    attrs = set()
+    attrs_by_top = dict()
+    tops = get_all_top_names(repotop)
+    for top in tops:
+        top_cfg = get_top_cfg(top, repotop)
+        m = find_module(top_cfg["module"], ip_name)
+        if m is None:
+            continue
+        if is_ipgen(m):
+            attrs.add("ipgen")
+            attrs_by_top[top] = "ipgen"
+        elif is_reggen_only(m):
+            attrs.add("reggen_only")
+            attrs_by_top[top] = "reggen_only"
+        elif is_top_reggen(m):
+            attrs.add("reggen_top")
+            attrs_by_top[top] = "reggen_top"
+        else:
+            attrs.add("generic")
+            attrs_by_top[top] = "generic"
+
+    # There shouldn't be disagreements across tops
+    if len(attrs) > 1:
+        msg = f"The following tops disagree on the attr property for ip {ip_name}:"
+        for top, attr in attrs_by_top.items():
+            msg += f"attr for top {top} is {attr}\n"
+        raise ValueError(msg)
+    elif not attrs:
+        raise ValueError(f"IP {ip_name} was not found in any of the following tops: {tops}")
+    attr = next(iter(attrs))
+    return attr
+
+
+def is_ip_top_agnostic(ip_name: str, repotop: Path) -> bool:
+    """Returns True if the given ip_name corresponds to a generic, top-agnostic
+    module (i.e. not a templated or reggen ip)
+    """
+
+    return get_ip_attr(ip_name, repotop) == "generic"
+
+
+def get_all_ip_names(top_cfg: ConfigT, exclude: set[str] = set()) -> set[str]:
+    """Return a set of names for all ips within a top config, minus
+    a provided set of excluded ips.
+    """
+
+    all_ip_names = set()
+
+    for mod in top_cfg["module"]:
+        ip_name = mod["type"]
+        if any(re.search(exclude_pattern, ip_name) for exclude_pattern in exclude):
+            continue
+        all_ip_names.add(ip_name)
+
+    return all_ip_names
+
+
+def get_all_repo_ip_names(repotop: Path, exclude: set[str] = set()) -> set[str]:
+    """Return a set of names for all ips in the repo, minus
+    a provided set of excluded ips.
+    """
+
+    all_ip_names = set()
+    for top in get_all_top_names(repotop):
+        top_cfg = get_top_cfg(top, repotop)
+        all_ip_names |= get_all_ip_names(top_cfg, exclude=exclude)
+
+    return all_ip_names
+
+
+def get_top_agnostic_ip_hjson_path(ip_name: str, repotop: Path) -> Path:
+    """Return the location of an IP's hjson file assuming it exists
+    outside of the context of any one top
+    """
+
+    return repotop / f"hw/ip/{ip_name}/data/{ip_name}.hjson"
+
+
 def get_ip_hjson_path(ip_name_snake: str, topcfg: ConfigT,
                       repotop: Path) -> Path:
     """Return the location of an IP's hjson file for a given top.
@@ -383,6 +520,9 @@ def get_ip_hjson_path(ip_name_snake: str, topcfg: ConfigT,
     m = find_module(topcfg["module"],
                     ip_name_snake,
                     use_base_template_type=False)
+    if m is None:
+        raise ValueError(f"IP '{ip_name_snake}' wasn't found in top_{topcfg['name']}")
+
     if is_ipgen(m):
         data_dir = repotop / "hw/top_{}/ip_autogen/{}/data".format(
             topcfg["name"], ip_name_snake)

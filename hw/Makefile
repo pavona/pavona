@@ -98,8 +98,12 @@ $(tops_gen): %_gen:
 	${PRJ_DIR}/util/gen_top_docs.py -t $(top_complete_hjson)
 	${PRJ_DIR}/util/gen_top_sw.py -t $(top_complete_hjson)
 
+# This generates verification reports for the repo's IPs
+verification_report: top
+	${PRJ_DIR}/util/verification_reporter.py all -v
+
 # This runs cmdgen on all md files of the repo using xargs for parallelism
-cmdgen: top
+cmdgen: top verification_report
 	(cd ${PRJ_DIR}; find . -name "*.md" -print0 | \
 	 xargs -0 -P 8 $(XARGS_REPLACE) ./util/cmdgen.py -u {})
 
@@ -120,4 +124,4 @@ dvgen: cmdgen
 
 all: cmdgen regs dvgen
 
-.PHONY: all top top_and_cmdgen cmdgen regs dvgen $(ips_reg) $(tops_gen) $(tops_reg)
+.PHONY: all top top_and_cmdgen cmdgen regs dvgen verification_report $(ips_reg) $(tops_gen) $(tops_reg)

@@ -5,3 +5,44 @@
 div[id^="WaveDrom_Display"] > svg {
     width: 100%;
 }
+
+:root {
+    --table-border-color: #e5e5e5;
+}
+
+.verification_report_table table th,
+.verification_report_table table td,
+.feature_matrix table th,
+.feature_matrix table td {
+    padding: 0.9em 1.3em;
+
+    border-left: 4px solid var(--table-border-color);
+    border-right: 4px solid var(--table-border-color);
+    border-bottom: 2px solid var(--table-border-color);
+
+    text-align: left;
+    vertical-align: middle;
+}
+
+.feature_matrix table th,
+.feature_matrix table td {
+    border: 1px solid !important;;
+    padding: 2px 6px !important;;
+}
+
+.feature_matrix table td {
+    text-align: center !important;
+}
+
+.feature_matrix table th {
+    white-space: nowrap;
+}
+
+.feature_matrix table tr:first-child th:first-child {
+    border: none !important;
+}
+
+
+.table-wrapper {
+    overflow-x: auto;
+}
