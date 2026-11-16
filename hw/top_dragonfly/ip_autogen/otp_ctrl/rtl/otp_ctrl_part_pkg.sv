@@ -118,7 +118,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           15'd72,
-      size:             272,
+      size:             280,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -134,7 +134,7 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           15'd344,
+      offset:           15'd352,
       size:             984,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -151,7 +151,7 @@ package otp_ctrl_part_pkg;
     // OWNERSHIP_SLOT_STATE
     '{
       variant:          Unbuffered,
-      offset:           15'd1328,
+      offset:           15'd1336,
       size:             56,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -168,7 +168,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT0
     '{
       variant:          Unbuffered,
-      offset:           15'd1384,
+      offset:           15'd1392,
       size:             224,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -185,7 +185,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT1
     '{
       variant:          Unbuffered,
-      offset:           15'd1608,
+      offset:           15'd1616,
       size:             224,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -202,7 +202,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT2
     '{
       variant:          Unbuffered,
-      offset:           15'd1832,
+      offset:           15'd1840,
       size:             224,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -219,7 +219,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT3
     '{
       variant:          Unbuffered,
-      offset:           15'd2056,
+      offset:           15'd2064,
       size:             224,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -236,7 +236,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT0_STATE
     '{
       variant:          Unbuffered,
-      offset:           15'd2280,
+      offset:           15'd2288,
       size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -253,7 +253,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT1_STATE
     '{
       variant:          Unbuffered,
-      offset:           15'd2304,
+      offset:           15'd2312,
       size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -270,7 +270,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT2_STATE
     '{
       variant:          Unbuffered,
-      offset:           15'd2328,
+      offset:           15'd2336,
       size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -287,7 +287,7 @@ package otp_ctrl_part_pkg;
     // ROT_OWNER_AUTH_SLOT3_STATE
     '{
       variant:          Unbuffered,
-      offset:           15'd2352,
+      offset:           15'd2360,
       size:             24,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -304,7 +304,7 @@ package otp_ctrl_part_pkg;
     // EXT_NVM
     '{
       variant:          Unbuffered,
-      offset:           15'd2376,
+      offset:           15'd2384,
       size:             1032,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -321,7 +321,7 @@ package otp_ctrl_part_pkg;
     // ROM_PATCH
     '{
       variant:          Unbuffered,
-      offset:           15'd3408,
+      offset:           15'd3416,
       size:             8208,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -338,7 +338,7 @@ package otp_ctrl_part_pkg;
     // SOC_FUSES_CP
     '{
       variant:          Unbuffered,
-      offset:           15'd11616,
+      offset:           15'd11624,
       size:             392,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -355,7 +355,7 @@ package otp_ctrl_part_pkg;
     // SOC_FUSES_FT
     '{
       variant:          Unbuffered,
-      offset:           15'd12008,
+      offset:           15'd12016,
       size:             4232,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -372,8 +372,8 @@ package otp_ctrl_part_pkg;
     // SCRATCH_FUSES
     '{
       variant:          Unbuffered,
-      offset:           15'd16240,
-      size:             3768,
+      offset:           15'd16248,
+      size:             3760,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b0,
