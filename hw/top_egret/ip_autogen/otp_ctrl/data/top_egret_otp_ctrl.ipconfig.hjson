@@ -154,6 +154,25 @@
               offset: 64
             }
             {
+              name: CREATOR_SW_CFG_AST_INIT_EN
+              size: 4
+              desc:
+                '''
+                Controls whether or not the CREATOR_SW_CFG_AST_CFG values
+                get copied to the AST CSRs during ROM execution.
+                A value of kMultiBitBool4True enables copying; all other
+                values disable.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 220
+            }
+            {
               name: CREATOR_SW_CFG_AST_INIT_SIZE
               size: 4
               desc:
@@ -168,7 +187,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 220
+              offset: 224
             }
             {
               name: CREATOR_SW_CFG_SIGVERIFY_SPX_EN
@@ -187,7 +206,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 224
+              offset: 228
             }
             {
               name: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG
@@ -205,7 +224,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 228
+              offset: 232
             }
             {
               name: CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG
@@ -223,7 +242,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 232
+              offset: 236
             }
             {
               name: CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE
@@ -246,7 +265,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 236
+              offset: 240
             }
             {
               name: CREATOR_SW_CFG_RNG_EN
@@ -265,7 +284,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 240
+              offset: 244
             }
             {
               name: CREATOR_SW_CFG_JITTER_EN
@@ -282,7 +301,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 244
+              offset: 248
             }
             {
               name: CREATOR_SW_CFG_RET_RAM_RESET_MASK
@@ -301,7 +320,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 248
+              offset: 252
             }
             {
               name: CREATOR_SW_CFG_MANUF_STATE
@@ -319,7 +338,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 252
+              offset: 256
             }
             {
               name: CREATOR_SW_CFG_ROM_EXEC_EN
@@ -341,7 +360,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 256
+              offset: 260
             }
             {
               name: CREATOR_SW_CFG_CPUCTRL
@@ -361,7 +380,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 260
+              offset: 264
             }
             {
               name: CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT
@@ -378,7 +397,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 264
+              offset: 268
             }
             {
               name: CREATOR_SW_CFG_MIN_SEC_VER_BL0
@@ -395,7 +414,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 268
+              offset: 272
             }
             {
               name: CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS
@@ -414,7 +433,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 272
+              offset: 276
             }
             {
               name: CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS
@@ -433,7 +452,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 276
+              offset: 280
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS
@@ -452,7 +471,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 280
+              offset: 284
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS
@@ -471,7 +490,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 284
+              offset: 288
             }
             {
               name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
@@ -490,7 +509,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 288
+              offset: 292
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
@@ -509,7 +528,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 292
+              offset: 296
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
@@ -528,7 +547,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 296
+              offset: 300
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
@@ -547,7 +566,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 300
+              offset: 304
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
@@ -566,7 +585,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 304
+              offset: 308
             }
             {
               name: CREATOR_SW_CFG_RNG_ALERT_THRESHOLD
@@ -585,7 +604,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 308
+              offset: 312
             }
             {
               name: CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST
@@ -604,7 +623,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 312
+              offset: 316
             }
             {
               name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
@@ -624,7 +643,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 316
+              offset: 320
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN
@@ -642,7 +661,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 320
+              offset: 324
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET
@@ -659,7 +678,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 324
+              offset: 328
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH
@@ -672,7 +691,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 328
+              offset: 332
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH
@@ -685,7 +704,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 332
+              offset: 336
             }
             {
               name: CREATOR_SW_CFG_DIGEST
