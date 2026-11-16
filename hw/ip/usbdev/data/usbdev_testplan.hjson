@@ -147,7 +147,7 @@
             - Set eop_single_bit field true in the 'phy_config' register and then send an OUT data packet with
               a single SE0 bit interval at the end followed by J state (bus Idle).
             - Verify that the device recognizes this EOP as valid, accepts the packet into the RX FIFO and
-	      does not ignore the packet or raise any link_err interrupts.
+              does not ignore the packet or raise any link_err interrupts.
             '''
       stage: V2
       tests: ["usbdev_phy_config_eop_single_bit_handling"]
@@ -469,7 +469,7 @@
       name: av_empty
       desc: '''
             Verify the functionality of 'av_out_empty' and 'av_setup_empty' interrupts when the
-      	    Av OUT/SETUP Buffer FIFO is empty.
+            Av OUT/SETUP Buffer FIFO is empty.
 
             - Choose at random whether to test the AV OUT Buffer FIFO or the AV SETUP Buffer FIFO.
             - Enable the interrupt for AV OUT/SETUP empty by setting INTR_ENABLE[7/17] and then send back to back

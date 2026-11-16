@@ -94,6 +94,7 @@
             - Verify the updated data output from OTP ctrl to LC ctrl is correct.
             - Ensure that there is no background or otp_init error.
             - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
+
             Re-randomize the lc_transition tokens and repeat the sequence above.
 
             X-ref'ed chip_sw_otp_ctrl_program.
@@ -289,6 +290,7 @@
              - Program test_unlock_token, test_exit_token, rma_unlock_token into OTP partitions.
              - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
                enabled.
+
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
       stage: V2

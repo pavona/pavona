@@ -20,7 +20,7 @@
 
             **Stimulus**:
             - Create a random valid ROM where expected digest doesn't match with the KMAC digest
-            image and load into memory model
+              image and load into memory model
             - Allow the rom check to complete
             - Perform some random memory accesses
             - Create a random valid ROM where expected digest matches with the KMAC digest

@@ -108,11 +108,11 @@
       desc: '''
             Verify the PWM can continue when the chip is in low power mode.
             Stimulus:
-                - start PWM on one or more channels
-                - stop the TL UL clock
+              - start PWM on one or more channels
+              - stop the TL UL clock
 
             Checks:
-                - Ensure pulses are still generated when in LP mode
+              - Ensure pulses are still generated when in LP mode
             '''
         stage: V2
         tests: ["pwm_rand_output"]
@@ -136,12 +136,12 @@
             Checking ip operation at min/max bandwidth
 
             Stimulus:
-                - Program timing registers (CLK_DIV, DC_RESN) to high/low values (slow/fast data rate)
-                - Program other required registers for pwm operation
-                - Start pwm channels
+              - Program timing registers (CLK_DIV, DC_RESN) to high/low values (slow/fast data rate)
+              - Program other required registers for pwm operation
+              - Start pwm channels
 
             Checks:
-                - Ensure the output pulses are correctly modulated for all channels
+              - Ensure the output pulses are correctly modulated for all channels
             '''
       stage: V2
       tests: ["pwm_perf"]
@@ -164,10 +164,10 @@
             Combine above sequences in one test then randomly select for running
 
             Stimulus:
-                - Start sequences and randomly add reset between each sequence
+              - Start sequences and randomly add reset between each sequence
 
             Checking:
-                - All sequences should be finished and checked by the scoreboard
+              - All sequences should be finished and checked by the scoreboard
             '''
       stage: V2
       tests: ["pwm_stress_all"]

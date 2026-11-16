@@ -41,7 +41,7 @@
 
           For a number of iterations:
           - Configure DUT with randomized filter parameters, filters enabled
-          but no interrupts or wake events.
+            but no interrupts or wake events.
           - Generate ADC data stream.
 
           **Checks**:
@@ -103,7 +103,7 @@
           **Stimulus**:
           For a number of iterations:
           - Configure DUT with randomized filter parameters,
-          filters and wakeup enabled, low power sampling mode.
+            filters and wakeup enabled, low power sampling mode.
           - Generate ADC data stream.
 
           **Checks**:
@@ -134,7 +134,7 @@
 
           For a number of iterations:
           - Configure DUT with randomized filter parameters, filters,
-          interrupt and wakeup enabled, randomized low/high power sampling mode.
+            interrupt and wakeup enabled, randomized low/high power sampling mode.
           - Generate ADC data stream.
 
           **Checks**:
@@ -158,7 +158,7 @@
 
           For a number of iterations:
           - Configure DUT with randomized filter parameters, filters,
-          interrupt and wakeup enabled, low power sampling mode.
+            interrupt and wakeup enabled, low power sampling mode.
           - Turn off fast clock.
           - Generate ADC data stream.
           - When wakeup occurs after a further random period turn fast clock back on.

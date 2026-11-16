@@ -18,7 +18,7 @@
       desc: '''
             A basic smoke test.
 
-            . Read the DTM register `idcode` and verify that it reflects the correct value.
+            - Read the DTM register `idcode` and verify that it reflects the correct value.
             - Enable debug by setting lc_hw_debug_en to true.
             - Write to the DMI register field dmcontrol[dmactive] via JTAG and verify that the
               `dmactive` output pin reflects the same value.
@@ -486,10 +486,10 @@
       desc: '''
              Verify whether the selected hart has been resumed or not.
 
-            -Write into memory mapped register called RESUMING(0x110) through tl-device interface.
-            -Verify that the anyresumeack and allresumeack bits of the dmstatus register are set.
-            -After that, set the resumereq bit of dmcontrol register.
-            -Verify that the anyresumeack and allresumeack bits of the dmstatus register are cleared.
+            - Write into memory mapped register called RESUMING(0x110) through tl-device interface.
+            - Verify that the anyresumeack and allresumeack bits of the dmstatus register are set.
+            - After that, set the resumereq bit of dmcontrol register.
+            - Verify that the anyresumeack and allresumeack bits of the dmstatus register are cleared.
             '''
       stage: V1
       tests: ["rv_dm_mem_tl_access_resuming"]

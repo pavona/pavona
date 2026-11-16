@@ -95,6 +95,7 @@
             This test checks lc_state failure by:
             - Driving invalid data to lc_ctrl input `otp_lc_data_i` fields `lc_state` and `lc_cnt`.
             - Backdoor changing lc_ctrl FSM's to invalid value.
+
             For invalid value, the testbench will test using random value and valid `A/B/C/D`
             values with different orders.
 
@@ -117,6 +118,7 @@
             - flash rma responses to lc_ctrl request with error
             - lc_ctrl clock bypass responses with error
             - input otp_lc_data's error bit is set to 1
+
             Note that all the above scenarios except the last one requires a reset to recover.
 
             **Checks**:
@@ -134,7 +136,7 @@
             This test checks two security escalation responses:
             - wipe secrets: permanently asserts lc_escalate_en signal
             - scrap state: lc_ctrl moves to escalation state, check the state will be cleared up
-               upon next power cycle
+              upon next power cycle
             '''
       stage: V2
       tests: ["lc_ctrl_security_escalation",

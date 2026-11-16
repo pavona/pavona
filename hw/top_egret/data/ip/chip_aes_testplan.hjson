@@ -9,15 +9,15 @@
       desc: '''Verify the AES operation.
 
             Procedure:
-            -Set up the desired operation, ECB mode, 256b key length, and set the engine to
-            manual operation. Set mask_reseeding to 1 per block.
-            -Trigger the encryption by loading the plaintext.
-            -Wait for the AES operation to complete by polling the status register and read the
-            result.
+            - Set up the desired operation, ECB mode, 256b key length, and set the engine to
+              manual operation. Set mask_reseeding to 1 per block.
+            - Trigger the encryption by loading the plaintext.
+            - Wait for the AES operation to complete by polling the status register and read the
+              result.
 
-            -The above procedure should be performed twice. First for encryption. Second for
-            decryption of the result using the same key.
-            -Check that the decryption result matches the original plaintext.
+            - The above procedure should be performed twice. First for encryption. Second for
+              decryption of the result using the same key.
+            - Check that the decryption result matches the original plaintext.
             '''
       features: [
         "AES.MODE.ECB",
@@ -47,14 +47,14 @@
                   that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
 
             Procedure:
-            -Configure the desired operation, mode, key length, and set the engine to automatic
-             operation. Configure the IV for modes that require it.
-            -Using dif_aes_start()  and dif_aes_process_data(), encrypt the message.
-            -Check the output for correctness against the expected value.
+            - Configure the desired operation, mode, key length, and set the engine to automatic
+              operation. Configure the IV for modes that require it.
+            - Using dif_aes_start()  and dif_aes_process_data(), encrypt the message.
+            - Check the output for correctness against the expected value.
 
-            -The above procedure should be performed twice. First for encryption. Second for
-            decryption of the result using the same key (and same IV if needed).
-            -Check that the decryption result matches the original plaintext.
+            - The above procedure should be performed twice. First for encryption. Second for
+              decryption of the result using the same key (and same IV if needed).
+            - Check that the decryption result matches the original plaintext.
             '''
       features: [
         "AES.MODE.ECB",
@@ -88,19 +88,19 @@
                   that the MANUAL_OPERATION bit in CTRL_SHADOWED register is set to 0.
 
             Procedure:
-            -Configure encryption using the desired mode, key length, IV, and set the engine to
-            automatic operation.
-            -Using dif_aes_process_data, encrypt the first two blocks.
-            -Using dif_aes_read_iv read the IV. Note that AES has automatically updated the content
-             of this register. This IV will be needed later to continue this encryption.
-            -De-initialize automatic operation. This step is necessary to clear all registers.
-            -Perform an encryption using a different data and key. Message size, key size and mode
-             can be chosen arbitrarily.
-            -Continue the original encryption:
-                -Configure the operation using the previously read IV
-                -Process the remaining plaintext blocks using dif_aes_process_data
-            -Decrypt the result (using the original key and IV)
-            -Check that the decryption result matches the original plaintext.
+            - Configure encryption using the desired mode, key length, IV, and set the engine to
+              automatic operation.
+            - Using dif_aes_process_data, encrypt the first two blocks.
+            - Using dif_aes_read_iv read the IV. Note that AES has automatically updated the content
+              of this register. This IV will be needed later to continue this encryption.
+            - De-initialize automatic operation. This step is necessary to clear all registers.
+            - Perform an encryption using a different data and key. Message size, key size and mode
+              can be chosen arbitrarily.
+            - Continue the original encryption:
+                - Configure the operation using the previously read IV
+                - Process the remaining plaintext blocks using dif_aes_process_data
+            - Decrypt the result (using the original key and IV)
+            - Check that the decryption result matches the original plaintext.
             '''
       features: [
         "AES.MODE.CBC",

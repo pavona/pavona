@@ -72,9 +72,9 @@
       desc: '''
             Stimulus:
               - select different settings for:
-              * CONFIGOPTS_0.CSNIDLE_0
-              * CONFIGOPTS_0.CSNLEAD_0
-              * CONFIGOPTS_0.CSNTRAIL_0
+                - CONFIGOPTS_0.CSNIDLE_0
+                - CONFIGOPTS_0.CSNLEAD_0
+                - CONFIGOPTS_0.CSNTRAIL_0
 
             Checking:
               - verify that merging of commands work correctly
@@ -135,6 +135,7 @@
 
             Stimulus:
               - Enable Passthrough Mode
+
             Checking:
               - Ensure Host to Device and Device to Host paths are switched to Passthrough ports
       '''
@@ -228,6 +229,7 @@
               - Issue a transaction
               - De-assert CONTROL.SPIEN after the command byte is received
               - Re-assert after a randomized delay
+
             Checking:
               - Ensure transactions are transmitted/received correctly, even with a large
                 temporary suspension in the middle.

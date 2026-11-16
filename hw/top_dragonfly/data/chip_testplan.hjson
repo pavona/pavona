@@ -1011,6 +1011,7 @@
             - Verify the updated data output from OTP ctrl to LC ctrl is correct.
             - Ensure that there is no background or otp_init error.
             - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
+
             Re-randomize the lc_transition tokens and repeat the sequence above.
 
             X-ref'ed chip_sw_otp_ctrl_program.
@@ -1291,7 +1292,7 @@
 
             - Configure the LC_CTRL to start a token hash using KMAC interface.
             - KMAC should finish hashing successfully (not visible to SW) and return digest to
-            LC_CTRL.
+              LC_CTRL.
 
             X-ref'ed with LC_CTRL test/env.
             '''
@@ -1306,7 +1307,7 @@
             - ROM will send message to the KMAC containing its memory contents,
             - KMAC will hash and return the digest to the ROM.
             - ROM will compare received digest against its first 8 logical memory lines for
-            correctness.
+              correctness.
 
             X-ref'ed with ROM_CTRL test/env.
             '''
@@ -1325,10 +1326,12 @@
                 Check if EDN timeout error occurs after issuing the hashing op.
               - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
                 too). Then check if Digest is correct.
+
             KMAC should send EDN request after `entropy_ready` is set.
             KMAC also should send out another request to EDN when either:
               - kmac hash counter hits the configured threshold (assuming it is non-zero)
               - Hash count exceeds the threshold.
+
             SW verifies that KMAC produces the correct digest value.
 
             TODO: This is pending security review discussion. It is unclear if this feature will be
@@ -1790,7 +1793,7 @@
             - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
             - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
               for kTopDragonflyAlertIdLcCtrlFatalProgError.
-	    - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
+            - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
             - Verify after the escalation reset that the alert info captured the correct alert.
             '''
 
@@ -2178,6 +2181,7 @@
              - Program test_unlock_token, test_exit_token, rma_unlock_token into OTP partitions.
              - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
                enabled.
+
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
       stage: V2

@@ -131,24 +131,24 @@ rg_srcs = get_rg_srcs(typed_clocks)
             - When the external clock is selected (and not defeated by
               `scanmode_i` for scoreboard checks):
               - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
-                 output.
+                output.
               - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at half its frequency.
+                output at half its frequency.
             - When the external clock is not selected or division is defeated:
               - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
                 output at half its frequency.
               - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at a quarter of its frequency.
+                output at a quarter of its frequency.
             LC / AST handshake:
             - When the external clock functionality is triggered the
               `ast_clk_byp_req_o` output pin is set to `lc_ctrl_pkg::On`.
             - When `ast_clk_byp_ack_i` is set to `lc_ctrl_pkg::On` in response
               to a corresponding request:
               - The clock dividers are stepped down, unless defeated by
-                 `scanmode_i` being `lc_ctrl_pkg::On`.
-             - If the initial request was due to the assertion of the
-               `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
-               `lc_ctrl_pkg::On`.
+                `scanmode_i` being `lc_ctrl_pkg::On`.
+            - If the initial request was due to the assertion of the
+              `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
+              `lc_ctrl_pkg::On`.
             '''
       stage: V2
       tests: ["clkmgr_extclk"]

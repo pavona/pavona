@@ -203,6 +203,7 @@
             - using jitter thresholds no errors are detected
             - using normal thresholds results in recoverable errors
             - don't test normal thresholds for FPGAs since they don't support jitter and no errors will occur
+
             Check when jitter is disabled:
             - using either sets of thresholds result in no errors
 
@@ -246,6 +247,7 @@
             - Keymgr key derivation
             - Scramble-enabled access from the main SRAM
             - Csrng edn concurrency
+
             SiVal: This can be executed if we detect problems running at nominal frequencies.
             It may be implemented as the system running specific tests with an external cLock.
             No specific work may be needed other than configuring external clocks.

@@ -60,6 +60,7 @@
             - Verify that KMAC returns an error signal to the ROM controller.
             - Verify that the ROM controller itself transitions to invalid state and the chip is
               effectively dead.
+
             SiVal: Creating a glitch is not feasible, so this is not a sival test.
             '''
       features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.FI_HARDENING"]

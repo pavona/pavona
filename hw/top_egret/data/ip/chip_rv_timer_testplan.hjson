@@ -31,7 +31,7 @@
             - Read the number of ticks `n`.
             - Verify that `n * T ~= 5 milliseconds` within 3% of tolerance.
             - Repeat for T in:
-                [1, 5, 25, 100, 125]
+              [1, 5, 25, 100, 125]
             '''
       stage: V3
       si_stage: SV3

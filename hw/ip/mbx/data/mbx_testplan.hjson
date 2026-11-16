@@ -80,7 +80,7 @@
             - Check that the registers value(s) change iff the memory range is unlocked.
             '''
       stage: V2
-      tests: [""]
+      tests: []
       features: ["MBX.ADDRESS_RANGE"]
     }
     { name: mbx_doe_intr_msg

@@ -34,6 +34,7 @@
             - chip_sw_flash_scramble
             - chip_sw_keymgr_key_derivation
             - chip_sw_acc_mem_scramble
+
             For sival, this test can be done by
             - manuf_ft_sku_individualization
             - manuf_ft_provision_rma_token_and_personalization
@@ -83,6 +84,7 @@
             - Ensure that the whole operation does not raise any interrupts or alerts or errors.
             - After reset, verify that the LC state transition completed successfully by reading the
               LC state and LC count CSRs.
+
             For sival, this test can be done by
             - manuf_ft_sku_individualization_preop
             '''
@@ -108,6 +110,7 @@
               for kTopEgretAlertIdLcCtrlFatalProgError.
             - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
             - Verify after the escalation reset that the alert info captured the correct alert.
+
             SiVal: Forcing this illegal condition is not feasible in sival.
             '''
       features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]

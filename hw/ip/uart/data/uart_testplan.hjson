@@ -16,8 +16,8 @@
             - UART smoke test with few bytes transmitted and received asynchronously and
               in parallel with scoreboard checks
             - TX and RX have 2 independent threads respectively.
-              -  program one Tx item in register and wait for it to complete at uart interface,
-                 before send another one
+              - program one Tx item in register and wait for it to complete at uart interface,
+                before send another one
               - sequentially send one Rx byte, then immediately read from register and check it'''
       stage: V1
       tests: ["uart_smoke"]

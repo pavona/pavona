@@ -132,6 +132,7 @@
             - The processor gets an interrupt soon after a low power entry is
               triggered.
             - OTP, LC, or FLASH are not idle.
+
             This test aborts low power transitions, and disables any wakeups,
             so the test would timeout if low power was entered.
 
@@ -179,8 +180,8 @@
             - Checks the `reset_status` CSRs.
             - Checks `ip_clk_en` output has a low transition.
             - SVA that when `pwr_rst_req.reset_cause` is HwReq, and the output
-             `pwr_rst_req.rstreqs` matches the unconditional and enabled
-             conditional resets inputs.
+              `pwr_rst_req.rstreqs` matches the unconditional and enabled
+              conditional resets inputs.
             '''
       stage: V2
       tests: ["pwrmgr_reset", "pwrmgr_reset_invalid"]

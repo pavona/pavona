@@ -19,6 +19,7 @@
               reads data_in register after random delay
             - Configures all gpio pins as outputs, programs direct_out and direct_oe registers to
               random values and reads data_in register after random delay
+
             The test is also run in a second build mode that enables the input synchronizers in
             order to cover the input paths through these primitives.
             '''

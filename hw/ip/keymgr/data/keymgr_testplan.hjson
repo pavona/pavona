@@ -162,7 +162,7 @@
 
             Stimulus:
             - Drive all 0s or 1s on any of these inputs - flash seeds, otp_key, diversification ID,
-            Rom digest etc.
+              Rom digest etc.
             - Make sure all cases are covered in `csr_debug_cg`.
 
             Checks:

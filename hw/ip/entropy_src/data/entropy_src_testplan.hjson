@@ -50,6 +50,7 @@
             - Random FIFO depths
             - Random rates
             - Verify single_bit_mode for all bit_selector values
+
             Verify FIPS bits match predicted
             '''
       stage: V2

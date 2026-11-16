@@ -80,14 +80,14 @@
                 - HMAC-SHA2-384
                 - HMAC-SHA2-512
               - For each vector, message input is split into two chunks, and each
-              operation is completed with 2 update calls.
+                operation is completed with 2 update calls.
                 - Initiate all 6 operations.
                 - Feed the first message chunk to each stream, by resuming,
-                updating and removing context for each operation.
+                  updating and removing context for each operation.
                 - Once all streams receive their first chunk, then feed their
-                second message chunk similarly.
+                  second message chunk similarly.
                 - Once all streams receive all their message inputs, then finalize
-                them in a loop and check their result.
+                  them in a loop and check their result.
             '''
       features: ["HMAC.STREAM_MODE"]
       stage: V2
@@ -194,7 +194,7 @@
             - `SwUpdateSecretKeyInProcess`: Update secret key when hash is in progress.
             - `SwHashStartWhenActive`: Issue hash start when hash is in progress.
             - `SwPushMsgWhenDisallowed`: Push message when HMAC is not idle.
-	    - `SwInvalidConfig`: Issue when HMAC configured with incorrect digest-size or key-length
+            - `SwInvalidConfig`: Issue when HMAC configured with incorrect digest-size or key-length
             '''
       features: []
       stage: V3

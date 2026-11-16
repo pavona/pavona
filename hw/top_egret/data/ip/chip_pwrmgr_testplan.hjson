@@ -144,6 +144,7 @@
 
             - 4 resets are generated with deep sleep mode
             - sysrst, wdog timer reset, rstmgr sw reset, and escalation reset
+
             Notice rstmgr sw reset cannot be triggered in sleep mode.
             Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
             alert handler so that the reset triggers after setting sleep mode.
@@ -339,6 +340,7 @@
 
             - 4 resets are generated with normal and deep sleep mode each
             - sysrst, wdog timer reset, rstmgr sw reset, and escalation reset
+
             Notice rstmgr sw reset cannot be triggered in sleep mode.
             Esc reset is triggered by pwrmgr ALERT_TEST.FATAL_FAULT CSR, configuring the
             alert handler so that the reset triggers after setting sleep mode.
@@ -373,6 +375,7 @@
             - Program the AON timer wdog to 'bark' after some time.
             - Let the bark escalate to bite, which should cause a reset.
             - After reset, read the rstmgr reset_info CSR to confirm it indicates a watchdog reset.
+
             SiVal: The pin that causes sysrst to reset needs to be pulsed from the host side.
             The chip_sw_all_resets is a superset of this testpoint.
             '''
@@ -441,12 +444,13 @@
       name: chip_sw_all_resets
       desc: '''Verify resets by relevant reset sources when active.
 
-            - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst.
-            - rstmgr sw reset is in rstmgr testplan.
-            - ndm reset is in rv_dm testplan.
-	    This test is like the pwrmgr_*_sleep_all_reset_reqs tests, except the CPU will
-	    just spin_wait for a reset, so the pwrmgr will be in active state.
-	    SiVal: The CPU must be enabled to configure the test.
+        - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst.
+        - rstmgr sw reset is in rstmgr testplan.
+        - ndm reset is in rv_dm testplan.
+
+        This test is like the pwrmgr_*_sleep_all_reset_reqs tests, except the CPU will
+        just spin_wait for a reset, so the pwrmgr will be in active state.
+        SiVal: The CPU must be enabled to configure the test.
             '''
       stage: V3
       si_stage: SV3

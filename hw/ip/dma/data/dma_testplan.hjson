@@ -82,12 +82,12 @@
               - FW configures Source Address and ASID
               - FW configures Destination Address and ASID
               - FW completes other configuration such as:
-                  i)    Operation Size
-                  ii)   Opcode
+                1. Operation Size
+                2. Opcode
               - FW triggers the DMA operation
               - FW either
-                  i)    Poll for completion
-                  ii)   Waits for Completion Interrupt
+                1. Poll for completion
+                2. Waits for Completion Interrupt
               - Reset memory contents at the end of iteration
               '''
         stage: V1

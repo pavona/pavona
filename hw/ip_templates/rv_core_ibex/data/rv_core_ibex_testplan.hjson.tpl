@@ -111,8 +111,10 @@
               - Reserved instructions as specified in RISC-V user mode spec
               - CSR instruction to not implemented CSR
               - Execute S/U mode instructions in machine mode
+
             Verify the illlegal instruction exception is raised and the context is captured correctly in privieged mode CSRs
               - mstatus, mcause, mepc
+
             Verify the core can resume execution after returning from trap handling'''
       stage: V1
       tests: ["riscv_illegal_instr_test"]
@@ -152,7 +154,7 @@
       desc: '''
             Randomly assert debug_req signal
               - debug rom will consist of just a dret instructions, so any switches into
-              debug mode will immediately return
+                debug mode will immediately return
               - will use this jointly with full instruction checking with spike'''
       stage: V1
       tests: ["riscv_debug_stress_test"]

@@ -14,16 +14,16 @@
       name: smoke
       desc: '''HMAC smoke test performs a few round of HMAC or SHA256-ONLY transactions with the
       procedures below:
-            - Set configuration register to randomly enable SHA256, hmac, endian_swap, and digest_swap
-            - Set interrupt enable register to randomly enable fifo_full, hmac_done, and err_code
-              interrupts
-            - Randomly read previous digest result
-            - Write key
-            - Trigger HMAC hash_start
-            - Write HMAC message fifo with message length between 0 and 64 bytes
-            - check status and interrupt
-            - Trigger HMAC hash_process
-            - After hmac_done interrupt, read and check digest data'''
+        - Set configuration register to randomly enable SHA256, hmac, endian_swap, and digest_swap
+        - Set interrupt enable register to randomly enable fifo_full, hmac_done, and err_code
+          interrupts
+        - Randomly read previous digest result
+        - Write key
+        - Trigger HMAC hash_start
+        - Write HMAC message fifo with message length between 0 and 64 bytes
+        - check status and interrupt
+        - Trigger HMAC hash_process
+        - After hmac_done interrupt, read and check digest data'''
       stage: V1
       tests: ["hmac_smoke"]
       features: ["HMAC.MODE.SHA2", "HMAC.MODE.HMAC", "HMAC.DIGEST_SIZE.SHA2-256", "HMAC.ENDIANNESS.MESSAGE", "HMAC.ENDIANNESS.DIGEST"]
@@ -97,6 +97,7 @@
               This scenario represents wiping secrets when HMAC is streaming in message data.
             - Before HMAC finishes hashing process.
               This scenario represents wiping secrets when HMAC is hashing messages and keys.
+
             **Checks**:
             The scoreboard will check if digest data are corrupted.
             '''

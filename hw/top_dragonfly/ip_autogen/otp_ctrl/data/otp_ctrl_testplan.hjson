@@ -130,6 +130,7 @@
             **Checks**:
             - the corresponding alerts are triggered
             - the error_code register is set correctly
+
             Note that due to limited simulation time, for background checks, this test only writes
             random values that are less than 20 to the check period.
             '''

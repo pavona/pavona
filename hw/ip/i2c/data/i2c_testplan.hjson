@@ -250,6 +250,7 @@
               - Host sends an address and data but receives NACK response
                 since agent is reset before transaction is complete and
                 host mode is disabled
+
             Checking:
               - Check if DUT goes to Idle state after Host mode is disabled
               - Check that transactions process normally after recovery by running a smoketest vseq.
@@ -313,6 +314,7 @@
               - Program timing parameters
               - Assert start_det and stop_det variables in i2c_fsm.sv
                 to trigger transition to AcquireStart and Idle states
+
             Checking:
               - Ensure DUT captures ACQ FIFO data as expected
               - After every glitch, issue a simple transaction to check if DUT is behaving as expected
@@ -470,7 +472,7 @@
             Test loopback mode, which is enabled by i2c.CTRL.LLPBK.
             '''
       stage: V3
-      tests: [""]
+      tests: []
       features: ["I2C.MODE.HOST", "I2C.MODE.TARGET"]
     }
     {
@@ -894,7 +896,7 @@
             - TODO
 
             Checking
-            -
+            - TODO
             '''
       stage: V2
       tests: []

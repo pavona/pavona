@@ -22,11 +22,11 @@
 
             **Checks**:
             - If we are changing WDOG_BARK_THOLD to be lower than the current WDOG_COUNT
-            watchdog timer should raise the interrupt `wdog_timer_bark`.
+              watchdog timer should raise the interrupt `wdog_timer_bark`.
             - If we are changing WDOG_BITE_THOLD to be lower than the current WDOG_COUNT
-            watchdog timer should trigger a reset request.
+              watchdog timer should trigger a reset request.
             - If we are changing WKUP_THOLD to be lower than the current WKUP_COUNT
-            wakeup timer should raise the interrupt `wkup_timer_expired`.
+              wakeup timer should raise the interrupt `wkup_timer_expired`.
             '''
       stage: V1
       tests: ["aon_timer_smoke"]
@@ -43,7 +43,7 @@
 
             **Checks**:
             - WKUP_COUNT should reflect expected -and changed- passing of real time
-            regardless of its changing prescaler value.
+              regardless of its changing prescaler value.
             '''
       stage: V2
       tests: ["aon_timer_prescaler"]
@@ -60,13 +60,13 @@
 
             **Checks**:
             - If we are changing WDOG_BARK_THOLD to be lower than the current WDOG_COUNT
-            watchdog timer should raise the interrupt `wdog_timer_bark`.
+              watchdog timer should raise the interrupt `wdog_timer_bark`.
             - If we are changing WDOG_BITE_THOLD to be lower than the current WDOG_COUNT
-            watchdog timer should trigger a reset request.
+              watchdog timer should trigger a reset request.
             - If we are changing WKUP_THOLD to be lower than the current WKUP_COUNT
-            wakeup timer should raise the interrupt `wkup_timer_expired`.
+              wakeup timer should raise the interrupt `wkup_timer_expired`.
             - WKUP_COUNT should reflect expected passing of real time regardless of
-            prescaler value.
+              prescaler value.
             '''
       stage: V2
       tests: ["aon_timer_jump"]

@@ -47,7 +47,7 @@
 
             - Configure the LC_CTRL to start a token hash using KMAC interface.
             - KMAC should finish hashing successfully (not visible to SW) and return digest to
-            LC_CTRL.
+              LC_CTRL.
 
             X-ref'ed with LC_CTRL test/env.
             '''
@@ -64,7 +64,7 @@
             - ROM will send message to the KMAC containing its memory contents,
             - KMAC will hash and return the digest to the ROM.
             - ROM will compare received digest against its first 8 logical memory lines for
-            correctness.
+              correctness.
 
             X-ref'ed with ROM_CTRL test/env.
             '''
@@ -88,10 +88,12 @@
                 Check if EDN timeout error occurs after issuing the hashing op.
               - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
                 too). Then check if Digest is correct.
+
             KMAC should send EDN request after `entropy_ready` is set.
             KMAC also should send out another request to EDN when either:
               - kmac hash counter hits the configured threshold (assuming it is non-zero)
               - Hash count exceeds the threshold.
+
             SW verifies that KMAC produces the correct digest value.
 
             TODO: This is pending security review discussion. It is unclear if this feature will be
@@ -298,18 +300,18 @@
             - ErrKeyNotValid: covers that secret key is invalid when KeyMgr initiates App operation
             - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
             - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
-                                         while App interface is active
+              while App interface is active
             - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
             - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
             - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
-                                         128/256 bit strengths are seen for XOF functions
+              128/256 bit strengths are seen for XOF functions
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
-                                        when KMAC mode is enabled
+              when KMAC mode is enabled
             - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
             - Shadow register update alert: covers that the an recoverable alert is triggered on active
-                                            shadow register update error
+              shadow register update error
             - ErrSwHashingWithoutEntropyReady: covers that starting a hash operation when the entropy is
-                                               not ready triggers an error
+              not ready triggers an error
 
             Some of the error conditions may be difficult to reproduce in silicon. In such cases,
             update the test description to capture any limitations.
