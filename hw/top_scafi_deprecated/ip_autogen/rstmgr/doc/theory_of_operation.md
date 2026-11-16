@@ -91,8 +91,6 @@ The reset topology also contains additional properties:
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
 *  [`RESET_INFO`](registers.md#reset_info) indicates why the system was reset.
-*  [`ALERT_INFO`](registers.md#alert_info) contains the recorded alert status prior to system reset.
-   *  This is useful in case the reset was triggered by an alert escalation.
 *  [`CPU_INFO`](registers.md#cpu_info) contains recorded CPU state prior to system reset.
    *  This is useful in case the reset was triggered by a watchdog where the host hung on a particular bus transaction.
 
@@ -288,15 +286,6 @@ When the software resumes after the reset, it is then able to examine the last C
 
 The enable for such debug capture can be locked such that it never captures.
 
-### Alert Information
-
-The alert information register contains the value of the alert crash dump prior to a triggered reset.
-Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
-The [`ALERT_INFO_ATTR`](registers.md#alert_info_attr) register indicates how many 32-bit data segments must be read.
-
-To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#alert_info_ctrl) to 1.
-Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
-Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
 
 ### CPU Information
 
