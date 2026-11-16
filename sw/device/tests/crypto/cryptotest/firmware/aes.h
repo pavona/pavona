@@ -7,8 +7,16 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
 
-status_t handle_aes_block(ujson_t *uj);
-status_t handle_aes(ujson_t *uj);
+// Scratch memory for AES tests.
+typedef struct aes_test_scratch {
+  cryptotest_aes_data_t data;
+  cryptotest_aes_output_t output;
+  cryptotest_aes_mct_output_t mct_output;
+} aes_test_scratch_t;
+
+status_t handle_aes_block(ujson_t *uj, aes_test_scratch_t *s);
+status_t handle_aes(ujson_t *uj, aes_test_scratch_t *s);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_CRYPTO_CRYPTOTEST_FIRMWARE_AES_H_

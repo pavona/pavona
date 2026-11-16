@@ -18,30 +18,49 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID number -- used for debugging",
+        "type": "integer"
+      },
       "algorithm": {
-        "description": "Should be AES",
+        "description": "The ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["aes"]
+        "enum": ["ACVP-AES-ECB", "ACVP-AES-CBC", "ACVP-AES-CFB128", "ACVP-AES-OFB", "ACVP-AES-CTR"]
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
+      },
+      "test_type": {
+        "description": "aft for a single operation, ctr for a counter test, mct for a Monte Carlo test",
+        "type": "string",
+        "enum": ["aft", "ctr", "mct"]
       },
       "operation": {
         "description": "AES operation",
         "type": "string",
         "enum": ["encrypt", "decrypt"]
       },
-      "key_len": {
-        "description": "Length in bits of the key",
-        "type": "integer",
-        "enum": [128, 192, 256]
-      },
       "mode": {
         "description": "Block cipher mode of operation",
         "type": "string",
-        "enum": ["cbc", "cfb1", "cfb8", "cfb128", "ecb", "ofb"]
-      },
-      "padding": {
-        "description": "Padding scheme",
-        "type": "string",
-        "enum": ["null", "pkcs7", "iso9797m2"]
+        "enum": ["cbc", "cfb128", "ctr", "ecb", "ofb"]
       },
       "key": {
         "description": "AES key",
@@ -58,6 +77,24 @@
       "plaintext": {
         "description": "Plaintext",
         "$ref": "#/$defs/byte_array"
+      },
+      "mct_results": {
+        "description": "Expected key, IV, plaintext and ciphertext of every outer iteration of a Monte Carlo test",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {"$ref": "#/$defs/byte_array"},
+            "iv": {"$ref": "#/$defs/byte_array"},
+            "plaintext": {"$ref": "#/$defs/byte_array"},
+            "ciphertext": {"$ref": "#/$defs/byte_array"}
+          }
+        }
+      },
+      "result": {
+        "description": "Whether the device output should match the expected output",
+        "type": "boolean"
       }
     }
   }
