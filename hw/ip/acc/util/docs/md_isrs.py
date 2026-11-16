@@ -62,7 +62,7 @@ def print_isr(indent: str, isr: Isr, add_anchors: bool) -> None:
     print(f'{indent}  <td>0x{isr.address:X}</td>')
     print(f'{indent}  <td>{isr.access_str()}</td>')
     if add_anchors:
-        print(f'{indent}  <td><a name="{lc_key}">{uc_name}</a></td>')
+        print(f'{indent}  <td><a id="{lc_key}">{uc_name}</a></td>')
     else:
         print(f'{indent}  <td>{uc_name}</td>')
     print(f'{indent}  <td>')
