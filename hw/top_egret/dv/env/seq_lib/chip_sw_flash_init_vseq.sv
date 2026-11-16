@@ -337,13 +337,18 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
 
           KeyMgrTest0: begin
             do_keymgr_check = 1;
-            `uvm_info(`gfn, $sformatf("Lock OTP secret2 partition and enable seed reading"),
+            `uvm_info(`gfn,
+                      $sformatf("Lock OTP secret2/secret3 partitions and enable seed reading"),
                       UVM_LOW)
 
             // The actual data is irrelevant as long as the partition becomes locked.
             otp_write_secret2_partition(
               .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-              .rma_token('0), .creator_root_key_share0('0), .creator_root_key_share1('0));
+              .rma_token('0), .creator_root_key_share0('0), .creator_root_key_share1('0),
+              .creator_seed('0));
+            otp_write_secret3_partition(
+              .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+              .owner_seed('0));
           end
 
           KeyMgrTest1: begin

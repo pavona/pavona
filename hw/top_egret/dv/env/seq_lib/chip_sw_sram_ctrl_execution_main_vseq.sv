@@ -25,12 +25,15 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     end
     otp_write_hw_cfg0_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
+        .device_id(DEVICE_ID));
     otp_write_hw_cfg1_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .en_sram_ifetch(en_sram_ifetch),
         .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
         .dis_rv_dm_late_debug(DIS_RV_DM_LATE_DEBUG));
+    otp_write_hw_cfg2_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+        .manuf_state(MANUF_STATE));
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
