@@ -35,6 +35,10 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
+                # Enable AST initialization.
+                # CREATOR_SW_CFG_AST_CFG is handled by the manufacturing flow
+                # and not listed directly in this configuration.
+                "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 # Enable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h for
