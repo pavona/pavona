@@ -34,6 +34,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   rand bit [7:0] rma_unlock_token[TokenWidthByte];
   rand bit [7:0] creator_root_key0[KeyWidthByte];
   rand bit [7:0] creator_root_key1[KeyWidthByte];
+  rand bit [7:0] creator_seed[KeyWidthByte];
 
   rand bit [lc_ctrl_reg_pkg::NumDeviceIdWords*BUS_DW-1:0] device_id;
   rand bit [lc_ctrl_reg_pkg::NumManufStateWords*BUS_DW-1:0] manuf_state;
@@ -69,14 +70,16 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // Override Device ID and Manufacturing state with random values.
     otp_write_hw_cfg0_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-      .device_id(device_id),
-      .manuf_state(manuf_state));
+      .device_id(device_id));
     otp_write_hw_cfg1_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       // Use same default config as in otp_ctrl_img_hw_cfg.hjson
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
       .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
       .dis_rv_dm_late_debug(prim_mubi_pkg::MuBi8True));
+    otp_write_hw_cfg2_partition(
+      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+      .manuf_state(manuf_state));
 
     // Read current chip revision and generation parameter values.
     retval = uvm_hdl_read(SILICON_CREATOR_ID_PATH, silicon_creator_id);
@@ -149,7 +152,8 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .rma_token(dec_otp_token_from_lc_csrs(rma_unlock_token)),
         .creator_root_key_share0(get_otp_key(creator_root_key0)),
-        .creator_root_key_share1(get_otp_key(creator_root_key1)));
+        .creator_root_key_share1(get_otp_key(creator_root_key1)),
+        .creator_seed(get_otp_key(creator_seed)));
     // Convert to right format for jtag_lc_state_transition function below.
     rma_unlock_token_vector = {<< byte {rma_unlock_token}};
   endtask
