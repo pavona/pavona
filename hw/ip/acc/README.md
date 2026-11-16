@@ -470,7 +470,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x0</td>
       <td>RW</td>
-      <td><a name="mod">MOD</a></td>
+      <td><a id="mod">MOD</a></td>
       <td>
         The modulus used by the {{#acc-insn-ref BN.ADDM}} and {{#acc-insn-ref BN.SUBM}} instructions.
         This WSR is also visible as CSRs `MOD0` through to `MOD7`.
@@ -479,7 +479,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x1</td>
       <td>RO</td>
-      <td><a name="rnd">RND</a></td>
+      <td><a id="rnd">RND</a></td>
       <td>
         An AIS31-compliant class PTG.3 random number with guaranteed entropy and forward and backward secrecy.
         Primarily intended to be used for key generation.
@@ -491,7 +491,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x2</td>
       <td>RO</td>
-      <td><a name="urnd">URND</a></td>
+      <td><a id="urnd">URND</a></td>
       <td>
         A random number without guaranteed secrecy properties or specific statistical properties.
         Intended for use in masking and blinding schemes.
@@ -504,7 +504,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x3</td>
       <td>RW</td>
-      <td><a name="acc">ACC</a></td>
+      <td><a id="acc">ACC</a></td>
       <td>
         The accumulator register used by the {{#acc-insn-ref BN.MULQACC}} instruction.
       </td>
@@ -512,7 +512,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x4</td>
       <td>RO</td>
-      <td><a name="key-s0-l">KEY_S0_L</a></td>
+      <td><a id="key-s0-l">KEY_S0_L</a></td>
       <td>
         Bits [255:0] of share 0 of the 384b ACC sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
@@ -522,7 +522,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x5</td>
       <td>RO</td>
-      <td><a name="key-s0-h">KEY_S0_H</a></td>
+      <td><a id="key-s0-h">KEY_S0_H</a></td>
       <td>
         Bits [255:128] of this register are always zero.
         Bits [127:0] contain bits [383:256] of share 0 of the 384b ACC sideload key provided by the [Key Manager](../keymgr/README.md).
@@ -533,7 +533,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x6</td>
       <td>RO</td>
-      <td><a name="key-s1-l">KEY_S1_L</a></td>
+      <td><a id="key-s1-l">KEY_S1_L</a></td>
       <td>
         Bits [255:0] of share 1 of the 384b ACC sideload key provided by the [Key Manager](../keymgr/README.md).
         <br>
@@ -543,7 +543,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x7</td>
       <td>RO</td>
-      <td><a name="key-s1-h">KEY_S1_H</a></td>
+      <td><a id="key-s1-h">KEY_S1_H</a></td>
       <td>
         Bits [255:128] of this register are always zero.
         Bits [127:0] contain bits [383:256] of share 1 of the 384b ACC sideload key provided by the [Key Manager](../keymgr/README.md).
@@ -554,7 +554,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x8</td>
       <td>RW</td>
-      <td><a name="kmac-cfg">KMAC_CFG</a></td>
+      <td><a id="kmac-cfg">KMAC_CFG</a></td>
       <td>
         Contains the configuration bits for sending KMAC messages.
         Also visible as a kmac_cfg CSR.
@@ -563,7 +563,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0x9</td>
       <td>RW</td>
-      <td><a name="kmac-msg">KMAC_MSG</a></td>
+      <td><a id="kmac-msg">KMAC_MSG</a></td>
       <td>
         The kmac message data share0 to send over the AppIntf.
         A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
@@ -572,7 +572,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0xA</td>
       <td>RW</td>
-      <td><a name="kmac-digest">KMAC_DIGEST</a></td>
+      <td><a id="kmac-digest">KMAC_DIGEST</a></td>
       <td>
         Return digest share 0 from AppIntf. In unmasked kmac_cfg this is the whole digest.
       </td>
@@ -580,7 +580,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0xB</td>
       <td>RW</td>
-      <td><a name="acch">ACCH</a></td>
+      <td><a id="acch">ACCH</a></td>
       <td>
         The high 256-bits of the accumulator register used by the {{#acc-insn-ref BN.MULV}} instruction.
       </td>
@@ -588,7 +588,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0xC</td>
       <td>RW</td>
-      <td><a name="kmac-msg1">KMAC_MSG1</a></td>
+      <td><a id="kmac-msg1">KMAC_MSG1</a></td>
       <td>
         The kmac message data share1 to send over the AppIntf. In unmasked kmac_cfg writing to this WSR is illegal.
         A byte mask is applied to the message from the kmac_partial_write WSR value before being written into the internal MSG FIFO.
@@ -597,7 +597,7 @@ All read-write (RW) WSRs are set to 0 when ACC starts an operation (when 1 is wr
     <tr>
       <td>0xD</td>
       <td>RW</td>
-      <td><a name="kmac-digest1">KMAC_DIGEST1</a></td>
+      <td><a id="kmac-digest1">KMAC_DIGEST1</a></td>
       <td>
         Return digest share 1 from AppIntf. In unmasked kmac_cfg reading from this WSR is illegal.
       </td>
