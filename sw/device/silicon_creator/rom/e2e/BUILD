@@ -268,6 +268,7 @@ pavona_test(
             ":empty_test_slot_{}_{}_corrupted_sim_dv_{}".format(slot, key, file_type)
             for file_type in [
                 "signed_bin",
+                "vmem32_signed",
                 "vmem64_signed",
                 "scr_vmem64_signed",
             ]

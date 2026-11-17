@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -18,7 +22,13 @@ package(default_visibility = ["//visibility:public"])
 
 otp_image(
     name = "otp_img_sigverify_spx_prod",
-    src = "//hw/top_egret/data/otp:otp_json_prod",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_prod",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
