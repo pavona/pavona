@@ -293,10 +293,10 @@ Upon initialization after reset any partition whose zeroization marker is set ge
 
 ${"###"} The Zeroization Command
 
-Zeroization is a DAI command triggered by a write to the `ZEROIZE` bit in the [`DIRECT_ACCESS_CMD CSR`](registers.md#direct-access-command).
-The OTP field zeroized is determined by contents of the [`DIRECT_ACCESS_ADDRESS`](registers.md#direct-access-address), and the full access granule is affected.
+Zeroization is a DAI command triggered by a write to the `ZEROIZE` bit in the [`DIRECT_ACCESS_CMD CSR`](registers.md#direct_access_cmd).
+The OTP field zeroized is determined by contents of the [`DIRECT_ACCESS_ADDRESS`](registers.md#direct_access_address), and the full access granule is affected.
 The command writes all ones to the data and ECC of the field to be zeroized, and subsequently reads it back.
-The count of bits set to one in the data read back from the macro is returned in [`DIRECT_ACCESS_RDATA_0`](registers.md#direct-access-rdata).
+The count of bits set to one in the data read back from the macro is returned in [`DIRECT_ACCESS_RDATA_0`](registers.md#direct_access_rdata).
 It is possible not all bits will be updated due to stuck-at-0 bits, so it is possible the count of ones is somewhat smaller than the field's access granule size.
 This means software can always determine if zeroization completed satisfactorily.
 
@@ -308,7 +308,7 @@ The following is a high-level block diagram of the Earlygrey OTP that illustrate
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions (e.g. P0-P7 for Egret) has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
+Each of the partitions (e.g. P0-P7 for Egret) has its [own controller FSM](#partition-controllers) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
