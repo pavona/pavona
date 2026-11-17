@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <stdbool.h>
-
 #include "hw/top/dt/keymgr.h"
 #include "hw/top/dt/otp_ctrl.h"
 #include "hw/top/dt/rstmgr.h"
@@ -25,25 +23,19 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top/otp_ctrl_regs.h"  // Generated
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_keymgr_t keymgr;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
-static uint32_t otp_state[kHmacDigestNumWords + 4] = {0};
 
-static void print_otp_sw_cfg_digests(void) {
-  uint64_t creator_digest, owner_digest = 0;
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionCreatorSwCfg,
-                                       &creator_digest));
-  CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionOwnerSwCfg,
-                                       &owner_digest));
-  LOG_INFO("CreatorSwCfg Digest: 0x%08x%08x", (uint32_t)(creator_digest >> 32),
-           (uint32_t)creator_digest);
-  LOG_INFO("OwnerSwCfg Digest:   0x%08x%08x", (uint32_t)(owner_digest >> 32),
-           (uint32_t)owner_digest);
+static void measure_otp_partition(otp_partition_t partition) {
+  dt_otp_partition_info_t partition_info =
+      dt_otp_ctrl_partition(kDtOtpCtrl, partition);
+  uint32_t buf[partition_info.size / sizeof(uint32_t)];
+  otp_read(partition_info.start_addr, buf,
+           partition_info.size / sizeof(uint32_t));
+  hmac_sha256_update((unsigned char *)buf, partition_info.size);
 }
 
 bool test_main(void) {
@@ -54,25 +46,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(mmio_region_from_addr(dt_rstmgr_reg_block(
                                    kDtRstmgrAon, kDtRstmgrRegBlockCore)),
                                &rstmgr));
-
-  // Lock OTP *SwCfg partitions if this is the first boot and reset.
-  if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
-    LOG_INFO("Power on reset. Locking OTP *SwCfg partitions ...");
-    const uint64_t kFakeOtpDigest = 0xaaaabbbbccccdddd;
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionCreatorSwCfg,
-                                          /*digest=*/kFakeOtpDigest));
-    CHECK_STATUS_OK(
-        otp_ctrl_testutils_lock_partition(&otp_ctrl, kOtpPartitionOwnerSwCfg,
-                                          /*digest=*/kFakeOtpDigest));
-    rstmgr_testutils_reason_clear();
-    LOG_INFO("Issuing a software reset ...");
-    CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
-    wait_for_interrupt();
-  } else {
-    print_otp_sw_cfg_digests();
-    LOG_INFO("SW reset. Executing test ...");
-  }
 
   CHECK_STATUS_OK(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset));
 
@@ -85,33 +58,23 @@ bool test_main(void) {
       kHardenedBoolTrue) {
     LOG_INFO("ROM OTP measurement feature ENABLED.");
     // Check that the attestation is equal to the digest of concatenations of:
-    //   - the digest of the CreatorSwCfg partition,
-    //   - the digest of the OwnerSwCfg partition,
-    //   - the SHA256 integrity hash of the first stage boot keys.
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionCreatorSwCfg,
-                                         (uint64_t *)otp_state));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(&otp_ctrl, kOtpPartitionOwnerSwCfg,
-                                         (uint64_t *)&otp_state[2]));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot0, (uint64_t *)&otp_state[4]));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot1, (uint64_t *)&otp_state[6]));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot2, (uint64_t *)&otp_state[8]));
-    CHECK_DIF_OK(dif_otp_ctrl_get_digest(
-        &otp_ctrl, kOtpPartitionRotOwnerAuthSlot3, (uint64_t *)&otp_state[10]));
+    //   - the CreatorSwCfg partition,
+    //   - the OwnerSwCfg partition,
+    //   - the partitions containing the first stage boot keys.
+    hmac_sha256_init();
+    // Measure CREATOR_SW_CFG.
+    measure_otp_partition(kOtpPartitionCreatorSwCfg);
+    // Measure OWNER_SW_CFG.
+    measure_otp_partition(kOtpPartitionOwnerSwCfg);
+    // Measure the secure boot keys.
+    measure_otp_partition(kOtpPartitionRotOwnerAuthSlot0);
+    measure_otp_partition(kOtpPartitionRotOwnerAuthSlot1);
+    measure_otp_partition(kOtpPartitionRotOwnerAuthSlot2);
+    measure_otp_partition(kOtpPartitionRotOwnerAuthSlot3);
+
+    hmac_sha256_process();
     hmac_digest_t otp_measurement;
-    hmac_sha256(otp_state, sizeof(otp_state), &otp_measurement);
-    LOG_INFO("OTP CreatorSwCfg Digest: 0x%08x%08x", otp_state[1], otp_state[0]);
-    LOG_INFO("OTP OwnerSwCfg Digest:   0x%08x%08x", otp_state[3], otp_state[2]);
-    LOG_INFO("OTP RotOwnerAuthSlot0 Digest:   0x%08x%08x", otp_state[5],
-             otp_state[4]);
-    LOG_INFO("OTP RotOwnerAuthSlot1 Digest:   0x%08x%08x", otp_state[7],
-             otp_state[6]);
-    LOG_INFO("OTP RotOwnerAuthSlot2 Digest:   0x%08x%08x", otp_state[9],
-             otp_state[8]);
-    LOG_INFO("OTP RotOwnerAuthSlot3 Digest:   0x%08x%08x", otp_state[11],
-             otp_state[10]);
+    hmac_sha256_final(&otp_measurement);
 
     CHECK_ARRAYS_EQ(bindings.attestation, otp_measurement.digest,
                     ARRAYSIZE(bindings.attestation));
