@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "hw/top/dt/sram_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -13,27 +14,21 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_egret/sw/autogen/top_egret.h"
-
 static dif_uart_t uart0;
 static dif_pinmux_t pinmux;
-
-enum {
-  kSramStart = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramEnd = TOP_EGRET_SRAM_CTRL_MAIN_RAM_BASE_ADDR +
-      TOP_EGRET_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
-};
 
 bool test_main(void) {
   if (kDeviceType != kDeviceSimDV) {
     // Configure the pinmux.
-    CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EGRET_PINMUX_AON_BASE_ADDR), &pinmux));
+    CHECK_DIF_OK(dif_pinmux_init(mmio_region_from_addr(dt_pinmux_reg_block(
+                                     kDtPinmuxAon, kDtPinmuxRegBlockCore)),
+                                 &pinmux));
     pinmux_testutils_init(&pinmux);
 
     // Initialize UART.
-    CHECK_DIF_OK(dif_uart_init(mmio_region_from_addr(TOP_EGRET_UART0_BASE_ADDR),
-                               &uart0));
+    CHECK_DIF_OK(dif_uart_init(
+        mmio_region_from_addr(dt_uart_reg_block(kDtUart0, kDtUartRegBlockCore)),
+        &uart0));
     CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
     CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
           "kClockFreqPeripheralHz must fit in uint32_t");
@@ -52,8 +47,12 @@ bool test_main(void) {
   // Read the program counter and check that we are executing from SRAM.
   uint32_t pc = 0;
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
-  LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, kSramStart, kSramEnd);
-  CHECK(pc >= kSramStart && pc < kSramEnd, "PC is outside the main SRAM");
+  uint32_t sram_start =
+      dt_sram_ctrl_memory_base(kDtSramCtrlMain, kDtSramCtrlMemoryRam);
+  uint32_t sram_end = sram_start + dt_sram_ctrl_memory_size(
+                                       kDtSramCtrlMain, kDtSramCtrlMemoryRam);
+  LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, sram_start, sram_end);
+  CHECK(pc >= sram_start && pc < sram_end, "PC is outside the main SRAM");
   if (kDeviceType == kDeviceSimDV) {
     test_status_set(kTestStatusPassed);
   }
