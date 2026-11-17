@@ -45,7 +45,7 @@ On production silicon this option will be disabled.
    If the value read back equals to `kMuBi8True`, the hardware mutex has successfully been claimed and SW can proceed to step 4. If the value read back equals to 0, the mutex has already been claimed by the other interface (either CSR or TAP), and SW should try claiming the mutex again.
    Note that all transition interface registers are protected by the hardware-governed [`TRANSITION_REGWEN`](registers.md#transition_regwen) register, which will only be set to 1 if the mutex has been claimed successfully.
 
-4. To request a volatile `RAW` -> `TEST_UNLOCKED0` transition SW should set the [`TRANSITION_CTRL.VOLATILE_RAW_UNLOCK`](#transition_ctrl--volatile_raw_unlock) to 1.
+4. To request a volatile `RAW` -> `TEST_UNLOCKED0` transition SW should set the [`TRANSITION_CTRL.VOLATILE_RAW_UNLOCK`](registers.md#transition_ctrl--volatile_raw_unlock) to 1.
    Software can check whether volatile unlock is supported by reading the register after writing 1 to it.
    If the mechanism is available, the register reads back as 1, otherwise it reads back 0.
 
