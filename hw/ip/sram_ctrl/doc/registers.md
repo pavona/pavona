@@ -208,7 +208,7 @@ Clearable SRAM key request status.
 |  3:0   |  rw1c  |   0x9   | [SUCCESS](#scr_key_rotated--success) |
 
 ### SCR_KEY_ROTATED . SUCCESS
-This status register is similar to [`SCR_KEY_VALID`](#scr_key_valid) with the difference that the status is multibit encoded,
+This status register is similar to [`STATUS.SCR_KEY_VALID`](#status--scr_key_valid) with the difference that the status is multibit encoded,
 SW clearable and sticky (i.e., HW does not auto-clear the register except during escalation). That way,
 SW can use this for a hardened acknowledgement mechanism where it clears the register before requesting a key.
 
