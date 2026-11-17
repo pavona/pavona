@@ -691,7 +691,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
             name: "PARTITION_ERROR"
             desc: '''
                   Set to 1 if an error occurred in any partition.
-                  If set to 1, SW should check the !!PARTITION_STATUS register to determine the failing partition.
+                  If set to 1, SW should check the [`PARTITION_STATUS`](#partition_status_0) register to determine the failing partition.
                   '''
           }
           { bits: "1"
@@ -892,7 +892,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
 
               Note that the hardware also modulates this bit and sets it to 0 temporarily
               during an OTP operation such that the corresponding address and data registers
-              cannot be modified while an operation is pending. The !!DAI_IDLE status bit
+              cannot be modified while an operation is pending. The !!STATUS.DAI_IDLE status bit
               will also be set to 0 in such a case.
               '''
               resval: 1,

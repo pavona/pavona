@@ -10,9 +10,9 @@ Parameter                   | Default (Max) | Top Egret | Description
 `AlertAsyncOn`              | 2'b11         | 2'b11        |
 `RndCnstLfsrSeed`           | (see RTL)     | (see RTL)    | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
 `RndCnstLfsrPerm`           | (see RTL)     | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](#scrambling-datapath).
+`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](theory_of_operation.md#scrambling-datapath).
+`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](theory_of_operation.md#scrambling-datapath).
+`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](theory_of_operation.md#scrambling-datapath).
 `RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/doc/theory_of_operation.md#conditional-transitions).
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_egret/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
@@ -217,7 +217,7 @@ Since the key manager may run in a different clock domain, key manager is respon
 ### Interfaces to SRAM and ACC Scramblers
 
 The interfaces to the SRAM and ACC scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `acc_otp_key_i`).
-The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path](#scrambling-datapath).
+The OTP controller then fetches entropy from EDN and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the [PRESENT scrambling data path](theory_of_operation.md#scrambling-datapath).
 Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `acc_otp_key_o`), which complete the req / ack handshake.
 The wave diagram below illustrates this process for the ACC scrambling device.
 
@@ -263,12 +263,12 @@ The keys can be requested as illustrated below:
 ]}
 ```
 
-The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
+The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](theory_of_operation.md#scrambling-datapath).
 If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
 The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
 
 Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [interface to SRAM and ACC scramblers](#interface-to-sram-and-acc-scramblers).
+It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [interface to SRAM and ACC scramblers](#interfaces-to-sram-and-acc-scramblers).
 
 ### Hardware Config Bits
 
