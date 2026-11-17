@@ -184,8 +184,6 @@ Once done, you should be able to compile a test ROM for your top by running:
 ```shell
 ./bazelisk.sh build --//hw/top=matcha //sw/device/lib/testing/test_rom
 ```
-**NOTE:** you might run into compilation errors due to top-specific constructs in the code of the test ROM.
-See [below](#porting-the-software-to-your-top) for more details.
 
 ### Adding your execution environment to tests
 
@@ -247,5 +245,3 @@ Once done, you should be able to compile a DV UART smoke test for your top by ru
 ```shell
 ./bazelisk.sh build --//hw/top=matcha //sw/device/tests:uart_smoketest_sim_dv
 ```
-**NOTE:** you might run into compilation errors due to top-specific constructs in the code of the test framework.
-See [below](#porting-the-software-to-your-top) for more details.
