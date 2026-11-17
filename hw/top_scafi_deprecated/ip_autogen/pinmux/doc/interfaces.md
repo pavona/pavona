@@ -67,7 +67,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 The following table lists the main parameters used throughout the `pinmux` design.
 Note that the `pinmux` is generated based on the system configuration, and hence these parameters are placed into a package.
-The pinout and `pinmux` mappings are listed under [Pinout and Pinmux Mapping](#pinout-and-pinmux-mapping) for specific top-level configurations.
+The pinout and `pinmux` mappings are listed under [Pinout and Pinmux Mapping](programmers_guide.md#pinout-and-pinmux-mapping) for specific top-level configurations.
 
 Parameter      | Description
 ---------------|---------------
