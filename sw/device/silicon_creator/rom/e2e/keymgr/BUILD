@@ -110,7 +110,6 @@ rom_e2e_keymgr_init_configs = [
             "//sw/device/lib/testing:keymgr_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
-            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:otp",
