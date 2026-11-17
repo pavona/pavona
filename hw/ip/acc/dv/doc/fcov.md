@@ -12,7 +12,7 @@ This might overlap with something like "the `overflow` signal in the ALU was tru
 
 ## Call stack
 
-The [call stack](../README.md#call-stack) is exposed as a special register behind `x1`.
+The [call stack](../../README.md#call-stack) is exposed as a special register behind `x1`.
 It has a bounded depth of 8 elements.
 We expect to see the following events:
 
@@ -30,7 +30,7 @@ All four of these events should be crossed with the three states of the call sta
 
 ## Loop stack
 
-The [loop stack](../README.md#loop-stack) is accessed by executing `LOOP` and `LOOPI` instructions.
+The [loop stack](../../README.md#loop-stack) is accessed by executing `LOOP` and `LOOPI` instructions.
 Events concerning the start of loops are tracked at those instructions, but we can't track things like loop completion there.
 
 > Coverage for these points is tracked with cover properties in the `acc_loop_if` interface.
