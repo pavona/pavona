@@ -1178,7 +1178,7 @@
     },
     "//third_party/verilator:extensions.bzl%verilator": {
       "general": {
-        "bzlTransitiveDigest": "00u0gOde7BKHrTSaHXylKpAP32ffa6kXSzqCslp+SHc=",
+        "bzlTransitiveDigest": "Suhy5bcRjbnUIibITYzyc7ubnt36DzEfpSmFraJSfGA=",
         "usagesDigest": "cjwrnee1wPEYWgSy0O0CLebjqrej5GIa+UmArwgLEko=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1192,7 +1192,14 @@
               ],
               "strip_prefix": "verilator-5.046",
               "build_file": "@@//third_party/verilator:BUILD.verilator.bazel",
-              "sha256": "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c"
+              "sha256": "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
+              "patches": [
+                "@@//third_party/verilator/patches:0001-Fix-flex-2.6.5.patch",
+                "@@//third_party/verilator/patches:0002-Fix-flex-2.6.9-build.patch"
+              ],
+              "patch_args": [
+                "-p1"
+              ]
             }
           }
         },
