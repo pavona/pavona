@@ -13,8 +13,8 @@ $$ NCO = {{2^{20} * f\_{baud}} \over {f\_{pclk}}} $$
 
 Note that the NCO result from the above formula can be a fraction but
 the NCO register only accepts an integer value. See the
-[Reception](#reception) and [Setting the baud
-rate](#setting-the-baud-rate) sections for more discussion of the
+[Reception](theory_of_operation.md#reception) and [Setting the baud
+rate](theory_of_operation.md#setting-the-baud-rate) sections for more discussion of the
 baud rate error target and when care is needed.
 
 Also note that because the baud rate is multiplied by 2^20 care is

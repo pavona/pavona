@@ -32,7 +32,7 @@ This document is a supplemental style guide to the [Verilog style guide](./veril
   * [Function Declarations](#function-declarations)
   * [Randomization](#randomization)
   * [Enums](#enums)
-  * [Interfaces, Clocking Blocks, Modports](#interfaces,-clocking-blocks,-modports)
+  * [Interfaces, Clocking Blocks, Modports](#interfaces-clocking-blocks-modports)
   * [Loop Operators](#loop-operators)
   * [Code Within Asserts](#code-within-asserts)
   * [Wait and Fork](#wait-and-fork)

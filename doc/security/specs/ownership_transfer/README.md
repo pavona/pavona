@@ -434,7 +434,7 @@ with a security strength equivalent to one supported by the key manager.
     <td>
 
 A 64bit random value is extracted from the DRBG to be used as an unlock nonce.
-See [Unlock Flow](#unlock-flow) for more details.
+See [Unlock Flow](#unlock-ownership) for more details.
     </td>
   </tr>
   <tr>
@@ -479,7 +479,7 @@ way:
     implementation as described in the next section. The owner may opt for
     clearing any device secrets as part of this step.
 2.  Ownership unlock is performed as described in the device mode
-    [Unlock Flow](#unlock-flow) section.
+    [Unlock Flow](#unlock-ownership) section.
 
 ### Ownership Transfer
 
@@ -497,7 +497,7 @@ the process to recover from a failed attempt.
 Detailed steps:
 
 1.  The current owner endorses the next owner keys as described in the
-    [Key Endorsement](#key-endorsement) section.
+    [Key Endorsement](#key-endorsement-format) section.
 2.  The next owner writes the key endorsement manifest to the external EEPROM
     followed by an update payload. The update payload includes all the silicon
     owner boot stages.

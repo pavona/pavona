@@ -53,7 +53,7 @@ Silicon owners have the option of provisioning additional secrets after taking o
 
 
 [attestation]: ./attestation/README.md
-[creator_identity]: ./identities_and_root_keys/README.md#creator-identity
+[creator_identity]: ./identities_and_root_keys/README.md#creatoridentity
 [device_life_cycle]: ./device_life_cycle/README.md
 [firmware_update]: ./firmware_update/README.md
 [identities_and_root_keys]: ./identities_and_root_keys/README.md

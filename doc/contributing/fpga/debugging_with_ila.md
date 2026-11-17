@@ -23,7 +23,7 @@ In a nutshell, we will take the following steps:
 
 ## Requirements
 
-This guide was written for using a [NewAE CW310 board](./get_a_board.md#chipwhisperer-cw310) with a Kintex 7 FPGA on it.
+This guide was written for using a [NewAE CW310 board](./get_a_board.md#newae-cw310-kintex-xc7k410t-fpga-version-only) with a Kintex 7 FPGA on it.
 You further need to have Xilinx Vivado installed; see [Install Vivado](../../getting_started/install_vivado/README.md) for the currently supported version and installation instructions.
 Finally, you need a connection to the JTAG port of the FPGA.
 This guide was written using [Xilinx's Platform Cable USB II](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), although the first generation Platform Cable USB or the SmartLynq Data Cable may also work.

@@ -575,7 +575,7 @@ The hardware may opt to implement a software interface with higher level one-way
 step functions to advance the internal state of the key manager. The following
 are the minimum set of steps required:
 
-1.   [CreatorRootKey](#creator-root-key-creatorrootkey)
+1.   [CreatorRootKey](#creatorrootkey)
 2.   [OwnerIntermediateKey](#ownerintermediatekey)
 3.   [OwnerRootKey](#owner-root-key-and-versioned-keys)
 
@@ -677,7 +677,7 @@ implementation.
 
 ### _Support for key IDs (key handles or salt value)_
 
-The hardware shall support [versioned key](#versioned-key) derivations for
+The hardware shall support [versioned key](#versioned-keys) derivations for
 software provided key IDs. A key ID is defined as a 256b value used as a key
 handle.
 

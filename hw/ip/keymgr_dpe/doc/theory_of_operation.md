@@ -101,7 +101,7 @@ The main difference between the two is how the states are reached and the entry 
 `Disabled` state is reached through intentional software commands where the sideload key slots and software key are not wiped, while `Invalid` state is reached through life cycle deactivation or operational faults where the internal key, sideload key slots and the software key are wiped.
 
 This also means that only `Invalid` is a terminal state.
-If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
+If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#invalid) is followed to bring the system to a terminal `Invalid` state.
 
 If multiple conditions happen to collide (a fault is detected at the same clock cycle SW issues disable command), the `Invalid` entry path always takes precedence.
 
@@ -221,9 +221,9 @@ During key generation operations, KDF inputs are 0 padded to `GenDataWidth` bits
 * `output_key` is a 256-bit diversification value for distinguishing software and sideload keys.
 
 ### Life Cycle Connection
-The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/README.md#key_manager_en).
+The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/doc/theory_of_operation.md#key_manager_en).
 
 Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
-Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).
+Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-state).
 
 When the life cycle controller deactivates the key manager, the key manager transitions to the `Invalid` state.

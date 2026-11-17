@@ -393,7 +393,7 @@
           name: "CMD_RDY",
           desc: '''
                 This bit indicates when the command interface is ready to accept commands.
-                Before starting to write a new command to !!SW_CMD_REQ, this field needs to be polled.
+                Before starting to write a new command to !!CMD_REQ, this field needs to be polled.
                 0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
                 0b1: CSRNG is ready to accept the next command.
                 '''

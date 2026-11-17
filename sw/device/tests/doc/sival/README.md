@@ -217,7 +217,7 @@ using the `cloud_kms_sival` signing token configuration.
 *  [Build & Test Rules](../../../../../rules/pavona/README.md)
 *  [FPGA Bitstreams](../../../../../hw/bitstream/README.md)
 *  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
-*  [OTP Preload Image Generator](../../../../../util/design/README.md#otp_preload_image_generator)
+*  [OTP Preload Image Generator](../../../../../util/design/README.md#otp-preload-image-generator)
 *  [ROM\_EXT for Silicon Validation](../../../silicon_creator/rom_ext/doc/si_val.md)
 *  [Signing Guide](../../../../../signing/README.md)
 *  [SiVal Developer Guide](./devguide.md)

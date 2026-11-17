@@ -40,7 +40,7 @@ The list of attributes is explained in more details in the following sections.
 ## Attributes
 
 Each top and IP can include an arbitrary list of attributes. Some of those attributes have a special meaning because they are used by build system to perform some important tasks.
-You are free to create new attributes for your top if you need them (see [example](#A-simple-top-label)).
+You are free to create new attributes for your top if you need them (see [example](#a-simple-top-label)).
 The following sections will describe the well-known top and IP attributes.
 
 ### Top attributes
@@ -98,7 +98,7 @@ Access to the top's description is available through two APIs:
 ### High-level API
 
 The recommended way to access attributes is through the macros defined in [`//hw/top:defs.bzl`](../defs.bzl).
-The following macros are particularly useful. To see examples of use, see the [Example section](#Examples).
+The following macros are particularly useful. To see examples of use, see the [Example section](#examples).
 For more details, look at the documentation in `//hw/top:defs.bzl`
 - The most general macro is `pavona_select_top_attr(attr_name, required = True, default = None, fn = None)`.
   This macro creates a select expression with one entry per top containing the `attr_name` attribute.

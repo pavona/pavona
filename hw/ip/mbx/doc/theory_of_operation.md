@@ -103,11 +103,11 @@ The mailbox IP acts as a host on the TL-UL fabric and expects to transfer the re
 - PCIe specification section 6.30 defines the (optional) Data Object Exchange mechanism.\
 It is accessed using a PCIe extended capability defined in section 7.9.24 that provides a Mailbox for data exchange.
 - All inbound and outbound mailbox communication takes place via a set of mailbox registers
-    - [DOE Control Register](#doe-control-register)
-    - [DOE Status Register](#doe-status-register)
-    - [DOE Write Data Mailbox Register](#doe-write-data-mailbox-register)
-    - [DOE Read Data Mailbox Register](#doe-read-data-mailbox-register)
-- [DOE Control Register](#doe-control-register) and [DOE Status Register](#doe-status-register) are used by the requester and the responder to perform a valid handshake protocol while transferring objects back and forth.
+    - [DOE Control Register](registers.md#soc_control)
+    - [DOE Status Register](registers.md#soc_status)
+    - [DOE Write Data Mailbox Register](registers.md#wdata)
+    - [DOE Read Data Mailbox Register](registers.md#rdata)
+- [DOE Control Register](registers.md#soc_control) and [DOE Status Register](registers.md#soc_status) are used by the requester and the responder to perform a valid handshake protocol while transferring objects back and forth.
 - An entity that supports the DOE mechanism is permitted to specify its own vendor defined data objects.
 - DOE Inbox is used by a ‘requester’ to query the supported data object formats
     - A mailbox instance is not required to support all DOE object formats.
@@ -117,18 +117,18 @@ It is accessed using a PCIe extended capability defined in section 7.9.24 that p
 - DOE Inbox is used by a ‘requester’ to write supported data objects into the DOE mailbox.
     - DOE mailbox drops the object in case it is an unsupported format or does not match the expected format.
     - Each mailbox write is a non-posted transaction and expects a response back.
-    - [DOE Write Data Mailbox Register](#doe-write-data-mailbox-register) is used to write the inbox, one DWORD (32 bit) at a time.
+    - [DOE Write Data Mailbox Register](registers.md#wdata) is used to write the inbox, one DWORD (32 bit) at a time.
 - DOE Outbox is used by the responder to populate a response, in case one is expected
 - DOE instances have the ability to send an interrupt to notify that an object response is ready. Note that a PCIe compatible DOE mailbox instance shall have the ability to send an MSI interrupt.
 - Various error handling scenarios are described later in this document.
 
 Following is a basic mailbox read / write sequence:
 
-1. System host consults the DOE Busy bit in the [DOE Status Register](#doe-status-register) to check if the DOE instance is free..\
+1. System host consults the DOE Busy bit in the [DOE Status Register](registers.md#soc_status) to check if the DOE instance is free..\
 Busy being Clear indicates that the mailbox instance is not being actively used and is ready to accept new requests.\
-2. System host writes the entire data object one DWORD at a time via the [DOE Write Data Mailbox Register](#doe-write-data-mailbox-register).
+2. System host writes the entire data object one DWORD at a time via the [DOE Write Data Mailbox Register](registers.md#wdata).
     - The inbox handler places each DWORD into the appropriate location of the inbox memory to assemble the object being transferred.
-3. System host sets the DOE Go bit in [DOE Control Register](#doe-control-register)
+3. System host sets the DOE Go bit in [DOE Control Register](registers.md#soc_control)
     - The inbox handler generates an interrupt to notify the responder (e.g. Ibex core) to start parsing the transferred object.
     - The parser consumes the DOE request from the DOE mailbox.
 4. After successful processing, the responder (Ibex core) generates a response, in case one is expected.
@@ -136,13 +136,13 @@ Busy being Clear indicates that the mailbox instance is not being actively used 
     - Host sets the Data Object Ready bit.
     - DOE outbox handler generates a notification interrupt, if supported and enabled.
 5. System host waits for an interrupt if applicable.\
-Upon receiving an interrupt, it checks the [DOE Status Register](#doe-status-register).*ready* bit to see if the object is ready.\
-Alternatively, if an interrupt is not supported, it polls the [DOE Status Register](#doe-status-register).*ready* bit.\
+Upon receiving an interrupt, it checks the [DOE Status Register](registers.md#soc_status).*ready* bit to see if the object is ready.\
+Alternatively, if an interrupt is not supported, it polls the [DOE Status Register](registers.md#soc_status).*ready* bit.\
 Note that SoC level power management schemes and related interrupt delivery mechanism are outside the scope of this document.\
 Any logic required to support SoC wake from deeper power management states for interrupt delivery shall be implemented at the SoC level at the time of integration.
 6. If the ready bit is Set:
-    - System host reads data from the  [DOE Read Data Mailbox Register](#doe-read-data-mailbox-register) one DWORD at a time.
-    - For each DWORD, it writes the  [DOE Read Data Mailbox Register](#doe-read-data-mailbox-register) to indicate a successful read.
+    - System host reads data from the  [DOE Read Data Mailbox Register](registers.md#rdata) one DWORD at a time.
+    - For each DWORD, it writes the  [DOE Read Data Mailbox Register](registers.md#rdata) to indicate a successful read.
     - The process is repeated until the entire object is read.
 
 **Note**: Sequence above assumes System Host as the requester of the mailbox object write.

@@ -65,7 +65,7 @@ Referring to the [Comportable guideline for peripheral device functionality](../
 
 ## Life Cycle Control
 
-Debug system functionality is controlled by the [HW_DEBUG_EN](../../lc_ctrl/README.md#hw_debug_en) function of the life cycle controller.
+Debug system functionality is controlled by the [HW_DEBUG_EN](../../lc_ctrl/doc/theory_of_operation.md#hw_debug_en) function of the life cycle controller.
 Note that in order to support the non-debug module (NDM) reset functionality, the debug module needs to use a latched version of debug enable signal during the NDM reset.
 There are two HW_DEBUG_EN signal inputs in the `rv_dm` module:
 

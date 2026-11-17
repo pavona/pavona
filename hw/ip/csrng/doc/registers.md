@@ -280,7 +280,7 @@ In case of a generate command the acknowledgement goes high after all of the req
 
 ### SW_CMD_STS . CMD_RDY
 This bit indicates when the command interface is ready to accept commands.
-Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
+Before starting to write a new command to [`CMD_REQ`](#cmd_req), this field needs to be polled.
 0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
 0b1: CSRNG is ready to accept the next command.
 

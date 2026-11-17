@@ -192,7 +192,7 @@ For example, for an 80-bit key, HMAC should be configured with an 128-bit key le
 
 Note that the key length cannot be greater than the block size: up to 1024-bit for SHA-2 384/512 and up to 512-bit for SHA-2 256.
 The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
-However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while [`KEY_LENGTH`](#key_length) holds `Key_None` or [`KEY_LENGTH`](#key_length) holds `Key_1024` for [`DIGEST_SIZE`](#digest_size) = `SHA2_256`, starting is blocked and an error is signalled to SW.
+However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while [`CFG.KEY_LENGTH`](#cfg--key_length) holds `Key_None` or [`CFG.KEY_LENGTH`](#cfg--key_length) holds `Key_1024` for [`CFG.DIGEST_SIZE`](#cfg--digest_size) = `SHA2_256`, starting is blocked and an error is signalled to SW.
 
 | Value   | Name     | Description                                                                                                                                                                                                                                                                                                                                                                  |
 |:--------|:---------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -348,7 +348,7 @@ It is recommended to use a value extracted from an entropy source.
 HMAC Secret Key
 
 HMAC using SHA-2 256/384/512 assumes any hashed secret key length up to the block size, thus capped at 1024-bit.
-[`key_length`](#key_length) determines how many of these registers are relevant for the HMAC operation. Order of the secret key is:
+[`CFG.key_length`](#cfg--key_length) determines how many of these registers are relevant for the HMAC operation. Order of the secret key is:
 key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
 
 The registers are allowed to be updated only when the engine is in Idle state.

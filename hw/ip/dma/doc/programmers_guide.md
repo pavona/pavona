@@ -9,7 +9,7 @@ This involves a specific sequence of register writes:
 
 1.  **Define the Memory Range:** First, software must write the base address to the [`ENABLED_MEMORY_RANGE_BASE`](registers.md#enabled_memory_range_base) register and the upper limit of the accessible range to the [`ENABLED_MEMORY_RANGE_LIMIT`](registers.md#enabled_memory_range_limit) register.
 2.  **Validate the Range:** Next, to indicate that the configured range contains valid data, software must write to the [`RANGE_VALID`](registers.md#range_valid) register.
-3.  **Optional Range Locking:** Optionally, software can write to the [`RANGE_REGWEN`](registers.md#range_regwEN) register to lock the configured memory range. Once locked, the range configuration cannot be modified until the next reset of the DMA.
+3.  **Optional Range Locking:** Optionally, software can write to the [`RANGE_REGWEN`](registers.md#range_regwen) register to lock the configured memory range. Once locked, the range configuration cannot be modified until the next reset of the DMA.
 
 ## Initiate a Memory transfer
 
@@ -22,7 +22,7 @@ To start a memory transfer, software needs to configure several registers that d
 2.  **Source and Destination Addresses:** Specify the starting memory addresses for the source and destination using the lower and upper 32-bit parts of the addresses in the [`SRC_ADDR_LO`](registers.md#src_addr_lo), [`SRC_ADDR_HI`](registers.md#src_addr_hi), [`DST_ADDR_LO`](registers.md#dst_addr_lo), and [`DST_ADDR_HI`](registers.md#dst_addr_hi) registers.
 3.  **Total Transfer Size:** Define the total number of bytes to be transferred using the [`TOTAL_DATA_SIZE`](registers.md#total_data_size) register.
 4.  **Access Stride:** Configure the access stride (the number of bytes accessed in each burst) using the [`TRANSFER_WIDTH`](registers.md#transfer_width) register.
-5.  **Chunk Size (Memory-to-Memory):** The DMA performs memory access in chunks. For a standard memory-to-memory transfer, the [`CHUNK_DATA_SIZE`](registers.md#chunk_data_size) register is typically set to the same value as the [`TOTAL_DATA_SIZE`](registers.md#total_data_size) register. The concept of chunked transfers is further explained in the [Chunked Data Transfers](#Chunked_Data_Transfers) section.
+5.  **Chunk Size (Memory-to-Memory):** The DMA performs memory access in chunks. For a standard memory-to-memory transfer, the [`CHUNK_DATA_SIZE`](registers.md#chunk_data_size) register is typically set to the same value as the [`TOTAL_DATA_SIZE`](registers.md#total_data_size) register. The concept of chunked transfers is further explained in the [Chunked Data Transfers](#chunked-data-transfers) section.
 6.  **Start the Transfer:** Initiate the transfer by writing to the `go` bit along with the `initial_transfer` bit in the [`CONTROL`](registers.md#control) register.
 7.  **Monitor Transfer Completion:** After starting the transfer, software can monitor its progress by either polling the [`STATUS`](registers.md#status) register or by waiting for a specific interrupt to be raised.
 
@@ -32,7 +32,7 @@ The DMA can signal various events to the software through interrupts.
 The following three types of interrupts are supported:
 
 1.  **Transfer Completion:** An interrupt is raised when the entire data transfer (as defined by `TOTAL_DATA_SIZE`) is complete.
-2.  **Chunk Completion:** An interrupt is raised after the transfer of a single chunk of data (as defined by `CHUNK_DATA_SIZE`) is finished. This interrupt is only available when not using the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode).
+2.  **Chunk Completion:** An interrupt is raised after the transfer of a single chunk of data (as defined by `CHUNK_DATA_SIZE`) is finished. This interrupt is only available when not using the [Hardware Handshaking Mode](#hardware-handshaking-mode).
 3.  **Error Condition:** An interrupt is raised if an [error](#Error Condition) occurs during the transfer process.
 
 The current status of the DMA, including pending interrupts, can be read from the [`STATUS`](registers.md#status) register.
@@ -50,7 +50,7 @@ The DMA performs memory transfers in discrete units called chunks.
 Each chunk consists of a contiguous block of data with a size defined by the [`CHUNK_DATA_SIZE`](registers.md#chunk_data_size) register.
 After transferring a chunk, the DMA can optionally generate an interrupt.
 
-While chunked transfers are primarily utilized in conjunction with the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode) for interacting with IO peripherals, they can also be employed in memory-to-memory transfers.
+While chunked transfers are primarily utilized in conjunction with the [Hardware Handshaking Mode](#hardware-handshaking-mode) for interacting with IO peripherals, they can also be employed in memory-to-memory transfers.
 A potential use case for chunked memory-to-memory transfers is memory initialization, where a small chunk of data (e.g., a block of zeros) can be repeatedly transferred to a larger memory region.
 For chunked data transfers the first transfer needs to assert the `initial_transfer` bit in the [`CONTROL`](registers.md#control) register.
 Initiating the transfer of subsequent chunks must not assert the `initial_transfer` bit.
