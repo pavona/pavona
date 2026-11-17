@@ -18,4 +18,10 @@ def _verilator_repos():
         strip_prefix = "verilator-" + VERILATOR_VERSION,
         build_file = "@pavona_pavona//third_party/verilator:BUILD.verilator.bazel",
         sha256 = "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
+        # Upstream fixes for flex >= 2.6.5. Drop with the next Verilator release.
+        patches = [
+            Label("//third_party/verilator/patches:0001-Fix-flex-2.6.5.patch"),
+            Label("//third_party/verilator/patches:0002-Fix-flex-2.6.9-build.patch"),
+        ],
+        patch_args = ["-p1"],
     )

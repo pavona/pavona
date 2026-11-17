@@ -1,0 +1,39 @@
+From fb5c969e606cdcd9ff8d7f46996f024f97cc750e Mon Sep 17 00:00:00 2001
+From: Wilson Snyder <wsnyder@wsnyder.org>
+Date: Tue, 10 Nov 2026 23:36:38 -0500
+Subject: [PATCH] Fix flex 2.6.5
+
+---
+ src/V3ParseLex.cpp | 5 +++++
+ src/flexfix        | 3 +++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/V3ParseLex.cpp b/src/V3ParseLex.cpp
+index a655dd2..ab0ac2e 100644
+--- a/src/V3ParseLex.cpp
++++ b/src/V3ParseLex.cpp
+@@ -30,6 +30,11 @@
+ #include "V3Lexer.yy.cpp"
+ #undef yyFlexLexer
+ 
++#if YY_FLEX_MINOR_VERSION > 6 || (YY_FLEX_MINOR_VERSION == 6 && YY_FLEX_SUBMINOR_VERSION >= 5)
++// Flex 2.6.5 declares yyread in FlexLexer.h, but only defines it when YY_INPUT is not overridden
++int V3LexerBase::yyread(char*, size_t) { return 0; }
++#endif
++
+ //######################################################################
+ // Lex-derived class
+ 
+diff --git a/src/flexfix b/src/flexfix
+index 3a4479b..9f6c2de 100755
+--- a/src/flexfix
++++ b/src/flexfix
+@@ -47,5 +47,8 @@ for line in sys.stdin:
+     line = re.sub(r'(#line \d+ ".*)_pretmp', r'\1', line)
+     # Fix 'register' storage class specifier is deprecated and incompatible with C++17
+     line = re.sub(r'register ', '', line)
++    # Fix flex 2.6.5 renaming C-mode lexer's yy_flex_debug to yyflexdebug
++    if sys.argv[1] == 'V3PreLex':
++        line = re.sub(r'\byyflexdebug\b', 'yy_flex_debug', line)
+ 
+     print(line, end='')
