@@ -234,7 +234,7 @@ Command register for state transition requests.
 Writing a 1 to this register initiates the life cycle state transition to the state
 specified in [`TRANSITION_TARGET.`](#transition_target)
 Note that not all transitions are possible, and certain conditional transitions require
-an additional [`TRANSITION_TOKEN_0.`](#transition_token_0)
+an additional [`TRANSITION_TOKEN_0.`](#transition_token)
 In order to have exclusive access to this register, SW must first claim the associated
 hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 

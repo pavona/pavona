@@ -19,17 +19,19 @@ from reggen.window import Window
 
 def gen_md(block: IpBlock, output: TextIO) -> int:
     assert block.reg_blocks
+    anchors = reg_anchors(block)
     # Handle the case where there's just one interface.
     if len(block.reg_blocks) == 1:
         rb = next(iter(block.reg_blocks.values()))
-        gen_md_reg_block(output, rb, block.name, block.regwidth)
+        gen_md_reg_block(output, rb, block.name, block.regwidth, anchors)
         return 0
 
     # Handle the case where there is more than one device interface and,
     # correspondingly, more than one reg block.
     for iface_name, rb in block.reg_blocks.items():
         assert iface_name
-        gen_md_reg_block(output, rb, block.name, block.regwidth, iface_name)
+        gen_md_reg_block(output, rb, block.name, block.regwidth, anchors,
+                         iface_name)
 
     return 0
 
@@ -38,29 +40,32 @@ def gen_md_reg_block(output: TextIO,
                      rb: RegBlock,
                      comp: str,
                      width: int,
+                     anchors: Dict[str, str],
                      iface_name: Optional[str] = None) -> None:
     if len(rb.entries) == 0:
         output.write('This interface does not expose any registers.')
         return
 
     # Generate overview table.
-    gen_md_register_summary(output, rb.entries, comp, width, iface_name)
+    gen_md_register_summary(output, rb.entries, comp, width, anchors,
+                            iface_name)
 
     # Generate detailed entries.
     for x in rb.entries:
         if isinstance(x, Register):
-            gen_md_register(output, x, comp, width)
+            gen_md_register(output, x, comp, width, anchors)
         elif isinstance(x, MultiRegister):
-            gen_md_multiregister(output, x, comp, width)
+            gen_md_multiregister(output, x, comp, width, anchors)
         else:
             assert isinstance(x, Window)
-            gen_md_window(output, x, comp, width)
+            gen_md_window(output, x, comp, width, anchors)
 
 
 def gen_md_register_summary(output: TextIO,
                             entries: List[object],
                             comp: str,
                             width: int,
+                            anchors: Dict[str, str],
                             iface_name: Optional[str] = None) -> None:
 
     heading = "Summary" if iface_name is None \
@@ -78,18 +83,13 @@ def gen_md_register_summary(output: TextIO,
             comp + "." + url(mono(name), "#" + anchor),
             hex(offset),
             str(length),
-            regref_to_link(first_line(description)),
+            regref_to_link(first_line(description), anchors=anchors),
         ])
 
     for entry in entries:
         if isinstance(entry, MultiRegister):
-            is_compact = multireg_is_compact(entry, width)
             for reg in entry.cregs:
-                # If multiregisters are compact, each register has it's own section,
-                # so the anchor should link to a section with the individual register name(s).
-                # Otherwise, there is one section for the whole multiregister,
-                # so the anchor should link to a section with the multiregister name.
-                anchor = reg.name.lower() if is_compact else entry.name.lower()
+                anchor = anchors.get(reg.name.lower(), reg.name.lower())
                 add_row(reg.name, anchor, reg.offset, bytew, reg.desc)
         elif isinstance(entry, Window):
             length = bytew * entry.items
@@ -103,8 +103,8 @@ def gen_md_register_summary(output: TextIO,
     output.write(table(header, rows))
 
 
-def gen_md_window(output: TextIO, win: Window, comp: str,
-                  regwidth: int) -> None:
+def gen_md_window(output: TextIO, win: Window, comp: str, regwidth: int,
+                  anchors: Dict[str, str]) -> None:
     assert win.name
     wname = win.name
 
@@ -113,7 +113,7 @@ def gen_md_window(output: TextIO, win: Window, comp: str,
     end_addr = start_addr + 4 * win.items - 4
 
     output.write(
-        title(wname, 2) + regref_to_link(win.desc) + "\n\n" +
+        title(wname, 2) + regref_to_link(win.desc, anchors=anchors) + "\n\n" +
         list_item("Word Aligned Offset Range: " + mono(f"{start_addr:#x}") +
                   "to" + mono(f"{end_addr:#x}")) +
         list_item("Size (words): " + mono(f"{win.items}") + "") +
@@ -128,7 +128,34 @@ def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
     return mreg.compact and (mreg.pregs[0].fields[0].bits.msb + 1) <= width // 2
 
 
-def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
+def reg_anchors(block: IpBlock) -> Dict[str, str]:
+    '''Map lowercase register names to the anchor describing them.
+
+    Compact multiregisters have a section for each register, so their instances
+    link to their own section and the multiregister name links to the first one.
+    Otherwise, there is one section for the whole multiregister, which its name
+    and all its instances link to.
+    '''
+    anchors: Dict[str, str] = {}
+    for rb in block.reg_blocks.values():
+        for entry in rb.entries:
+            if isinstance(entry, MultiRegister):
+                if multireg_is_compact(entry, block.regwidth):
+                    for reg in entry.cregs:
+                        anchors[reg.name.lower()] = reg.name.lower()
+                    anchors[entry.name.lower()] = entry.cregs[0].name.lower()
+                else:
+                    anchors[entry.name.lower()] = entry.name.lower()
+                    for reg in entry.cregs:
+                        anchors[reg.name.lower()] = entry.name.lower()
+            else:
+                assert isinstance(entry, (Register, Window))
+                anchors[entry.name.lower()] = entry.name.lower()
+    return anchors
+
+
+def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool,
+                     anchors: Dict[str, str]) -> None:
     '''Write a header for the register description.
 
     If with_offset is True, this includes the offset of the register. (Set it
@@ -143,26 +170,26 @@ def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
     offset_str = (list_item("Offset: " +
                             mono(f"{reg.offset:#x}")) if with_offset else "")
     output.write(
-        title(reg.name, 2) + regref_to_link(reg.desc) + "\n" + offset_str +
-        list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
+        title(reg.name, 2) + regref_to_link(reg.desc, anchors=anchors) + "\n" +
+        offset_str + list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
         list_item("Reset mask: " + mono(f"{reg.resmask:#x}")) + regwen_str)
 
 
 def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
-                         width: int) -> None:
+                         width: int, anchors: Dict[str, str]) -> None:
     # Check whether this is a compacted multireg, in which case we cannot use
     # the general definition of the first register as an example for all
     # other instances.
     if multireg_is_compact(mreg, width):
         for reg in mreg.cregs:
-            gen_md_register(output, reg, comp, width)
+            gen_md_register(output, reg, comp, width, anchors)
         return
 
     # The general definition of the registers making up this multiregister block.
     reg_def = mreg.pregs[0]
 
     # Information
-    describe_reg_hdr(output, reg_def, False)
+    describe_reg_hdr(output, reg_def, False, anchors)
 
     # Instances
     output.write("\n" + title("Instances", 3))
@@ -179,12 +206,12 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     gen_md_reg_picture(output, reg_def, width)
 
     # Generate fields
-    gen_md_reg_fields(output, reg_def, width)
+    gen_md_reg_fields(output, reg_def, width, anchors)
 
 
-def gen_md_register(output: TextIO, reg: Register, comp: str,
-                    width: int) -> None:
-    describe_reg_hdr(output, reg, True)
+def gen_md_register(output: TextIO, reg: Register, comp: str, width: int,
+                    anchors: Dict[str, str]) -> None:
+    describe_reg_hdr(output, reg, True, anchors)
 
     # Fields
     output.write("\n" + title("Fields", 3))
@@ -193,7 +220,7 @@ def gen_md_register(output: TextIO, reg: Register, comp: str,
     gen_md_reg_picture(output, reg, width)
 
     # Generate fields
-    gen_md_reg_fields(output, reg, width)
+    gen_md_reg_fields(output, reg, width, anchors)
 
 
 def gen_md_reg_picture(output: TextIO, reg: Register, width: int) -> None:
@@ -254,7 +281,8 @@ def gen_md_reg_picture(output: TextIO, reg: Register, width: int) -> None:
     output.write(wavejson(json_str))
 
 
-def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
+def gen_md_reg_fields(output: TextIO, reg: Register, width: int,
+                      anchors: Dict[str, str]) -> None:
     # The maximum field description length allowed in a register's field table
     MAX_DESCRIPTION_LEN = 250
 
@@ -298,7 +326,9 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
         # Otherwise, add the name and description to the table.
         else:
             row.extend([
-                fname, "" if field.desc is None else regref_to_link(field.desc)
+                fname,
+                "" if field.desc is None else regref_to_link(field.desc,
+                                                             anchors=anchors)
             ])
 
         rows.append(row)
@@ -322,7 +352,7 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
         output.write(title(f"{reg.name} . {fname}", 3))
 
         if field.desc is not None:
-            output.write(regref_to_link(field.desc) + "\n")
+            output.write(regref_to_link(field.desc, anchors=anchors) + "\n")
 
         if field.enum is not None:
             if len(field.enum) == 0:
@@ -330,8 +360,10 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
             else:
                 header = ["Value", "Name", "Description"]
                 hex_width = 2 + ((field.bits.width() + 3) // 4)
-                rows = [[f"{enum.value:#0{hex_width}x}", enum.name, regref_to_link(enum.desc)]
-                        for enum in field.enum]
+                rows = [[
+                    f"{enum.value:#0{hex_width}x}", enum.name,
+                    regref_to_link(enum.desc, anchors=anchors)
+                ] for enum in field.enum]
                 output.write(table(header, rows))
 
                 if field.has_incomplete_enum():

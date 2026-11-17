@@ -489,7 +489,7 @@ Note, for non-handshake transfers with inline hashing mode enabled, this bit mus
 Digest register byte swap.
 
 If 1 the value in each digest output register is converted to big-endian byte order.
-This setting does not affect the order of the digest output registers, [`SHA2_DIGEST_0`](#sha2_digest_0) still contains the first 4 bytes of the digest.
+This setting does not affect the order of the digest output registers, [`SHA2_DIGEST_0`](#sha2_digest) still contains the first 4 bytes of the digest.
 
 ### CONTROL . hardware_handshake_enable
 Enable hardware handshake mode.
