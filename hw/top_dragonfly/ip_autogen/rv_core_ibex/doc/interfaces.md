@@ -1,5 +1,6 @@
 # Hardware Interfaces
 
+## Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_dragonfly/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](../../../../../doc/contributing/hw/comportability), the module **`rv_core_ibex`** has the following hardware interfaces defined

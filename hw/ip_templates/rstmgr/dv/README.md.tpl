@@ -1,27 +1,27 @@
 # RSTMGR DV document
 
-## Goals
+${"##"} Goals
 * **DV**
   * Verify all RSTMGR IP features by running dynamic simulations with a SV/UVM based testbench
   * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
-## Current status
+${"##"} Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/contributing/hw/development_stages.md)
 <!-- TODO: Include 'Simulation results' hyperlink to reports page -->
 
-## Design features
+${"##"} Design features
 For detailed information on RSTMGR design features, please see the [RSTMGR HWIP technical specification](../README.md).
 
-## Testbench architecture
+${"##"} Testbench architecture
 RSTMGR testbench has been constructed based on the [CIP testbench architecture](../../../../dv/sv/cip_lib/README.md).
 
-### Block diagram
+${"###"} Block diagram
 ![Block diagram](./doc/tb.svg)
 
-### Top level testbench
+${"###"} Top level testbench
 The top level testbench is located at [`hw/top_${topname}/ip_autogen/rstmgr/dv/tb.sv`](./tb.sv).
 It instantiates the RSTMGR DUT module [`hw/top_${topname}/ip_autogen/rstmgr/rtl/rstmgr.sv`](../rtl/rstmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
@@ -30,12 +30,12 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * RSTMGR interface [`hw/top_${topname}/ip_autogen/rstmgr/dv/env/rstmgr_if.sv`](./env/rstmgr_if.sv)
 * Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
 
-### Common DV utility components
+${"###"} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [dv_utils_pkg](../../../../dv/sv/dv_utils/README.md)
 * [csr_utils_pkg](../../../../dv/sv/csr_utils/README.md)
 
-### Global types & methods
+${"###"} Global types & methods
 All common types and methods defined at the package level can be found in
 `rstmgr_env_pkg`. Some of them in use are:
 ```systemverilog
@@ -43,21 +43,21 @@ All common types and methods defined at the package level can be found in
   typedef logic [$bits(alert_handler_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
   typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
 ```
-### TL_agent
+${"###"} TL_agent
 The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent](../../../../dv/sv/tl_agent/README.md).
 This provides the ability to drive and independently monitor random traffic via the TL host interface into the RSTMGR device.
 
-### Alert_agents
+${"###"} Alert_agents
 RSTMGR testbench instantiates (already handled in CIP base env) [alert_agents](../../../../dv/sv/alert_esc_agent/README.md):
 [list alert names].
 The alert_agents provide the ability to drive and independently monitor alert handshakes via alert interfaces in RSTMGR device.
 
-### UVM RAL Model
+${"###"} UVM RAL Model
 The RSTMGR RAL model is created with the [`ralgen`](../../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`](../../../../../util/reggen/doc/setup_and_use.md).
 
-### Stimulus strategy
+${"###"} Stimulus strategy
 The following test sequences and covergroups are described in more detail in the testplan at `hw/top_${topname}/ip_autogen/pwrmgr/data/rstmgr_testplan.hjson`, and also included [below](#testplan).
 
 This IP is only reset via the `por_n_i` input, and by `scan_rst_ni` qualified by `scanmode_i` being active.
@@ -68,7 +68,7 @@ This is consistent with this IP being in charge of all derived resets in the chi
 Besides the POR resets above, the test sequences mostly assert various reset requests from pwrmgr and trigger resets vir RESET_REQ CSR.
 Alert and CPU dump info is randomized and checked on resets.
 
-#### Test sequences
+${"####"} Test sequences
 The test sequences reside in [`hw/top_${topname}/ip_autogen/rstmgr/dv/env/seq_lib`](./env/seq_lib).
 All test sequences are extended from `rstmgr_base_vseq`, which is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
@@ -88,7 +88,7 @@ Other sequences follow:
 * `rstmgr_cpu_info_vseq` tests the `cpu_info` CSR contents capture to the `cpu_dump_i` present at the time of a reset.
 * `rstmgr_alert_info_vseq` tests the `alert_info` CSR contents capture to the `alert_dump_i` present at the time of a reset.
 
-#### Functional coverage
+${"####"} Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * `reset_stretcher_cg`
@@ -98,11 +98,11 @@ The following covergroups have been developed to prove that the test intent has 
 * `cpu_info_capture_cg`
 * `sw_rst_cg`
 
-### Self-checking strategy
+${"###"} Self-checking strategy
 Most self checking is done using SVA, and via explicit CSR reads.
 The latter are described in the testplan.
 
-#### Assertions
+${"####"} Assertions
 * TLUL assertions: The `tb/rstmgr_bind.sv` file binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * Response to pwrmgr's `rst_lc_req` and `rst_sys_req` inputs: these trigger transitions in `rst_lc_src_n` and `rst_sys_rst_n` outputs.
@@ -122,13 +122,13 @@ The latter are described in the testplan.
 * The `alert` and `cpu_info_attr` indicate the number of 32-bit words needed to capture their inputs.
   Checked via SVA in `hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_attrs_sva_if.sv`.
 
-## Testing V2S components
+${"##"} Testing V2S components
 The rstmgr_cnsty_chk module is a D2S component.
 It depends on very specific timing, and requires tampering stimulus to verify its functionality.
 It has its own separate dv environment and tests at `hw/top_${topname}/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk`.
 It is excluded from coverage for the rstmgr dv tests.
 
-## Building and running tests
+${"##"} Building and running tests
 We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
@@ -136,5 +136,5 @@ Here's how to run a smoke test:
 $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${topname}/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson -i rstmgr_smoke
 ```
 
-## Testplan
+${"##"} Testplan
 [Testplan](../data/rstmgr_testplan.hjson)
