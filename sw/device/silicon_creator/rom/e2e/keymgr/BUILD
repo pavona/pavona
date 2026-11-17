@@ -22,7 +22,7 @@ load(
     "qemu_params",
     "verilator_params",
 )
-load("//hw/top:defs.bzl", "pavona_select_top")
+load("//hw/top:defs.bzl", "pavona_if_ip", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -110,7 +110,6 @@ rom_e2e_keymgr_init_configs = [
             "//sw/device/lib/testing:keymgr_testutils",
             "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
-            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:otp",
