@@ -640,7 +640,7 @@ The stack has a maximum depth of eight and the top of the stack is the current l
 ACC is a security co-processor.
 It contains various security features and is hardened against side-channel analysis and fault injection attacks.
 The following sections describe the high-level security features of ACC.
-Refer to the [Design Details](#design-details) section for a more in-depth description.
+Refer to the [Design Details](doc/theory_of_operation.md#design-details) section for a more in-depth description.
 
 ## Data Integrity Protection
 
@@ -693,7 +693,7 @@ To reduce side channel leakage ACC employs a blanking technique on certain contr
 When a path is blanked it is forced to 0 (by ANDing the path with a blanking signal) preventing sensitive data bits producing a power signature via that path where that path isn't needed for the current instruction.
 
 Blanking controls all come directly from flops to prevent glitches in decode logic reducing the effectiveness of the blanking.
-These control signals are determined in the [prefetch stage](#instruction-prefetch) via pre-decode logic.
+These control signals are determined in the [prefetch stage](doc/theory_of_operation.md#instruction-prefetch) via pre-decode logic.
 Full decoding is still performed in the execution stage with the full decode results checked against the pre-decode blanking control.
 If the full decode disagrees with the pre-decode ACC raises a `BAD_INTERNAL_STATE` fatal error.
 
