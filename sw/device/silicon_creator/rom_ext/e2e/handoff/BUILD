@@ -25,7 +25,7 @@ ld_library(
     script = "fault_slot_a.ld",
     deps = [
         ":ld_common",
-        "//hw/top_egret/sw/autogen:top_egret_memory",
+        "//hw/top:top_memory_ld",
     ],
 )
 

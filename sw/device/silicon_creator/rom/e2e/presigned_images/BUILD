@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/pavona:legacy.bzl", "scramble_flash_vmem", "vmem_file")
+load("//hw/top:defs.bzl", "pavona_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -23,7 +24,13 @@ vmem_file(
 scramble_flash_vmem(
     name = "rom_e2e_self_hash_sim_dv_scr_vmem64",
     src = ":rom_e2e_self_hash_sim_dv_vmem64",
-    otp = "//hw/top_egret/data/otp:img_test_unlocked0",
+    otp = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:img_test_unlocked0",
+            "dragonfly": "//hw/top_dragonfly/data/otp:img_test_unlocked0",
+        },
+        None,
+    ),
 )
 
 [
