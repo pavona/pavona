@@ -408,7 +408,7 @@ This value only has meaning when running in auto request mode.
 This register supports a maximum of 2^32 `generate` requests between reseeds.
 This register will be used by a counter that counts down, triggering an automatic `reseed` request when it reaches zero.
 
-Note that this value must be chosen smaller than or equal to the value configured in the [`RESEED_INTERVAL` register of CSRNG](../../csrng/doc/registers.md#reseed-interval).
+Note that this value must be chosen smaller than or equal to the value configured in the [`RESEED_INTERVAL` register of CSRNG](../../csrng/doc/registers.md#reseed_interval).
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
