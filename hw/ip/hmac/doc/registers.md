@@ -229,7 +229,7 @@ If 1 the endianness of each KEY_* register is swapped. Default value (value 0) i
 Digest register byte swap.
 
 If 1 the value in each digest output register is converted to big-endian byte order.
-This setting does not affect the order of the digest output registers, [`DIGEST_0`](#digest_0) still contains the first 4 bytes of the digest.
+This setting does not affect the order of the digest output registers, [`DIGEST_0`](#digest) still contains the first 4 bytes of the digest.
 
 ### CFG . endian_swap
 Endian swap.
@@ -276,7 +276,7 @@ When 1 is written to this field, SHA-2 or HMAC will continue hashing based on th
 
 ### CMD . hash_stop
 When 1 is written to this field, SHA-2 or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
-The hash can then be read from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_15.`](#digest_15)
+The hash can then be read from the registers [`DIGEST_0`](#digest) to [`DIGEST_15.`](#digest)
 Together with the message length in [`MSG_LENGTH_LOWER`](#msg_length_lower) and [`MSG_LENGTH_UPPER`](#msg_length_upper), this forms the information that has to be saved before switching context.
 
 ### CMD . hash_process
