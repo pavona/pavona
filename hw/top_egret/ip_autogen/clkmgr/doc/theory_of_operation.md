@@ -146,7 +146,7 @@ The following is a high level block diagram of the clock manager.
 ### Reset Domains
 
 Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
-To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
+To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/doc/theory_of_operation.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
 This ensures that the root clocks are freely running after power-up and its status can be communicated to the `pwrmgr` regardless of any other activity in the device.
 
 The other functions inside the clock manager operate on the `life cycle reset` domain.
@@ -204,7 +204,7 @@ It may be added for future more complex systems where there is a need to tightly
 
 Clock manager supports the ability to request root clocks switch to an external clock.
 There are two occasions where this is required:
--  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
+-  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/doc/theory_of_operation.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
 #### Life Cycle Requested External Clock
@@ -222,7 +222,7 @@ See [Clock Frequency Summary](#clock-frequency-summary) for more details.
 
 Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
 Software request for external clocks is not always valid.
-Software is only able to request for external clocks when hardware debug functions are [allowed](../../../../ip/lc_ctrl/README.md#hw_debug_en).
+Software is only able to request for external clocks when hardware debug functions are [allowed](../../../../ip/lc_ctrl/doc/theory_of_operation.md#hw_debug_en).
 
 When software requests the external clock switch, it also provides an indication how fast the external clock is through [`EXTCLK_CTRL.HI_SPEED_SEL`](registers.md#extclk_ctrl).
 There are two supported clock speeds:
@@ -270,7 +270,7 @@ As can be seen from the table, the external clock switch scheme prioritizes the 
 ### Clock Frequency Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
-This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
+This feature can be enabled through the various measurement control registers such as [`IO_MEAS_CTRL_SHADOWED`](registers.md#io_meas_ctrl_shadowed).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
 Software sets both an expected maximum and minimum for each measured clock.

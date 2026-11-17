@@ -146,7 +146,7 @@ The following is a high level block diagram of the clock manager.
 ### Reset Domains
 
 Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
-To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
+To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/doc/theory_of_operation.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
 This ensures that the root clocks are freely running after power-up and its status can be communicated to the `pwrmgr` regardless of any other activity in the device.
 
 The other functions inside the clock manager operate on the `life cycle reset` domain.
@@ -204,14 +204,14 @@ It may be added for future more complex systems where there is a need to tightly
 
 Clock manager supports the ability to request root clocks switch to an external clock.
 There are two occasions where this is required:
--  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
+-  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/doc/theory_of_operation.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
 
 ### Clock Frequency Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
-This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
+This feature can be enabled through the various measurement control registers such as [`IO_MEAS_CTRL_SHADOWED`](registers.md#io_meas_ctrl_shadowed).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
 Software sets both an expected maximum and minimum for each measured clock.
