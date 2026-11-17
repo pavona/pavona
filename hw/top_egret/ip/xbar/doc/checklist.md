@@ -149,25 +149,25 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 [XBAR DV document]:                   ../../../../ip/tlul/doc/dv/README.md
 [XBAR Testplan]:                      ../../../../ip/tlul/doc/dv/README.md#testplan
 
-[DV_DOC_DRAFT_COMPLETED]:             ../../../../../doc/contributing/hw/checklist/README.md#dv-doc-draft-completed
-[TESTPLAN_COMPLETED]:                 ../../../../../doc/contributing/hw/checklist/README.md#testplan-completed
-[TB_TOP_CREATED]:                     ../../../../../doc/contributing/hw/checklist/README.md#tb-top-created
-[PRELIMINARY_ASSERTION_CHECKS_ADDED]: ../../../../../doc/contributing/hw/checklist/README.md#preliminary-assertion-checks-added
-[TB_ENV_CREATED]:                     ../../../../../doc/contributing/hw/checklist/README.md#tb-env-created
-[RAL_MODEL_GEN_AUTOMATED]:            ../../../../../doc/contributing/hw/checklist/README.md#ral-model-gen-automated
-[TB_GEN_AUTOMATED]:                   ../../../../../doc/contributing/hw/checklist/README.md#tb-gen-automated
-[SMOKE_TEST_PASSING]:                 ../../../../../doc/contributing/hw/checklist/README.md#smoke-test-passing
-[CSR_MEM_TEST_SUITE_PASSING]:         ../../../../../doc/contributing/hw/checklist/README.md#csr-mem-test-suite-passing
-[ALT_TOOL_SETUP]:                     ../../../../../doc/contributing/hw/checklist/README.md#alt-tool-setup
-[SMOKE_REGRESSION_SETUP]:             ../../../../../doc/contributing/hw/checklist/README.md#smoke-regression-setup
-[NIGHTLY_REGRESSION_SETUP]:           ../../../../../doc/contributing/hw/checklist/README.md#nightly-regression-setup
-[COVERAGE_MODEL_ADDED]:               ../../../../../doc/contributing/hw/checklist/README.md#coverage-model-added
+[DV_DOC_DRAFT_COMPLETED]:             ../../../../../doc/contributing/hw/checklist/README.md#dv_doc_draft_completed
+[TESTPLAN_COMPLETED]:                 ../../../../../doc/contributing/hw/checklist/README.md#testplan_completed
+[TB_TOP_CREATED]:                     ../../../../../doc/contributing/hw/checklist/README.md#tb_top_created
+[PRELIMINARY_ASSERTION_CHECKS_ADDED]: ../../../../../doc/contributing/hw/checklist/README.md#preliminary_assertion_checks_added
+[TB_ENV_CREATED]:                     ../../../../../doc/contributing/hw/checklist/README.md#sim_tb_env_created
+[RAL_MODEL_GEN_AUTOMATED]:            ../../../../../doc/contributing/hw/checklist/README.md#sim_ral_model_gen_automated
+[TB_GEN_AUTOMATED]:                   ../../../../../doc/contributing/hw/checklist/README.md#tb_gen_automated
+[SMOKE_TEST_PASSING]:                 ../../../../../doc/contributing/hw/checklist/README.md#sim_smoke_test_passing
+[CSR_MEM_TEST_SUITE_PASSING]:         ../../../../../doc/contributing/hw/checklist/README.md#sim_csr_mem_test_suite_passing
+[ALT_TOOL_SETUP]:                     ../../../../../doc/contributing/hw/checklist/README.md#sim_alt_tool_setup
+[SMOKE_REGRESSION_SETUP]:             ../../../../../doc/contributing/hw/checklist/README.md#sim_smoke_regression_setup
+[NIGHTLY_REGRESSION_SETUP]:           ../../../../../doc/contributing/hw/checklist/README.md#sim_nightly_regression_setup
+[COVERAGE_MODEL_ADDED]:               ../../../../../doc/contributing/hw/checklist/README.md#sim_coverage_model_added
 [TB_LINT_SETUP]:                      ../../../../../doc/contributing/hw/checklist/README.md#tb_lint_setup
-[PRE_VERIFIED_SUB_MODULES_V1]:        ../../../../../doc/contributing/hw/checklist/README.md#pre-verified-sub-modules-v1
-[DESIGN_SPEC_REVIEWED]:               ../../../../../doc/contributing/hw/checklist/README.md#design-spec-reviewed
-[TESTPLAN_REVIEWED]:                  ../../../../../doc/contributing/hw/checklist/README.md#testplan-reviewed
-[STD_TEST_CATEGORIES_PLANNED]:        ../../../../../doc/contributing/hw/checklist/README.md#std-test-categories-planned
-[V2_CHECKLIST_SCOPED]:                ../../../../../doc/contributing/hw/checklist/README.md#v2-checklist-scoped
+[PRE_VERIFIED_SUB_MODULES_V1]:        ../../../../../doc/contributing/hw/checklist/README.md#pre_verified_sub_modules_v1
+[DESIGN_SPEC_REVIEWED]:               ../../../../../doc/contributing/hw/checklist/README.md#design_spec_reviewed
+[TESTPLAN_REVIEWED]:                  ../../../../../doc/contributing/hw/checklist/README.md#testplan_reviewed
+[STD_TEST_CATEGORIES_PLANNED]:        ../../../../../doc/contributing/hw/checklist/README.md#std_test_categories_planned
+[V2_CHECKLIST_SCOPED]:                ../../../../../doc/contributing/hw/checklist/README.md#v2_checklist_scoped
 
 ### V2
 

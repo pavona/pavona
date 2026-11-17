@@ -98,4 +98,4 @@ pavona_test(
 
 ## Read More
 
-* [OTP Preload Image Generator](../../util/design/README.md#otp_preload_image_generator)
+* [OTP Preload Image Generator](../../util/design/README.md#otp-preload-image-generator)

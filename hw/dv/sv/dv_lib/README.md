@@ -25,7 +25,7 @@ This class provides the following functions to support verification:
 * ` build(uvm_reg_addr_t base_addr)`: This function is implemented as a pseudo pure virtual function (returns a fatal error if called directly).
   It is used for building the complete RAL model.
   For a polymorphic approach, the DV user can use this class handle to create the extended (IP specific) class instance and call this function to build the actual RAL model.
-  This is exactly how it is done in [`dv_base_env_cfg`](#dv-base-env-cfg).
+  This is exactly how it is done in [`dv_base_env_cfg`](#dv_base_env_cfg).
 
 #### `dv_base_reg_map`
 Currently, this class does not provide any additional features.

@@ -66,7 +66,7 @@ The counter module implements the Standard Incrementing Function according to [R
 Note that for AES, parameter b = 128 and the counter increment is big-endian.
 The GHASH module is responsible for computing the integrity tag in GCM.
 Internally, it uses iteratively decomposed Galois Field GF(2^128) multipliers with a latency of 8 or 32 clock cycles for the unmasked or masked implementation, respectively.
-For details on the data path of the masked GHASH module refer to [Security Hardening below](#1st-order-masking-of-the-ghash-block).
+For details on the data path of the masked GHASH module refer to [Security Hardening below](#1st-order-masking-of-the-ghash-module).
 As the GHASH module can operate in parallel to the AES cipher core and since the latency of GHASH module is lower than the latency of the AES cipher core, the overall throughput of the AES unit is independent of the mode.
 
 Note that CFB mode is supported with a fixed parameter s = 128 (CFB-128).

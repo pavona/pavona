@@ -367,4 +367,4 @@ correctly.
 Please refer to the sections [creating-a-technology-library] and [synthesis-constraints].
 
 [creating-a-technology-library]: ../../hw/ip/prim/README.md#creating-a-technology-library
-[synthesis-constraints]: ../../hw/ip/prim/README.md#important-synthesis-constraints-to-keep-important-redundant-constructs
+[synthesis-constraints]: ../../hw/ip/prim/README.md#important-synthesis-constraints-for-keeping-important-redundant-constructs

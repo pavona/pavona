@@ -50,7 +50,7 @@ The IP supports Normal Read, Fast Read, Fast Read Dual Output, and Fast Read Qua
 This version of the IP does not support Dual IO, Quad IO, QPI commands.
 
 In Passthrough mode, the SPI Device receives SPI transactions from a host system and forwards the transactions to a downstream flash device.
-Software may filter prohibited commands by configuring a 256-bit [`FILTER`](doc/registers.md#filter) CSR.
+Software may filter prohibited commands by configuring a 256-bit [`CMD_FILTER`](doc/registers.md#cmd_filter_0) CSR.
 The IP cancels ongoing transactions if the received opcode matches the filter CSR by de-asserting `CSb` and gating `SCK` to the downstream flash device.
 
 The software may program CSRs to change the address and/or the first 4 bytes of payload on-the-fly in Passthrough mode.

@@ -192,7 +192,7 @@ Steps:
     The ATE test setup actuates the personalization flow in collaboration with
     the provisioning appliance.
     1.  There are two personalization approaches supported by Pavona.
-        1.  [Injection Process](#injection_process): The provisioning appliance
+        1.  [Injection Process](#injection-process): The provisioning appliance
             generates `device_secrets` (in the injection case) and endorsement
             certificates. `appliance_secrets` are used to enable signing on
             endorsement certificates with Silicon Creator intermediate CA keys.
@@ -320,7 +320,7 @@ provisioning appliance is in charge of generating the device secrets. The
 payload is associated with the Device ID and is wrapped with a key derived from
 the `receiver_pub_key`extracted in step P2.
 
-Transport wrapping. See [ECIES Encryption](#ecies_encryption) for more details
+Transport wrapping. See [ECIES Encryption](#encryption) for more details
 on the `ECIES_ENC` input and output parameters. Some parameters are omitted for
 simplicity.
 
@@ -346,7 +346,7 @@ The payload is transferred from the DEVICE SPI RX FIFO into SRAM.
 
 P4.1 DEVICE unwraps secrets and creator certificate
 
-Unwrap process. See [ECIES Decryption](#ecies_decryption) for more details on
+Unwrap process. See [ECIES Decryption](#decryption) for more details on
 the `ECIES_DEC` input and output parameters. Some parameters are omitted for
 simplicity.
 
@@ -946,7 +946,7 @@ return K, IV
 [attestation]: ../attestation/README.md
 [attestation_keys]: ../attestation/README.md#asymmetric-keys
 [attestation_certificate]: ../attestation/README.md#certificate-format
-[creator_identity]: ../identities_and_root_keys/README.md#creator-identity
+[creator_identity]: ../identities_and_root_keys/README.md#creatoridentity
 [device_lifecycle]: ../device_life_cycle/README.md
 [device_id]: ../identities_and_root_keys/README.md#device-identifier
 [identities_and_root_keys]: ../identities_and_root_keys/README.md

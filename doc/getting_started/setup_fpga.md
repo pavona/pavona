@@ -428,7 +428,7 @@ No external JTAG adapter is needed.
 #### TAP Straps
 
 After bootstrapping the firmware, the TAP straps may need to be set.
-The FTDI Chip has IOs that correctly set the TAP straps, but for that to work the jumpers JP11 (IOC5) and JP12 (IOC8) should be configured as described [above](#Before-Connecting-HyperDebug-to-the-CW340-Base-Board).
+The FTDI Chip has IOs that correctly set the TAP straps, but for that to work the jumpers JP11 (IOC5) and JP12 (IOC8) should be configured as described [above](#before-connecting-hyperdebug-to-the-cw340-base-board).
 
 ### CW310 Board
 
