@@ -96,11 +96,11 @@ Additional, vendor-specific tests are supported through an [external health test
 The [`ALERT_THRESHOLD`](registers.md#alert_threshold) register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
 In case this threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
 By default, the threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
-When reaching the threshold while running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert), the recoverable alert is not raised nor does the block stop operating.
+When reaching the threshold while running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware-override---extract--insert), the recoverable alert is not raised nor does the block stop operating.
 In other modes, the generation of the recoverable alert can be disabled by configuring a value of zero.
 
 The [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) register holds the total number of health test windows during which one or more health test failures occurred.
-The register is automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert).
+The register is automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware-override---extract--insert).
 
 The [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) reports the number of health test failures since the last passing health test window on a per-test basis.
 If multiple health tests fail for a certain window, the value in [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) is incremented by just one whereas multiple fields in [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) may get incremented.
@@ -134,15 +134,15 @@ However, if the ENTROPY_SRC block experiences internal back pressure, health tes
 
 - **Input of `esfinal` FIFO**: If the `esfinal` FIFO is full, e.g., because the hardware entropy interface doesn't request entropy, entire 384-bit seeds coming out of the conditioner or the bypass packer FIFO get dropped.
   Firmware is not informed when dropping entire seeds.
-  When running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert), firmware may want to infer whether the next seed is likely going to be dropped at this moment by reading the current depth of the `esfinal` FIFO from the [`DEBUG_STATUS`](registers.md#debug_status) register.
-- **Input of Observe FIFO**: When running in any of the [Firmware Override modes](programmers_guide.md#firmware_override_/_bypass_modes) health tested entropy bits are collected in the Observe FIFO for observation / extraction by firmware.
+  When running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware-override---extract--insert), firmware may want to infer whether the next seed is likely going to be dropped at this moment by reading the current depth of the `esfinal` FIFO from the [`DEBUG_STATUS`](registers.md#debug_status) register.
+- **Input of Observe FIFO**: When running in any of the [Firmware Override modes](programmers_guide.md#firmware-override--bypass-modes) health tested entropy bits are collected in the Observe FIFO for observation / extraction by firmware.
   Whenever the Observe FIFO runs full, the [`FW_OV_RD_FIFO_OVERFLOW`](registers.md#fw_ov_rd_fifo_overflow) bit is asserted and the hardware stops collecting entropy bits in the Observe FIFO until firmware has emptied the FIFO.
   This helps ensuring that observed / extracted entropy bits are contiguous.
 - **Input of `postht` / `esbit` FIFO**: When experiencing back pressure from the hardware conditioner (see below), health tested entropy bits may get dropped at the input of the `postht` or `esbit` FIFO when running in multi-channel or single-channel mode, respectively.
   Note that the dropped bits are still health tested and contribute to the overall results for the current window.
   However, to keep the number of bits passed to the conditioner constant, the health test window is stretched by the number of dropped samples.
   Whenever post-health test entropy bits are being dropped from the hardware pipeline, a recoverable alert is triggered and the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit is asserted.
-  Note that this may also happen in [Firmware Override: Observe mode](programmers_guide.md#firmware_override_-_observe).
+  Note that this may also happen in [Firmware Override: Observe mode](programmers_guide.md#firmware-override---observe).
   Firmware should thus explicitly check the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit to ensure the bits retrieved from the Observe FIFO are indeed contiguous.
 
 To reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.

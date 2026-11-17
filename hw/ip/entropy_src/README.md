@@ -50,7 +50,7 @@ The Repetition Count Test fails if any sequence of bits continuously asserts the
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
 The combined choice of threshold and window size then determine the false-negative rate (&beta;), or the probability of missing statistical defects at any particular magnitude.
 
-When the IP is disabled by clearing the [`MODULE_ENABLE`](./doc/registers.md#MODULE_ENABLE) register, all health checks are disabled and all counters internal to the health checks are reset.
+When the IP is disabled by clearing the [`MODULE_ENABLE`](./doc/registers.md#module_enable) register, all health checks are disabled and all counters internal to the health checks are reset.
 
 When operating in FIPS/CC compliant mode, the raw outputs of the PTRNG noise source are passed through a conditioning function based on a suitable secure hash function (SHA-3) which has been vetted by NIST to meet the stringent requirements for a full-entropy source.
 In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample by default.
