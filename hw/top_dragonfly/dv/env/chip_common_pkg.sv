@@ -23,6 +23,12 @@ package chip_common_pkg;
 
   parameter uint ROM_CONSOLE_UART = 0;
 
+  // ROM banner values.
+  //
+  // Keep values from lifecycle CSRs in sync with
+  // `hw/top_dragonfly/data/top_dragonfly.hjson`.
+  parameter string ROM_BANNER   = "Pavona:4002-4000-01";
+
   // ROM Boot Fault Values, matches definitions in `rules/const.bzl`.
   parameter string ROM_BFV_BAD_IDENTIFIER     = "0142500d";
   parameter string ROM_BFV_BAD_RSA_SIGNATURE    = "01535603";
