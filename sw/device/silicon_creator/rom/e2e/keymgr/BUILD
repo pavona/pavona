@@ -118,6 +118,42 @@ rom_e2e_keymgr_init_configs = [
     for config in rom_e2e_keymgr_init_configs
 ]
 
+[
+    pavona_test(
+        name = "rom_e2e_keymgr_dpe_init_{}".format(config["name"]),
+        srcs = [":rom_e2e_keymgr_dpe_init_test.c"],
+        dv = dv_params(
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
+        ),
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = {
+            "//hw/top_dragonfly:sim_dv": None,
+            "//hw/top_dragonfly:sim_verilator": None,
+        },
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+        verilator = verilator_params(
+            timeout = "eternal",
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            rom = "//sw/device/silicon_creator/rom",
+            second_rom = "//sw/device/silicon_creator/second_rom",
+        ),
+        deps = [
+            "//sw/device/lib/dif:keymgr_dpe",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/testing:keymgr_dpe_testutils",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+        ],
+    )
+    for config in rom_e2e_keymgr_init_configs
+]
+
 test_suite(
     name = "keymgr_init",
     tags = ["manual"],
