@@ -19,7 +19,7 @@ Thus, in total, for long messages, the latency between a corresponding plaintext
 and the latency between two consecutive ciphertext/plaintext blocks is 7/9 cycles; assuming large input sizes such that initialization and tag computation are negligible.
 * Automatic as well as software-initiated reseeding of internal pseudo-random number generators (PRNGs).
 This will be implemented in the final version.
-* Countermeasures for deterring fault injection (FI) on the control path (for more details see [Security Hardening](#security-hardening-13)).
+* Countermeasures for deterring fault injection (FI) on the control path (for more details see [Security Hardening](doc/theory_of_operation.md#security-hardening)).
 * Register-based data and control interface.
 * System key manager interface for optional key sideload to not expose key material to the processor and other hosts attached to the system bus interconnect.
 
