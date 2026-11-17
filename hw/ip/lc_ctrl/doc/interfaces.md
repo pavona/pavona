@@ -157,11 +157,11 @@ See also [power manager documentation](../../../top_egret/ip_autogen/pwrmgr/READ
 
 #### OTP Interfaces
 
-All interfaces to and from OTP are explained in detail in the OTP Specification Document (for example, see [egret's OTP specification](../../../top_egret/ip_autogen/otp_ctrl/README.md#life-cycle-interfaces)).
+All interfaces to and from OTP are explained in detail in the OTP Specification Document (for example, see [egret's OTP specification](../../../top_egret/ip_autogen/otp_ctrl/doc/interfaces.md#life-cycle-interfaces)).
 
 #### KMAC Interface
 
-The life cycle controller interfaces with KMAC through a [side load interface](../../kmac/README.md#keymgr-interface) in the same way as the key manager.
+The life cycle controller interfaces with KMAC through a [side load interface](../../kmac/doc/theory_of_operation.md#application-interface) in the same way as the key manager.
 Since the KMAC and life cycle controller are in different clock domains, the KMAC interface signals are synchronized to the life cycle clock inside the life cycle controller.
 
 #### Control Signal Propagation

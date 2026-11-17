@@ -38,7 +38,7 @@ For conditional transitions, such as those that require a token (RAW_UNLOCK, TES
 Note that conditional transitions will only be allowed if the OTP partition holding the corresponding token has been provisioned and locked.
 
 Since unlock tokens are considered secret, they are not stored in their raw form.
-Instead, the tokens are wrapped and unwrapped based on a global constant using a PRESENT-based scrambling mechanism (for example, see egret's [PRESENT-based scrambling mechanism](../../../top_egret/ip_autogen/otp_ctrl/README.md#secret-vs-non-secret-partitions)).
+Instead, the tokens are wrapped and unwrapped based on a global constant using a PRESENT-based scrambling mechanism (for example, see egret's [PRESENT-based scrambling mechanism](../../../top_egret/ip_autogen/otp_ctrl/doc/theory_of_operation.md#secret-vs-non-secret-partitions)).
 This ensures that a breach of fuse physical security does not automatically expose all the relevant information without also breaking the constant key.
 
 RAW_UNLOCK is not exposed in the open source design, rather it is something provisioned by the silicon creators prior to tapeout.

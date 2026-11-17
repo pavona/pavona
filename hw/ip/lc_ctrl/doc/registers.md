@@ -136,7 +136,7 @@ moves the life cycle state into POST_TRANSITION.
 
 ### STATUS . EXT_CLOCK_SWITCHED
 This bit is set to 1 if the clock manager has successfully switched to the external clock due to
-[`EXT_CLOCK_EN`](#ext_clock_en) being set to 1.
+[`TRANSITION_CTRL.EXT_CLOCK_EN`](#transition_ctrl--ext_clock_en) being set to 1.
 
 ### STATUS . READY
 This bit is set to 1 if the life cycle controller has successfully initialized and is
