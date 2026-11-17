@@ -39,7 +39,7 @@ const uint64_t kClockFreqAonHz = 200 * 1000;  // 200kHz
 #elif defined(OPENTITAN_IS_DRAGONFLY)
 const uint64_t kClockFreqCpuMhz = 1000;
 
-const uint64_t kClockFreqHiSpeedPeripheralHz = 250 * 1000 * 1000;  // 250MHz
+const uint64_t kClockFreqHiSpeedPeripheralHz = 1 * 1000 * 1000 * 1000;  // 1GHz
 
 const uint64_t kClockFreqPeripheralHz = 250 * 1000 * 1000;  // 250MHz
 
