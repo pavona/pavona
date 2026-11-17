@@ -21,7 +21,7 @@ This means unrelated CSRNG instances and EDNs also get disabled and then need to
 The procedure for uninstantiating the associated CSRNG instance depends on the mode in which EDN is operating.
 - When running in **Software Port Mode**, firmware has to individually trigger commands via the [`SW_CMD_REQ`](registers.md#sw_cmd_req) register.
   The status of the current command can be inferred using the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register.
-  For details, refer to [Interaction with CSRNG Application Interface Ports](./theory_of_operation.md#interaction-with-CSRNG-application-interface-ports).
+  For details, refer to [Interaction with CSRNG Application Interface Ports](./theory_of_operation.md#interaction-with-csrng-application-interface-ports).
   In case the current command is a `generate` command, firmware must wait for all entropy generated from this command to be consumed before the command is acknowledged by CSRNG (indicated by the `CMD_ACK` bit of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register being set).
   Firmware can then issue an `uninstantiate` command to destroy the associated CSRNG instance.
   Once the `uninstantiate` command is acknowledged, firmware can safely reconfigure EDN.
