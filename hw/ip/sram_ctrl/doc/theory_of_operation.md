@@ -57,7 +57,7 @@ Note however that the PRNG sequence does not have strong security guarantees, si
 ### Code Execution from SRAM
 
 The SRAM controller contains an access control mechanism for filtering instruction fetches from the processor.
-As illustrated below, an OTP switch EN_SRAM_IFETCH (for example, see egret's [OTP memory map](../../../top_egret/ip_autogen/otp_ctrl/README.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/README.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](registers.md#exec) CSR.
+As illustrated below, an OTP switch EN_SRAM_IFETCH (for example, see egret's [OTP memory map](../../../top_egret/ip_autogen/otp_ctrl/doc/programmers_guide.md#direct-access-memory-map)) allows to either tie code execution from SRAM to the life cycle state via the HW_DEBUG_EN function (see [life cycle docs](../../lc_ctrl/doc/theory_of_operation.md#hw_debug_en)), or it can be enabled / disabled via the [`EXEC`](registers.md#exec) CSR.
 
 ![SRAM Code Execution](../doc/sram_ctrl_sram_execution.svg)
 
