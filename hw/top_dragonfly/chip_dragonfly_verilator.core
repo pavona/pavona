@@ -34,7 +34,6 @@ targets:
         verilator_options:
           # required to support OTP constants
           - "--max-num-width 131072"
-          - "--no-timing"
 
   lint:
     <<: *default_target
