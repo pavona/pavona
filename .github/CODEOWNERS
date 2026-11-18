@@ -1,5 +1,5 @@
 # This file specifies default reviewers for new pull requests. This is used as a
-# convenience - the OpenTitan project doesn't currently have a formalised notion
+# convenience - the Pavona project doesn't currently have a formalised notion
 # of "code owners".
 
 # Note: The default reviewers aren't required to give a review prior to merging.
@@ -8,53 +8,27 @@
 # your PR. Anyone is able to contribute to pull request review, and is
 # encouraged to do so
 
-# For now, ignore GitHub's error annotations of the form "Unknown owner: make
-# sure $username exists and has write access to the repository". See
-# https://github.com/lowRISC/opentitan/issues/13469 for discussion.
-
 # Order: last matching pattern takes the most precedence.
 #   Please refer the link for the detail
 #   https://help.github.com/en/articles/about-code-owners
 
-*.cc                @lowRISC/ot-c-cpp-reviewers
-*.c                 @lowRISC/ot-c-cpp-reviewers
-*.h                 @lowRISC/ot-c-cpp-reviewers
-*.rs                @lowRISC/ot-rust-reviewers
+# Hardware
+/hw/                            @apinise @davidschrammel @LouisTheLuis @matutem @ysekhar
 
+# DV
+/hw/**/dv/                      @apinise @LouisTheLuis @matutem @ngildenhuys @ysekhar
+/hw/**/data/*testplan*.hjson    @apinise @LouisTheLuis @matutem @ysekhar
 
-# Bazel build rules
-*.bzl               @cfrantz
-/WORKSPACE          @cfrantz
-/.bazelrc           @cfrantz
+# Software
+/sw/                            @furquan-zr @ngildenhuys @rtorok-zr @vlpannel
+/sw/device/lib/crypto/          @mkannwischer @pqcfox
+/sw/acc/                        @mkannwischer @pqcfox
+/sw/host/                       @mkannwischer @pqcfox @rtorok-zr @vlpannel
 
-# Utils: reggen, topgen, tlgen
-util/*gen/          @msfschaffner
-util/tlgen.py       @msfschaffner
-util/topgen.py      @msfschaffner
+# Tools
+/util/                          @furquan-zr @davidschrammel @mkannwischer @vlpannel @ysekhar
+/util/dvsim/                    @LouisTheLuis @vlpannel
 
-# RTL related
-/hw/ip/aes/             @vogelpi
-/hw/ip/alert_handler/   @msfschaffner
-/hw/ip/pinmux/          @msfschaffner
-/hw/ip/rv_dm/           @vogelpi
-/hw/top_*/doc/top_*     @msfschaffner
-/hw/top_*/ip/ast        @msfschaffner
-
-
-# DV related common files
-dv/                 @lowRISC/ot-dv-reviewers
-fpv/                @lowRISC/ot-dv-reviewers
-formal/             @lowRISC/ot-dv-reviewers
-# lint/             # TBD
-
-# Common docs
-/doc/               @mundaym
-
-# License related files
-LICENSE*            @mundaym
-COPYING*            @mundaym
-/util/licence-checker.hjson  @mundaym
-
-# CI and testing
-/ci/                @rswarbrick
-/.github            @rswarbrick
+# CI
+/ci/                            @furquan-zr @LouisTheLuis @mkannwischer @ngildenhuys @rtorok-zr @ysekhar
+/.github/                       @furquan-zr @LouisTheLuis @mkannwischer @ngildenhuys @rtorok-zr @ysekhar
