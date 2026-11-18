@@ -139,18 +139,21 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
     case kOtpPartitionRotOwnerAuthSlot0: {
       uint32_t rot_owner_auth_slot0_32bit_array
           [(OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE -
-            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE) /
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE -
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_ZER_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kOtpPartitionRotOwnerAuthSlot0, 0,
           rot_owner_auth_slot0_32bit_array,
           (OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE -
-           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE) /
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE -
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_ZER_SIZE) /
               sizeof(uint32_t)));
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)rot_owner_auth_slot0_32bit_array,
           .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE -
-                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE,
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE -
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_ZER_SIZE,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
@@ -175,18 +178,21 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
     case kOtpPartitionRotOwnerAuthSlot1: {
       uint32_t rot_owner_auth_slot1_32bit_array
           [(OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE -
-            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE) /
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE -
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_ZER_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kOtpPartitionRotOwnerAuthSlot1, 0,
           rot_owner_auth_slot1_32bit_array,
           (OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE -
-           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE) /
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE -
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_ZER_SIZE) /
               sizeof(uint32_t)));
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)rot_owner_auth_slot1_32bit_array,
           .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE -
-                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE,
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE -
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_ZER_SIZE,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
@@ -211,18 +217,21 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
     case kOtpPartitionRotOwnerAuthSlot2: {
       uint32_t rot_owner_auth_slot2_32bit_array
           [(OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_SIZE -
-            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE) /
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE -
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_ZER_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kOtpPartitionRotOwnerAuthSlot2, 0,
           rot_owner_auth_slot2_32bit_array,
           (OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_SIZE -
-           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE) /
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE -
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_ZER_SIZE) /
               sizeof(uint32_t)));
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)rot_owner_auth_slot2_32bit_array,
           .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_SIZE -
-                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE,
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE -
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_ZER_SIZE,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
@@ -247,18 +256,21 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
     case kOtpPartitionRotOwnerAuthSlot3: {
       uint32_t rot_owner_auth_slot3_32bit_array
           [(OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_SIZE -
-            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE) /
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE -
+            OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_ZER_SIZE) /
            sizeof(uint32_t)];
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kOtpPartitionRotOwnerAuthSlot3, 0,
           rot_owner_auth_slot3_32bit_array,
           (OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_SIZE -
-           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE) /
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE -
+           OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_ZER_SIZE) /
               sizeof(uint32_t)));
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)rot_owner_auth_slot3_32bit_array,
           .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_SIZE -
-                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE,
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE -
+                 OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_ZER_SIZE,
       };
       TRY(otcrypto_sha2_256(input, &digest));
     } break;
