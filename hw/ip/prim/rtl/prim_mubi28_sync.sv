@@ -117,8 +117,11 @@ module prim_mubi28_sync
         mubi_in_sva_q <= mubi_i;
       end
       `ASSERT(OutputIfUnstable_A, sig_unstable |-> mubi_o == {NumCopies{reset_value}})
+      // With stability check the data path is: 2-flop sync (D in {1,2,3}) + 1 stability
+      // flop, giving a total delay in {2,3,4}. The range ##[2:4] covers the full window.
+      // sig_unstable fires while the value is still propagating through the stability stage.
       `ASSERT(OutputDelay_A,
-              rst_ni |-> ##[3:4] sig_unstable || mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}})
+              rst_ni |-> ##[2:4] sig_unstable || mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}})
 `endif
     end else begin : gen_no_stable_chks
       assign mubi = mubi_sync;
@@ -127,9 +130,14 @@ module prim_mubi28_sync
       always_ff @(posedge clk_i) begin
         mubi_in_sva_q <= mubi_i;
       end
+      // The 2-flop synchronizer has a per-bit delay in {1,2,3} cycles (race-through,
+      // normal capture, missed capture). This assertion  checks at D_max=3. The two escape
+      // clauses span the 2-cycle uncertainty window [D_min, D_max): if the input changed
+      // anywhere in that window, different bits may have captured different values.
       `ASSERT(OutputDelay_A,
               rst_ni |-> ##3 (mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}} ||
-                              $past(mubi_in_sva_q, 2) != $past(mubi_in_sva_q, 1)))
+                              $past(mubi_in_sva_q, 2) != $past(mubi_in_sva_q, 1) ||
+                              $past(mubi_in_sva_q, 1) != mubi_in_sva_q))
 `endif
     end
   end else begin : gen_no_flops
