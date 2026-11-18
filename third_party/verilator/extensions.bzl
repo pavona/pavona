@@ -9,7 +9,7 @@ verilator = module_extension(
 )
 
 def _verilator_repos():
-    VERILATOR_VERSION = "5.046"
+    VERILATOR_VERSION = "5.054"
     http_archive(
         name = "verilator",
         urls = [
@@ -17,7 +17,7 @@ def _verilator_repos():
         ],
         strip_prefix = "verilator-" + VERILATOR_VERSION,
         build_file = "@pavona_pavona//third_party/verilator:BUILD.verilator.bazel",
-        sha256 = "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
+        sha256 = "18658731b46922ef660bcb650be0aa503d751e5c17eb9d4644fdfabb11835198",
         # Upstream fixes for flex >= 2.6.5. Drop with the next Verilator release.
         patches = [
             Label("//third_party/verilator/patches:0001-Fix-flex-2.6.5.patch"),

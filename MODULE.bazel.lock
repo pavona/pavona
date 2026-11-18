@@ -1178,7 +1178,7 @@
     },
     "//third_party/verilator:extensions.bzl%verilator": {
       "general": {
-        "bzlTransitiveDigest": "Suhy5bcRjbnUIibITYzyc7ubnt36DzEfpSmFraJSfGA=",
+        "bzlTransitiveDigest": "qprGG90wEcxTDZ3FaevNLDsQb46ec5+nCJGWKtLI/+U=",
         "usagesDigest": "cjwrnee1wPEYWgSy0O0CLebjqrej5GIa+UmArwgLEko=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1188,11 +1188,11 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "urls": [
-                "https://github.com/verilator/verilator/archive/refs/tags/v5.046.tar.gz"
+                "https://github.com/verilator/verilator/archive/refs/tags/v5.054.tar.gz"
               ],
-              "strip_prefix": "verilator-5.046",
+              "strip_prefix": "verilator-5.054",
               "build_file": "@@//third_party/verilator:BUILD.verilator.bazel",
-              "sha256": "002bc6d92b203eb8b4612e1d198d8108517d4ec9859e131ef328015352fe6d0c",
+              "sha256": "18658731b46922ef660bcb650be0aa503d751e5c17eb9d4644fdfabb11835198",
               "patches": [
                 "@@//third_party/verilator/patches:0001-Fix-flex-2.6.5.patch",
                 "@@//third_party/verilator/patches:0002-Fix-flex-2.6.9-build.patch"
