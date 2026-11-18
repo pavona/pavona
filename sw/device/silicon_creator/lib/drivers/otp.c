@@ -64,6 +64,44 @@ uint64_t otp_partition_digest_read(otp_partition_t partition) {
   return value;
 }
 
+bool otp_partition_integrity(otp_partition_t partition) {
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  return partition_info.integrity;
+}
+
+rom_error_t otp_partition_read_lock(otp_partition_t partition) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioPartitionReadLock, 1);
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.read_lockable) {
+    return kErrorOtpCtrlUnsupported;
+  }
+  sec_mmio_write32(otp_ctrl_base() + partition_info.lock_reg_offset, 0);
+  return kErrorOk;
+}
+
+bool otp_partition_is_readable(otp_partition_t partition) {
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.sw_readable) {
+    return false;
+  }
+  if (!partition_info.read_lockable) {
+    return true;
+  }
+  return sec_mmio_read32(otp_ctrl_base() + partition_info.lock_reg_offset) &
+         0x1;
+}
+
+bool otp_partition_is_zeroizable(otp_partition_t partition) {
+  return otp_readable_partition_info(partition).zeroizable;
+}
+
+bool otp_partition_has_integrity(otp_partition_t partition) {
+  return otp_readable_partition_info(partition).integrity;
+}
+
 static void wait_for_dai_idle(void) {
   uint32_t status = 0;
   bool idle = false;
@@ -117,8 +155,15 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t relative_address,
   return kErrorOk;
 }
 
-void otp_creator_sw_cfg_lockdown(void) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioCreatorSwCfgLockDown, 1);
-  sec_mmio_write32(
-      otp_ctrl_base() + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
+
+void otp_dai_disable(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiDisable, 1);
+  sec_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+                   0);
+}
+
+bool otp_is_dai_enabled(void) {
+  return sec_mmio_read32(otp_ctrl_base() +
+                         OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET) &
+         0x1;
 }

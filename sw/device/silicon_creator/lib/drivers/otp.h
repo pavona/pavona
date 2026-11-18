@@ -25,15 +25,19 @@ extern "C" {
  *
  * Example:
  * ```
- *  otp_creator_sw_cfg_lockdown();
- *  SEC_MMIO_WRITE_INCREMENT(kOtpSecMmioCreatorSwCfgLockDown);
+ *  otp_partition_read_lock(kOtpPartitionCreatorSwCfg);
+ *  SEC_MMIO_WRITE_INCREMENT(kOtpSecMmioPartitionReadLock);
  * ```
  */
 enum {
   /**
-   * Individual register reads/writes.
+   * Individual register writes for partition read-lock.
    */
-  kOtpSecMmioCreatorSwCfgLockDown = 1,
+  kOtpSecMmioPartitionReadLock = 1,
+  /**
+   * Individual register writes for disabling DAI.
+   */
+  kOtpSecMmioDaiDisable = 1,
 };
 
 /**
@@ -84,6 +88,33 @@ dt_otp_partition_info_t otp_readable_partition_info(otp_partition_t partition);
 uint64_t otp_partition_digest_read(otp_partition_t partition);
 
 /**
+ * Checks if a partition has hardware ECC integrity enabled.
+ *
+ * @return `true` if the partition has hardware ECC, `false` otherwise.
+ */
+bool otp_partition_has_integrity(otp_partition_t partition);
+
+/**
+ * Disables read access to the selected partition until next reset.
+ */
+rom_error_t otp_partition_read_lock(otp_partition_t partition);
+
+/**
+ * Checks if the partition is readable (software-readable partition + not
+ * read-locked).
+ *
+ * @return `true` if the partition is readable, `false` otherwise.
+ */
+bool otp_partition_is_readable(otp_partition_t partition);
+
+/**
+ * Checks if a partition is zeroizable.
+ *
+ * @return `true` if the partition is zeroizable, `false` otherwise.
+ */
+bool otp_partition_is_zeroizable(otp_partition_t partition);
+
+/**
  * Perform a blocking 32-bit read from the Direct Access Interface (DAI).
  *
  * This enables reading any readable 32-bit OTP field that is not in the memory
@@ -122,17 +153,24 @@ uint64_t otp_dai_read64(otp_partition_t partition, uint32_t address);
  *                         the OTP partition.
  * @param data The output buffer of at least length `num_words`.
  * @param num_words The number of 32-bit words to read from OTP.
+ * @return Result of the operation.
  */
 rom_error_t otp_dai_read(otp_partition_t partition, uint32_t address,
                          uint32_t *data, size_t num_words);
 
 /**
- * Disables read access to CREATOR_SW_CFG partition until next reset.
- *
- * This function must be called in ROM_EXT before handing over execution to the
- * first owner boot stage.
+
+/**
+ * Disable the OTP direct access interface (this prevents programming OTP).
  */
-void otp_creator_sw_cfg_lockdown(void);
+void otp_dai_disable(void);
+
+/**
+ * Checks if the direct access interface is enabled.
+ *
+ * @return `true` if the DAI is enabled, `false` otherwise.
+ */
+bool otp_is_dai_enabled(void);
 
 #ifdef __cplusplus
 }

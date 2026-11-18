@@ -7,6 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
@@ -14,11 +15,6 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#if defined(OPENTITAN_IS_EGRET)
-#include "hw/top_egret/sw/autogen/top_egret.h"
-#elif defined(OPENTITAN_IS_DRAGONFLY)
-#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
-#endif
 
 namespace otp_unittest {
 namespace {
@@ -29,20 +25,13 @@ constexpr int kMaxOtpWordsToRead = 10;
 
 class OtpTest : public rom_test::RomTest {
  protected:
-#if defined(OPENTITAN_IS_EGRET)
-  uint32_t base_ = TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR;
-#elif defined(OPENTITAN_IS_DRAGONFLY)
-  uint32_t base_ = TOP_DRAGONFLY_OTP_CTRL_CORE_BASE_ADDR;
-#endif
+  uint32_t base_;
   rom_test::MockSecMmio mmio_;
   rom_test::MockAbsMmio abs_mmio_;
+
+ public:
+  OtpTest() { base_ = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl); }
 };
-
-TEST_F(OtpTest, CreatorSwCfgLockdown) {
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
-
-  otp_creator_sw_cfg_lockdown();
-}
 
 class OtpReadTest : public OtpTest {
  protected:
@@ -235,6 +224,44 @@ TEST_P(OtpDaiReadTest, ReadLenN32bitWords) {
   for (size_t i = 0; i < num_words_to_read; ++i) {
     EXPECT_EQ(data[i], 0x01020300 + i);
   }
+}
+
+class OtpPermissionTest : public OtpTest {};
+
+TEST_F(OtpPermissionTest, Readable) {
+  EXPECT_SEC_READ32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x1);
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionCreatorSwCfg), true);
+}
+
+TEST_F(OtpPermissionTest, ReadLocked) {
+  EXPECT_SEC_READ32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x0);
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionCreatorSwCfg), false);
+}
+
+TEST_F(OtpPermissionTest, NotReadable) {
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionSecret0), false);
+}
+
+TEST_F(OtpPermissionTest, Zeroizable) {
+  EXPECT_EQ(otp_partition_is_zeroizable(kOtpPartitionSecret3), true);
+}
+
+TEST_F(OtpPermissionTest, ReadLock) {
+  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x0);
+  EXPECT_EQ(otp_partition_read_lock(kOtpPartitionCreatorSwCfg), kErrorOk);
+}
+
+TEST_F(OtpPermissionTest, ReadLockNotLockable) {
+  EXPECT_EQ(otp_partition_read_lock(kOtpPartitionHwCfg0),
+            kErrorOtpCtrlUnsupported);
+}
+
+TEST_F(OtpPermissionTest, HasIntegrity) {
+  EXPECT_EQ(otp_partition_has_integrity(kOtpPartitionCreatorSwCfg), true);
+}
+
+TEST_F(OtpPermissionTest, DoesNotHaveIntegrity) {
+  EXPECT_EQ(otp_partition_has_integrity(kOtpPartitionVendorTest), false);
 }
 
 INSTANTIATE_TEST_SUITE_P(Read32bitWordArrays, OtpDaiReadTest,
