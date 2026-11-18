@@ -61,6 +61,10 @@ otp_json(
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                 # CPUCTRL = 0x1 enables ICACHE.
                 "CREATOR_SW_CFG_CPUCTRL": otp_hex(0x1),
+                # Enable the default boot data in PROD and PROD_END life cycle
+                # states. See the definition of `hardened_bool_t` in
+                # sw/device/lib/base/hardened.h.
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": otp_hex(0xffffffff),

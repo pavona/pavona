@@ -61,6 +61,10 @@ otp_json(
                 # Value of the min_security_version_bl0 field of the default
                 # boot data.
                 "CREATOR_SW_CFG_MIN_SEC_VER_BL0": otp_hex(0x0),
+                # Enable the default boot data in PROD and PROD_END life cycle
+                # states. See the definition of `hardened_bool_t` in
+                # sw/device/lib/base/hardened.h.
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Entropy source health check default values. This needs to be
                 # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
                 "CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x0),
