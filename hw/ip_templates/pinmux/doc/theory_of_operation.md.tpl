@@ -58,7 +58,7 @@ ${"###"} USB Wakeup Detection Module
 The USB device in the Egret top-level is not in the AON power domain and hence the associated wakeup detection module is placed inside the pinmux IP in that top-level.
 The USB wakeup module is not connected to any pinmux infrastructure or CSRs except for the `usb_wkup_req` signal going to the power manager.
 See [USB device documentation](../../../../ip/usbdev/README.md) for more information on the USB wakeup mechanism.
-<!-- BEGIN-FEATURE: PINMUX.USB_CONNECTION -->
+<!-- END-FEATURE: PINMUX.USB_CONNECTION -->
 
 % endif
 % if enable_strap_sampling:

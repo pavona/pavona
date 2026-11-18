@@ -221,7 +221,7 @@
             '''
       stage: V3
       tests: ["clkmgr_regwen"]
-      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.SW_EXTCLK.REGWEN"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN"]
     }
     {
       name: stress_all

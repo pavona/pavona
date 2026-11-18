@@ -280,7 +280,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
             '''
       stage: V3
       tests: ["clkmgr_regwen"]
+      % if ext_clk_bypass:
       features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.SW_EXTCLK.REGWEN"]
+      % else:
+      features: ["CLKMGR.MEAS_CTRL.REGWEN"]
+      % endif                 
     }
     {
       name: stress_all

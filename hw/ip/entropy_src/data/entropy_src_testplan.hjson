@@ -82,7 +82,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
-      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS", "ENTROPY_SRC.HEALTH_TESTS_EXT, ENTROPY_SRC.RNG_BIT_ENABLE"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS", "ENTROPY_SRC.HEALTH_TESTS_EXT", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: conditioning
@@ -92,7 +92,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
-      features: ["ENTROPY_SRC.MODE.BYPASS, ENTROPY_SRC.RNG_BIT_ENABLE"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: interrupts

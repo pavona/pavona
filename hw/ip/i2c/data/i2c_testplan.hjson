@@ -97,6 +97,7 @@
             '''
       stage: V3
       tests: ["i2c_host_stress_all_with_rand_reset"]
+      features: []
     }
     {
       name: host_maxperf

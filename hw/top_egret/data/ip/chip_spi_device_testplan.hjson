@@ -156,18 +156,13 @@
                - DV environment to wake chip from sleep.
                - SW to enable spi_device and disable retention logic.
                - DV environment to check that SPI transactions work as usual.
-
-               Notes for silicon targets:
-               This test currently does not exercise any features of the spi_device block itself,
-               which is why the "features" list is empty. It may be reclassified in the future.
              '''
       stage: V3
       si_stage: SV3
       lc_states: [ "PROD" ]
-      features: ["SPI_DEVICE.CFG",
-                 "SPI_DEVICE.JEDEC_CC",
+      features: ["SPI_DEVICE.JEDEC_CC",
                  "SPI_DEVICE.JEDEC_ID",
-                 "SPI_DEVICE.CMD_INFO",
+                 "SPI_DEVICE.HW.CMDINFOS",
       ]
       tests: ["chip_sw_spi_device_pinmux_sleep_retention"]
       bazel: ["//sw/device/tests:spi_device_sleep_test"]
