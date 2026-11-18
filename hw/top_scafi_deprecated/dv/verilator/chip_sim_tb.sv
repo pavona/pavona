@@ -258,7 +258,9 @@ module chip_sim_tb (
     .dmi_req_valid,
     .dmi_req_ready,
     .dmi_req_addr   (dmi_req.addr),
+    /* verilator lint_off ENUMVALUE */
     .dmi_req_op     (dmi_req.op),
+    /* verilator lint_on ENUMVALUE */
     .dmi_req_data   (dmi_req.data),
     .dmi_rsp_valid,
     .dmi_rsp_ready,
