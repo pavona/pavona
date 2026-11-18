@@ -23,6 +23,19 @@
       uvm_test_seq: "cip_rst_safe_csr_with_rand_reset_vseq"
       run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
     }
+    {
+      // Normal completion validates the same mixed traffic used in interrupted epochs.
+      name: csr_mem_rst_safe_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_mem_vseq"
+      run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
+    }
+    {
+      name: csr_mem_rst_safe_with_rand_reset_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_mem_with_rand_reset_vseq"
+      run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
+    }
   ]
 
   tests: [
@@ -90,6 +103,18 @@
       en_run_modes: ["csr_rst_safe_with_rand_reset_tests_mode"]
       reseed: 20
     }
+    {
+      name: "{name}_rst_safe_csr_mem_rw"
+      build_mode: cover_reg_top
+      en_run_modes: ["csr_mem_rst_safe_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_csr_mem_rw_with_rand_reset"
+      build_mode: cover_reg_top
+      en_run_modes: ["csr_mem_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 20
+    }
   ]
 
   regressions: [
@@ -110,7 +135,12 @@
       tests: ["{name}_rst_safe_csr_rw_with_rand_reset",
               "{name}_rst_safe_csr_bit_bash_with_rand_reset",
               "{name}_rst_safe_csr_aliasing_with_rand_reset",
-              "{name}_rst_safe_same_csr_outstanding_with_rand_reset"]
+              "{name}_rst_safe_same_csr_outstanding_with_rand_reset",
+              "{name}_rst_safe_csr_mem_rw_with_rand_reset"]
+    }
+    {
+      name: csr_mem
+      tests: ["{name}_rst_safe_csr_mem_rw", "{name}_rst_safe_csr_mem_rw_with_rand_reset"]
     }
   ]
 }

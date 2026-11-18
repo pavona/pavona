@@ -1,0 +1,46 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  // Import instead of mem_tests.hjson after the block registers its reset-safe common test.
+  // A CSR-only run exercises the empty-map path; it does not validate memory accesses or data.
+  run_modes: [
+    {
+      name: mem_rst_safe_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      run_opts: ["+en_scb=0"]
+      reseed: 5
+    }
+  ]
+
+  tests: [
+    {
+      // The existing CSR wrapper selects the UVM memory-walk leaf and its frontdoor checks.
+      name: "{name}_rst_safe_mem_walk"
+      build_mode: cover_reg_top
+      uvm_test_seq: "cip_rst_safe_csr_vseq"
+      en_run_modes: ["mem_rst_safe_tests_mode"]
+      run_opts: ["+csr_mem_walk"]
+    }
+    {
+      // Run the shared memory worker alone, without CSR or TL access-error traffic.
+      name: "{name}_rst_safe_mem_partial_access"
+      build_mode: cover_reg_top
+      uvm_test_seq: "cip_rst_safe_mem_partial_access_vseq"
+      en_run_modes: ["mem_rst_safe_tests_mode"]
+    }
+  ]
+
+  regressions: [
+    {
+      name: sw_access
+      tests: ["{name}_rst_safe_mem_walk", "{name}_rst_safe_mem_partial_access"]
+    }
+  ]
+}

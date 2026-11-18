@@ -40,9 +40,15 @@ filesets:
       - seq_lib/cip_tl_seq_item.sv: {is_include_file: true}
       - seq_lib/cip_tl_host_single_seq.sv: {is_include_file: true}
       - seq_lib/cip_tl_device_seq.sv: {is_include_file: true}
+      - seq_lib/cip_tl_access_errors_seq.sv: {is_include_file: true}
+      - seq_lib/cip_mem_partial_access_seq.sv: {is_include_file: true}
       - seq_lib/cip_rand_rst_safe_base_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_tl_errors_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_mem_partial_access_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_with_rand_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_csr_mem_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_csr_mem_with_rand_reset_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_stress_all_vseq.sv: {is_include_file: true}
       - cip_base_test.sv: {is_include_file: true}
       - cip_rst_safe_common_test.sv: {is_include_file: true}

@@ -84,7 +84,9 @@ endclass : cip_rst_safe_csr_config_parameters
 // - aliasing: Check that a register write does not change another register unexpectedly.
 // - same_csr_outstanding: Check ordered read/write results with accesses pending to one register.
 // - hw_reset: Prepare register storage, apply reset, and check the declared reset values.
+// - mem_walk: Use the UVM frontdoor walk to check each eligible RW memory and address map.
 // Register and field exclusions limit each test to behavior that the generic checks can verify.
+// Memory walk retains the UVM memory exclusions and compares readback in its existing leaf.
 //
 // CSR leaf sequences use the environment's RAL frontdoors and configured checking ownership.
 // The same-register test uses raw TL because RAL serializes accesses to one register.
@@ -361,6 +363,7 @@ task cip_rst_safe_csr_vseq::run_csr_vseq_base(string csr_test_type,
     "rw": csr_base_seq::type_id::set_type_override(csr_rw_seq::get_type());
     "bit_bash": csr_base_seq::type_id::set_type_override(csr_bit_bash_seq::get_type());
     "aliasing": csr_base_seq::type_id::set_type_override(csr_aliasing_seq::get_type());
+    "mem_walk": csr_base_seq::type_id::set_type_override(csr_mem_walk_seq::get_type());
     default: begin
       `DV_CHECK_FATAL(0, $sformatf("Invalid CSR test selection: +csr_%0s", csr_test_type))
     end
@@ -369,6 +372,16 @@ task cip_rst_safe_csr_vseq::run_csr_vseq_base(string csr_test_type,
   foreach (models[i]) begin
     csr_excl_item csr_excl = csr_utils_pkg::get_excl_item(models[i]);
     if (csr_excl != null) csr_excl.print_exclusions();
+    if (csr_test_type == "mem_walk") begin
+      uvm_mem memories[$];
+      models[i].get_memories(memories);
+      // A shared test can also run on a CSR-only block. State that no memory traffic will occur,
+      // without bypassing the leaf or treating successful completion as memory verification.
+      if (memories.size() == 0) begin
+        `uvm_info(`gfn, $sformatf("Memory walk: %s has no mapped memories; no memory accesses",
+                                 models[i].get_full_name()), UVM_LOW)
+      end
+    end
   end
 
   // Prepare state only in the nonfinal hardware-reset epoch. The main thread announces

@@ -43,6 +43,18 @@ package cip_base_pkg;
     TlIntgErrBoth  // Inject errors in both command and data.
   } tl_intg_err_e;
 
+  // Access-error families shared by standalone TL errors and the mixed CSR/memory workload.
+  // Integrity injection has a separate recovery contract and is not part of this selection.
+  typedef enum {
+    TlAccessProtocolError,
+    TlAccessCsrMaskError,
+    TlAccessUnmappedError,
+    TlAccessMemMaskError,
+    TlAccessWriteOnlyError,
+    TlAccessReadOnlyError,
+    TlAccessInstrTypeError
+  } tl_access_error_e;
+
   typedef class cip_tl_seq_item;
   typedef virtual rst_shadowed_if rst_shadowed_vif;
 

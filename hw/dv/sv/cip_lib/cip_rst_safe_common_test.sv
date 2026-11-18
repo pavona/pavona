@@ -21,6 +21,14 @@ class cip_rst_safe_common_test #(
       RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) csr_seq_t;
   typedef cip_rst_safe_csr_with_rand_reset_vseq #(
       RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) csr_reset_seq_t;
+  typedef cip_rst_safe_csr_mem_vseq #(
+      RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) csr_mem_seq_t;
+  typedef cip_rst_safe_csr_mem_with_rand_reset_vseq #(
+      RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) csr_mem_reset_seq_t;
+  typedef cip_rst_safe_mem_partial_access_vseq #(
+      RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) mem_partial_seq_t;
+  typedef cip_rst_safe_tl_errors_vseq #(
+      RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) tl_errors_seq_t;
 
   // HJSON selects a workload name. Type-based factory creation supplies the specialization
   // which matches this test's environment, instead of looking for a block sequence by name.
@@ -29,6 +37,12 @@ class cip_rst_safe_common_test #(
       "cip_rst_safe_csr_vseq": return csr_seq_t::type_id::create(seq_name);
       "cip_rst_safe_csr_with_rand_reset_vseq":
         return csr_reset_seq_t::type_id::create(seq_name);
+      "cip_rst_safe_csr_mem_vseq": return csr_mem_seq_t::type_id::create(seq_name);
+      "cip_rst_safe_csr_mem_with_rand_reset_vseq":
+        return csr_mem_reset_seq_t::type_id::create(seq_name);
+      "cip_rst_safe_mem_partial_access_vseq":
+        return mem_partial_seq_t::type_id::create(seq_name);
+      "cip_rst_safe_tl_errors_vseq": return tl_errors_seq_t::type_id::create(seq_name);
       default: begin
         `uvm_fatal(`gfn, $sformatf("Unsupported common CIP sequence: %s", seq_name))
         return null;
