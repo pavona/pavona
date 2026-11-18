@@ -127,10 +127,6 @@ class cip_rand_rst_safe_base_vseq #(
     extract_common_csrs();
   endtask
 
-  task body();
-    super.body();
-  endtask : body
-
   task post_start();
     super.post_start();
 
