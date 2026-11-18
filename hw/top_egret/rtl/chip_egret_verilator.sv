@@ -312,10 +312,12 @@ module chip_egret_verilator (
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
   prim_mubi_pkg::mubi4_t io_clk_byp_ack;
   prim_mubi_pkg::mubi4_t div_step_down_req;
-  logic hi_speed_sel;
+  prim_mubi_pkg::mubi4_t hi_speed_sel;
 
   // DFT connections
   logic scan_en;
+  logic scan_rst_n;
+  prim_mubi_pkg::mubi4_t scanmode;
   lc_ctrl_pkg::lc_tx_t dft_en;
   pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
@@ -323,7 +325,7 @@ module chip_egret_verilator (
   logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
 
   // Jitter enable
-  logic jen;
+  prim_mubi_pkg::mubi4_t jen;
 
   // reset domain connections
   import rstmgr_pkg::PowerDomains;
@@ -448,8 +450,8 @@ module chip_egret_verilator (
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( ast_clk_byp_req ),
-    .all_clk_byp_ack_o     ( ast_clk_byp_ack ),
+    .all_clk_byp_req_i     ( all_clk_byp_req ),
+    .all_clk_byp_ack_o     ( all_clk_byp_ack ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
     .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
     .flash_bist_en_o       ( flash_bist_enable ),
