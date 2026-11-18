@@ -50,9 +50,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_keymgr_init(mmio_region_from_addr(dt_keymgr_reg_block(
                                    kDtKeymgr, kDtKeymgrRegBlockCore)),
                                &keymgr));
-  CHECK_DIF_OK(dif_otp_ctrl_init(mmio_region_from_addr(dt_otp_ctrl_reg_block(
-                                     kDtOtpCtrl, kDtOtpCtrlRegBlockCore)),
-                                 &otp_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp_ctrl));
   CHECK_DIF_OK(dif_rstmgr_init(mmio_region_from_addr(dt_rstmgr_reg_block(
                                    kDtRstmgrAon, kDtRstmgrRegBlockCore)),
                                &rstmgr));
