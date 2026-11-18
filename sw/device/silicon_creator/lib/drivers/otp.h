@@ -159,6 +159,48 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t address,
                          uint32_t *data, size_t num_words);
 
 /**
+ * Perform a blocking 32-bit write to the Direct Access Interface (DAI).
+ *
+ * This enables reading any writable 32-bit OTP field that is not in the memory
+ * mapped software config partitions (i.e., partitions other than the
+ * {CREATOR,OWNER}_SW_CFG partitions).
+ *
+ * @param partition The OTP partition to write to.
+ * @param relative_address The address to write to, relative to the start of
+ *                         the OTP partition.
+ * @param data The 32-bit value to write to OTP.
+ */
+void otp_dai_write32(otp_partition_t partition, uint32_t address,
+                     uint32_t data);
+
+/**
+ * Perform a blocking 64-bit write to the Direct Access Interface (DAI).
+ *
+ * This enables reading any writable 64-bit OTP field that is not in the memory
+ * mapped software config partitions (i.e., partitions other than the
+ * {CREATOR,OWNER}_SW_CFG partitions).
+ *
+ * @param partition The OTP partition to write to.
+ * @param relative_address The address to write to, relative to the start of
+ *                         the OTP partition.
+ * @param data The 64-bit value to write to OTP.
+ */
+void otp_dai_write64(otp_partition_t partition, uint32_t address,
+                     uint64_t data);
+
+/**
+ * Perform a blocking write of `num_words` 32-bit words to the Direct Access
+ * Interface (DAI).
+ *
+ * @param partition The OTP partition to program.
+ * @param relative_address The address to write to, relative to the start of
+ *                         the OTP partition.
+ * @param data The input buffer of at least length `num_words`.
+ * @param num_words The number of 32-bit words to write to OTP.
+ * @return Result of the operation.
+ */
+rom_error_t otp_dai_write(otp_partition_t partition, uint32_t address,
+                          const uint32_t *data, size_t num_words);
 
 /**
  * Disable the OTP direct access interface (this prevents programming OTP).

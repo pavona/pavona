@@ -264,6 +264,67 @@ TEST_F(OtpPermissionTest, DoesNotHaveIntegrity) {
   EXPECT_EQ(otp_partition_has_integrity(kOtpPartitionVendorTest), false);
 }
 
+class OtpDaiWriteTest : public OtpTest {
+ protected:
+  void ExpectDaiIdleCheck(bool idle) {
+    EXPECT_ABS_READ32(base_ + OTP_CTRL_STATUS_REG_OFFSET,
+                      {{OTP_CTRL_STATUS_DAI_IDLE_BIT, idle}});
+  }
+};
+
+TEST_F(OtpDaiWriteTest, Write32) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  for (size_t i = 0; i < ARRAYSIZE(data); ++i) {
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                       data[i]);
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(
+        base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 0x4 + i * sizeof(uint32_t));
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x2);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(
+      otp_dai_write(kOtpPartitionCreatorSwCfg, 0x4, data, ARRAYSIZE(data)),
+      kErrorOk);
+}
+
+TEST_F(OtpDaiWriteTest, Write64) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  for (size_t i = 0; i < ARRAYSIZE(data); i += 2) {
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                       data[i]);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                       data[i + 1]);
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(
+        base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+        OTP_CTRL_PARAM_SECRET0_OFFSET + 0x8 + i * sizeof(uint32_t));
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x2);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x8, data, ARRAYSIZE(data)),
+            kErrorOk);
+}
+
+TEST_F(OtpDaiWriteTest, Write32Unaligned) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x2, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
+TEST_F(OtpDaiWriteTest, Write64Unaligned) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x4, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
+TEST_F(OtpDaiWriteTest, Write64BadSize) {
+  uint32_t data[3] = {0x11, 0x22, 0x33};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x8, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
 INSTANTIATE_TEST_SUITE_P(Read32bitWordArrays, OtpDaiReadTest,
                          testing::Range(0, kMaxOtpWordsToRead));
 

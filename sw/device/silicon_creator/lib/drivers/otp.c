@@ -155,6 +155,81 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t relative_address,
   return kErrorOk;
 }
 
+static void dai_write_blocking(otp_partition_t partition,
+                               uint32_t relative_address) {
+  wait_for_dai_idle();
+  HARDENED_CHECK_EQ(
+      relative_address & otp_readable_partition_info(partition).align_mask, 0);
+  abs_mmio_write32(
+      otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+      otp_readable_partition_info(partition).start_addr + relative_address);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                   cmd);
+  wait_for_dai_idle();
+}
+
+void otp_dai_write32(otp_partition_t partition, uint32_t relative_address,
+                     uint32_t data) {
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                   data);
+  dai_write_blocking(partition, relative_address);
+}
+
+void otp_dai_write64(otp_partition_t partition, uint32_t relative_address,
+                     uint64_t data) {
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                   data & UINT32_MAX);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                   data >> (8 * sizeof(uint32_t)));
+  dai_write_blocking(partition, relative_address);
+}
+
+rom_error_t otp_dai_write(otp_partition_t partition, uint32_t relative_address,
+                          const uint32_t *data, size_t num_words) {
+  // Check if this partition expects 64-bit write chunks (only secret
+  // partitions do).
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (relative_address % 4 != 0) {
+    return kErrorOtpCtrlBadAlignment;
+  }
+  bool needs_write64;
+  switch (launder32(partition_info.align_mask)) {
+    case 0x3:
+      needs_write64 = false;
+      break;
+    case 0x7:
+      // Check size and alignment for 64-bit write chunks.
+      if (relative_address % 8 != 0 || num_words % 2 != 0) {
+        return kErrorOtpCtrlBadAlignment;
+      }
+      needs_write64 = true;
+      break;
+    default:
+      return kErrorOtpCtrlUnsupported;
+  }
+  size_t i = 0, r = num_words - 1;
+  uint32_t addr = relative_address;
+  for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
+    if (needs_write64) {
+      // data[i + 1] is guaranteed to exist because of the length check above.
+      uint64_t dword =
+          (uint64_t)data[i] + ((uint64_t)data[i + 1] << (8 * sizeof(uint32_t)));
+      otp_dai_write64(partition, addr, dword);
+      addr += sizeof(uint64_t);
+      i += 1;
+      r -= 1;
+    } else {
+      otp_dai_write32(partition, addr, data[i]);
+      addr += sizeof(uint32_t);
+    }
+  }
+  HARDENED_CHECK_EQ(i, num_words);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
+  return kErrorOk;
+}
 
 void otp_dai_disable(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiDisable, 1);
