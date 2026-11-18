@@ -231,6 +231,64 @@ rom_error_t otp_dai_write(otp_partition_t partition, uint32_t relative_address,
   return kErrorOk;
 }
 
+static void otp_dai_zeroize_blocking(otp_partition_t partition,
+                                     uint32_t relative_address) {
+  wait_for_dai_idle();
+  HARDENED_CHECK_EQ(
+      relative_address & otp_readable_partition_info(partition).align_mask, 0);
+  abs_mmio_write32(
+      otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+      otp_readable_partition_info(partition).start_addr + relative_address);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_ZEROIZE_BIT, true);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                   cmd);
+  wait_for_dai_idle();
+}
+
+rom_error_t otp_dai_zeroize(otp_partition_t partition) {
+  // Check that the partition is zeroizable.
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.zeroizable) {
+    HARDENED_CHECK_EQ(partition_info.zeroizable, false);
+    return kErrorOtpCtrlUnsupported;
+  }
+  HARDENED_CHECK_EQ(partition_info.zeroizable, true);
+  bool needs_write64;
+  switch (launder32(partition_info.align_mask)) {
+    case 0x3:
+      needs_write64 = false;
+      break;
+    case 0x7:
+      needs_write64 = true;
+      break;
+    default:
+      return kErrorOtpCtrlUnsupported;
+  }
+
+  // As recommended by the Zeroization sequence:
+  // https://docs.pavona.org/book/hw/top_dragonfly/ip_autogen/otp_ctrl/doc/programmers_guide.html#zeroization-sequence
+  //
+  // we first zeroize the zeroization marker first.
+  size_t zer_offset = partition_info.size;
+  if (partition_info.sw_digest || partition_info.hw_digest) {
+    zer_offset += sizeof(uint64_t);
+  }
+  otp_dai_zeroize_blocking(partition, zer_offset);
+  if (!needs_write64) {
+    otp_dai_zeroize_blocking(partition, zer_offset + sizeof(uint32_t));
+  }
+  // Then, zeroize each item.
+  for (size_t i = 0; i < zer_offset; i += sizeof(uint64_t)) {
+    otp_dai_zeroize_blocking(partition, i);
+    if (!needs_write64) {
+      otp_dai_zeroize_blocking(partition, i + sizeof(uint32_t));
+    }
+  }
+  return kErrorOk;
+}
+
 void otp_dai_disable(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiDisable, 1);
   sec_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,

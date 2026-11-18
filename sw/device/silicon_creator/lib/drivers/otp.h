@@ -203,6 +203,12 @@ rom_error_t otp_dai_write(otp_partition_t partition, uint32_t address,
                           const uint32_t *data, size_t num_words);
 
 /**
+ * Performa blocking zeroization of an OTP partition using the Direct Access
+ * Interface (DAI).
+ */
+rom_error_t otp_dai_zeroize(otp_partition_t partition);
+
+/**
  * Disable the OTP direct access interface (this prevents programming OTP).
  */
 void otp_dai_disable(void);
