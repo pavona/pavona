@@ -296,12 +296,14 @@ class SlurmLauncher(Launcher):
 
         Called when the job ends however it ends, because a job dvsim killed
         is the one whose log matters most and would otherwise leave it empty.
+
+        The log is overwritten.
         '''
         if not self.slurm_log_file.exists():
             return
         try:
             with self.slurm_log_file.open('r') as slurm_file, \
-                    open(self.deploy.get_log_path(), 'a') as out_file:
+                    open(self.deploy.get_log_path(), 'w') as out_file:
                 shutil.copyfileobj(slurm_file, out_file)
             self.slurm_log_file.unlink()
         except OSError as e:
