@@ -2547,6 +2547,14 @@ otp_json(
                 "RMA_TOKEN": "6ef5b95acb3ded39bed4fd235f6b24d4",
                 "CREATOR_ROOT_KEY_SHARE0": "f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
                 "CREATOR_ROOT_KEY_SHARE1": "e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
+                "CREATOR_SEED": "739142d608e1499888c77c439889dce58a5124e708ea05520343820682b74714",
+            },
+            lock = False,
+        ),
+        otp_partition(
+            name = "SECRET3",
+            items = {
+                "OWNER_SEED": "efbfc086ad514a9ac0d41c18aaa536a5565e67f03a1936170b160aec1bc94e5f",
             },
             lock = False,
         ),
