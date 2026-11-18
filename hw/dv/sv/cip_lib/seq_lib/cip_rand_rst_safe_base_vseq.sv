@@ -19,12 +19,6 @@ class cip_rand_rst_safe_base_vseq #(
 
   bit expect_fatal_alerts = 1'b0;
 
-  // knob to enable/disable running csr_vseq with passthru_mem_tl_intg_err
-  bit en_csr_vseq_w_passthru_mem_intg = 1;
-
-  // knob to enable/disable running csr_vseq with tl_intg_err
-  bit en_csr_vseq_w_tl_intg = 1;
-
   // csr queues
   dv_base_reg all_csrs[$];
   dv_base_reg intr_state_csrs[$];
@@ -78,6 +72,17 @@ class cip_rand_rst_safe_base_vseq #(
     super.pre_start();
     extract_common_csrs();
   endtask
+
+  // Alert initialization can finish after DUT reset is released.
+  // Call from main_thread() before stimulus that needs the alert channel,
+  // so reset can terminate this wait with the functional work.
+  virtual task alerts_ready();
+    foreach (cfg.list_of_alerts[i]) begin
+      if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
+        `DV_WAIT(cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].alert_init_done == 1)
+      end
+    end
+  endtask : alerts_ready
 
   task post_start();
     super.post_start();

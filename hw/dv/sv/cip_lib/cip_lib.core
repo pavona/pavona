@@ -46,6 +46,7 @@ filesets:
       - seq_lib/cip_rst_safe_tl_errors_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_mem_partial_access_vseq.sv: {is_include_file: true}
+      - seq_lib/cip_rst_safe_tl_intg_err_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_with_rand_reset_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_mem_vseq.sv: {is_include_file: true}
       - seq_lib/cip_rst_safe_csr_mem_with_rand_reset_vseq.sv: {is_include_file: true}

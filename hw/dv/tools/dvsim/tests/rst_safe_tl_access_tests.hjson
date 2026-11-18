@@ -17,5 +17,15 @@
       uvm_test_seq: "cip_rst_safe_tl_errors_vseq"
       reseed: 20
     }
+    {
+      // Complete each fatal-alert episode before directed reset, then prove healthy recovery.
+      // This test owns its reset boundary and is not an ordinary stress-all child.
+      name: "{name}_rst_safe_tl_intg_err"
+      build_mode: "cover_reg_top"
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_tl_intg_err_vseq"
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
   ]
 }
