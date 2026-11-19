@@ -204,8 +204,9 @@ inline void epmp_state_configure_tor(uint32_t entry, epmp_region_t region,
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
-      epmp_state.pmpcfg[entry / 4], field, kEpmpModeTor | perm);
+  epmp_state.pmpcfg[entry / 4] =
+      bitfield_field32_write(epmp_state.pmpcfg[entry / 4], field,
+                             (uint32_t)kEpmpModeTor | (uint32_t)perm);
 }
 
 /**
@@ -224,8 +225,9 @@ inline void epmp_state_configure_na4(uint32_t entry, epmp_region_t region,
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
-      epmp_state.pmpcfg[entry / 4], field, kEpmpModeNa4 | perm);
+  epmp_state.pmpcfg[entry / 4] =
+      bitfield_field32_write(epmp_state.pmpcfg[entry / 4], field,
+                             (uint32_t)kEpmpModeNa4 | (uint32_t)perm);
 }
 
 /**
@@ -245,8 +247,9 @@ inline void epmp_state_configure_napot(uint32_t entry, epmp_region_t region,
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
-      epmp_state.pmpcfg[entry / 4], field, kEpmpModeNapot | perm);
+  epmp_state.pmpcfg[entry / 4] =
+      bitfield_field32_write(epmp_state.pmpcfg[entry / 4], field,
+                             (uint32_t)kEpmpModeNapot | (uint32_t)perm);
 }
 
 /**

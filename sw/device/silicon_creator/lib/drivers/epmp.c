@@ -137,10 +137,10 @@ void epmp_advance_boot_stage(void) {
     r_pmpcfg = kEpmpModeOff;
   } else {
     HARDENED_CHECK_NE(r, 0);
-    r_pmpcfg = kEpmpModeNapot | kEpmpPermLockedReadOnly;
+    r_pmpcfg = kEpmpModeNapot | (uint32_t)kEpmpPermLockedReadOnly;
   }
   epmp_set(0, kEpmpModeOff, rx_lo);
-  epmp_set(1, kEpmpModeTor | kEpmpPermLockedReadExecute, rx_hi);
+  epmp_set(1, kEpmpModeTor | (uint32_t)kEpmpPermLockedReadExecute, rx_hi);
   epmp_set(2, r_pmpcfg, r);
   // Slot 4 is cleared before slot 3 to avoid a transient state when the TOR
   // region for the text is still active but its base address is set to 0.
