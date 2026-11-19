@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "og10bUKUZE0nlqKYbiHMbR5jo6dD3pHqkBj9xWKz+pU=",
+        "bzlTransitiveDigest": "3Omzw3Vqhd3Yt/FIKwMN+NhOg0Pt0y3VJTJOxRI6xvI=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -418,6 +418,14 @@
               "sha256": "49d6db5fed29e7682923d9bcee9d4020e21ae99aab75613d1a7e933083e28440",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDA-HKDF-Sp800-56Cr2/83aadaae85b31dc7adcf9d3a5c00d9464cd6f0d180597f553d2842b5c98b9dc4/prompt.json"
+            }
+          },
+          "acvp_vectors_kdf_internalProjection.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "c48bd2bb845a40347a5e3e0454326a1399be029f0a743082341c4807ef3c937c",
+              "downloaded_file_path": "internalProjection.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-1.0/d888d027e474a182cf3d2488093e3f7b7106938c1c624434a129e62a2a714198/internalProjection.json"
             }
           },
           "acvp_vectors_kdf-kmac_expectedResults.json": {
@@ -594,6 +602,7 @@
                 "hmac-sha2-512/prompt.json": "acvp_vectors_hmac-sha2-512_prompt.json",
                 "kda-hkdf/expectedResults.json": "acvp_vectors_kda-hkdf_expectedResults.json",
                 "kda-hkdf/prompt.json": "acvp_vectors_kda-hkdf_prompt.json",
+                "kdf/internalProjection.json": "acvp_vectors_kdf_internalProjection.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",

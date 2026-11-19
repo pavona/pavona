@@ -467,19 +467,18 @@ run_binary(
     name = "acvp_kdf_hmac_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:kdf_hmac_schema.json",
-        "@acvp_testvectors//KDF-1.0:internalProjection.json",
+        "@acvp_vectors//:kdf/internalProjection.json",
     ],
     outs = [":acvp_kdf_hmac.json"],
     args = [
         "--src",
-        "$(location @acvp_testvectors//KDF-1.0:internalProjection.json)",
+        "$(location @acvp_vectors//:kdf/internalProjection.json)",
         "--dst",
         "$(location :acvp_kdf_hmac.json)",
         "--schema",
         "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_hmac_schema.json)",
         "--test-type",
         "kdf_hmac",
-        "--skip-unsupported",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_kdf_hmac_parser",
 )

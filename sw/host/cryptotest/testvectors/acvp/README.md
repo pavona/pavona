@@ -20,8 +20,8 @@ Some ACVP test cases are deferred.
 Their prompt leaves some values open for the implementation to choose, and the response returns the chosen values together with the answer.
 The server computes its own answer from those values once it receives the response.
 
-The expected results of a sample vector set only hold for the values NIST chose.
-To test deferred test cases against known answers, the pinned vector sets use those values, taken with the expected results from the sample's `internalProjection.json`.
+The expected results of a vector set only hold for the values the server chose.
+To test deferred test cases against known answers, the pinned vector sets use those values, taken with the expected results from the vector set's `internalProjection.json`.
 For a prompt from a certification session, we choose the open values, and only the server can check the response.
 The supported algorithms below mark those with deferred test cases.
 
