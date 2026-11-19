@@ -1,13 +1,14 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "rv_timer"
-  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+  import_testplans: ["hw/dv/tools/dvsim/testplans/rst_safe_csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/rst_safe_tl_device_access_types_testplan.hjson",
                      "rv_timer_sec_cm_testplan.hjson"]
   testpoints: [
     {

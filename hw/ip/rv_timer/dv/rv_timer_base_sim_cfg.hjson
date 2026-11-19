@@ -44,10 +44,12 @@
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
-                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_csr_tests.hjson",
+                // RV Timer has no memory window. These tests exercise the empty-map path.
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_mem_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/rst_safe_tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 // rv_timer is using reset-safe stress wrappers while the TB migration is in
                 // progress. These entries map stress tests onto rv_timer_rst_safe_base_test.
@@ -74,6 +76,12 @@
 
   // List of test specifications.
   tests: [
+    {
+      name: rv_timer_rst_safe_tl_errors
+      // The common TL error checks remain active without timer-specific register prediction.
+      run_opts: ["+en_scb=0"]
+    }
+
     {
       name: rv_timer_rst_safe_min
       uvm_test: rv_timer_rst_safe_base_test
