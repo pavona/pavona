@@ -65,7 +65,6 @@ The supported algorithms below mark those with deferred test cases.
   The cryptolib does not implement them.
 - MACs shorter than the digest.
   The cryptolib returns the whole MAC.
-  The pinned sample vector sets ask for truncated MACs, so the harness truncates the device's MAC for prompts that come with expected results.
 - Keys longer than 512 bytes.
   The cryptolib limits HMAC keys to `kOtcryptoHmacMaxKeyBytes`.
 - Messages longer than 512 bytes.

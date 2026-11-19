@@ -135,11 +135,9 @@ fn run_hmac_testcase(
 
     if test_case.vendor == "acvp" {
         // The registrations claim only full-length MACs, which is what the
-        // cryptolib computes. NIST's sample vector sets ask for truncated MACs,
-        // so the harness truncates the MAC for vectors that come with answers.
+        // cryptolib computes.
         ensure!(
-            test_case.mac_len == hmac_tag.tag_len
-                || (test_case.mac_len < hmac_tag.tag_len && test_case.result.is_some()),
+            test_case.mac_len == hmac_tag.tag_len,
             "{} test #{} asks for a {}-byte MAC, which the registration does not claim",
             test_case.acvp.algorithm,
             test_case.test_case_id,

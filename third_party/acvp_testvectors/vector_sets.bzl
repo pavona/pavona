@@ -18,6 +18,30 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "7d760e84600e8eb4befbfd12cd09fda7313b07f2d1f48c5104a9a9866a4501d9",
         },
     },
+    "hmac-sha2-256": {
+        "algorithm": "HMAC-SHA2-256-2.0",
+        "registration_sha256": "ea6d25291b3a9712e8979cb4f681c68af7e324750ac72c6e65f101b797d03480",
+        "files": {
+            "expectedResults.json": "d77003caa674d75b81ccd72942670c3bc299826d3de7878608617260851b0ef2",
+            "prompt.json": "a8dc3febfad5d495fd812976bf003276f75101352807660f372618414d514774",
+        },
+    },
+    "hmac-sha2-384": {
+        "algorithm": "HMAC-SHA2-384-2.0",
+        "registration_sha256": "d66b8fd4441054ce6aade4fed5dd7a7996e71a9771a1098037021a35863fdfe4",
+        "files": {
+            "expectedResults.json": "949100bd4129322804dbb99f06c0e71bc78572fd27b72164ce9410bf4d1976b6",
+            "prompt.json": "4bebb0f2a6297341298ef790f26d88630a5ae419a7c143032c66a24ee98a7f2e",
+        },
+    },
+    "hmac-sha2-512": {
+        "algorithm": "HMAC-SHA2-512-2.0",
+        "registration_sha256": "42f73dea49d584582607b942bba1411e9a115ed7e9791ff8acb71f786da26a63",
+        "files": {
+            "expectedResults.json": "aab3df894f1640d19a686b02281050207e73c53ba93e89fe0630821e3f103e62",
+            "prompt.json": "7998001e5cc2cde9d4a2005b99dfd652138891ef19c15098b140027d4c389489",
+        },
+    },
     "kdf-kmac": {
         "algorithm": "KDF-KMAC-Sp800-108r1",
         "registration_sha256": "6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df",
