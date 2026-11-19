@@ -82,4 +82,20 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "f3c6fef8c8753a90a4d4ce01323c8faaf3406f69be420d83b185204e78c2015b",
         },
     },
+    "shake-128": {
+        "algorithm": "SHAKE-128-FIPS202",
+        "registration_sha256": "f83c2785a6758f4f2888b02fc9fde710e29673e848149f7b19a8f959c667efaf",
+        "files": {
+            "expectedResults.json": "40239b3cbad784940f7d464b0b278304ed63bf462c2cc6acf6394336d2a52fa8",
+            "prompt.json": "513c991c7f48c0ba4f4839a94fd544d51a47fc536561d6f35623bf9aa06019b5",
+        },
+    },
+    "shake-256": {
+        "algorithm": "SHAKE-256-FIPS202",
+        "registration_sha256": "c575fea84d5bd362daa3d50fb752e7dfbb7d05ec958e5f390a330643b600416c",
+        "files": {
+            "expectedResults.json": "b5d6f73c4812c04b63edebfea4f5dc125c48d682d669204abe4df65e26def709",
+            "prompt.json": "f0d5918aa0a165634693303418653fc877c55c579ea37279e66931d9fdd369e0",
+        },
+    },
 }
