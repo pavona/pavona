@@ -50,4 +50,36 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "2d4b2d9057d6d6c5d7387b7a84f55d3a36edc9a11681234c5bf1d835ec9cf7ff",
         },
     },
+    "sha3-224": {
+        "algorithm": "SHA3-224-2.0",
+        "registration_sha256": "c1221f69fa3515d7dc9f3af85f92125b31ea06f48fcad17c120761a4492612e6",
+        "files": {
+            "expectedResults.json": "f84b56722c276949c4c3f3a9079e9ad7297e30db2cc6e644cfedecaab558bc2b",
+            "prompt.json": "d5a1410b2e5649e882f773e77486d4b8fa5bc899c5b3b03fc010cfaed35b4469",
+        },
+    },
+    "sha3-256": {
+        "algorithm": "SHA3-256-2.0",
+        "registration_sha256": "48c811e21e343abc9891a0e6dd7a01b3b9752ab8f3f196df01d7441a454c1329",
+        "files": {
+            "expectedResults.json": "66930a96c37277ca1c419cf2b0c06949633fae499f378569bb570ab5c9853176",
+            "prompt.json": "1a788db6f3fd3e6c6a50695547553a22ae2309b1aa4fead49221d469017d2d13",
+        },
+    },
+    "sha3-384": {
+        "algorithm": "SHA3-384-2.0",
+        "registration_sha256": "aa5a2183bd16a19e9b142d56146c4290cb9dc592d028d7aac7d7e8e6442cd655",
+        "files": {
+            "expectedResults.json": "b7dcc485f54b446c9925ddd767c2c390915d14fe72bf274a01d52f60dbd3628e",
+            "prompt.json": "7158eeff0e310ced70a680fa9857a44ae5c6622f84a8e06359b96c17c1a8786a",
+        },
+    },
+    "sha3-512": {
+        "algorithm": "SHA3-512-2.0",
+        "registration_sha256": "db17c0731231a06a92019f30ee83cc56c7227011e1c187176ac5822b7c086597",
+        "files": {
+            "expectedResults.json": "23a516b68d83ddea818017949678f09c0872e57696442d0ae891d0973990ec85",
+            "prompt.json": "f3c6fef8c8753a90a4d4ce01323c8faaf3406f69be420d83b185204e78c2015b",
+        },
+    },
 }

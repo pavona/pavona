@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "6wDybZZYFol3QV1Sf4yabRDWkG8w2Gzd7rdEWvr6hgc=",
+        "bzlTransitiveDigest": "ZYCpk3zG92h3ETBmZ34F6C0qWOgM8iZvbyXMFYS9J58=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -420,6 +420,70 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-512-1.0/8b1dbdcddd61898c093093082f7bce36f789a6b83abff8a3ea789b14526997de/prompt.json"
             }
           },
+          "acvp_vectors_sha3-224_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "f84b56722c276949c4c3f3a9079e9ad7297e30db2cc6e644cfedecaab558bc2b",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-224-2.0/c1221f69fa3515d7dc9f3af85f92125b31ea06f48fcad17c120761a4492612e6/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha3-224_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "d5a1410b2e5649e882f773e77486d4b8fa5bc899c5b3b03fc010cfaed35b4469",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-224-2.0/c1221f69fa3515d7dc9f3af85f92125b31ea06f48fcad17c120761a4492612e6/prompt.json"
+            }
+          },
+          "acvp_vectors_sha3-256_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "66930a96c37277ca1c419cf2b0c06949633fae499f378569bb570ab5c9853176",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-256-2.0/48c811e21e343abc9891a0e6dd7a01b3b9752ab8f3f196df01d7441a454c1329/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha3-256_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "1a788db6f3fd3e6c6a50695547553a22ae2309b1aa4fead49221d469017d2d13",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-256-2.0/48c811e21e343abc9891a0e6dd7a01b3b9752ab8f3f196df01d7441a454c1329/prompt.json"
+            }
+          },
+          "acvp_vectors_sha3-384_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "b7dcc485f54b446c9925ddd767c2c390915d14fe72bf274a01d52f60dbd3628e",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-384-2.0/aa5a2183bd16a19e9b142d56146c4290cb9dc592d028d7aac7d7e8e6442cd655/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha3-384_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7158eeff0e310ced70a680fa9857a44ae5c6622f84a8e06359b96c17c1a8786a",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-384-2.0/aa5a2183bd16a19e9b142d56146c4290cb9dc592d028d7aac7d7e8e6442cd655/prompt.json"
+            }
+          },
+          "acvp_vectors_sha3-512_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "23a516b68d83ddea818017949678f09c0872e57696442d0ae891d0973990ec85",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-512-2.0/db17c0731231a06a92019f30ee83cc56c7227011e1c187176ac5822b7c086597/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha3-512_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "f3c6fef8c8753a90a4d4ce01323c8faaf3406f69be420d83b185204e78c2015b",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA3-512-2.0/db17c0731231a06a92019f30ee83cc56c7227011e1c187176ac5822b7c086597/prompt.json"
+            }
+          },
           "acvp_vectors": {
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
@@ -433,7 +497,15 @@
                 "sha2-384/expectedResults.json": "acvp_vectors_sha2-384_expectedResults.json",
                 "sha2-384/prompt.json": "acvp_vectors_sha2-384_prompt.json",
                 "sha2-512/expectedResults.json": "acvp_vectors_sha2-512_expectedResults.json",
-                "sha2-512/prompt.json": "acvp_vectors_sha2-512_prompt.json"
+                "sha2-512/prompt.json": "acvp_vectors_sha2-512_prompt.json",
+                "sha3-224/expectedResults.json": "acvp_vectors_sha3-224_expectedResults.json",
+                "sha3-224/prompt.json": "acvp_vectors_sha3-224_prompt.json",
+                "sha3-256/expectedResults.json": "acvp_vectors_sha3-256_expectedResults.json",
+                "sha3-256/prompt.json": "acvp_vectors_sha3-256_prompt.json",
+                "sha3-384/expectedResults.json": "acvp_vectors_sha3-384_expectedResults.json",
+                "sha3-384/prompt.json": "acvp_vectors_sha3-384_prompt.json",
+                "sha3-512/expectedResults.json": "acvp_vectors_sha3-512_expectedResults.json",
+                "sha3-512/prompt.json": "acvp_vectors_sha3-512_prompt.json"
               }
             }
           },
