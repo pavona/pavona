@@ -675,13 +675,13 @@ run_binary(
         name = "acvp_mldsa_{}_json".format(test_type),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:mldsa_schema.json",
-            "@acvp_testvectors//{}:expectedResults.json".format(acvp_dir),
-            "@acvp_testvectors//{}:prompt.json".format(acvp_dir),
+            "@acvp_vectors//:{}/expectedResults.json".format(registration),
+            "@acvp_vectors//:{}/prompt.json".format(registration),
         ],
         outs = [":acvp_mldsa_{}.json".format(test_type)],
         args = [
             "--src",
-            "$(location @acvp_testvectors//{}:prompt.json)".format(acvp_dir),
+            "$(location @acvp_vectors//:{}/prompt.json)".format(registration),
             "--dst",
             "$(location :acvp_mldsa_{}.json)".format(test_type),
             "--schema",
@@ -689,20 +689,16 @@ run_binary(
             # The answers, folded onto the test cases the same way the
             # Wycheproof vectors carry theirs.
             "--expected",
-            "$(location @acvp_testvectors//{}:expectedResults.json)".format(acvp_dir),
+            "$(location @acvp_vectors//:{}/expectedResults.json)".format(registration),
             "--test-type",
             test_type,
-            # NIST's published sample sets declare every capability the
-            # algorithm has, so they contain groups this cryptolib does not
-            # implement.
-            "--skip-unsupported",
         ],
         tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_mldsa_parser",
     )
-    for test_type, acvp_dir in [
-        ("keygen", "ML-DSA-keyGen-FIPS204"),
-        ("siggen", "ML-DSA-sigGen-FIPS204"),
-        ("sigver", "ML-DSA-sigVer-FIPS204"),
+    for test_type, registration in [
+        ("keygen", "ml-dsa-keygen"),
+        ("siggen", "ml-dsa-siggen"),
+        ("sigver", "ml-dsa-sigver"),
     ]
 ]
 

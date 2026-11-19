@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "s2k4klmTunDV6c0cyOr8jvATVXotbLyLrSkVWgm7kUA=",
+        "bzlTransitiveDigest": "afI/MgMxCKRwglC2F6lHdF9hVuV+wd0fEKznjngOGtw=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -458,6 +458,54 @@
               "sha256": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-keygen_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "fefc9c3e514eabb29cc2b5740fe8d1c8bb6a0b28fa4cebaa6c32d580c1527629",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-keyGen-FIPS204/00d8321144c9eba8e39473d149d6e7ff9d23da4c781d2305b2d7c640e036b7de/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-keygen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "8fece61529c64730184cfa7fde0317222d2b62ed5412b7ae84784dd4ab9e5be7",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-keyGen-FIPS204/00d8321144c9eba8e39473d149d6e7ff9d23da4c781d2305b2d7c640e036b7de/prompt.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-siggen_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "c1570df3082dfdeeedc0dab42b8928321ed9cc802de4e2a0dc854dbd7e60abd3",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-sigGen-FIPS204/499b684c3484e6948bf1c0eb7d0a1633695790f88494bab999db590203f6da19/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-siggen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "078c88baa2dcfdced81ecbfe98d1470d79266e31c54f6aa9b3f59ad4e137e4e6",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-sigGen-FIPS204/499b684c3484e6948bf1c0eb7d0a1633695790f88494bab999db590203f6da19/prompt.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-sigver_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "360d6772081e66b9c23eb22a93e90bf453392fbba56d51f8759b4574d379c6bf",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-sigVer-FIPS204/ebdff32aeb766f6d450f5cdead8281994941771f72bff4934661e05de0f71f4b/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ml-dsa-sigver_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "3d6f446f25ba6cdf4d80f824919d3c06cf016535d2a21eeb9648c008e3fbe7d9",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-DSA-sigVer-FIPS204/ebdff32aeb766f6d450f5cdead8281994941771f72bff4934661e05de0f71f4b/prompt.json"
             }
           },
           "acvp_vectors_ml-kem-encapdecap_expectedResults.json": {
@@ -655,6 +703,12 @@
                 "kdf/internalProjection.json": "acvp_vectors_kdf_internalProjection.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
+                "ml-dsa-keygen/expectedResults.json": "acvp_vectors_ml-dsa-keygen_expectedResults.json",
+                "ml-dsa-keygen/prompt.json": "acvp_vectors_ml-dsa-keygen_prompt.json",
+                "ml-dsa-siggen/expectedResults.json": "acvp_vectors_ml-dsa-siggen_expectedResults.json",
+                "ml-dsa-siggen/prompt.json": "acvp_vectors_ml-dsa-siggen_prompt.json",
+                "ml-dsa-sigver/expectedResults.json": "acvp_vectors_ml-dsa-sigver_expectedResults.json",
+                "ml-dsa-sigver/prompt.json": "acvp_vectors_ml-dsa-sigver_prompt.json",
                 "ml-kem-encapdecap/expectedResults.json": "acvp_vectors_ml-kem-encapdecap_expectedResults.json",
                 "ml-kem-encapdecap/prompt.json": "acvp_vectors_ml-kem-encapdecap_prompt.json",
                 "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
