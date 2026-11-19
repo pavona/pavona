@@ -91,7 +91,8 @@ INSTANTIATE_TEST_SUITE_P(MemCmp, MemCmpTest,
                          ::testing::Values(ot_memcmp, builtin_memcmp_wrapper,
                                            memrcmp, ref_memrcmp));
 INSTANTIATE_TEST_SUITE_P(MemSet, MemSetTest,
-                         ::testing::Values(ot_memset, builtin_memset_wrapper));
+                         ::testing::Values(ot_memset, ot_memset_explicit,
+                                           builtin_memset_wrapper));
 INSTANTIATE_TEST_SUITE_P(MemChr, MemChrTest,
                          ::testing::Values(ot_memchr, ref_memchr, ot_memrchr,
                                            ref_memrchr));
