@@ -42,6 +42,14 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "7998001e5cc2cde9d4a2005b99dfd652138891ef19c15098b140027d4c389489",
         },
     },
+    "kda-hkdf": {
+        "algorithm": "KDA-HKDF-Sp800-56Cr2",
+        "registration_sha256": "83aadaae85b31dc7adcf9d3a5c00d9464cd6f0d180597f553d2842b5c98b9dc4",
+        "files": {
+            "expectedResults.json": "9d065b15b01d9f832910ce445c002c0941635031a9ff11e2109fda72a60f6010",
+            "prompt.json": "49d6db5fed29e7682923d9bcee9d4020e21ae99aab75613d1a7e933083e28440",
+        },
+    },
     "kdf-kmac": {
         "algorithm": "KDF-KMAC-Sp800-108r1",
         "registration_sha256": "6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df",
