@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "9LgOCYwnttbyFiVTrL71b7G+5mGncvQVj6D61k8GEkI=",
+        "bzlTransitiveDigest": "FB2hi6FrOzeZWWpbGNbQPkqpsxF+okK5MYs4AZbrbaM=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -354,6 +354,54 @@
               "sha256": "7d760e84600e8eb4befbfd12cd09fda7313b07f2d1f48c5104a9a9866a4501d9",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ctrDRBG-SP800-90Ar1/052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9/prompt.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-256_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "d77003caa674d75b81ccd72942670c3bc299826d3de7878608617260851b0ef2",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-256-2.0/ea6d25291b3a9712e8979cb4f681c68af7e324750ac72c6e65f101b797d03480/expectedResults.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-256_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "a8dc3febfad5d495fd812976bf003276f75101352807660f372618414d514774",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-256-2.0/ea6d25291b3a9712e8979cb4f681c68af7e324750ac72c6e65f101b797d03480/prompt.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-384_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "949100bd4129322804dbb99f06c0e71bc78572fd27b72164ce9410bf4d1976b6",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-384-2.0/d66b8fd4441054ce6aade4fed5dd7a7996e71a9771a1098037021a35863fdfe4/expectedResults.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-384_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "4bebb0f2a6297341298ef790f26d88630a5ae419a7c143032c66a24ee98a7f2e",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-384-2.0/d66b8fd4441054ce6aade4fed5dd7a7996e71a9771a1098037021a35863fdfe4/prompt.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-512_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "aab3df894f1640d19a686b02281050207e73c53ba93e89fe0630821e3f103e62",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-512-2.0/42f73dea49d584582607b942bba1411e9a115ed7e9791ff8acb71f786da26a63/expectedResults.json"
+            }
+          },
+          "acvp_vectors_hmac-sha2-512_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7998001e5cc2cde9d4a2005b99dfd652138891ef19c15098b140027d4c389489",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-512-2.0/42f73dea49d584582607b942bba1411e9a115ed7e9791ff8acb71f786da26a63/prompt.json"
             }
           },
           "acvp_vectors_kdf-kmac_expectedResults.json": {
@@ -522,6 +570,12 @@
               "files": {
                 "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
                 "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
+                "hmac-sha2-256/expectedResults.json": "acvp_vectors_hmac-sha2-256_expectedResults.json",
+                "hmac-sha2-256/prompt.json": "acvp_vectors_hmac-sha2-256_prompt.json",
+                "hmac-sha2-384/expectedResults.json": "acvp_vectors_hmac-sha2-384_expectedResults.json",
+                "hmac-sha2-384/prompt.json": "acvp_vectors_hmac-sha2-384_prompt.json",
+                "hmac-sha2-512/expectedResults.json": "acvp_vectors_hmac-sha2-512_expectedResults.json",
+                "hmac-sha2-512/prompt.json": "acvp_vectors_hmac-sha2-512_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
