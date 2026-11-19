@@ -73,6 +73,30 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
         },
     },
+    "ml-dsa-keygen": {
+        "algorithm": "ML-DSA-keyGen-FIPS204",
+        "registration_sha256": "00d8321144c9eba8e39473d149d6e7ff9d23da4c781d2305b2d7c640e036b7de",
+        "files": {
+            "expectedResults.json": "fefc9c3e514eabb29cc2b5740fe8d1c8bb6a0b28fa4cebaa6c32d580c1527629",
+            "prompt.json": "8fece61529c64730184cfa7fde0317222d2b62ed5412b7ae84784dd4ab9e5be7",
+        },
+    },
+    "ml-dsa-siggen": {
+        "algorithm": "ML-DSA-sigGen-FIPS204",
+        "registration_sha256": "499b684c3484e6948bf1c0eb7d0a1633695790f88494bab999db590203f6da19",
+        "files": {
+            "expectedResults.json": "c1570df3082dfdeeedc0dab42b8928321ed9cc802de4e2a0dc854dbd7e60abd3",
+            "prompt.json": "078c88baa2dcfdced81ecbfe98d1470d79266e31c54f6aa9b3f59ad4e137e4e6",
+        },
+    },
+    "ml-dsa-sigver": {
+        "algorithm": "ML-DSA-sigVer-FIPS204",
+        "registration_sha256": "ebdff32aeb766f6d450f5cdead8281994941771f72bff4934661e05de0f71f4b",
+        "files": {
+            "expectedResults.json": "360d6772081e66b9c23eb22a93e90bf453392fbba56d51f8759b4574d379c6bf",
+            "prompt.json": "3d6f446f25ba6cdf4d80f824919d3c06cf016535d2a21eeb9648c008e3fbe7d9",
+        },
+    },
     "ml-kem-encapdecap": {
         "algorithm": "ML-KEM-encapDecap-FIPS203",
         "registration_sha256": "93d38af12150ce3460e18dbc8a152e62a91af1d2b27da84aa79a093bddcf7086",
