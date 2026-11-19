@@ -644,13 +644,13 @@ run_binary(
         name = "acvp_mlkem_{}_json".format(test_type),
         srcs = [
             "//sw/host/cryptotest/testvectors/data/schemas:mlkem_schema.json",
-            "@acvp_testvectors//{}:expectedResults.json".format(acvp_dir),
-            "@acvp_testvectors//{}:prompt.json".format(acvp_dir),
+            "@acvp_vectors//:{}/expectedResults.json".format(registration),
+            "@acvp_vectors//:{}/prompt.json".format(registration),
         ],
         outs = [":acvp_mlkem_{}.json".format(test_type)],
         args = [
             "--src",
-            "$(location @acvp_testvectors//{}:prompt.json)".format(acvp_dir),
+            "$(location @acvp_vectors//:{}/prompt.json)".format(registration),
             "--dst",
             "$(location :acvp_mlkem_{}.json)".format(test_type),
             "--schema",
@@ -658,15 +658,15 @@ run_binary(
             # The answers, folded onto the test cases the same way the
             # Wycheproof vectors carry theirs.
             "--expected",
-            "$(location @acvp_testvectors//{}:expectedResults.json)".format(acvp_dir),
+            "$(location @acvp_vectors//:{}/expectedResults.json)".format(registration),
             "--test-type",
             test_type,
         ],
         tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_mlkem_parser",
     )
-    for test_type, acvp_dir in [
-        ("keygen", "ML-KEM-keyGen-FIPS203"),
-        ("encap_decap", "ML-KEM-encapDecap-FIPS203"),
+    for test_type, registration in [
+        ("keygen", "ml-kem-keygen"),
+        ("encap_decap", "ml-kem-encapdecap"),
     ]
 ]
 
