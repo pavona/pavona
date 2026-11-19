@@ -100,7 +100,7 @@ status_t leds_i2c_controller_configure(const dif_i2c_t *i2c) {
 
   // Set global current control to ~30%.
   data[0] = kLedGlobalCurrentControlRegAddr;
-  data[1] = (uint8_t)((float)0xFF * 30.0 / 100.0);
+  data[1] = (uint8_t)((float)0xFF * 30.0f / 100.0f);
   TRY(i2c_testutils_write(i2c, kLedsDriverI2cAddr, /*byte_count=*/sizeof(data),
                           data,
                           /*skip_stop=*/false));

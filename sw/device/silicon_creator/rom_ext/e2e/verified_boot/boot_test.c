@@ -74,7 +74,7 @@ status_t keymgr_print(void) {
            bind.attestation[3], bind.attestation[4], bind.attestation[5],
            bind.attestation[6], bind.attestation[7]);
 
-  dif_keymgr_versioned_key_params_t p = {kDifKeymgrVersionedKeyDestSw};
+  dif_keymgr_versioned_key_params_t p = {.dest = kDifKeymgrVersionedKeyDestSw};
   TRY(dif_keymgr_generate_versioned_key(&km, p));
 
   dif_keymgr_output_t out;
