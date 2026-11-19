@@ -175,7 +175,7 @@ static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
                                       ? kTopEgretPinmuxInselIob7
                                       : kTopEgretPinmuxInselIoc0;
-#elif OPENTITAN_IS_DRAGONFLY
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
                                       ? kTopDragonflyPinmuxInselMio7
                                       : kTopDragonflyPinmuxInselMio8;
