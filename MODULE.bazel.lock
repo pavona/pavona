@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "iCjI/15+Jr12MfgxhJ+vrCtI3MEaKXkPhzT6RmvG5WQ=",
+        "bzlTransitiveDigest": "6wDybZZYFol3QV1Sf4yabRDWkG8w2Gzd7rdEWvr6hgc=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -372,6 +372,54 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
             }
           },
+          "acvp_vectors_sha2-256_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "caea7fe934e0bcd042bb609204500fbb2e29f0aab26aec5f6f07a8504f71a72a",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-256-1.0/19374e648264f1bd4912dc4f5a2523d75bb17dbe330062e31d4e1ec0269a1764/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha2-256_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "8f893496e035568f9f055bc4ba3e97026b290fa6ef9c99403023f6f11f9417ed",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-256-1.0/19374e648264f1bd4912dc4f5a2523d75bb17dbe330062e31d4e1ec0269a1764/prompt.json"
+            }
+          },
+          "acvp_vectors_sha2-384_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "3035e1ceab5a5777e6f292b5ae0d46ec37435db5398798b6b556ec2308d015c4",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-384-1.0/f35cdd65d5d45c9614c93ad8da02920039bae523ded1f6863f987814020a04e6/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha2-384_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "3ef2e94dba6f363ff60a7889810b8c2ae8a73e5cde788d3420aea1b229e13e83",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-384-1.0/f35cdd65d5d45c9614c93ad8da02920039bae523ded1f6863f987814020a04e6/prompt.json"
+            }
+          },
+          "acvp_vectors_sha2-512_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "3e0ab60efa0a77181b3a2c648cb9a3e5535ebb3e9c07cecc2c3e971a0a756b69",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-512-1.0/8b1dbdcddd61898c093093082f7bce36f789a6b83abff8a3ea789b14526997de/expectedResults.json"
+            }
+          },
+          "acvp_vectors_sha2-512_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "2d4b2d9057d6d6c5d7387b7a84f55d3a36edc9a11681234c5bf1d835ec9cf7ff",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/SHA2-512-1.0/8b1dbdcddd61898c093093082f7bce36f789a6b83abff8a3ea789b14526997de/prompt.json"
+            }
+          },
           "acvp_vectors": {
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
@@ -379,7 +427,13 @@
                 "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
                 "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
-                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json"
+                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
+                "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
+                "sha2-256/prompt.json": "acvp_vectors_sha2-256_prompt.json",
+                "sha2-384/expectedResults.json": "acvp_vectors_sha2-384_expectedResults.json",
+                "sha2-384/prompt.json": "acvp_vectors_sha2-384_prompt.json",
+                "sha2-512/expectedResults.json": "acvp_vectors_sha2-512_expectedResults.json",
+                "sha2-512/prompt.json": "acvp_vectors_sha2-512_prompt.json"
               }
             }
           },
