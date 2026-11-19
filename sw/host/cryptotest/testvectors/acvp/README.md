@@ -78,9 +78,6 @@ The supported algorithms below mark those with deferred test cases.
 - HMAC with hash functions other than SHA2-256, SHA2-384 and SHA2-512.
   The cryptolib does not implement them.
 
-The pinned vector set is the Sp800-56Cr1 sample, because every group of the Sp800-56Cr2 sample uses a hybrid shared secret.
-The two revisions derive keys the same way.
-
 ### KDF (SP 800-108)
 
 - Counters other than 32 bits before the fixed data in counter mode, and other than 8 bits after the fixed data in feedback mode.

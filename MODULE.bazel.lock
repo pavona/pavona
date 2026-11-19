@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "FB2hi6FrOzeZWWpbGNbQPkqpsxF+okK5MYs4AZbrbaM=",
+        "bzlTransitiveDigest": "og10bUKUZE0nlqKYbiHMbR5jo6dD3pHqkBj9xWKz+pU=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -402,6 +402,22 @@
               "sha256": "7998001e5cc2cde9d4a2005b99dfd652138891ef19c15098b140027d4c389489",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/HMAC-SHA2-512-2.0/42f73dea49d584582607b942bba1411e9a115ed7e9791ff8acb71f786da26a63/prompt.json"
+            }
+          },
+          "acvp_vectors_kda-hkdf_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "9d065b15b01d9f832910ce445c002c0941635031a9ff11e2109fda72a60f6010",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDA-HKDF-Sp800-56Cr2/83aadaae85b31dc7adcf9d3a5c00d9464cd6f0d180597f553d2842b5c98b9dc4/expectedResults.json"
+            }
+          },
+          "acvp_vectors_kda-hkdf_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "49d6db5fed29e7682923d9bcee9d4020e21ae99aab75613d1a7e933083e28440",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDA-HKDF-Sp800-56Cr2/83aadaae85b31dc7adcf9d3a5c00d9464cd6f0d180597f553d2842b5c98b9dc4/prompt.json"
             }
           },
           "acvp_vectors_kdf-kmac_expectedResults.json": {
@@ -576,6 +592,8 @@
                 "hmac-sha2-384/prompt.json": "acvp_vectors_hmac-sha2-384_prompt.json",
                 "hmac-sha2-512/expectedResults.json": "acvp_vectors_hmac-sha2-512_expectedResults.json",
                 "hmac-sha2-512/prompt.json": "acvp_vectors_hmac-sha2-512_prompt.json",
+                "kda-hkdf/expectedResults.json": "acvp_vectors_kda-hkdf_expectedResults.json",
+                "kda-hkdf/prompt.json": "acvp_vectors_kda-hkdf_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
