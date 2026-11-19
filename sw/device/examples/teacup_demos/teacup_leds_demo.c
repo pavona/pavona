@@ -90,11 +90,11 @@ bool test_main(void) {
 
   // Brightness levels and colors.
   uint8_t brightness_start =
-      (uint8_t)((float)0xFF * (float)kLedBrightnessLowPercent / 100.0);
+      (uint8_t)((float)0xFF * (float)kLedBrightnessLowPercent / 100.0f);
   uint8_t brightness_end =
-      (uint8_t)((float)0xFF * (float)kLedBrightnessHighPercent / 100.0);
+      (uint8_t)((float)0xFF * (float)kLedBrightnessHighPercent / 100.0f);
   uint8_t brightness_step =
-      (uint8_t)((float)0xFF * (float)kLedBrightnessStepPercent / 100.0);
+      (uint8_t)((float)0xFF * (float)kLedBrightnessStepPercent / 100.0f);
   uint8_t curr_brightness = brightness_start;
   const led_rgb_color_t kColorCycle[kLedNumColorsInCycle] = {
       kLedColorBlue,
