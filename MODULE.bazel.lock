@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "VyDd52BlxkXC4bxI/3Qy2MeCbtFwQ0andFEVWGnpSLI=",
+        "bzlTransitiveDigest": "s2k4klmTunDV6c0cyOr8jvATVXotbLyLrSkVWgm7kUA=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -458,6 +458,38 @@
               "sha256": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
+            }
+          },
+          "acvp_vectors_ml-kem-encapdecap_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "8bd572cb4738139f17199c0a142efb8f5a53141a1b0aba6da9797392230a6ccf",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-encapDecap-FIPS203/93d38af12150ce3460e18dbc8a152e62a91af1d2b27da84aa79a093bddcf7086/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ml-kem-encapdecap_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "8c52326976bf473b2f474be4276ebf4992dc36feeede64960b4cd940d162b291",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-encapDecap-FIPS203/93d38af12150ce3460e18dbc8a152e62a91af1d2b27da84aa79a093bddcf7086/prompt.json"
+            }
+          },
+          "acvp_vectors_ml-kem-keygen_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "d2a2e5b59d758db5812c6bbcf6d09c900ed2c91a5cfedcf2018388c2e764a1a1",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-keyGen-FIPS203/449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85/expectedResults.json"
+            }
+          },
+          "acvp_vectors_ml-kem-keygen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "dd2c988a2a129e4a98e1556a58e858b9a542b39cd6456af8b52b0b6cad29ae28",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-keyGen-FIPS203/449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85/prompt.json"
             }
           },
           "acvp_vectors_sha2-256_expectedResults.json": {
@@ -623,6 +655,10 @@
                 "kdf/internalProjection.json": "acvp_vectors_kdf_internalProjection.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
+                "ml-kem-encapdecap/expectedResults.json": "acvp_vectors_ml-kem-encapdecap_expectedResults.json",
+                "ml-kem-encapdecap/prompt.json": "acvp_vectors_ml-kem-encapdecap_prompt.json",
+                "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
+                "ml-kem-keygen/prompt.json": "acvp_vectors_ml-kem-keygen_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
                 "sha2-256/prompt.json": "acvp_vectors_sha2-256_prompt.json",
                 "sha2-384/expectedResults.json": "acvp_vectors_sha2-384_expectedResults.json",

@@ -73,6 +73,22 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
         },
     },
+    "ml-kem-encapdecap": {
+        "algorithm": "ML-KEM-encapDecap-FIPS203",
+        "registration_sha256": "93d38af12150ce3460e18dbc8a152e62a91af1d2b27da84aa79a093bddcf7086",
+        "files": {
+            "expectedResults.json": "8bd572cb4738139f17199c0a142efb8f5a53141a1b0aba6da9797392230a6ccf",
+            "prompt.json": "8c52326976bf473b2f474be4276ebf4992dc36feeede64960b4cd940d162b291",
+        },
+    },
+    "ml-kem-keygen": {
+        "algorithm": "ML-KEM-keyGen-FIPS203",
+        "registration_sha256": "449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85",
+        "files": {
+            "expectedResults.json": "d2a2e5b59d758db5812c6bbcf6d09c900ed2c91a5cfedcf2018388c2e764a1a1",
+            "prompt.json": "dd2c988a2a129e4a98e1556a58e858b9a542b39cd6456af8b52b0b6cad29ae28",
+        },
+    },
     "sha2-256": {
         "algorithm": "SHA2-256-1.0",
         "registration_sha256": "19374e648264f1bd4912dc4f5a2523d75bb17dbe330062e31d4e1ec0269a1764",
