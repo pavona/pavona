@@ -64,6 +64,44 @@ uint64_t otp_partition_digest_read(otp_partition_t partition) {
   return value;
 }
 
+bool otp_partition_integrity(otp_partition_t partition) {
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  return partition_info.integrity;
+}
+
+rom_error_t otp_partition_read_lock(otp_partition_t partition) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioPartitionReadLock, 1);
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.read_lockable) {
+    return kErrorOtpCtrlUnsupported;
+  }
+  sec_mmio_write32(otp_ctrl_base() + partition_info.lock_reg_offset, 0);
+  return kErrorOk;
+}
+
+bool otp_partition_is_readable(otp_partition_t partition) {
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.sw_readable) {
+    return false;
+  }
+  if (!partition_info.read_lockable) {
+    return true;
+  }
+  return sec_mmio_read32(otp_ctrl_base() + partition_info.lock_reg_offset) &
+         0x1;
+}
+
+bool otp_partition_is_zeroizable(otp_partition_t partition) {
+  return otp_readable_partition_info(partition).zeroizable;
+}
+
+bool otp_partition_has_integrity(otp_partition_t partition) {
+  return otp_readable_partition_info(partition).integrity;
+}
+
 static void wait_for_dai_idle(void) {
   uint32_t status = 0;
   bool idle = false;
@@ -117,8 +155,148 @@ rom_error_t otp_dai_read(otp_partition_t partition, uint32_t relative_address,
   return kErrorOk;
 }
 
-void otp_creator_sw_cfg_lockdown(void) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioCreatorSwCfgLockDown, 1);
-  sec_mmio_write32(
-      otp_ctrl_base() + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
+static void dai_write_blocking(otp_partition_t partition,
+                               uint32_t relative_address) {
+  wait_for_dai_idle();
+  HARDENED_CHECK_EQ(
+      relative_address & otp_readable_partition_info(partition).align_mask, 0);
+  abs_mmio_write32(
+      otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+      otp_readable_partition_info(partition).start_addr + relative_address);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                   cmd);
+  wait_for_dai_idle();
+}
+
+void otp_dai_write32(otp_partition_t partition, uint32_t relative_address,
+                     uint32_t data) {
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                   data);
+  dai_write_blocking(partition, relative_address);
+}
+
+void otp_dai_write64(otp_partition_t partition, uint32_t relative_address,
+                     uint64_t data) {
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                   data & UINT32_MAX);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                   data >> (8 * sizeof(uint32_t)));
+  dai_write_blocking(partition, relative_address);
+}
+
+rom_error_t otp_dai_write(otp_partition_t partition, uint32_t relative_address,
+                          const uint32_t *data, size_t num_words) {
+  // Check if this partition expects 64-bit write chunks (only secret
+  // partitions do).
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (relative_address % 4 != 0) {
+    return kErrorOtpCtrlBadAlignment;
+  }
+  bool needs_write64;
+  switch (launder32(partition_info.align_mask)) {
+    case 0x3:
+      needs_write64 = false;
+      break;
+    case 0x7:
+      // Check size and alignment for 64-bit write chunks.
+      if (relative_address % 8 != 0 || num_words % 2 != 0) {
+        return kErrorOtpCtrlBadAlignment;
+      }
+      needs_write64 = true;
+      break;
+    default:
+      return kErrorOtpCtrlUnsupported;
+  }
+  size_t i = 0, r = num_words - 1;
+  uint32_t addr = relative_address;
+  for (; launder32(i) < num_words && launder32(r) < num_words; ++i, --r) {
+    if (needs_write64) {
+      // data[i + 1] is guaranteed to exist because of the length check above.
+      uint64_t dword =
+          (uint64_t)data[i] + ((uint64_t)data[i + 1] << (8 * sizeof(uint32_t)));
+      otp_dai_write64(partition, addr, dword);
+      addr += sizeof(uint64_t);
+      i += 1;
+      r -= 1;
+    } else {
+      otp_dai_write32(partition, addr, data[i]);
+      addr += sizeof(uint32_t);
+    }
+  }
+  HARDENED_CHECK_EQ(i, num_words);
+  HARDENED_CHECK_EQ(r, SIZE_MAX);
+  return kErrorOk;
+}
+
+static void otp_dai_zeroize_blocking(otp_partition_t partition,
+                                     uint32_t relative_address) {
+  wait_for_dai_idle();
+  HARDENED_CHECK_EQ(
+      relative_address & otp_readable_partition_info(partition).align_mask, 0);
+  abs_mmio_write32(
+      otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+      otp_readable_partition_info(partition).start_addr + relative_address);
+  uint32_t cmd =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_CMD_ZEROIZE_BIT, true);
+  abs_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                   cmd);
+  wait_for_dai_idle();
+}
+
+rom_error_t otp_dai_zeroize(otp_partition_t partition) {
+  // Check that the partition is zeroizable.
+  dt_otp_partition_info_t partition_info =
+      otp_readable_partition_info(partition);
+  if (!partition_info.zeroizable) {
+    HARDENED_CHECK_EQ(partition_info.zeroizable, false);
+    return kErrorOtpCtrlUnsupported;
+  }
+  HARDENED_CHECK_EQ(partition_info.zeroizable, true);
+  bool needs_write64;
+  switch (launder32(partition_info.align_mask)) {
+    case 0x3:
+      needs_write64 = false;
+      break;
+    case 0x7:
+      needs_write64 = true;
+      break;
+    default:
+      return kErrorOtpCtrlUnsupported;
+  }
+
+  // As recommended by the Zeroization sequence:
+  // https://docs.pavona.org/book/hw/top_dragonfly/ip_autogen/otp_ctrl/doc/programmers_guide.html#zeroization-sequence
+  //
+  // we first zeroize the zeroization marker first.
+  size_t zer_offset = partition_info.size;
+  if (partition_info.sw_digest || partition_info.hw_digest) {
+    zer_offset += sizeof(uint64_t);
+  }
+  otp_dai_zeroize_blocking(partition, zer_offset);
+  if (!needs_write64) {
+    otp_dai_zeroize_blocking(partition, zer_offset + sizeof(uint32_t));
+  }
+  // Then, zeroize each item.
+  for (size_t i = 0; i < zer_offset; i += sizeof(uint64_t)) {
+    otp_dai_zeroize_blocking(partition, i);
+    if (!needs_write64) {
+      otp_dai_zeroize_blocking(partition, i + sizeof(uint32_t));
+    }
+  }
+  return kErrorOk;
+}
+
+void otp_dai_disable(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kOtpSecMmioDaiDisable, 1);
+  sec_mmio_write32(otp_ctrl_base() + OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+                   0);
+}
+
+bool otp_is_dai_enabled(void) {
+  return sec_mmio_read32(otp_ctrl_base() +
+                         OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET) &
+         0x1;
 }

@@ -34,7 +34,7 @@ enum module_ {
   kModuleInterrupt =       MODULE_CODE('I', 'R'),
   kModuleEpmp =            MODULE_CODE('E', 'P'),
   kModuleKmac =            MODULE_CODE('K', 'C'),
-  kModuleAcc =            MODULE_CODE('B', 'N'),
+  kModuleAcc =             MODULE_CODE('B', 'N'),
   kModuleFlashCtrl =       MODULE_CODE('F', 'C'),
   kModuleBootPolicy =      MODULE_CODE('B', 'P'),
   kModuleBootstrap =       MODULE_CODE('B', 'S'),
@@ -53,6 +53,7 @@ enum module_ {
   kModuleXModem =          MODULE_CODE('X', 'M'),
   kModuleRescue =          MODULE_CODE('R', 'C'),
   kModuleCert =            MODULE_CODE('C', 'E'),
+  kModuleOtpCtrl =         MODULE_CODE('O', 'T'),
   kModuleOwnership =       MODULE_CODE('O', 'W'),
   kModulePersoTlv =        MODULE_CODE('P', 'T'),
   kModuleDice =            MODULE_CODE('D', 'C'),
@@ -217,6 +218,9 @@ enum module_ {
   X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
   X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
   X(kErrorCertInvalidSize,            ERROR_(2, kModuleCert, kDataLoss)), \
+  \
+  X(kErrorOtpCtrlUnsupported,         ERROR_(0, kModuleOtpCtrl, kInvalidArgument)), \
+  X(kErrorOtpCtrlBadAlignment,        ERROR_(1, kModuleOtpCtrl, kInvalidArgument)), \
   \
   X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \

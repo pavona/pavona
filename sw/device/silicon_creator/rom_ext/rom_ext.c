@@ -263,9 +263,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // Disable access to silicon creator info pages, the OTP creator partition
   // and the OTP direct access interface until the next reset.
   flash_ctrl_creator_info_pages_lockdown();
-  otp_creator_sw_cfg_lockdown();
+  HARDENED_RETURN_IF_ERROR(otp_partition_read_lock(kOtpPartitionCreatorSwCfg));
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
-                           kOtpSecMmioCreatorSwCfgLockDown);
+                           kOtpSecMmioPartitionReadLock);
 
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
@@ -441,7 +441,7 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   // Set the keymgr to disabled and clear all sideloaded keys.
   sc_keymgr_disable();
   // Lock out OTP.
-  otp_creator_sw_cfg_lockdown();
+  otp_partition_read_lock(kOtpPartitionCreatorSwCfg);
   // Lock the ePMP so it cannot be changed.
   epmp_set_lock_bits();
   epmp_clear_rlb();
