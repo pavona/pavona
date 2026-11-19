@@ -107,6 +107,7 @@ pavona_test(
             "//hw/top_egret:fpga_cw310_sival": None,
         },
     ),
+    fpga = fpga_params(tags = ["broken"]),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],

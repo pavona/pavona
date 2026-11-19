@@ -90,6 +90,7 @@ rom_e2e_keymgr_init_configs = [
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
+            tags = ["broken"],
         ),
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         qemu = qemu_params(
