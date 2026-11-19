@@ -50,6 +50,13 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "49d6db5fed29e7682923d9bcee9d4020e21ae99aab75613d1a7e933083e28440",
         },
     },
+    "kdf": {
+        "algorithm": "KDF-1.0",
+        "registration_sha256": "d888d027e474a182cf3d2488093e3f7b7106938c1c624434a129e62a2a714198",
+        "files": {
+            "internalProjection.json": "c48bd2bb845a40347a5e3e0454326a1399be029f0a743082341c4807ef3c937c",
+        },
+    },
     "kdf-kmac": {
         "algorithm": "KDF-KMAC-Sp800-108r1",
         "registration_sha256": "6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df",
