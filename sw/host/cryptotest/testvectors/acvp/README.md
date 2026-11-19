@@ -156,7 +156,7 @@ The pinned vector sets run as part of the AES-KWP, HKDF, HMAC, KDF, ML-DSA, ML-K
 The `hkdf_kat` target covers KDA HKDF, the `kdf_hmac_kat` target covers KDF, and the `hmac_sha256_kat`, `hmac_sha384_kat` and `hmac_sha512_kat` targets cover HMAC.
 The `sha256_kat`, `sha384_kat`, `sha512_kat`, `sha3_224_kat`, `sha3_384_kat`, `sha3_512_kat`, `shake128_kat` and `shake256_kat` targets cover the other SHA2, SHA3 and SHAKE variants.
 
-These compare the assembled response against the expected results NIST publishes alongside each prompt.
+These compare the assembled response against the expected results that come with each prompt.
 For ML-DSA and ML-KEM, `--define=acc_has_pqc=true` selects the ACC backends; without it, the same targets test the software backends instead.
 The `_hardened` variants of the ML-DSA and ML-KEM targets always test the hardened ACC backend.
 
