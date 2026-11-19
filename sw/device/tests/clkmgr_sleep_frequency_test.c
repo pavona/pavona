@@ -147,7 +147,7 @@ bool test_main(void) {
       kDifPwrmgrDomainOptionMainPowerInLowPower;
 #ifdef OPENTITAN_IS_EGRET
   domain_config |= kDifPwrmgrDomainOptionUsbClockInActivePower;
-#elif OPENTITAN_IS_DRAGONFLY
+#elif defined(OPENTITAN_IS_DRAGONFLY)
   // dragonfly has no  USB clock
 #else
 #error Unsupported top
