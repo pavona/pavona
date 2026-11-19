@@ -98,6 +98,13 @@ void *OT_PREFIX_IF_NOT_RV32(memset)(void *dest, int value, size_t len) {
   return dest;
 }
 
+void *OT_PREFIX_IF_NOT_RV32(memset_explicit)(void *dest, int value,
+                                             size_t len) {
+  OT_PREFIX_IF_NOT_RV32(memset)(dest, value, len);
+  asm volatile("" : : "r"(dest) : "memory");
+  return dest;
+}
+
 enum {
   kMemCmpEq = 0,
   kMemCmpLt = -42,
