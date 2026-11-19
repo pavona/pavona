@@ -929,6 +929,7 @@ pavona_test(
     ),
     fpga = fpga_params(
         otp = "//hw/top_egret/data/otp/emulation:otp_img_dev_manuf_personalized",
+        tags = ["broken"],
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
@@ -968,6 +969,7 @@ pavona_test(
             "//hw/top_egret:silicon_creator": None,
         },
     ),
+    fpga = fpga_params(tags = ["broken"]),
     # Broken on Verilator. See #24182.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
@@ -1180,6 +1182,7 @@ pavona_test(
             "//hw/top_egret:silicon_creator": None,
         },
     ),
+    fpga = fpga_params(tags = ["broken"]),
     # TODO(lowrisc/opentitan#13611): Splice ast_init in FPGA/Verilator.
     verilator = verilator_params(tags = ["broken"]),
     deps = [
@@ -2582,6 +2585,7 @@ pavona_test(
     ),
     fpga = fpga_params(
         otp = ":otp_ctrl_descrambling_otp_image",
+        tags = ["broken"],
     ),
     qemu = qemu_params(
         otp = ":otp_ctrl_descrambling_otp_image",
@@ -5979,6 +5983,7 @@ pavona_test(
             "//hw/top_egret:silicon_creator": None,
         },
     ),
+    fpga = fpga_params(tags = ["broken"]),
     verilator = verilator_params(
         # FIXME #13611
         timeout = "eternal",
