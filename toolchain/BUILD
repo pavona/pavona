@@ -557,6 +557,7 @@ cc_args(
         "-Wunreachable-code-aggressive",
         "-Wno-unreachable-code-break",
         "-Wwrite-strings",
+        "-Wvla",
         "-Wzero-as-null-pointer-constant",
     ],
 )
