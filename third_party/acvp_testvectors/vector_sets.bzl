@@ -10,6 +10,14 @@ ACVP_VECTORS_URL = "https://storage.googleapis.com/pavona-test-vectors/acvp-vect
 # keyed by the name of their registration file.
 # Each file is fetched on its own, and a build downloads only the files it uses.
 ACVP_VECTOR_SETS = {
+    "aes-kwp": {
+        "algorithm": "ACVP-AES-KWP-1.0",
+        "registration_sha256": "e8673141cae36a83cb6217e8096ca5caaf26ba9dfd287189f50fba28ed781ec8",
+        "files": {
+            "expectedResults.json": "f1b08882c6f8aa5ba97fc255ff6940d04474c5ce6696f7ff615b6a79fc57c8b4",
+            "prompt.json": "bdee616131c0ec9cb18c214335fbd2277ccaea7baf9822e21bbfbc4db7eed922",
+        },
+    },
     "ctr-drbg": {
         "algorithm": "ctrDRBG-SP800-90Ar1",
         "registration_sha256": "052af7b9ae9019d55f0ce793e69fc09cc29a51f5c417316f23fbc53998b77ed9",

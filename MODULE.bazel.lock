@@ -334,12 +334,28 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "3Omzw3Vqhd3Yt/FIKwMN+NhOg0Pt0y3VJTJOxRI6xvI=",
+        "bzlTransitiveDigest": "VyDd52BlxkXC4bxI/3Qy2MeCbtFwQ0andFEVWGnpSLI=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "acvp_vectors_aes-kwp_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "f1b08882c6f8aa5ba97fc255ff6940d04474c5ce6696f7ff615b6a79fc57c8b4",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-KWP-1.0/e8673141cae36a83cb6217e8096ca5caaf26ba9dfd287189f50fba28ed781ec8/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-kwp_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "bdee616131c0ec9cb18c214335fbd2277ccaea7baf9822e21bbfbc4db7eed922",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-KWP-1.0/e8673141cae36a83cb6217e8096ca5caaf26ba9dfd287189f50fba28ed781ec8/prompt.json"
+            }
+          },
           "acvp_vectors_ctr-drbg_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -592,6 +608,8 @@
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
               "files": {
+                "aes-kwp/expectedResults.json": "acvp_vectors_aes-kwp_expectedResults.json",
+                "aes-kwp/prompt.json": "acvp_vectors_aes-kwp_prompt.json",
                 "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
                 "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
                 "hmac-sha2-256/expectedResults.json": "acvp_vectors_hmac-sha2-256_expectedResults.json",
