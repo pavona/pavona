@@ -23,9 +23,9 @@
  * @param flag Status flag to query.
  * @param value The status flag value.
  */
-#define AES_WAIT_FOR_STATUS(aes_, flag_, value_)                      \
-  while (mmio_region_get_bit32(aes->base_addr, AES_STATUS_REG_OFFSET, \
-                               (flag_)) != value_) {                  \
+#define AES_WAIT_FOR_STATUS(aes_, flag_, value_)                         \
+  while (mmio_region_get_bit32((aes_)->base_addr, AES_STATUS_REG_OFFSET, \
+                               (flag_)) != (value_)) {                   \
   }
 
 static bool aes_idle(const dif_aes_t *aes) {

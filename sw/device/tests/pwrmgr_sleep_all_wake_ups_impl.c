@@ -57,9 +57,10 @@ static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
 dif_pwrmgr_t pwrmgr;
 dif_rv_plic_t rv_plic;
 
-#define INIT_DIF_DT(__mod_name, __src, __difname)                             \
-  dt_##__mod_name##_t __dt = dt_##__mod_name##_from_instance_id(src.inst_id); \
-  dif_##__mod_name##_t __difname;                                             \
+#define INIT_DIF_DT(__mod_name, __src, __difname)          \
+  dt_##__mod_name##_t __dt =                               \
+      dt_##__mod_name##_from_instance_id((__src).inst_id); \
+  dif_##__mod_name##_t __difname;                          \
   CHECK_DIF_OK(dif_##__mod_name##_init_from_dt(__dt, &__difname));
 
 #ifdef HAS_SYSRST_CTRL
