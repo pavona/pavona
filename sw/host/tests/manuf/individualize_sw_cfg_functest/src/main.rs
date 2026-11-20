@@ -45,12 +45,42 @@ fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     )?;
     let _ = UartConsole::wait_for(
         &*uart,
-        r"Provisioned and locked ROT_CREATOR_AUTH_CODESIGN OTP partition.",
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT0 OTP partition.",
         opts.timeout,
     )?;
     let _ = UartConsole::wait_for(
         &*uart,
-        r"Provisioned and locked ROT_CREATOR_AUTH_STATE OTP partition.",
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT1 OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT2 OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT3 OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT0_STATE OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT1_STATE OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT2_STATE OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_OWNER_AUTH_SLOT3_STATE OTP partition.",
         opts.timeout,
     )?;
 
