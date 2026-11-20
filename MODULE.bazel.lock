@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "iCjI/15+Jr12MfgxhJ+vrCtI3MEaKXkPhzT6RmvG5WQ=",
+        "bzlTransitiveDigest": "yUF6ZZQzctMzX+UUXz9NMKYk2QkGbNwgSW7sz2qjFEo=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -372,6 +372,22 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
             }
           },
+          "acvp_vectors_rsa-sigver_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "894267419505f9dc82bbfaeb7dba755a8e56f54f1edf4e3e97493aae6304fff9",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/expectedResults.json"
+            }
+          },
+          "acvp_vectors_rsa-sigver_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "a27d70493930cdb62ba30277878f0f87adf026b77848770ce849434c703991ef",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/prompt.json"
+            }
+          },
           "acvp_vectors": {
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
@@ -379,7 +395,9 @@
                 "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
                 "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
-                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json"
+                "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
+                "rsa-sigver/expectedResults.json": "acvp_vectors_rsa-sigver_expectedResults.json",
+                "rsa-sigver/prompt.json": "acvp_vectors_rsa-sigver_prompt.json"
               }
             }
           },

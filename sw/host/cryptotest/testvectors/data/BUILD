@@ -849,6 +849,29 @@ run_binary(
     ]
 ]
 
+run_binary(
+    name = "acvp_rsa_sigver_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-sigver/expectedResults.json",
+        "@acvp_vectors//:rsa-sigver/prompt.json",
+    ],
+    outs = [":acvp_rsa_sigver.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-sigver/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_sigver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:rsa-sigver/expectedResults.json)",
+        "--test-type",
+        "sigver",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
 WYCHEPROOF_RSA_OAEP_SUFFIXES = {
     2048: [
         "sha256_mgf1sha256",
