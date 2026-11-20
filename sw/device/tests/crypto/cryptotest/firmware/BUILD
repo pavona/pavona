@@ -190,6 +190,8 @@ cc_library(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
         "//sw/device/lib/crypto/impl/sha2:sha256",
         "//sw/device/lib/crypto/impl/sha2:sha512",

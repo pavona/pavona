@@ -20,7 +20,7 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaCiphertext, CryptotestRsaDecryptOutput, CryptotestRsaExpectedLength,
-    CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessageDigest, CryptotestRsaOperation,
+    CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessage, CryptotestRsaOperation,
     CryptotestRsaPadding, CryptotestRsaPrivateKey, CryptotestRsaPublicKey, CryptotestRsaRawMessage,
     CryptotestRsaSecurityLevel, CryptotestRsaSignature, CryptotestRsaVerifyOutput,
 };
@@ -124,8 +124,8 @@ fn run_rsa_testcase(
     }
     .send(spi_console)?;
 
-    // Get the hash function and hash the message to get the digest (unfortunately this code is
-    // challenging to deduplicate because the `Digest` trait is not object safe).
+    // Get the hash function and hash the message to check signatures on the host (unfortunately
+    // this code is challenging to deduplicate because the `Digest` trait is not object safe).
     let (hash_alg, message_digest): (CryptotestRsaHashAlg, Vec<u8>) =
         match test_case.hash_alg.as_str() {
             "sha-256" => {
@@ -185,15 +185,6 @@ fn run_rsa_testcase(
     // Send message hash algorithm
     hash_alg.send(spi_console)?;
 
-    // Size of `input` is determined at compile-time by type inference
-    let mut message_digest_buf = ArrayVec::new();
-    // Fill the buffer until we run out of bytes, truncating the rightmost bytes if we have too
-    // many
-    let message_digest_len = message_digest.len();
-    let mut message_digest_iter = message_digest.iter();
-    while !message_digest_buf.is_full() {
-        message_digest_buf.push(*message_digest_iter.next().unwrap_or(&0u8));
-    }
     // From here, the rest of the state to send and receive depends on
     // what operation we're performing.
     let success = match operation {
@@ -214,9 +205,10 @@ fn run_rsa_testcase(
             let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
             let i_q = i_q_bigint.to_bytes_le().1;
 
-            CryptotestRsaMessageDigest {
-                message_digest: message_digest_buf,
-                message_digest_len,
+            CryptotestRsaMessage {
+                message: ArrayVec::try_from(test_case.message.as_slice())
+                    .expect("Message was too long for device firmware configuration."),
+                message_len: test_case.message.len(),
             }
             .send(spi_console)?;
             CryptotestRsaPrivateKey {
@@ -294,9 +286,10 @@ fn run_rsa_testcase(
                 .to_bytes_le()
                 .1;
             let signature: Vec<_> = test_case.signature.iter().cloned().rev().collect();
-            CryptotestRsaMessageDigest {
-                message_digest: message_digest_buf,
-                message_digest_len,
+            CryptotestRsaMessage {
+                message: ArrayVec::try_from(test_case.message.as_slice())
+                    .expect("Message was too long for device firmware configuration."),
+                message_len: test_case.message.len(),
             }
             .send(spi_console)?;
             CryptotestRsaPublicKey {
