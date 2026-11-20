@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules:const.bzl",
     "CONST",
     "hex_digits",
@@ -178,7 +182,13 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             s["name"],
         ),
         testonly = True,
-        src = "//hw/top_egret/data/otp:otp_json_prod",
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_prod",
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_prod",
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_immutable_rom_ext_{}_{}".format(
                 t["name"],

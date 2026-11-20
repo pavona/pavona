@@ -120,13 +120,6 @@ cc_library(
 cc_library(
     name = "sim_verilator",
     srcs = ["device_sim_verilator.c"],
-    defines = pavona_select_top(
-        {
-            "egret": ["PAVONA_IS_EGRET"],
-            "dragonfly": ["PAVONA_IS_DRAGONFLY"],
-        },
-        [],
-    ),
     deps = [
         ":device",
         ":stub",
