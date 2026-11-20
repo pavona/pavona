@@ -28,7 +28,8 @@ extern "C" {
     value(_, Sign) \
     value(_, Verify) \
     value(_, Encrypt) \
-    value(_, Decrypt)
+    value(_, Decrypt) \
+    value(_, Keygen)
 UJSON_SERDE_ENUM(CryptotestRsaOperation, cryptotest_rsa_operation_t, RSA_OPERATION);
 
 #define RSA_PADDING(_, value) \

@@ -697,6 +697,150 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
   return OK_STATUS(0);
 }
 
+/**
+ * Gets the key lengths for an RSA security level.
+ *
+ * @param uj_security_level RSA security level.
+ * @param[out] rsa_size RSA size parameter.
+ * @param[out] public_key_length Public key length in bytes.
+ * @param[out] private_key_length Private key length in bytes.
+ * @param[out] keyblob_length Private keyblob length in bytes.
+ * @return Status code (OK or error).
+ */
+static status_t key_lengths_get(
+    cryptotest_rsa_security_level_t uj_security_level,
+    otcrypto_rsa_size_t *rsa_size, size_t *public_key_length,
+    size_t *private_key_length, size_t *keyblob_length) {
+  switch (uj_security_level) {
+    case kCryptotestRsaSecurityLevelRsa2048:
+      *rsa_size = kOtcryptoRsaSize2048;
+      *public_key_length = kOtcryptoRsa2048PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa2048PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes;
+      return OK_STATUS();
+    case kCryptotestRsaSecurityLevelRsa3072:
+      *rsa_size = kOtcryptoRsaSize3072;
+      *public_key_length = kOtcryptoRsa3072PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa3072PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes;
+      return OK_STATUS();
+    case kCryptotestRsaSecurityLevelRsa4096:
+      *rsa_size = kOtcryptoRsaSize4096;
+      *public_key_length = kOtcryptoRsa4096PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa4096PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes;
+      return OK_STATUS();
+    default:
+      LOG_ERROR("Unsupported RSA security level: %d", uj_security_level);
+      return INVALID_ARGUMENT();
+  }
+}
+
+/**
+ * Writes the modulus and public exponent of a public key.
+ *
+ * @param public_key Public key.
+ * @param[out] n Modulus (at least `kRsa4096NumBytes` bytes).
+ * @param[out] n_len Length of the modulus in bytes.
+ * @param[out] e Public exponent.
+ * @return Status code (OK or error).
+ */
+static status_t public_key_get(otcrypto_unblinded_key_t *public_key, uint8_t *n,
+                               size_t *n_len, uint32_t *e) {
+  uint32_t n_buf[kRsa4096NumWords];
+  otcrypto_word32_buf_t modulus = {
+      .data = n_buf,
+      .len = (public_key->key_length - sizeof(uint32_t)) / sizeof(uint32_t),
+  };
+  otcrypto_status_t status =
+      otcrypto_rsa_public_key_deconstruct(public_key, modulus, e);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from public key deconstruction = 0x%x",
+              status.value);
+    return INTERNAL(status.value);
+  }
+  *n_len = modulus.len * sizeof(uint32_t);
+  memcpy(n, n_buf, *n_len);
+  return OK_STATUS();
+}
+
+status_t handle_rsa_keygen(ujson_t *uj, otcrypto_key_mode_t key_mode) {
+  cryptotest_rsa_security_level_t uj_security_level;
+  TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
+                                                        &uj_security_level));
+
+  otcrypto_rsa_size_t rsa_size;
+  size_t public_key_length;
+  size_t private_key_length;
+  size_t keyblob_length;
+  TRY(key_lengths_get(uj_security_level, &rsa_size, &public_key_length,
+                      &private_key_length, &keyblob_length));
+  uint32_t public_key_buf[kOtcryptoRsa4096PublicKeyBytes / sizeof(uint32_t)];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_length,
+      .key = public_key_buf,
+  };
+  uint32_t keyblob[kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t)];
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = key_mode,
+              .key_length = private_key_length,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+          },
+      .keyblob_length = keyblob_length,
+      .keyblob = keyblob,
+  };
+  otcrypto_status_t status =
+      otcrypto_rsa_keygen(rsa_size, &public_key, &private_key);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from key generation = 0x%x", status.value);
+    return INTERNAL(status.value);
+  }
+
+  cryptotest_rsa_private_key_t uj_private_key;
+  memset(&uj_private_key, 0, sizeof(uj_private_key));
+  TRY(public_key_get(&public_key, uj_private_key.n, &uj_private_key.n_len,
+                     &uj_private_key.e));
+
+  size_t cofactor_words = uj_private_key.n_len / sizeof(uint32_t) / 2;
+  uint32_t p_buf[kRsa4096NumWords / 2];
+  uint32_t q_buf[kRsa4096NumWords / 2];
+  uint32_t d_p_buf[kRsa4096NumWords / 2];
+  uint32_t d_q_buf[kRsa4096NumWords / 2];
+  uint32_t i_q_buf[kRsa4096NumWords / 2];
+  otcrypto_word32_buf_t p = {.data = p_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t q = {.data = q_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t d_p = {.data = d_p_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t d_q = {.data = d_q_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t i_q = {.data = i_q_buf, .len = cofactor_words};
+  status =
+      otcrypto_rsa_private_key_deconstruct(&private_key, p, q, d_p, d_q, i_q);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from private key deconstruction = 0x%x",
+              status.value);
+    return INTERNAL(status.value);
+  }
+
+  size_t cofactor_len = cofactor_words * sizeof(uint32_t);
+  uj_private_key.p_len = cofactor_len;
+  memcpy(uj_private_key.p, p_buf, cofactor_len);
+  uj_private_key.q_len = cofactor_len;
+  memcpy(uj_private_key.q, q_buf, cofactor_len);
+  uj_private_key.d_p_len = cofactor_len;
+  memcpy(uj_private_key.d_p, d_p_buf, cofactor_len);
+  uj_private_key.d_q_len = cofactor_len;
+  memcpy(uj_private_key.d_q, d_q_buf, cofactor_len);
+  uj_private_key.i_q_len = cofactor_len;
+  memcpy(uj_private_key.i_q, i_q_buf, cofactor_len);
+  RESP_OK(ujson_serialize_cryptotest_rsa_private_key_t, uj, &uj_private_key);
+  return OK_STATUS();
+}
+
 status_t handle_rsa(ujson_t *uj) {
   cryptotest_rsa_operation_t uj_op;
   cryptotest_rsa_padding_t uj_padding;
@@ -744,6 +888,18 @@ status_t handle_rsa(ujson_t *uj) {
           return handle_rsa_oaep_decrypt(uj);
         default:
           LOG_ERROR("Unexpected RSA padding mode for decrypt operation: %d",
+                    uj_padding);
+          return INVALID_ARGUMENT();
+      }
+    }
+    case kCryptotestRsaOperationKeygen: {
+      switch (uj_padding) {
+        case kCryptotestRsaPaddingPkcs15:
+          return handle_rsa_keygen(uj, kOtcryptoKeyModeRsaSignPkcs);
+        case kCryptotestRsaPaddingPss:
+          return handle_rsa_keygen(uj, kOtcryptoKeyModeRsaSignPss);
+        default:
+          LOG_ERROR("Unexpected RSA padding mode for keygen operation: %d",
                     uj_padding);
           return INVALID_ARGUMENT();
       }
