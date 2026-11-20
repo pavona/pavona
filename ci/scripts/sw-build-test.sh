@@ -34,28 +34,21 @@ printf "%s\n"              \
     "-//third_party/..."   \
     >> "$target_pattern_file"
 
-# Exclude anything that requires a bitstream splice.
-./bazelisk.sh cquery                                 \
-    --noinclude_aspects                              \
-    --output=starlark                                \
-    --starlark:expr='"-{}".format(target.label)'     \
-    --define DISABLE_VERILATOR_BUILD=true            \
-    -- "rdeps(//..., kind(bitstream_splice, //...))" \
-    >> "$target_pattern_file"
-
 # Build everything we selected, excluding some tags.
-./bazelisk.sh build                              \
-    --//hw/top="${top}"                          \
-    --build_tests_only=false                     \
-    --define DISABLE_VERILATOR_BUILD=true        \
-    --test_tag_filters=-broken,-verilator,-dv    \
+./bazelisk.sh build                                 \
+    --//hw/top="${top}"                             \
+    --build_tests_only=false                        \
+    --define DISABLE_VERILATOR_BUILD=true           \
+    --define bitstream=skip                         \
+    --test_tag_filters=-broken,-verilator,-dv,-fpga \
     --target_pattern_file="$target_pattern_file"
 
 # Run software unit tests.
-./bazelisk.sh test                                     \
-    --//hw/top="${top}"                                \
-    --build_tests_only=false                           \
-    --test_output=errors                               \
-    --define DISABLE_VERILATOR_BUILD=true              \
-    --test_tag_filters=-broken,-verilator,-dv,-silicon \
+./bazelisk.sh test                                                         \
+    --//hw/top="${top}"                                                    \
+    --build_tests_only=false                                               \
+    --test_output=errors                                                   \
+    --define DISABLE_VERILATOR_BUILD=true                                  \
+    --define bitstream=skip                                                \
+    --test_tag_filters=-broken,-manual,-verilator,-qemu,-dv,-fpga,-silicon \
     --target_pattern_file="$target_pattern_file"
