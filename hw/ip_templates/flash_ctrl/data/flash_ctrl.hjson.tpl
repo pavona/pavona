@@ -447,6 +447,12 @@
       default: "${infos_per_bank[type]}",
       local: "true"
     },
+    { name: "Infos${type}Offset",
+      desc: "Page offset of the first info page of type ${type} within the bank",
+      type: "int",
+      default: "${sum([infos_per_bank[t] for t in range(type)])}",
+      local: "true"
+    },
 % endfor
 
     { name: "WordsPerPage",

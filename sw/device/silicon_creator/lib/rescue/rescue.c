@@ -116,9 +116,9 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
       (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
        owner_block_newversion_mode() == kHardenedBoolTrue)) {
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot1, 0,
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
         sizeof(state->data) / sizeof(uint32_t), state->data));
   } else {
     rescue_msg("error: cannot accept owner_block in current state\r\n");
@@ -136,9 +136,9 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
 static void ownership_erase(void) {
   lifecycle_state_t lc_state = lifecycle_state_get();
   if (lc_state == kLcStateDev) {
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+    OT_DISCARD(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
                                      kFlashCtrlEraseTypePage));
-    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
+    OT_DISCARD(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
                                      kFlashCtrlEraseTypePage));
     rescue_msg("ok: erased owner blocks\r\n");
   } else {
@@ -264,8 +264,9 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
     case kRescueModeOwnerPage0:
     case kRescueModeOwnerPage1:
       HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(
-          state->mode == kRescueModeOwnerPage0 ? &kFlashCtrlInfoPageOwnerSlot0
-                                               : &kFlashCtrlInfoPageOwnerSlot1,
+          state->mode == kRescueModeOwnerPage0
+              ? &FLASH_CTRL_INFO_PAGE_OWNER_SLOT0
+              : &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
           0, sizeof(state->data) / sizeof(uint32_t), state->data));
       state->staged_len = sizeof(state->data);
       break;

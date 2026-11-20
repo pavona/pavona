@@ -86,6 +86,11 @@ string_flag(
 ]
 
 pavona_alias_top_attr(
+    name = "top_flash_info_map",
+    attr_name = "flash_info_map",
+)
+
+pavona_alias_top_attr(
     name = "top_gen_hjson",
     attr_name = "hjson",
 )

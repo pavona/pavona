@@ -13,7 +13,7 @@ rom_error_t acc_boot_attestation_keygen_seed(uint32_t seed_idx,
   // Read seed from flash info page.
   uint32_t seed_flash_offset = 0 + (seed_idx * kAttestationSeedBytes);
   rom_error_t err =
-      flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
+      flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS,
                            seed_flash_offset, kAttestationSeedWords, seed);
 
   if (err != kErrorOk) {

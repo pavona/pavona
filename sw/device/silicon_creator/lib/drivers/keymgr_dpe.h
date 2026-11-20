@@ -217,8 +217,8 @@ typedef struct sc_keymgr_ecc_key {
    */
   sc_keymgr_key_type_t type;
   /**
-   * Index into the kFlashCtrlInfoPageAttestationKeySeeds flash info page that
-   * holds a seed for generating the ECC key pair.
+   * Index into the FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS flash info page
+   * that holds a seed for generating the ECC key pair.
    */
   uint32_t keygen_seed_idx;
   /**

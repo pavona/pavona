@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/lib/mmap/flash_info.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
@@ -55,80 +56,6 @@ typedef enum flash_ctrl_partition {
 #define FLASH_CTRL_PARTITION_BIT_IS_INFO 0
 #define FLASH_CTRL_PARTITION_FIELD_INFO_TYPE \
   ((bitfield_field32_t){.mask = 0x3, .index = 1})
-
-/**
- * Table of flash information pages.
- *
- * Columns: Name, bank index, page index.
- * We use an X macro to faciliate writing enums, switch statements, and unit
- * tests using the contants here. All information pages in this table are of
- * type 0 since silicon creator code does not need to access information pages
- * of other types.
- */
-// clang-format off
-#define FLASH_CTRL_INFO_PAGES_DEFINE(X) \
-  /**
-   * Bank 0 information partition type 0 pages.
-   */ \
-  X(kFlashCtrlInfoPageFactoryId,           0, 0) \
-  X(kFlashCtrlInfoPageCreatorSecret,       0, 1) \
-  X(kFlashCtrlInfoPageOwnerSecret,         0, 2) \
-  X(kFlashCtrlInfoPageWaferAuthSecret,     0, 3) \
-  X(kFlashCtrlInfoPageAttestationKeySeeds, 0, 4) \
-  X(kFlashCtrlInfoPageOwnerReserved0,      0, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved1,      0, 6) \
-  X(kFlashCtrlInfoPageOwnerReserved2,      0, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved3,      0, 8) \
-  X(kFlashCtrlInfoPageFactoryCerts,        0, 9) \
-  /**
-   * Bank 1 information partition type 0 pages.
-   */ \
-  X(kFlashCtrlInfoPageBootData0,           1, 0) \
-  X(kFlashCtrlInfoPageBootData1,           1, 1) \
-  X(kFlashCtrlInfoPageOwnerSlot0,          1, 2) \
-  X(kFlashCtrlInfoPageOwnerSlot1,          1, 3) \
-  X(kFlashCtrlInfoPageCreatorReserved0,    1, 4) \
-  X(kFlashCtrlInfoPageOwnerReserved4,      1, 5) \
-  X(kFlashCtrlInfoPageOwnerReserved5,      1, 6) \
-  X(kFlashCtrlInfoPageOwnerReserved6,      1, 7) \
-  X(kFlashCtrlInfoPageOwnerReserved7,      1, 8) \
-  X(kFlashCtrlInfoPageDiceCerts,           1, 9) \
-// clang-format on
-
-/**
- * A struct for storing base, config write-enable register, and config register
- * addresses of an info page.
- */
-typedef struct flash_ctrl_info_page {
-  /**
-   * Base address.
-   */
-  uint32_t base_addr;
-  /**
-   * Config write-enable register address (offset from register base).
-   */
-  uint32_t cfg_wen_offset;
-  /**
-   * Config register address (offset from register base).
-   */
-  uint32_t cfg_offset;
-} flash_ctrl_info_page_t;
-
-/**
- * Helper macro for declaring an extern `flash_ctrl_info_page_t`.
- * @param name_ Name of the enumeration constant.
- * @param bank_ Bank of the info page.
- * @param page_ Page of the info page.
- */
-#define INFO_PAGE_STRUCT_DECL_(name_, bank_, page_) \
-  extern const flash_ctrl_info_page_t name_;
-
-/**
- * Info pages.
- */
-FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
-
-#undef INFO_PAGE_STRUCT_DECL_
 
 /**
  * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and

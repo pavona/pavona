@@ -35,10 +35,10 @@ static status_t clear_digest_page(const flash_ctrl_info_page_t *info_page) {
 }
 
 static status_t modify_digest_test(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  TRY(clear_digest_page(&kFlashCtrlInfoPageFactoryCerts));
-  TRY(clear_digest_page(&kFlashCtrlInfoPageDiceCerts));
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS);
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
+  TRY(clear_digest_page(&FLASH_CTRL_INFO_PAGE_FACTORY_CERTS));
+  TRY(clear_digest_page(&FLASH_CTRL_INFO_PAGE_DICE_CERTS));
   return OK_STATUS();
 }
 

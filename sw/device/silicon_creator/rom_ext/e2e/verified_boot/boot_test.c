@@ -14,7 +14,7 @@
 
 status_t ownership_print(void) {
   owner_block_t config;
-  TRY(flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  TRY(flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                            sizeof(config) / sizeof(uint32_t), &config));
 
   LOG_INFO("owner_page0 tag = %C", config.header.tag);

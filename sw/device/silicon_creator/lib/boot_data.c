@@ -53,8 +53,8 @@ enum {
  * Boot data flash info pages.
  */
 static const flash_ctrl_info_page_t *kPages[kPageCount] = {
-    &kFlashCtrlInfoPageBootData0,
-    &kFlashCtrlInfoPageBootData1,
+    &FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
+    &FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
 };
 #endif
 

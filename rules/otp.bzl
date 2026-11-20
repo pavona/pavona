@@ -39,6 +39,12 @@ format expected by the image generation tool.
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:const.bzl", "CONST", "hex")
+load(
+    "//rules:nvm.bzl",
+    "nvm_hex",
+    "nvm_json_builder",
+    "nvm_partition",
+)
 load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 load("//hw/top:defs.bzl", "pavona_select_top_attr")
@@ -88,34 +94,10 @@ def get_otp_images():
     return out
 
 def otp_partition(name, **kwargs):
-    partition = {
-        "name": name,
-    }
-    partition.update(kwargs)
-    return json.encode(partition)
-
-def _otp_json_builder(ctx):
-    otp = {}
-    otp["partitions"] = [json.decode(p) for p in ctx.attr.partitions]
-
-    # For every partition with an "items" dictionary, expand the dictionary of
-    # key:value pairs into a list of dicts, each of the form
-    # {
-    #   "name": key,
-    #   "value": value
-    # }
-    # This format is expected by the OTP image generation tool
-    for partition in otp["partitions"]:
-        if "items" in partition.keys():
-            items = partition["items"]
-            partition["items"] = [{"name": k, "value": v} for k, v in items.items()]
-
-    file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
-    ctx.actions.write(file, json.encode_indent(otp))
-    return file
+    return nvm_partition(name, **kwargs)
 
 def _otp_json_impl(ctx):
-    return [DefaultInfo(files = depset([_otp_json_builder(ctx)]))]
+    return [DefaultInfo(files = depset([nvm_json_builder(ctx)]))]
 
 otp_json = rule(
     implementation = _otp_json_impl,
@@ -125,16 +107,16 @@ otp_json = rule(
 )
 
 def _otp_json_rot_keys_impl(ctx):
-    intput_file = _otp_json_builder(ctx)
+    input_file = nvm_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_digest.json".format(ctx.attr.name))
     args = ctx.actions.args()
-    args.add("--input", intput_file)
+    args.add("--input", input_file)
     args.add("--output", output_file)
 
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     ctx.actions.run(
         outputs = [output_file],
-        inputs = [intput_file],
+        inputs = [input_file],
         arguments = [args],
         executable = tc.tools.gen_otp_rot_auth_json,
     )
@@ -160,17 +142,17 @@ def _otp_json_immutable_rom_ext_impl(ctx):
             break
     if rom_ext_elf_file == None:
         fail("No ELF dependency for ROM_EXT target.")
-    intput_file = _otp_json_builder(ctx)
+    input_file = nvm_json_builder(ctx)
     output_file = ctx.actions.declare_file("{}.with_immutable_re_params.json".format(ctx.attr.name))
     args = ctx.actions.args()
-    args.add("--input", intput_file)
+    args.add("--input", input_file)
     args.add("--elf", rom_ext_elf_file)
     args.add("--output", output_file)
 
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     ctx.actions.run(
         outputs = [output_file],
-        inputs = [intput_file, rom_ext_elf_file],
+        inputs = [input_file, rom_ext_elf_file],
         arguments = [args],
         executable = tc.tools.gen_otp_immutable_rom_ext_json,
     )
@@ -374,7 +356,7 @@ OTP_SIGVERIFY_FAKE_KEYS = pavona_select_top_attr("otp_sigverify_fake_keys")
 STD_OTP_OVERLAYS = pavona_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
-    return hex(v)
+    return nvm_hex(v)
 
 def otp_bytestring(byte_list):
     val = 0

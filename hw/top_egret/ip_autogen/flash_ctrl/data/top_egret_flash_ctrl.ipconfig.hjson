@@ -5,6 +5,998 @@
   instance_name: top_egret_flash_ctrl
   param_values:
   {
+    flash_info_mmap:
+    {
+      flash_info:
+      {
+        width: 8
+        depth: 5120
+        page_size: "2048"
+        size: 40960
+        addr_width: 13
+        byte_addr_width: 16
+      }
+      banks:
+      [
+        {
+          types:
+          [
+            {
+              pages:
+              [
+                {
+                  name: FACTORY_ID
+                  items:
+                  [
+                    {
+                      name: FACTORY_ID_LOT_NAME_PADDING
+                      size: 80
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 0
+                    }
+                    {
+                      name: FACTORY_ID_LOT_NAME
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 80
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_NUMBER_PADDING
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 84
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_NUMBER
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 88
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_X_COORD_PADDING
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 92
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_X_COORD
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 96
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_Y_COORD_PADDING
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 100
+                    }
+                    {
+                      name: FACTORY_ID_WAFER_Y_COORD
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 104
+                    }
+                    {
+                      name: FACTORY_ID_PROCESS_DATA_PADDING
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 108
+                    }
+                    {
+                      name: FACTORY_ID_PROCESS_DATA
+                      size: 8
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 112
+                    }
+                    {
+                      name: FACTORY_ID_AST_CALIBRATION_DATA_PADDING
+                      size: 8
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 120
+                    }
+                    {
+                      name: FACTORY_ID_AST_CALIBRATION_DATA
+                      size: 156
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 128
+                    }
+                    {
+                      name: FACTORY_ID_AST_CFG_VERSION_PADDING
+                      size: 20
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 284
+                    }
+                    {
+                      name: FACTORY_ID_AST_CFG_VERSION
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 304
+                    }
+                    {
+                      name: FACTORY_ID_CP_DEVICE_ID_PADDING
+                      size: 76
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 308
+                    }
+                    {
+                      name: FACTORY_ID_CP_DEVICE_ID
+                      size: 16
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 384
+                    }
+                    {
+                      name: FACTORY_ID_AST_INDIV_PATCH_ADDR
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 400
+                    }
+                    {
+                      name: FACTORY_ID_AST_INDIV_PATCH_VAL
+                      size: 4
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 404
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+                {
+                  name: CREATOR_SECRET
+                  items:
+                  [
+                    {
+                      name: CREATOR_SECRET_KEY_SEED
+                      size: 32
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 2048
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 2048
+                }
+                {
+                  name: OWNER_SECRET
+                  items:
+                  [
+                    {
+                      name: OWNER_SECRET_KEY_SEED
+                      size: 32
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 4096
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 4096
+                }
+                {
+                  name: WAFER_AUTH_SECRET
+                  items:
+                  [
+                    {
+                      name: WAFER_AUTH_SECRET
+                      size: 32
+                      desc: Wafer authentication secret used during provisioning.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6144
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 6144
+                }
+                {
+                  name: ATTESTATION_KEY_SEEDS
+                  items:
+                  [
+                    {
+                      name: ATTESTATION_KEY_SEEDS_UDS_KEY_SEED
+                      size: 40
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 8192
+                    }
+                    {
+                      name: ATTESTATION_KEY_SEEDS_CDI0_KEY_SEED
+                      size: 40
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 8232
+                    }
+                    {
+                      name: ATTESTATION_KEY_SEEDS_CDI1_KEY_SEED
+                      size: 40
+                      ismubi: false
+                      absorb: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 8272
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 8192
+                }
+                {
+                  name: OWNER_RESERVED0
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED0
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 10240
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 10240
+                }
+                {
+                  name: OWNER_RESERVED1
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED1
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 12288
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 12288
+                }
+                {
+                  name: OWNER_RESERVED2
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED2
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 14336
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 14336
+                }
+                {
+                  name: OWNER_RESERVED3
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 16384
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 16384
+                }
+                {
+                  name: FACTORY_CERTS
+                  items:
+                  [
+                    {
+                      name: DICE_UDS_CERTIFCATE
+                      absorb: true
+                      desc:
+                        '''
+                        DICE certificate endorsing the Unique Device Secret (UDS) of the chip.
+                        This certificate is endorsed at manufacturing time and should never be
+                        modified post-provisioning.
+                        '''
+                      size: 2048
+                      ismubi: false
+                      inv_default: 0
+                      offset: 18432
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 18432
+                }
+              ]
+              page_size: "2048"
+              size: 20480
+            }
+            {
+              pages:
+              [
+                {
+                  name: UNALLOCATED0
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+              ]
+              page_size: "2048"
+              size: 2048
+            }
+            {
+              pages:
+              [
+                {
+                  name: UNALLOCATED1
+                  absorb: true
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+                {
+                  name: UNALLOCATED2
+                  absorb: true
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 2048
+                }
+              ]
+              page_size: "2048"
+              size: 4096
+            }
+          ]
+          page_size: "2048"
+          size: 26624
+        }
+        {
+          types:
+          [
+            {
+              pages:
+              [
+                {
+                  name: BOOT_DATA0
+                  items:
+                  [
+                    {
+                      name: BOOT_DATA0
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 0
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+                {
+                  name: BOOT_DATA1
+                  items:
+                  [
+                    {
+                      name: BOOT_DATA1
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 2048
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 2048
+                }
+                {
+                  name: OWNER_SLOT0
+                  items:
+                  [
+                    {
+                      name: OWNER_SLOT0_TLV_HEADER_TAG
+                      size: 4
+                      desc:
+                        '''
+                        Tag identifying the data structure as an owner block.
+                        Should always be set to 'OWNR'; all other values are invalid.
+                        '''
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4096
+                    }
+                    {
+                      name: OWNER_SLOT0_TLV_HEADER_LENGTH
+                      size: 2
+                      desc: Specifies the length of the owner block.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4100
+                    }
+                    {
+                      name: OWNER_SLOT0_TLV_HEADER_VERSION_MAJOR
+                      size: 1
+                      desc: Owner block structure major version number.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4102
+                    }
+                    {
+                      name: OWNER_SLOT0_TLV_HEADER_VERSION_MINOR
+                      size: 1
+                      desc: Owner block structure minor version number.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4103
+                    }
+                    {
+                      name: OWNER_SLOT0_CONFIG_VERSION
+                      size: 4
+                      desc: Configuration version (monotonically increasing per owner).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4104
+                    }
+                    {
+                      name: OWNER_SLOT0_SRAM_EXEC_MODE
+                      size: 4
+                      desc: SRAM execution configuration (DisabledLocked, Disabled, Enabled).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4108
+                    }
+                    {
+                      name: OWNER_SLOT0_OWNERSHIP_KEY_ALG
+                      size: 4
+                      desc: Ownership key algorithm (currently, only ECDSA is supported).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4112
+                    }
+                    {
+                      name: OWNER_SLOT0_UPDATE_MODE
+                      size: 4
+                      desc: Ownership update mode (one of OPEN, SELF, NEWV)
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4116
+                    }
+                    {
+                      name: OWNER_SLOT0_MIN_SECURITY_VERSION_BL0
+                      size: 4
+                      desc: Set the minimum security version to this value (UINT32_MAX: no change)
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4120
+                    }
+                    {
+                      name: OWNER_SLOT0_LOCK_CONSTRAINT
+                      size: 4
+                      desc: The device ID locking constraint.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4124
+                    }
+                    {
+                      name: OWNER_SLOT0_DEVICE_ID
+                      size: 32
+                      desc: The device ID to which this config applies.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4128
+                    }
+                    {
+                      name: OWNER_SLOT0_RESERVED
+                      size: 64
+                      desc: Reserved space for future use.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4160
+                    }
+                    {
+                      name: OWNER_SLOT0_FIRMWARE_CODESIGN_ECDSA_KEY
+                      size: 64
+                      desc: ECDSA-P256 public key for owner firmware verification.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4224
+                    }
+                    {
+                      name: OWNER_SLOT0_FIRMWARE_CODESIGN_SPX_KEY
+                      size: 32
+                      desc: SPHINCS+-128s public key for owner firmware verification.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4288
+                    }
+                    {
+                      name: OWNER_SLOT0_UNLOCK_ECDSA_KEY
+                      size: 64
+                      desc: ECDSA-P256 public key for owner unlock.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4320
+                    }
+                    {
+                      name: OWNER_SLOT0_UNLOCK_SPX_KEY
+                      size: 32
+                      desc: SPHINCS+-128s public key for owner unlock.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4384
+                    }
+                    {
+                      name: OWNER_SLOT0_DATA
+                      size: 1536
+                      desc: Data region to hold the other configuration structs.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 4416
+                    }
+                    {
+                      name: OWNER_SLOT0_OWNER_ECDSA_SIGNATURE
+                      size: 64
+                      desc: ECDSA-P256 signature over the owner block with the owner private key.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 5952
+                    }
+                    {
+                      name: OWNER_SLOT0_SEAL
+                      size: 32
+                      desc: A sealing value to seal the owner block to a specific chip.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6016
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 4096
+                }
+                {
+                  name: OWNER_SLOT1
+                  items:
+                  [
+                    {
+                      name: OWNER_SLOT1_TLV_HEADER_TAG
+                      size: 4
+                      desc:
+                        '''
+                        Tag identifying the data structure as an owner block.
+                        Should always be set to 'OWNR'; all other values are invalid.
+                        '''
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6144
+                    }
+                    {
+                      name: OWNER_SLOT1_TLV_HEADER_LENGTH
+                      size: 2
+                      desc: Specifies the length of the owner block.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6148
+                    }
+                    {
+                      name: OWNER_SLOT1_TLV_HEADER_VERSION_MAJOR
+                      size: 1
+                      desc: Owner block structure major version number.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6150
+                    }
+                    {
+                      name: OWNER_SLOT1_TLV_HEADER_VERSION_MINOR
+                      size: 1
+                      desc: Owner block structure minor version number.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6151
+                    }
+                    {
+                      name: OWNER_SLOT1_CONFIG_VERSION
+                      size: 4
+                      desc: Configuration version (monotonically increasing per owner).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6152
+                    }
+                    {
+                      name: OWNER_SLOT1_SRAM_EXEC_MODE
+                      size: 4
+                      desc: SRAM execution configuration (DisabledLocked, Disabled, Enabled).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6156
+                    }
+                    {
+                      name: OWNER_SLOT1_OWNERSHIP_KEY_ALG
+                      size: 4
+                      desc: Ownership key algorithm (currently, only ECDSA is supported).
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6160
+                    }
+                    {
+                      name: OWNER_SLOT1_UPDATE_MODE
+                      size: 4
+                      desc: Ownership update mode (one of OPEN, SELF, NEWV)
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6164
+                    }
+                    {
+                      name: OWNER_SLOT1_MIN_SECURITY_VERSION_BL0
+                      size: 4
+                      desc: Set the minimum security version to this value (UINT32_MAX: no change)
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6168
+                    }
+                    {
+                      name: OWNER_SLOT1_LOCK_CONSTRAINT
+                      size: 4
+                      desc: The device ID locking constraint.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6172
+                    }
+                    {
+                      name: OWNER_SLOT1_DEVICE_ID
+                      size: 32
+                      desc: The device ID to which this config applies.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6176
+                    }
+                    {
+                      name: OWNER_SLOT1_RESERVED
+                      size: 64
+                      desc: Reserved space for future use.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6208
+                    }
+                    {
+                      name: OWNER_SLOT1_FIRMWARE_CODESIGN_ECDSA_KEY
+                      size: 64
+                      desc: ECDSA-P256 public key for owner firmware verification.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6272
+                    }
+                    {
+                      name: OWNER_SLOT1_FIRMWARE_CODESIGN_SPX_KEY
+                      size: 32
+                      desc: SPHINCS+-128s public key for owner firmware verification.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6336
+                    }
+                    {
+                      name: OWNER_SLOT1_UNLOCK_ECDSA_KEY
+                      size: 64
+                      desc: ECDSA-P256 public key for ownership unlock.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6368
+                    }
+                    {
+                      name: OWNER_SLOT1_UNLOCK_SPX_KEY
+                      size: 32
+                      desc: SPHINCS+-128s public key for ownership unlock.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6432
+                    }
+                    {
+                      name: OWNER_SLOT1_DATA
+                      size: 1536
+                      desc: Data region to hold the other configuration structs.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 6464
+                    }
+                    {
+                      name: OWNER_SLOT1_OWNER_ECDSA_SIGNATURE
+                      size: 64
+                      desc: ECDSA-P256 signature over the owner block with the owner private key.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 8000
+                    }
+                    {
+                      name: OWNER_SLOT1_SEAL
+                      size: 32
+                      desc: A sealing value to seal the owner block to a specific chip.
+                      ismubi: false
+                      absorb: false
+                      inv_default: 0
+                      offset: 8064
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 6144
+                }
+                {
+                  name: CREATOR_RESERVED0
+                  items:
+                  [
+                    {
+                      name: CREATOR_RESERVED0
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 8192
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 8192
+                }
+                {
+                  name: OWNER_RESERVED4
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED4
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 10240
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 10240
+                }
+                {
+                  name: OWNER_RESERVED5
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED5
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 12288
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 12288
+                }
+                {
+                  name: OWNER_RESERVED6
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED6
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 14336
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 14336
+                }
+                {
+                  name: OWNER_RESERVED7
+                  items:
+                  [
+                    {
+                      name: OWNER_RESERVED7
+                      absorb: true
+                      size: 2048
+                      ismubi: false
+                      desc: ""
+                      inv_default: 0
+                      offset: 16384
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 16384
+                }
+                {
+                  name: DICE_CERTS
+                  items:
+                  [
+                    {
+                      name: DICE_CERTIFCATES
+                      absorb: true
+                      desc:
+                        '''
+                        DICE certificate chain endorsing the secure boot stages following UDS:
+                        (Owner Intermediate (CDI_0), Silicon Owner (CDI_1), ...). Certificates
+                        are variable length and stored without any zero-padding in between.
+
+                        The certificates may be updated in-field to correspond to changes to
+                        chip state modifiable post-provisioning, such as the silicon creator
+                        firmware.
+                        '''
+                      size: 2048
+                      ismubi: false
+                      inv_default: 0
+                      offset: 18432
+                    }
+                  ]
+                  size: 2048
+                  desc: ""
+                  offset: 18432
+                }
+              ]
+              page_size: "2048"
+              size: 20480
+            }
+            {
+              pages:
+              [
+                {
+                  name: UNALLOCATED3
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+              ]
+              page_size: "2048"
+              size: 2048
+            }
+            {
+              pages:
+              [
+                {
+                  name: UNALLOCATED4
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 0
+                }
+                {
+                  name: UNALLOCATED5
+                  items: []
+                  size: 2048
+                  desc: ""
+                  offset: 2048
+                }
+              ]
+              page_size: "2048"
+              size: 4096
+            }
+          ]
+          page_size: "2048"
+          size: 26624
+        }
+      ]
+    }
     banks: 2
     data_width: 64
     info_types: 3
