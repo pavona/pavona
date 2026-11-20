@@ -476,13 +476,11 @@ fn run_ecdsa_testcase(
 
     if test_case.vendor == "acvp" {
         let mut group_fields = Fields::new();
-        group_fields.insert("qx".to_string(), json!(hex(&test_case.qx)));
-        group_fields.insert("qy".to_string(), json!(hex(&test_case.qy)));
-        responses.set_group_fields(&test_case.acvp, group_fields);
-
         let mut fields = Fields::new();
         match operation {
             CryptotestEcdsaOperation::Sign => {
+                group_fields.insert("qx".to_string(), json!(hex(&test_case.qx)));
+                group_fields.insert("qy".to_string(), json!(hex(&test_case.qy)));
                 fields.insert("r".to_string(), json!(hex(&outputs.r)));
                 fields.insert("s".to_string(), json!(hex(&outputs.s)));
             }
@@ -493,6 +491,7 @@ fn run_ecdsa_testcase(
                 unreachable!("Should be caught above")
             }
         }
+        responses.set_group_fields(&test_case.acvp, group_fields);
         responses.add(&test_case.acvp, test_case.test_case_id, fields);
     }
 
