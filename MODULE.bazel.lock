@@ -1141,7 +1141,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "IOSS2+nsp2l83k2FPuhchrr9p4CePW3MNg9RvNwkHHA=",
+        "bzlTransitiveDigest": "ToBIItyJ9RwaxStzPdOe8fAuPHLbjBYPc1UqoyLFPhU=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1189,17 +1189,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/ecccdhtestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_rsa_fips_186_3": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "8405aeb3572a4f98ed4b1a3ccb3f2f49e725462dd28ec4759d6a15d88855d19c",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-3rsatestvectors.zip"
               ]
             }
           }

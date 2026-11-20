@@ -797,47 +797,6 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_aes_gcm_parser",
 )
 
-[
-    run_binary(
-        name = "nist_cavp_rsa_{}_{}_json".format(
-            padding_mode,
-            operation,
-        ),
-        srcs = [
-            "@nist_cavp_rsa_fips_186_3//:Sig{}{}_186-3.{}".format(prefix, infix, suffix),
-            "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
-        ],
-        outs = [":nist_rsa_{}_{}.json".format(
-            padding_mode,
-            operation,
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_rsa_fips_186_3//:Sig{}{}_186-3.{})".format(prefix, infix, suffix),
-            "--dst",
-            "$(location :nist_rsa_{}_{}.json)".format(
-                padding_mode,
-                operation,
-            ),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
-            "--operation",
-            operation,
-            "--padding",
-            padding_mode,
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_rsa_parser",
-    )
-    for padding_mode, infix in [
-        ("pkcs1_1.5", "15"),
-        ("pss", "PSS"),
-    ]
-    for operation, prefix, suffix in [
-        ("sign", "Gen", "txt"),
-        ("verify", "Ver", "rsp"),
-    ]
-]
-
 run_binary(
     name = "acvp_rsa_keygen_json",
     srcs = [

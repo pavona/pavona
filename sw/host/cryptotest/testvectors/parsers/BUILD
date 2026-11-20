@@ -145,15 +145,6 @@ py_binary(
 )
 
 py_binary(
-    name = "nist_cavp_rsa_parser",
-    srcs = ["nist_cavp_rsa_parser.py"],
-    deps = [
-        ":cryptotest_util",
-        requirement("jsonschema"),
-    ],
-)
-
-py_binary(
     name = "rsp_sphincsplus_parser",
     srcs = ["rsp_sphincsplus_parser.py"],
     deps = [
