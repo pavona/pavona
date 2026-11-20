@@ -90,7 +90,11 @@ jobs:
         run: brew bundle install --file=Brewfile
       # Catch dependencies missing from the Brewfile.
       - name: Remove Homebrew packages not in Brewfile
-        run: brew bundle cleanup --force --file=Brewfile
+        run: |
+          # The runner image preinstalls openssl@1.1, whose formula Homebrew has removed, and
+          # cleanup fails trying to remove it. Remove it manually first.
+          brew uninstall --ignore-dependencies --force openssl@1.1 || true
+          brew bundle cleanup --force --file=Brewfile
       - name: Install Python dependencies
         run: |
           python3.12 -m venv ~/.local/share/venv
