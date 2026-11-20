@@ -51,16 +51,18 @@ autogen_acc_insn_count_header(
     name = "sha256_insn_counts",
     hjson = "sha256_modes.hjson",
     template = "sha256_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_sha256",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_sha256"],
+    }),
 )
 
 autogen_acc_insn_count_header(
     name = "sha512_insn_counts",
     hjson = "sha512_modes.hjson",
     template = "sha512_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_sha512",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_sha512"],
+    }),
 )

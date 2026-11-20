@@ -64,25 +64,28 @@ autogen_acc_insn_count_header(
     name = "p256_insn_counts",
     hjson = "p256_modes.hjson",
     template = "p256_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_p256",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_p256"],
+    }),
 )
 
 autogen_acc_insn_count_header(
     name = "p384_insn_counts",
     hjson = "p384_modes.hjson",
     template = "p384_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_p384",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_p384"],
+    }),
 )
 
 autogen_acc_insn_count_header(
     name = "ed25519_insn_counts",
     hjson = "ed25519_modes.hjson",
     template = "ed25519_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_ed25519",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_ed25519"],
+    }),
 )

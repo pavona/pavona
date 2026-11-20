@@ -59,16 +59,18 @@ autogen_acc_insn_count_header(
     name = "mldsa_insn_counts",
     hjson = "mldsa_modes.hjson",
     template = "mldsa_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_mldsa",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_mldsa"],
+    }),
 )
 
 autogen_acc_insn_count_header(
     name = "mldsa_insn_counts_hardened",
     hjson = "mldsa_modes.hjson",
     template = "mldsa_insn_counts_hardened.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_mldsa_hardened",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_mldsa_hardened"],
+    }),
 )
