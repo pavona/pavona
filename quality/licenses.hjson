@@ -197,7 +197,7 @@
     //// Software Exclusions
 
     // Coremark Vendored Files
-    "sw/device/benchmarks/coremark/top_egret/*",
+    "sw/device/benchmarks/coremark/*",
 
     //// Other Exclusions
 
