@@ -132,15 +132,15 @@ The main difference between the two is "how" the states were reached and the ent
 `Disabled` state is reached through intentional software commands where the sideload key slots and software key are not wiped, while `Invalid` state is reached through life cycle deactivation or operational faults where the internal key, sideload key slots and software key are wiped.
 
 This also means that only `Invalid` is a terminal state.
-If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#Invalid) is followed to bring the system to a terminal `Invalid` state.
+If after entering `Disabled` life cycle is deactivated or a fault is encountered, the same [invalid entry procedure](#invalid) is followed to bring the system to a terminal `Invalid` state.
 
 If ever multiple conditions collide (a fault is detected at the same time software issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Life Cycle Connection
-The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/README.md#key_manager_en).
+The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/doc/theory_of_operation.md#key_manager_en).
 
 Until the life cycle controller activates the key manager, the key manager does not accept any software commands.
-Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-states).
+Once the key manager is activated by the life cycle controller, it is then allowed to transition to the various states previously [described](#key-manager-state).
 
 When the life cycle controller deactivates the key manager, the key manager transitions to the `Invalid` state.
 
@@ -338,7 +338,7 @@ The first transaction uses the Sealing CDI internal key, [`"SEALING_SW_BINDING"`
 The second transaction uses the Attestation CDI internal key, [`"ATTEST_SW_BINDING"`](registers.md#attest_sw_binding) and other common inputs.
 
 When invoking a generate operation, the software must specify which CDI to use as the source key.
-This is done through [`"CONTROL.CDI_SEL"`](registers.md#control).
+This is done through [`CONTROL_SHADOWED.CDI_SEL`](registers.md#control_shadowed--cdi_sel).
 Unlike the advance operation, there is only 1 KMAC transaction since we pick a specific CDI to operate.
 
 When disabling, both versions are disabled together.
@@ -466,10 +466,10 @@ The software binding is used during the following state transitions only:
 -  `CreatorRootKey` to `OwnerIntermedaiteKey`
 -  `OwnerIntermediateKey` to `OwnerRootKey`
 
-In order to save on storage and not have a duplicate copy per stage, the software binding registers [`SOFTWARE_BINDING`](registers.md#software_binding) are shared between key manager stages.
+In order to save on storage and not have a duplicate copy per stage, the software binding registers [`SEALING_SW_BINDING`](registers.md#sealing_sw_binding) and [`ATTEST_SW_BINDING`](registers.md#attest_sw_binding) are shared between key manager stages.
 
-Software sets the appropriate values and locks it by clearing [`SOFT_BINDING_EN`](registers.md#soft_binding_en).
-When later a successful `advance` call is made, the key manager then unlocks by setting [`SOFT_BINDING_EN`](registers.md#soft_binding_en) to 1.
+Software sets the appropriate values and locks it by clearing [`SW_BINDING_REGWEN`](registers.md#sw_binding_regwen).
+When later a successful `advance` call is made, the key manager then unlocks by setting [`SW_BINDING_REGWEN`](registers.md#sw_binding_regwen) to 1.
 An unsuccessful advance call (errors) does not unlock the binding.
 This allows the next stage of software to re-use the binding registers.
 

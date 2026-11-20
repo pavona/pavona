@@ -24,7 +24,7 @@ Code Quality  | [LINT_SETUP][]        | Done        |
 [CLKRST_CONNECTED]:   ../../../../doc/contributing/hw/checklist/README.md#clkrst_connected
 [IP_TOP]:             ../../../../doc/contributing/hw/checklist/README.md#ip_top
 [IP_INSTANTIABLE]:    ../../../../doc/contributing/hw/checklist/README.md#ip_instantiable
-[MEM_INSTANCED_80]:   ../../../../doc/contributing/hw/checklist/README.md#mem_instanced_80
+[MEM_INSTANCED_80]:   ../../../../doc/contributing/hw/checklist/README.md#physical_macros_defined_80
 [FUNC_IMPLEMENTED]:   ../../../../doc/contributing/hw/checklist/README.md#func_implemented
 [ASSERT_KNOWN_ADDED]: ../../../../doc/contributing/hw/checklist/README.md#assert_known_added
 [LINT_SETUP]:         ../../../../doc/contributing/hw/checklist/README.md#lint_setup

@@ -12,7 +12,7 @@
 <td>LC_STATE</td>
 <td>320</td>
 <td rowspan="5">Life Cycle Controller</td>
-<td>Life cycle manufacturing state (refer to details <a href="#life-cycle-manufacturing-state-encodings">here</a>).</td>
+<td>Life cycle manufacturing state (refer to details <a href="theory_of_operation.md#life-cycle-manufacturing-state-encodings">here</a>).</td>
 </tr>
 <tr>
 <td>LC_TRANSITION_CNT</td>

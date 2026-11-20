@@ -106,7 +106,7 @@ The fast FSM does not recover from this state until the system is reset by POR.
 
 ### ROM Integrity Checks
 
-The power manager coordinates the [start up ROM check](../../../../ip/rom_ctrl/README.md#the-startup-rom-check) with `rom_ctrl`.
+The power manager coordinates the [start up ROM check](../../../../ip/rom_ctrl/doc/theory_of_operation.md#the-startup-rom-check) with `rom_ctrl`.
 
 After every reset, the power manager sends an indication to the `rom_ctrl` to begin performing integrity checks.
 When the `rom_ctrl` checks are finished, a `done` and `good` indication are sent back to the power manager.

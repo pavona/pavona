@@ -110,7 +110,7 @@ released to the system.
 The USB clock requires an accuracy that cannot be achieved by the AST
 clocks natively. As a result, information from USB frames are used to
 [<u>calibrate the
-clock</u>](../../../ip/usbdev/README.md#clocking).
+clock</u>](../../../ip/usbdev/doc/theory_of_operation.md#clocking).
 
 # Clock and Reset Inputs
 

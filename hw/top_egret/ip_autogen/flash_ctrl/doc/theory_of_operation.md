@@ -41,7 +41,7 @@ It is expected that after an RMA transition, the entire system will be rebooted.
 The flash protocol controller is initialized through [`INIT`](registers.md#init).
 When initialization is invoked, the flash controller requests the address and data scrambling keys from an external source, for example the OTP controller.
 
-After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions](#secret-information-partitions) and sends them to the key manager.
+After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions](../README.md#secret-information-partitions) and sends them to the key manager.
 Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.
 
 #### RMA Entry
@@ -138,7 +138,7 @@ To support separate access privileges between data and code, the flash protocol 
 If software programs [`EXEC`](registers.md#exec) to `0xa26a38f7`, code fetch from flash is allowed.
 If software programs [`EXEC`](registers.md#exec) to any other value, code fetch from flash results in an error.
 
-The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../../../../ip/lc_ctrl/README.md#usage-of-user-bits) of the TL-UL interface.
+The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../../../../ip/tlul/README.md#usage-of-user-bits) of the TL-UL interface.
 
 #### Flash Errors and Faults
 
@@ -166,7 +166,7 @@ There are 4 interfaces:
 - Host direct access to flash controller [register files](#host-direct-access-to-flash-controller-register-files).
 - Host direct access to [flash macro](#host-direct-access-to-flash-macro).
 - Host / software initiated flash controller access to [flash macro (read / program / erase)](#host--software-initiated-access-to-flash-macro).
-- Life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#life-cycle-management-interface-hardware-initiated-access-to-flash-macro).
+- Life cycle management interface / hardware initiated flash controller access to [flash macro (read / program / erase)](#life-cycle-management-interface--hardware-initiated-access-to-flash-macro).
 
 The impact of transmission integrity of each interface is described below.
 
@@ -387,7 +387,7 @@ Assume also the following address to word mapping:
 When software reads bus word 1, the entire flash word 0 is captured into the flash buffer.
 When software comes back to read bus word 0, instead of accessing the flash again, the data is retrieved directly from the buffer.
 
-The recently read entries store both the de-scrambled data and the [integrity ECC](#integrity-ecc).
+The recently read entries store both the de-scrambled data and the [integrity ECC](#icv).
 The [reliability ECC](#reliability-ecc) is not stored because the small buffer is purely flip-flop based and does not have storage reliability concerns like the main flash macro.
 
 When a read hits in the flash buffer, the integrity ECC is checked against the de-scrambled data and an error is returned to the initiating entity, whether it is the controller itself or a host.

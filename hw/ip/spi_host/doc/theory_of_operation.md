@@ -227,13 +227,13 @@ To configure timing and send commands to devices on other `CSB` lines, instead u
 
 The SPI clock rate for each peripheral is set by two factors:
 - The SPI_HOST input clock
-- A 16-bit clock divider ([`CONFIGOPTS.CLKDIV`](#configopts--clkdiv))
+- A 16-bit clock divider ([`CONFIGOPTS.CLKDIV`](registers.md#configopts--clkdiv))
 
 The SPI protocol usually requires activity (either sampling or asserting data) on either edge of the `SCK` clock.
 For this reason the maximum `SCK` frequency is at most one half the SPI_HOST core frequency.
 
 Since some peripheral devices attached to the same SPI_HOST IP may require different clock frequencies, there is also the option to divide the core clock by an additional factor when dealing with slower peripherals.
-This is configured per-peripheral by setting the field [`CONFIGOPTS.CLKDIV`](#configopts--clkdiv).
+This is configured per-peripheral by setting the field [`CONFIGOPTS.CLKDIV`](registers.md#configopts--clkdiv).
 
 $$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
 

@@ -82,7 +82,7 @@ Before enabling auto request mode, firmware must configure the EDN's `generate` 
 These can be loaded into their respective command replay FIFOs through the [`GENERATE_CMD`](registers.md#generate_cmd) and [`RESEED_CMD`](registers.md#reseed_cmd) registers.
 These `generate` commands will be issued as necessary to meet the bandwidth requirements of the endpoints.
 The `reseed` commands will be issued once every `MAX_NUM_REQS_BETWEEN_RESEEDS` `generate` requests.
-Before enabling auto request mode, firmware must configure a non-zero value in the [`MAX_NUM_REQS_BETWEEN_RESEEDS`](registers.md#max-num-reqs-between-reseeds) register.
+Before enabling auto request mode, firmware must configure a non-zero value in the [`MAX_NUM_REQS_BETWEEN_RESEEDS`](registers.md#max_num_reqs_between_reseeds) register.
 The reset value is `0`, which means no `generate` commands are issued.
 For details on the options for application interface commands please see the [CSRNG IP Documentation](../../csrng/README.md).
 Auto request mode can then be entered by programming the [`CTRL`](registers.md#ctrl) register with the `EDN_ENABLE` and the `AUTO_REQ_MODE` fields asserted.

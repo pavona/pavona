@@ -1476,9 +1476,9 @@ Enables the sleep mode of the corresponding dedicated pad.
 Deep sleep mode enable.
 If this bit is set to 1 the corresponding pad will enable the sleep behavior
 specified in [`DIO_PAD_SLEEP_MODE`](#dio_pad_sleep_mode) upon deep sleep entry, and the corresponding bit
-in [`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status) will be set to 1.
+in [`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status_0) will be set to 1.
 The pad remains in deep sleep mode until the corresponding bit in
-[`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status) is cleared by SW.
+[`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status_0) is cleared by SW.
 Note that if an always on peripheral is connected to a specific DIO pad,
 the corresponding [`DIO_PAD_SLEEP_EN`](#dio_pad_sleep_en) bit should be set to 0.
 
@@ -1659,7 +1659,7 @@ Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
 However, read/write accesses following a write will block until that write has completed.
 
-Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](#wkup_detector_en_0) before changing the detection mode.
+Note that the wkup detector should be disabled by setting [`WKUP_DETECTOR_EN_0`](#wkup_detector_en) before changing the detection mode.
 The reason for that is that the pulse width counter is NOT cleared upon a mode change while the detector is enabled.
 - Reset default: `0x0`
 - Reset mask: `0x1f`

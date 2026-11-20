@@ -37,7 +37,7 @@ The pre-condition debounce timing is the same as for combo detection, but the ke
 Let's use the "Power button + Key0 + Key1" combo with pre-condition "Key2" as an example:
 
 0. Software can define the key value `key2_in_i==0` as pre-condition in the [`COM_PRE_SEL_CTL_0`](registers.md#com_pre_sel_ctl) register.
-1. The key-pressed time for the pre-condition (e.g. 2 seconds) can be configured via the [`COM_DET_SEL_CTL_0`](registers.md#com_det_sel_ctl) register.
+1. The key-pressed time for the pre-condition (e.g. 2 seconds) can be configured via the [`COM_PRE_DET_CTL_0`](registers.md#com_pre_det_ctl) register.
 2. Software can define the three key values `pwrb_in_i==0`, `key0_in_i==0` and `key1_in_i==0` as trigger combination in the [`COM_SEL_CTL_0`](registers.md#com_sel_ctl) register.
 3. The combo duration for which the above combo should be pressed (e.g. 10 seconds) can be configured via the [`COM_DET_CTL_0`](registers.md#com_det_ctl) register.
 4. Actions such as asserting `ec_rst_l_o` and raising an interrupt can be configured via the [`COM_OUT_CTL_0`](registers.md#com_out_ctl) register.

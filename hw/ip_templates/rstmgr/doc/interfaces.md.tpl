@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-## Parameters
+${"##"} Parameters
 
 The following table lists the instantiation parameters of `rstmgr`.
 
@@ -10,7 +10,7 @@ Parameter                   | Default       | Description
 `SecMaxSyncDelay`           | 2             | The default synchronization delay assumptions used in reset consistency checks.  If a design uses a sync cell with more stages of delay, that value should be supplied.
 
 
-## Signals
+${"##"} Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/rstmgr/data/rstmgr.hjson -->
 <!-- END CMDGEN -->

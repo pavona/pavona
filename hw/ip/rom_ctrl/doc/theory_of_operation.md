@@ -58,7 +58,7 @@ The select signal for this multiplexer has a redundant encoding to protect it ag
 If the select signal has an invalid value, this will trigger a fatal alert.
 Before starting to read data, it starts a cSHAKE operation on the [KMAC](../../kmac/README.md) module using one of its application interfaces.
 We expect to use the `cSHAKE256` algorithm, with prefix "ROM_CTRL".
-The [Application Interface](../../kmac/README.md#application-interface) section of the KMAC documentation details the parameters used.
+The [Application Interface](../../kmac/doc/theory_of_operation.md#application-interface) section of the KMAC documentation details the parameters used.
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
 Each read produces 39 bits of data, which are padded with a zero to 40 bits to match the interface expected by the KMAC block.
@@ -102,7 +102,7 @@ The ROM checker will not assert `kmac_data_o.valid` after finishing the one and 
 The KMAC module may choose to add a check for this, to detect reset glitches affecting the `rom_ctrl` block.
 
 The integration with the key manager is based on forwarding the digest data in `kmac_data_i` as `keymgr_data_o.data`.
-This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../../doc/security/specs/identities_and_root_keys/README.md#creator-root-key).
+This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../../doc/security/specs/identities_and_root_keys/README.md#creatorrootkey).
 The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
 

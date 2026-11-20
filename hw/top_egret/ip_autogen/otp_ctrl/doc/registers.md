@@ -185,19 +185,19 @@ OTP status register.
 {"reg": [{"name": "PARTITION_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LCI_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TIMEOUT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "LFSR_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCRAMBLING_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "KEY_DERIV_FSM_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "DAI_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CHECK_PENDING", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                           |
-|:------:|:------:|:-------:|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:10  |        |         |                      | Reserved                                                                                                                                                              |
-|   9    |   ro   |   0x0   | CHECK_PENDING        | Set to 1 if an integrity or consistency check triggered by the LFSR timer or via [`CHECK_TRIGGER`](#check_trigger) is pending.                                        |
-|   8    |   ro   |   0x0   | DAI_IDLE             | Set to 1 if the DAI is idle and ready to accept commands.                                                                                                             |
-|   7    |   ro   |   0x0   | BUS_INTEG_ERROR      | This bit is set to 1 if a fatal bus integrity fault is detected. This error triggers a fatal_bus_integ_error alert.                                                   |
-|   6    |   ro   |   0x0   | KEY_DERIV_FSM_ERROR  | Set to 1 if the key derivation FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                      |
-|   5    |   ro   |   0x0   | SCRAMBLING_FSM_ERROR | Set to 1 if the scrambling datapath FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                 |
-|   4    |   ro   |   0x0   | LFSR_FSM_ERROR       | Set to 1 if the LFSR timer FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                          |
-|   3    |   ro   |   0x0   | TIMEOUT_ERROR        | Set to 1 if an integrity or consistency check times out. This raises an fatal_check_error alert and is an unrecoverable error condition.                              |
-|   2    |   ro   |   0x0   | LCI_ERROR            | Set to 1 if an error occurred in the LCI. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.                               |
-|   1    |   ro   |   0x0   | DAI_ERROR            | Set to 1 if an error occurred in the DAI. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.                               |
-|   0    |   ro   |   0x0   | PARTITION_ERROR      | Set to 1 if an error occurred in any partition. If set to 1, SW should check the [`PARTITION_STATUS`](#partition_status) register to determine the failing partition. |
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                             |
+|:------:|:------:|:-------:|:---------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:10  |        |         |                      | Reserved                                                                                                                                                                |
+|   9    |   ro   |   0x0   | CHECK_PENDING        | Set to 1 if an integrity or consistency check triggered by the LFSR timer or via [`CHECK_TRIGGER`](#check_trigger) is pending.                                          |
+|   8    |   ro   |   0x0   | DAI_IDLE             | Set to 1 if the DAI is idle and ready to accept commands.                                                                                                               |
+|   7    |   ro   |   0x0   | BUS_INTEG_ERROR      | This bit is set to 1 if a fatal bus integrity fault is detected. This error triggers a fatal_bus_integ_error alert.                                                     |
+|   6    |   ro   |   0x0   | KEY_DERIV_FSM_ERROR  | Set to 1 if the key derivation FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                        |
+|   5    |   ro   |   0x0   | SCRAMBLING_FSM_ERROR | Set to 1 if the scrambling datapath FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                   |
+|   4    |   ro   |   0x0   | LFSR_FSM_ERROR       | Set to 1 if the LFSR timer FSM has reached an invalid state. This raises an fatal_check_error alert and is an unrecoverable error condition.                            |
+|   3    |   ro   |   0x0   | TIMEOUT_ERROR        | Set to 1 if an integrity or consistency check times out. This raises an fatal_check_error alert and is an unrecoverable error condition.                                |
+|   2    |   ro   |   0x0   | LCI_ERROR            | Set to 1 if an error occurred in the LCI. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.                                 |
+|   1    |   ro   |   0x0   | DAI_ERROR            | Set to 1 if an error occurred in the DAI. If set to 1, SW should check the [`ERR_CODE`](#err_code) register at the corresponding index.                                 |
+|   0    |   ro   |   0x0   | PARTITION_ERROR      | Set to 1 if an error occurred in any partition. If set to 1, SW should check the [`PARTITION_STATUS`](#partition_status_0) register to determine the failing partition. |
 
 ## PARTITION_STATUS_0
 OTP partition status register 0.
@@ -323,7 +323,7 @@ Write 0 to it in order to clear the bit.
 
 Note that the hardware also modulates this bit and sets it to 0 temporarily
 during an OTP operation such that the corresponding address and data registers
-cannot be modified while an operation is pending. The [`DAI_IDLE`](#dai_idle) status bit
+cannot be modified while an operation is pending. The [`STATUS.DAI_IDLE`](#status) status bit
 will also be set to 0 in such a case.
 
 ## DIRECT_ACCESS_CMD
@@ -339,13 +339,13 @@ Command register for direct accesses.
 {"reg": [{"name": "RD", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "WR", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "DIGEST", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "ZEROIZE", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                                                                                                                                |
-|:------:|:------:|:-------:|:--------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |         | Reserved                                                                                                                                                                                                                                                                                   |
-|   3    | r0w1c  |   0x0   | ZEROIZE | Initiates the zeroization sequence of location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the resulting count of bits set into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata_0) if the execution is successful.                                   |
-|   2    | r0w1c  |   0x0   | DIGEST  | Initiates the digest calculation and locking sequence for the partition specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                                                                                                                                                    |
-|   1    | r0w1c  |   0x0   | WR      | Initiates a programming sequence that writes the data in [`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata_0) and [`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata_1) (for 64bit partitions) to the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                    |
-|   0    | r0w1c  |   0x0   | RD      | Initiates a readout sequence that reads the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the data read into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata_0) and [`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata_1) (for 64bit partitions). |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                                                                                                                            |
+|:------:|:------:|:-------:|:--------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |         | Reserved                                                                                                                                                                                                                                                                               |
+|   3    | r0w1c  |   0x0   | ZEROIZE | Initiates the zeroization sequence of location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the resulting count of bits set into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata) if the execution is successful.                                 |
+|   2    | r0w1c  |   0x0   | DIGEST  | Initiates the digest calculation and locking sequence for the partition specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                                                                                                                                                |
+|   1    | r0w1c  |   0x0   | WR      | Initiates a programming sequence that writes the data in [`DIRECT_ACCESS_WDATA_0`](#direct_access_wdata) and [`DIRECT_ACCESS_WDATA_1`](#direct_access_wdata) (for 64bit partitions) to the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address)                    |
+|   0    | r0w1c  |   0x0   | RD      | Initiates a readout sequence that reads the location specified by [`DIRECT_ACCESS_ADDRESS.`](#direct_access_address) The command places the data read into [`DIRECT_ACCESS_RDATA_0`](#direct_access_rdata) and [`DIRECT_ACCESS_RDATA_1`](#direct_access_rdata) (for 64bit partitions). |
 
 ## DIRECT_ACCESS_ADDRESS
 Address register for direct accesses.

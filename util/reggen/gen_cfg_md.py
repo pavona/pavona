@@ -5,6 +5,7 @@
 
 from typing import TextIO, List, Tuple, Optional
 
+from reggen.gen_md import reg_anchors
 from reggen.ip_block import IpBlock
 from reggen.md_helpers import (
     title, url, italic, coderef, regref_to_link, name_width, table, list_item,
@@ -16,6 +17,8 @@ def gen_cfg_md(cfgs: IpBlock,
                output: TextIO,
                templatized: bool,
                register_file: Optional[str] = None) -> None:
+    anchors = reg_anchors(cfgs)
+
     if templatized:
         comport_url = url(
             "Comportable guideline for peripheral device functionality",
@@ -70,7 +73,7 @@ def gen_cfg_md(cfgs: IpBlock,
     else:
         rows = [[
             name_width(x), direction,
-            regref_to_link(x.desc, register_file)
+            regref_to_link(x.desc, register_file, anchors)
         ] for direction, x in ios]
         tables.append((
             "Peripheral Pins for Chip IO",
@@ -114,7 +117,7 @@ def gen_cfg_md(cfgs: IpBlock,
     else:
         rows = [[
             name_width(x), x.intr_type.name,
-            regref_to_link(x.desc, register_file)
+            regref_to_link(x.desc, register_file, anchors)
         ] for x in cfgs.interrupts]
         tables.append((
             "Interrupts",
@@ -126,7 +129,8 @@ def gen_cfg_md(cfgs: IpBlock,
     if not cfgs.alerts:
         list_items.append("Security Alerts: " + italic("none"))
     else:
-        rows = [[x.name, regref_to_link(x.desc, register_file)]
+        rows = [[x.name,
+                 regref_to_link(x.desc, register_file, anchors)]
                 for x in cfgs.alerts]
         tables.append((
             "Security Alerts",
@@ -140,7 +144,7 @@ def gen_cfg_md(cfgs: IpBlock,
     else:
         rows = [[
             cfgs.name.upper() + '.' + str(cm),
-            regref_to_link(cm.desc, register_file)
+            regref_to_link(cm.desc, register_file, anchors)
         ] for cm in cfgs.countermeasures]
         tables.append((
             "Security Countermeasures",

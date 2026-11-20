@@ -10,6 +10,15 @@ set -e
 # Run Offline Link Check
 ./bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
     --offline --no-progress \
+    --include-fragments \
+    --exclude '#(RUSTDOC|DOXYGEN)' \
+    --exclude 'lowrisc_ibex/dv/formal/README\.md#rtl-changes$' \
+    --exclude 'checklist/README\.md#fpv_sec_cm_verified$' \
+    --exclude 'specs/(ownership_transfer|secure_boot)/README\.md#$' \
+    --exclude 'pinmux/doc/registers\.md#(mio|dio)_pad_sleep_status$' \
+    --exclude 'comportability/README\.md#bus-interfaces$' \
+    --exclude 'attestation/README\.md#operational-mode$' \
+    --exclude 'keymgr_dpe/doc/theory_of_operation\.md#faults-and-operational-faults$' \
     --exclude-path sw/vendor \
     --exclude-path util/i2csvg/smbus/SMBus.md \
     --exclude-path hw/ip_templates/ \

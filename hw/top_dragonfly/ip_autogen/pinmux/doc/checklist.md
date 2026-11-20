@@ -264,4 +264,4 @@ Review        | Signoff date                      | Not Started |
 [NO_TOOL_WARNINGS_THROWN]:       ../../../../../doc/contributing/hw/checklist/README.md#no_tool_warnings_thrown
 [TB_LINT_COMPLETE]:              ../../../../../doc/contributing/hw/checklist/README.md#tb_lint_complete
 [PRE_VERIFIED_SUB_MODULES_V3]:   ../../../../../doc/contributing/hw/checklist/README.md#pre_verified_sub_modules_v3
-[NO_ISSUES_PENDING]:             ../../../../../doc/contributing/hw/checklist/README.md#no_issues_pendingg
+[NO_ISSUES_PENDING]:             ../../../../../doc/contributing/hw/checklist/README.md#no_issues_pending

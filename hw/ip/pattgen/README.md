@@ -56,7 +56,7 @@ A value of zero means that `pda` will change on the falling edge of `pcl`.
 
 ## Pre-divider
 
-Each channel has a pre-divider, configured by [`PREDIV_CH0`](doc/registers.md#prediv-ch0), .[`PREDIV_CH1`](doc/registers.md#prediv-ch1).
+Each channel has a pre-divider, configured by [`PREDIV_CH0`](doc/registers.md#prediv_ch0), .[`PREDIV_CH1`](doc/registers.md#prediv_ch1).
 The `pattgen_chan` module counts up to the value of the pre-divider each time it inverts the `pcl` value.
 As such, if the pre-divider has value `N` then `pcl` will have a period of `2*N` cycles.
 The count is configured a bit like the length and repeat count mentioned [above](#patterns).

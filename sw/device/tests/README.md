@@ -46,5 +46,5 @@ For instructions on how to write a chip-level test, refer to the [on-device test
 
 * [Build & Test Rules](../../../rules/pavona/README.md)
 * [On-Device Test Framework (OTTF)](../lib/testing/test_framework/README.md)
-* [OTP Preload Image Generator](../../../util/design/README.md#otp_preload_image_generator)
+* [OTP Preload Image Generator](../../../util/design/README.md#otp-preload-image-generator)
 * [FPGA Bitstreams](../../../hw/bitstream/README.md)

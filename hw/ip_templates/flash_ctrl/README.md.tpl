@@ -173,7 +173,7 @@ The seed pages can be programmed/erased/read by software when the following are 
 The seed pages are read under the following initialization conditions:
 *  life cycle sets provision enable - `lc_seed_hw_rd_en` is set.
 
-See [life cycle](../../../ip/lc_ctrl/README.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when this partition is allowed to be populated.
+See [life cycle](../../../ip/lc_ctrl/doc/theory_of_operation.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when this partition is allowed to be populated.
 
 ${"####"} Isolated Information Partitions
 
@@ -186,7 +186,7 @@ During TEST states, the isolated page is only programmable if:
 During PROD and RMA states, the isolated page is also readable if both:
 * `lc_iso_part_sw_wr_en` and `lc_iso_part_sw_rd_en` are set.
 
-See [life cycle](../../../ip/lc_ctrl/README.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details.
+See [life cycle](../../../ip/lc_ctrl/doc/theory_of_operation.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details.
 
 ${"##"} IP Blocks Organization
 

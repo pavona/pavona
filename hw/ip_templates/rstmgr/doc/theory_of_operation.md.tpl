@@ -91,8 +91,10 @@ The reset topology also contains additional properties:
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
 *  [`RESET_INFO`](registers.md#reset_info) indicates why the system was reset.
+% if with_alert_dump:
 *  [`ALERT_INFO`](registers.md#alert_info) contains the recorded alert status prior to system reset.
    *  This is useful in case the reset was triggered by an alert escalation.
+% endif
 *  [`CPU_INFO`](registers.md#cpu_info) contains recorded CPU state prior to system reset.
    *  This is useful in case the reset was triggered by a watchdog where the host hung on a particular bus transaction.
 
@@ -288,6 +290,7 @@ When the software resumes after the reset, it is then able to examine the last C
 
 The enable for such debug capture can be locked such that it never captures.
 
+% if with_alert_dump:
 <%text>### Alert Information</%text>
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
@@ -297,13 +300,14 @@ The [`ALERT_INFO_ATTR`](registers.md#alert_info_attr) register indicates how man
 To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#alert_info_ctrl) to 1.
 Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
 Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
+% endif
 
 <%text>### CPU Information</%text>
 
 The CPU information register contains the value of the CPU state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
 
-For more details on the CPU dump details, please see [crash dump](../../rv_core_ibex/README.md#crash-dump-collection).
+For more details on the CPU dump details, please see [crash dump](../../rv_core_ibex/doc/theory_of_operation.md#crash-dump-collection).
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.

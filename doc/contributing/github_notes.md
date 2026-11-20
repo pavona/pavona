@@ -475,7 +475,7 @@ The process is quite complicated so please follow the instruction below step-by-
 
 * Step 4: Create a pull request into the other contributor's forked repository
 
-    To create a pull request in other's forked repository, you can follow the same method as creating a pull request as section [Working in your local repo](#working-in-your-local-repo) explained in details.
+    To create a pull request in other's forked repository, you can follow the same method as creating a pull request as section [Working in your local repo](#working-in-your-local-repository) explained in details.
     Once the other contributor's pull request is merged into the upstream repository, you will need to create a pull request in that upstream repository instead.
 
 These are all the steps needed.
