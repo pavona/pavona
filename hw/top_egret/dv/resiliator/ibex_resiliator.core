@@ -1,0 +1,74 @@
+CAPI=2:
+# Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:ibex_resiliator:0.1"
+description: "Resiliator fault-injection testbench for the Egret Ibex core (lockstep enabled)"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_top
+      - lowrisc:prim:secded
+      - lowrisc:prim:util
+      - lowrisc:prim_generic:all
+    files:
+      - ibex_resiliator_top.sv: { file_type: systemVerilogSource }
+
+  files_resiliator_tb:
+    depend:
+      - kjnsen:dv:resiliator
+
+  files_verilator_waiver:
+    files:
+      - ibex_resiliator_waivers.vlt
+    file_type: vlt
+
+targets:
+  default: &default_target
+    filesets:
+      - files_verilator_waiver
+      - files_rtl
+      - files_resiliator_tb
+    toplevel: ibex_resiliator_top
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    filesets:
+      - files_verilator_waiver
+      - files_rtl
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  sim:
+    <<: *default_target
+    default_tool: verilator
+    tools:
+      verilator:
+        mode: cc
+        verilator_options:
+          # Inject into registers under u_core, including the shadow core.
+          # Prefixes start at the module name, without "TOP.".
+          - '--resiliator ibex_resiliator_top.u_core'
+
+          - '--no-timing'
+          # RAM primitives wider than 64bit (required for ECC) fail to build in
+          # Verilator without increasing the unroll count (see Verilator#1266)
+          - '--unroll-count 72'
+          - '-Wno-fatal'
+
+          # The fork requires a single-threaded model. NPROC controls parallelism.
+          - '--threads 1'
+
+          # NPROC sets the campaign worker count at compile time. 
+          - >-
+            -CFLAGS "-std=c++17 -DTOP_NAME=ibex_resiliator_top -DOUT_DIR=resiliator_out
+            -DNPROC=8 -DSTART_RESET_CYCLE=0 -DRESET_DURATION=4 -DHASHING_PERIODICITY=10
+            -DNUM_ENTRIES_HASH_CACHE_POWER=24 -DHASH_CACHE_BUCKET_ELEMS_LIMIT=4
+            -DNUM_ENTRIES_SAME_RES_LIST=10000 -DNUM_BLOCKS_FACTOR_SAME_RES_LIST=10"
+          - '-LDFLAGS "-pthread"'

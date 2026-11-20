@@ -70,3 +70,25 @@ jobs:
   #    dashboard-private: "git@github.com:pavona/internal-dashboard.git"
   #    dashboard-public: "git@github.com:pavona/public-dashboard.git"
   #    concurrent-jobs: 30
+
+  # Resiliator RTL fault-injection campaign against the Egret Ibex core with
+  # the lockstep shadow core enabled.
+  resiliator_egret_ibex:
+    name: Egret Ibex Fault-Injection Campaign
+    runs-on:
+      group: pavona-large
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Run fault-injection campaign
+        id: campaign
+        run: ./ci/scripts/run-resiliator-campaign.py egret
+      - name: Upload campaign results
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && steps.campaign.outputs.results != '' }}
+        with:
+          name: resiliator-egret-ibex-results
+          path: ${{ steps.campaign.outputs.results }}
+          if-no-files-found: ignore
