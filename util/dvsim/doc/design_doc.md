@@ -41,7 +41,6 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
 
 - Flexibility
   - Enable output artifacts to be generated at an arbitrary location.
-  - Enable
   - Enable arbitrary variables to be added to the DUT configuration files to represent configuration settings.
   - Provide ability to recursively substitute variables with their values to help reduce repetition.
   - Provide ability to override variable values, which will take the highest precedence.
@@ -88,7 +87,6 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
   - Provide ability to publish the reports to a web server (as a command line option).
   - Report the wall-clock time and simulated time (the worst case, if the test is multiply seeded) for each test.
   - For simulations, enable mapping the results of the regression (i.e., the status of the set of tests run) to the testplan entries to indicate the testpoints that have been successfully completed.
-  - Enable common failure signatures to be bucketized for the ease of readability of the report.
 
 - Debuggability
   - Provide logging at multiple levels (normal, verbose and debug) to help debug / triage tool / infrastructure issues.
@@ -285,6 +283,10 @@ The schema for flow configuration is approximately as follows:
 | build_modes                 | `OneShotCfg`, `SimCfg` | list   | Preset modes (sets of options) for building the flow.                                                                              |
 | run_modes                   | `OneShotCfg`, `SimCfg` | list   | Preset modes for running the flow.                                                                                                 |
 | regressions                 | `OneShotCfg`, `SimCfg` | list   | Regressions to run.                                                                                                                |
+| cfg_groups                  | `FlowCfg`              | dict   | For a primary config, named groups of configs. Each entry is a `cfgs` list plus optional `reseed`, `run_timeout_mins` and `run_timeout_multiplier` overrides, selected with `--cfg-groups`. |
+| build_started_patterns      | `OneShotCfg`, `SimCfg` | list   | Patterns whose first appearance in a build log marks where the job stopped queueing for a license and started work.                |
+| run_started_patterns        | `SimCfg`               | list   | The same, for a run log. The run timeout is measured from this point, so a license queue does not eat into it.                     |
+| license_error_patterns      | `OneShotCfg`, `SimCfg` | list   | Patterns saying the job died because the license server would not serve it. Such a job is reported as killed, not failed.          |
 | sw_images                   | `SimCfg`               | list   | Paths to software images (in Bazel formatting) to use in simulations.                                                              |
 | sw_build_opts               | `SimCfg`               | list   | Software build options.                                                                                                            |
 | supported_wave_formats      | `SimCfg`               | list   | Viable waveform output formats.                                                                                                    |
