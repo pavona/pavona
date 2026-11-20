@@ -48,7 +48,7 @@ uint32_t profile_end(uint64_t t_start);
  * @param name Name of the profile, for printing.
  * @return Number of cycles between t_start and current Ibex cycle count.
  */
-uint32_t profile_end_and_print(uint64_t t_start, char *name);
+uint32_t profile_end_and_print(uint64_t t_start, const char *name);
 
 #ifdef __cplusplus
 }  // extern "C"
