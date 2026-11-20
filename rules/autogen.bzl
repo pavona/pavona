@@ -869,26 +869,37 @@ def _autogen_acc_insn_count_header(ctx):
         fail("Expected template to have a `.h.tpl` extension, got: " + str(ctx.files.srcs))
     header = ctx.actions.declare_file(template.basename[:-4])
 
-    # Extract the .elf file to check from the dependency list.
+    # Extract the .elf file to check, if any, from the dependency list.
     elf = [f for t in ctx.attr.deps for f in t[OutputGroupInfo].elf.to_list()]
-    if len(elf) != 1:
-        fail("Expected only one .elf file in dependencies, got: " + str(elf))
-    elf = elf[0]
+    if len(elf) == 0:
+        elf = None
+    elif len(elf) == 1:
+        elf = elf[0]
+    else:
+        fail("Expected at most one .elf file in dependencies, got: " + str(elf))
+
+    # Assemble inputs and arguments for the header generator.
+    inputs = [template, hjson]
+    arguments = [
+        "-t",
+        template.path,
+        "-j",
+        hjson.path,
+        "-o",
+        header.path,
+    ]
+    if elf != None:
+        inputs.append(elf)
+        arguments += [
+            "-e",
+            elf.path,
+        ]
 
     # Run the header generator.
     ctx.actions.run(
         outputs = [header],
-        inputs = [elf, template, hjson],
-        arguments = [
-            "-e",
-            elf.path,
-            "-t",
-            template.path,
-            "-j",
-            hjson.path,
-            "-o",
-            header.path,
-        ],
+        inputs = inputs,
+        arguments = arguments,
         executable = ctx.executable._generator,
     )
 

@@ -17,6 +17,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "skip_insn_counts",
+    define_values = {
+        "skip_insn_counts": "true",
+    },
+)
+
 cc_library(
     name = "aes",
     srcs = ["aes.c"],

@@ -17,6 +17,8 @@ Compute the range of instruction counts for each ACC program mode, and
 generate a header file with these ranges.
 '''
 
+UINT32_MAX = (1 << 32) - 1
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=(
@@ -28,15 +30,17 @@ def main() -> int:
     parser.add_argument('--elf',
                         '-e',
                         metavar='FILE',
-                        required=True,
+                        required=False,
                         type=str,
-                        help='Read this file to determine instruction counts.')
+                        help='Read this file to determine instruction counts. '
+                             'If not provided, min/max instruction counts are '
+                             'set to 0 and UINT32_MAX.')
     parser.add_argument('--hjsonfile',
                         '-j',
                         metavar='FILE',
                         required=True,
                         type=argparse.FileType('r'),
-                        help='Read HJSON mode descriptions from this file')
+                        help='Read HJSON mode descriptions from this file.')
     parser.add_argument('--template',
                         '-t',
                         metavar='FILE',
@@ -56,21 +60,25 @@ def main() -> int:
     modes = hjson.load(args.hjsonfile)
     args.hjsonfile.close()
 
-    # Decode the program.
-    program = decode_elf(args.elf)
-
-    # Build the whole-program control-flow graph once; it is the same for every
-    # mode and is expensive to construct.
-    program_graph = program_control_graph(program)
-
-    # Compute instruction count range.
     insn_counts = []
-    for mode in modes:
-        exclude_symbols = mode.get("exclude_symbols", [])
-        min_count, max_count = program_insn_count_range(
-            program, mode.get("symbol"), exclude_labels=exclude_symbols,
-            program_graph=program_graph)
-        insn_counts.append((mode, min_count, max_count))
+    if args.elf is not None:
+        # Decode the program.
+        program = decode_elf(args.elf)
+
+        # Build the whole-program control-flow graph once; it is the same for every
+        # mode and is expensive to construct.
+        program_graph = program_control_graph(program)
+
+        # Compute instruction count range.
+        for mode in modes:
+            exclude_symbols = mode.get("exclude_symbols", [])
+            min_count, max_count = program_insn_count_range(
+                program, mode.get("symbol"), exclude_labels=exclude_symbols,
+                program_graph=program_graph)
+            insn_counts.append((mode, min_count, max_count))
+    else:
+        # If no program given, set ranges as wide as possible.
+        insn_counts = [(mode, 0, UINT32_MAX) for mode in modes]
 
     # Write out the resulting filled header template.
     args.headerfile.write(
