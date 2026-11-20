@@ -51,18 +51,6 @@ class AstTest : public rom_test::RomTest {
 #endif
   }
 
-  /**
-   * Sets up an expectation to read the AST_INIT_EN OTP item.
-   *
-   * @param val Value to return;
-   */
-  void ExpectOtpRead(multi_bit_bool_t val) {
-#ifdef HAS_SENSOR_CTRL
-    EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET))
-        .WillOnce(Return(val));
-#endif
-  }
-
   rom_test::MockAbsMmio mmio_;
   rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;
@@ -113,14 +101,7 @@ constexpr std::array<lifecycle_state_t, 3> kLcStatesWithCheck{
 
 class AstLcStatesWithCheckTest : public AstLcStateTest {};
 
-TEST_P(AstLcStatesWithCheckTest, CheckOtpSkip) {
-  ExpectOtpRead(kMultiBitBool4False);
-
-  EXPECT_EQ(ast_check(GetParam()), kErrorOk);
-}
-
 TEST_P(AstLcStatesWithCheckTest, CheckTimeout) {
-  ExpectOtpRead(kMultiBitBool4True);
   EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
   EXPECT_CSR_READ(CSR_REG_MCYCLE, 100);
   ExpectStatusRead(false, false);
@@ -131,7 +112,6 @@ TEST_P(AstLcStatesWithCheckTest, CheckTimeout) {
 }
 
 TEST_P(AstLcStatesWithCheckTest, CheckSuccess) {
-  ExpectOtpRead(kMultiBitBool4True);
   EXPECT_CSR_WRITE(CSR_REG_MCYCLE, 0);
   EXPECT_CSR_READ(CSR_REG_MCYCLE, 100);
   ExpectStatusRead(false, false);
