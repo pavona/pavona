@@ -26,6 +26,12 @@ TESTS=(
     "//sw/device/silicon_creator/lib/drivers:retention_sram_functest_sim_verilator"
 )
 
+if [ "${TOP_NAME}" == "dragonfly" ]; then
+    # only dragonfly has GCM hardware enabled
+    TESTS+=("//sw/device/lib/crypto/drivers:aes_gcm_test_sim_verilator")
+fi
+
+
 if [ "${TOP_NAME}" == "egret" ]; then
     TESTS+=("//sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator")
     TESTS+=("//sw/device/tests:flash_ctrl_test_sim_verilator")
