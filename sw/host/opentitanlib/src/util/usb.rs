@@ -19,12 +19,13 @@ pub struct UsbBackend {
 impl UsbBackend {
     /// Scan the USB bus for a device matching VID/PID, and optionally also matching a serial
     /// number.
-    pub fn scan(
+    pub fn scan<S: AsRef<str>>(
         usb_vid_pid: Option<(u16, u16)>,
         usb_protocol: Option<(u8, u8, u8)>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> Result<Vec<(rusb::Device<rusb::Context>, String)>> {
         let mut devices = Vec::new();
+        let mut explicit_match = false;
         let mut deferred_log_messages = Vec::new();
         for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
             let descriptor = match device.device_descriptor() {
@@ -101,12 +102,18 @@ impl UsbBackend {
                     continue;
                 }
             };
-            if let Some(sn) = &usb_serial
-                && &serial_number != sn
+            if usb_serial
+                .iter()
+                .any(|sn| sn.as_ref() == serial_number.as_str())
             {
-                continue;
+                if !explicit_match {
+                    devices.clear();
+                    explicit_match = true;
+                }
+                devices.push((device, serial_number));
+            } else if !explicit_match {
+                devices.push((device, serial_number));
             }
-            devices.push((device, serial_number));
         }
 
         // We expect to find exactly one matching device. If that happens, the
@@ -124,7 +131,7 @@ impl UsbBackend {
     }
 
     /// Create a new UsbBackend.
-    pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
+    pub fn new<S: AsRef<str>>(usb_vid: u16, usb_pid: u16, usb_serial: &[S]) -> Result<Self> {
         let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
         ensure!(!devices.is_empty(), TransportError::NoDevice);
         ensure!(devices.len() == 1, TransportError::MultipleDevices);
@@ -138,20 +145,20 @@ impl UsbBackend {
         })
     }
 
-    pub fn from_interface(
+    pub fn from_interface<S: AsRef<str>>(
         class: u8,
         subclass: u8,
         protocol: u8,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> Result<Self> {
         Self::from_interface_with_timeout(class, subclass, protocol, usb_serial, Duration::ZERO)
     }
 
-    pub fn from_interface_with_timeout(
+    pub fn from_interface_with_timeout<S: AsRef<str>>(
         class: u8,
         subclass: u8,
         protocol: u8,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
         timeout: Duration,
     ) -> Result<Self> {
         let deadline = Instant::now() + timeout;

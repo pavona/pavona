@@ -46,10 +46,10 @@ pub struct ChipWhisperer<B: Board> {
 }
 
 impl<B: Board> ChipWhisperer<B> {
-    pub fn new(
+    pub fn new<S: AsRef<str>>(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
         uart_override: &[&str],
     ) -> anyhow::Result<Self> {
         let board = ChipWhisperer {
@@ -225,7 +225,7 @@ impl<B: Board + 'static> Backend for ChipWhispererBackend<B> {
         Ok(Box::new(ChipWhisperer::<B>::new(
             args.usb_vid,
             args.usb_pid,
-            args.usb_serial.as_deref(),
+            &args.usb_serial,
             &uarts,
         )?))
     }

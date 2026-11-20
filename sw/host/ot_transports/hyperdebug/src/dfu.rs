@@ -34,10 +34,10 @@ pub struct HyperdebugDfu {
 impl HyperdebugDfu {
     /// Establish connection with a particular Nucleo-L552ZE board possibly already in DFU
     /// bootloader mode.
-    pub fn open(
+    pub fn open<S: AsRef<str>>(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> Result<Self> {
         // Look for a device with given USB serial, carrying either the VID:DID of STM32 DFU
         // bootloader, or that of HyperDebug in ordinary mode.  This allows scripts to start with
@@ -262,7 +262,7 @@ pub fn update_firmware(
 fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Option<UsbBackend> {
     for _ in 0..10 {
         std::thread::sleep(std::time::Duration::from_millis(500));
-        if let Ok(usb_backend) = UsbBackend::new(usb_vid, usb_pid, Some(serial_number)) {
+        if let Ok(usb_backend) = UsbBackend::new(usb_vid, usb_pid, &[serial_number]) {
             return Some(usb_backend);
         }
     }

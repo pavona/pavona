@@ -140,10 +140,10 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_TPM_POLL: u16 = 0x0020;
 
     /// Establish connection with a particular HyperDebug.
-    pub fn open(
+    pub fn open<S: AsRef<str>>(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> Result<Self> {
         let device = UsbBackend::new(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
@@ -986,12 +986,12 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn load_bitstream(bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
         // Try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new::<String>(None, None, &[], &[])?;
         board.load_bitstream(bitstream, progress)?;
         Ok(())
     }
     fn clear_bitstream() -> Result<()> {
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
+        let board = ChipWhisperer::<B>::new::<String>(None, None, &[], &[])?;
         board.clear_bitstream()?;
         Ok(())
     }
@@ -1006,7 +1006,7 @@ impl<T: Flavor + 'static> Backend for HyperdebugBackend<T> {
         Ok(Box::new(Hyperdebug::<T>::open(
             args.usb_vid,
             args.usb_pid,
-            args.usb_serial.as_deref(),
+            &args.usb_serial,
         )?))
     }
 }
@@ -1098,7 +1098,7 @@ impl Backend for HyperdebugDfuBackend {
         Ok(Box::new(HyperdebugDfu::open(
             args.usb_vid,
             args.usb_pid,
-            args.usb_serial.as_deref(),
+            args.usb_serial.as_ref(),
         )?))
     }
 }
