@@ -9,7 +9,7 @@
 export
 
 # Explicitly ask for the bash shell
-SHELL := bash
+SHELL := /usr/bin/env bash
 
 # Build the 'all' target by default, override with e.g. GOAL=rtl_tb_compile
 GOAL ?= all

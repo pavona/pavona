@@ -1,0 +1,23 @@
+diff --git a/uvm/core_ibex/Makefile b/uvm/core_ibex/Makefile
+index 69909cacb2..df066b3e00 100644
+--- a/uvm/core_ibex/Makefile
++++ b/uvm/core_ibex/Makefile
+@@ -9,7 +9,7 @@
+ export
+
+ # Explicitly ask for the bash shell
+-SHELL := bash
++SHELL := /usr/bin/env bash
+
+ # Build the 'all' target by default, override with e.g. GOAL=rtl_tb_compile
+ GOAL ?= all
+diff --git a/verilator/simple_system_cosim/util/ibex_cosim_setup_check.sh b/verilator/simple_system_cosim/util/ibex_cosim_setup_check.sh
+index dfb4c9ab11..808a09e4f8 100755
+--- a/verilator/simple_system_cosim/util/ibex_cosim_setup_check.sh
++++ b/verilator/simple_system_cosim/util/ibex_cosim_setup_check.sh
+@@ -1,4 +1,4 @@
+-#!/bin/sh
++#!/usr/bin/env sh
+
+ # Copyright lowRISC contributors.
+ # Licensed under the Apache License, Version 2.0, see LICENSE for details.

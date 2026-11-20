@@ -22,6 +22,7 @@ In that case, there is no need to repeat these commands.
 (See below if you want to use a different email address for this repo.)
 
 Check the parameters:
+
 ```sh
 git config -l
 ```
@@ -53,7 +54,9 @@ Print the known Git remotes with `git remote -v`:
 git remote add upstream git@github.com:pavona/pavona
 git remote -v
 ```
+
 which prints something like:
+
 ```
 origin      git@github.com:<your GitHub username>/pavona (fetch)
 origin      git@github.com:<your GitHub username>/pavona (push)
@@ -83,7 +86,9 @@ To check the status of your changes at any time, use `git status`:
 ```sh
 git status
 ```
+
 which prints something like:
+
 ```
 On branch my-new-change
 nothing to commit, working tree clean
@@ -174,9 +179,9 @@ One option to avoid having to remember to add `-s` to `git commit` is to configu
 This can be done using an executable hook.
 An appropriate hook can be installed by executing this from the root of your repository checkout:
 
-```sh
-cat <<"EOF" > .git/hooks/prepare-commit-msg
-#!/bin/sh
+````sh
+$ cat <<"EOF" > .git/hooks/prepare-commit-msg
+#!/usr/bin/env sh
 
 # Add a Signed-off-by line to the commit message if not already present.
 git interpret-trailers --if-exists doNothing --trailer \
@@ -184,25 +189,26 @@ git interpret-trailers --if-exists doNothing --trailer \
   --in-place "$1"
 EOF
 chmod +x .git/hooks/prepare-commit-msg
-```
+`````
 
 ## Commit messages
 
 There are many useful guides available on [how to write commit messages and why](https://chris.beams.io/posts/git-commit/).
 
 Some simple and useful guidelines are:
-* A commit message consists of a subject line followed by an optional body.
-* Keep the subject line short.
+
+- A commit message consists of a subject line followed by an optional body.
+- Keep the subject line short.
   Ideally under 50 characters.
-* Capitalize the subject line.
-* Use the imperative mood in the subject line.
-* Use the present tense ("Add feature" not "Added feature").
-* When changes are restricted to a specific area, you should add a tag to the start of the subject line in square brackets, e.g. "\[uart/rtl\] Rework Tx FSM".
+- Capitalize the subject line.
+- Use the imperative mood in the subject line.
+- Use the present tense ("Add feature" not "Added feature").
+- When changes are restricted to a specific area, you should add a tag to the start of the subject line in square brackets, e.g. "\[uart/rtl\] Rework Tx FSM".
   See also: [subject tags](#subject-tags).
-* Do not end the subject line with a period.
-* Separate subject from body with a blank line.
-* Wrap the body at 72 characters.
-* Use the body to explain what and why (rather than how).
+- Do not end the subject line with a period.
+- Separate subject from body with a blank line.
+- Wrap the body at 72 characters.
+- Use the body to explain what and why (rather than how).
 
 The messages of signed-off commits ([indicating acceptance](../../CONTRIBUTING.md) of the Contributor License Agreement) also include a "signed-off-by" line.
 
@@ -231,7 +237,6 @@ If there are conflicts then you need a big pot of coffee and patience (see next 
 
 Once everything has rebased properly you can do
 
-
 ```sh
 git log
 ```
@@ -257,7 +262,9 @@ For example:
 ```sh
 git rebase main
 ```
+
 which prints something like:
+
 ```
 First, rewinding head to replay your work on top of it...
 Applying: [util][pystyle] Clean Python style in single file tools
@@ -296,14 +303,8 @@ If the file is opened with an editor the points at which there are conflicts wil
 For example:
 
 ```console
-<<<<<<< HEAD
-import livereload
-
-import docgen.generate
-=======
 import docgen
 import livereload
->>>>>>> [util][pystyle] Clean Python style in single file tools
 
 ```
 
@@ -320,7 +321,9 @@ After the fix a status report will remind you where you are.
 ```sh
 git status
 ```
+
 which prints something like:
+
 ```
 rebase in progress; onto cb85dc4
 You are currently rebasing branch 'sastyle' on 'cb85dc4'.
@@ -346,7 +349,9 @@ To finish up you need to follow the instructions.
 git add build_docs.py
 git rebase --continue
 ```
+
 which prints something like:
+
 ```
 Applying: [util][pystyle] Clean Python style in single file tools
 ```
@@ -358,7 +363,9 @@ You can check the rebase worked as expected by looking at the log to see your br
 ```sh
 git log
 ```
+
 which prints something like:
+
 ```
 commit dd8721d2b1529c575c4aef988219fbf2ecd3fd1b (HEAD -> sastyle)
 Author: Mark Hayter <mark.hayter@gmail.com>
@@ -411,29 +418,30 @@ In this case, it is recommended to create a new branch on top of the local commi
 Assume you have a branch name `br_localfix` which has an update for the verification environment.
 If the other user created a pull request with ID #345, which has a fix for the design bug, then you can apply the pull request into new branch `br_localandremote` with the following three methods:
 
-* The `rebase` method:
+- The `rebase` method:
 
-    ```sh
-    git checkout -b br_localandremote br_localfix
-    git fetch upstream pull/345/head:pr_345
-    git rebase pr_345
-    ```
+  ```sh
+  git checkout -b br_localandremote br_localfix
+  git fetch upstream pull/345/head:pr_345
+  git rebase pr_345
+  ```
 
-* The `cherry-pick` method:
+- The `cherry-pick` method:
 
-    ```sh
-    git checkout -b br_localandremote br_localfix
-    git fetch upstream pull/345/head:pr_345
-    # find the commit ID from pr_345 that you want to merge: b345232342ff
-    git cherry-pick b345232342ff
-    ```
-* The `merge` method:
+  ```sh
+  git checkout -b br_localandremote br_localfix
+  git fetch upstream pull/345/head:pr_345
+  # find the commit ID from pr_345 that you want to merge: b345232342ff
+  git cherry-pick b345232342ff
+  ```
 
-    ```sh
-    git fetch upstream pull/345/head:pr_345
-    git checkout -b br_localandremote br_localfix
-    git merge pr_345
-    ```
+- The `merge` method:
+
+  ```sh
+  git fetch upstream pull/345/head:pr_345
+  git checkout -b br_localandremote br_localfix
+  git merge pr_345
+  ```
 
 The `rebase` method is more convenient than `cherry-pick` if you have more than one commit ID to merge.
 The `merge` method can only be used for local testing as the upstream repository does not allow merge commits.
@@ -446,37 +454,37 @@ Section [Dealing with conflicts after a rebase](#dealing-with-conflicts-after-a-
 In some cases, you might want to directly change other contributor's pull request.
 The process is quite complicated so please follow the instruction below step-by-step with caution:
 
-* Step 1: Checkout the other pull request branch
+- Step 1: Checkout the other pull request branch
 
-    ```sh
-    git fetch upstream pull/{ID}/head:{BRANCH_NAME}
-    git checkout {BRANCH_NAME}
-    ```
+  ```sh
+  git fetch upstream pull/{ID}/head:{BRANCH_NAME}
+  git checkout {BRANCH_NAME}
+  ```
 
-* Step 2: Make necessary changes
+- Step 2: Make necessary changes
 
-    ```sh
-    git add...
-    git commit -m "Add CFG examples to UART specification"
-    ```
+  ```sh
+  git add...
+  git commit -m "Add CFG examples to UART specification"
+  ```
 
-* Step 3: Create your GitHub branch for the pull request
+- Step 3: Create your GitHub branch for the pull request
 
-    ```sh
-    git push -u origin {BRANCH_NAME}:<remote_branch_name>
-    ```
+  ```sh
+  git push -u origin {BRANCH_NAME}:<remote_branch_name>
+  ```
 
-    You can use any branch name for the pull request.
-    If you want to the created branch name same as local branch name, this can simply be:
+  You can use any branch name for the pull request.
+  If you want to the created branch name same as local branch name, this can simply be:
 
-    ```sh
-    git push -u origin HEAD
-    ```
+  ```sh
+  git push -u origin HEAD
+  ```
 
-* Step 4: Create a pull request into the other contributor's forked repository
+- Step 4: Create a pull request into the other contributor's forked repository
 
-    To create a pull request in other's forked repository, you can follow the same method as creating a pull request as section [Working in your local repo](#working-in-your-local-repo) explained in details.
-    Once the other contributor's pull request is merged into the upstream repository, you will need to create a pull request in that upstream repository instead.
+  To create a pull request in other's forked repository, you can follow the same method as creating a pull request as section [Working in your local repo](#working-in-your-local-repo) explained in details.
+  Once the other contributor's pull request is merged into the upstream repository, you will need to create a pull request in that upstream repository instead.
 
 These are all the steps needed.
 Once your pull request is reviewed and merged, you will be able to see that the commit is also visible in the original pull request.
@@ -488,13 +496,14 @@ Under the "Custom routing" you can choose to receive emails from upstream reposi
 You can also filter GitHub emails based on the To and CC fields.
 For example, notifications related to the this repository will be sent from `pavona@noreply.github.com`.
 The CC field can include any of the following depending on the type of notification:
+
 - `assign@noreply.github.com`
 - `author@noreply.github.com`
 - `ci-activity@noreply.github.com`
 - `comment@noreply.github.com`
 - `mention@noreply.github.com`
 - `subscribed@noreply.github.com`
-These can help you set up automatically sorting emails into specific folders.
+  These can help you set up automatically sorting emails into specific folders.
 
 ## Labeling and assigning issues and pull requests
 
@@ -503,13 +512,14 @@ Anyone may assign the appropriate labels to an issue or PR.
 If possible, you should also add a meaningful tag to the subject line of your issue or PR as outlined in [subject tags](#subject-tags).
 
 Assignees indicate people who are actively working on an issue, so it's best to let people assign themselves when they start working on it.
-If you'd like to bring an issue to the attention of a particular contributor or ask if they might be able to help solve it, simply mention them in a comment (e.g., "@*githubname* what do you think?")).
+If you'd like to bring an issue to the attention of a particular contributor or ask if they might be able to help solve it, simply mention them in a comment (e.g., "@_githubname_ what do you think?")).
 Anyone who feels qualified to help should respond to issues, though if you're working outside your usual area of expertise and making a best-effort guess, it's polite to say so.
 
 For PRs, it does not make sense to assign people, but when creating a PR, you should request a review from other people familiar in the corresponding area.
 This includes:
-* people regularly working on the affected parts of the code, and
-* people involved in discussing the solution of the problem addressed by the PR.
+
+- people regularly working on the affected parts of the code, and
+- people involved in discussing the solution of the problem addressed by the PR.
 
 However, review requests are not obligations to perform a review.
 Reviewers may not be able to review every requesting PR.
@@ -560,12 +570,13 @@ It is thus vital to provide meaningful commit messages and PR descriptions with 
 
 Code review is a core part of high quality implementation.
 It helps ensure that:
-* The design follows good practices.
-* The code matches the style guides.
-* The code is appropriately commented.
-* Code changes are reflected in the documentation.
-* The changes are reasonably structured.
-* Commit messages are meaningful.
+
+- The design follows good practices.
+- The code matches the style guides.
+- The code is appropriately commented.
+- Code changes are reflected in the documentation.
+- The changes are reasonably structured.
+- Commit messages are meaningful.
 
 When doing code review, you should check if these guidelines are followed.
 If some of the points are not met, or if you see potential improvements in the modified areas, bring this up in a comment.
@@ -574,9 +585,10 @@ It is generally the responsibility of the reviewer who started the discussion to
 If the author and the reviewer cannot find agreement, a third party should be brought into the discussion.
 
 When reviewing code and giving/discussing feedback, keep in mind that:
-* Code review is not design review.
+
+- Code review is not design review.
   If a PR comes without clear motivation or is not aligned with project intent, this should be discussed first and separately from the actual code review.
-* This is a collaborative, distributed open-source project bringing lots of people together with different motivations and backgrounds.
+- This is a collaborative, distributed open-source project bringing lots of people together with different motivations and backgrounds.
   Many people will see the same issue from different viewpoints.
   Always be friendly and patient.
 
@@ -622,5 +634,6 @@ To prevent people from editing auto-generated top-level files, these files both 
 When implementing changes that affect auto-generated files, the configuration or template file must be edited, the auto-generated files need to be regenerated and everything needs to be committed to the repository.
 
 It can be helpful to split changes to auto-generated files into multiple commits:
-* changes to any templates or scripts
-* the re-generated source files
+
+- changes to any templates or scripts
+- the re-generated source files
