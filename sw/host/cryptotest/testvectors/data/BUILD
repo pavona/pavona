@@ -839,6 +839,26 @@ run_binary(
 ]
 
 run_binary(
+    name = "acvp_rsa_keygen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-keygen/prompt.json",
+    ],
+    outs = [":acvp_rsa_keygen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-keygen/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_keygen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--test-type",
+        "keygen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
+run_binary(
     name = "acvp_rsa_sigver_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",

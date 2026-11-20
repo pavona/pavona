@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "ojfKKRHkFQA8Nh8QksCA7j97UIx6bsGEf7DDPBsuDYc=",
+        "bzlTransitiveDigest": "uHNAD5kOLri3tjrcRDzBo1++8t6ylbLGklDIg6X9r50=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -540,6 +540,14 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-keyGen-FIPS203/449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85/prompt.json"
             }
           },
+          "acvp_vectors_rsa-keygen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "b9034a3791d71e0e71d4bead7064ead0a7c1c2d22ffb32662de48289ecc6d5df",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-keyGen-FIPS186-5/110bdb68edb265f34840bf98ffa1d8135ed033b977b55d3c846853517e674429/prompt.json"
+            }
+          },
           "acvp_vectors_rsa-sigver_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -729,6 +737,7 @@
                 "ml-kem-encapdecap/prompt.json": "acvp_vectors_ml-kem-encapdecap_prompt.json",
                 "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
                 "ml-kem-keygen/prompt.json": "acvp_vectors_ml-kem-keygen_prompt.json",
+                "rsa-keygen/prompt.json": "acvp_vectors_rsa-keygen_prompt.json",
                 "rsa-sigver/expectedResults.json": "acvp_vectors_rsa-sigver_expectedResults.json",
                 "rsa-sigver/prompt.json": "acvp_vectors_rsa-sigver_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",

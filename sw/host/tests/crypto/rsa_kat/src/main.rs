@@ -6,6 +6,7 @@
 use anyhow::{Error, Result};
 use arrayvec::ArrayVec;
 use clap::Parser;
+use num_bigint_dig::prime::probably_prime;
 use num_bigint_dig::{BigInt, BigUint};
 use serde::Deserialize;
 use serde_json::json;
@@ -18,7 +19,7 @@ use std::fs;
 use std::io::Read;
 use std::time::Duration;
 
-use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder};
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaCiphertext, CryptotestRsaDecryptOutput, CryptotestRsaExpectedLength,
@@ -60,10 +61,13 @@ struct RsaTestCase {
     operation: String,
     padding: String,
     security_level: usize,
+    #[serde(default)]
     hash_alg: String,
+    #[serde(default)]
     message: Vec<u8>,
     #[serde(default)]
     label: Vec<u8>,
+    #[serde(default)]
     n: Vec<u8>,
     #[serde(default)]
     p: Vec<u8>,
@@ -88,6 +92,91 @@ struct RsaTestCase {
     result: Option<bool>,
 }
 
+fn padding_mode(padding: &str) -> CryptotestRsaPadding {
+    match padding {
+        "oaep" => CryptotestRsaPadding::Oaep,
+        "pkcs1_1.5" => CryptotestRsaPadding::Pkcs15,
+        "pss" => CryptotestRsaPadding::Pss,
+        _ => panic!("Unsupported RSA padding mode"),
+    }
+}
+
+fn security_level(bits: usize) -> CryptotestRsaSecurityLevel {
+    match bits {
+        2048 => CryptotestRsaSecurityLevel::Rsa2048,
+        3072 => CryptotestRsaSecurityLevel::Rsa3072,
+        4096 => CryptotestRsaSecurityLevel::Rsa4096,
+        _ => panic!("Unsupported RSA security level"),
+    }
+}
+
+/// Generates a key on the device for the size and padding of a test case.
+fn generate_key(
+    test_case: &RsaTestCase,
+    opts: &Opts,
+    spi_console: &SpiConsoleDevice,
+) -> Result<CryptotestRsaPrivateKey> {
+    CryptotestCommand::Rsa.send(spi_console)?;
+    CryptotestRsaOperation::Keygen.send(spi_console)?;
+    padding_mode(&test_case.padding).send(spi_console)?;
+    security_level(test_case.security_level).send(spi_console)?;
+    CryptotestRsaPrivateKey::recv(spi_console, opts.timeout, false, false)
+}
+
+fn run_rsa_keygen(
+    test_case: &RsaTestCase,
+    opts: &Opts,
+    spi_console: &SpiConsoleDevice,
+    failures: &mut Vec<String>,
+    responses: &mut ResponseBuilder,
+) -> Result<()> {
+    let key = generate_key(test_case, opts, spi_console)?;
+    let n = BigUint::from_bytes_le(&key.n[..key.n_len]);
+    let p = BigUint::from_bytes_le(&key.p[..key.p_len]);
+    let q = BigUint::from_bytes_le(&key.q[..key.q_len]);
+    let d_p = BigUint::from_bytes_le(&key.d_p[..key.d_p_len]);
+    let d_q = BigUint::from_bytes_le(&key.d_q[..key.d_q_len]);
+    let i_q = BigUint::from_bytes_le(&key.i_q[..key.i_q_len]);
+    // Check the key the way the ACVP server checks keyGen responses.
+    let bits = test_case.security_level;
+    let one = BigUint::from(1u32);
+    let e = BigUint::from(key.e);
+    let prime_is_valid =
+        |f: &BigUint| f.bits() == bits / 2 && f * f > (&one << (bits - 1)) && probably_prime(f, 20);
+    let distance = if p > q { &p - &q } else { &q - &p };
+    let valid = key.e == 65537
+        && n.bits() == bits
+        && n == &p * &q
+        && prime_is_valid(&p)
+        && prime_is_valid(&q)
+        && distance > (&one << (bits / 2 - 100))
+        && (&e * &d_p) % (&p - &one) == one
+        && (&e * &d_q) % (&q - &one) == one
+        && (&q * &i_q) % &p == one;
+    if !valid {
+        log::info!("FAILED test #{}: invalid key", test_case.test_case_id);
+        failures.push(format!(
+            "{} RSA-{} keygen #{}",
+            test_case.vendor, test_case.security_level, test_case.test_case_id
+        ));
+    }
+    if test_case.vendor == "acvp" {
+        let mut fields = Fields::new();
+        for (name, value) in [
+            ("n", &n),
+            ("p", &p),
+            ("q", &q),
+            ("dmp1", &d_p),
+            ("dmq1", &d_q),
+            ("iqmp", &i_q),
+        ] {
+            fields.insert(name.to_string(), json!(hex(&value.to_bytes_be())));
+        }
+        responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
+    }
+    Ok(())
+}
+
 fn run_rsa_testcase(
     test_case: &RsaTestCase,
     opts: &Opts,
@@ -100,6 +189,9 @@ fn run_rsa_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
+    if test_case.operation == "keygen" {
+        return run_rsa_keygen(test_case, opts, spi_console, failures, responses);
+    }
     // Send algorithm name
     CryptotestCommand::Rsa.send(spi_console)?;
 
@@ -114,22 +206,11 @@ fn run_rsa_testcase(
     operation.send(spi_console)?;
 
     // Send padding mode
-    let padding = match test_case.padding.as_str() {
-        "oaep" => CryptotestRsaPadding::Oaep,
-        "pkcs1_1.5" => CryptotestRsaPadding::Pkcs15,
-        "pss" => CryptotestRsaPadding::Pss,
-        _ => panic!("Unsupported RSA padding mode"),
-    };
+    let padding = padding_mode(&test_case.padding);
     padding.send(spi_console)?;
 
     // Send security level
-    match test_case.security_level {
-        2048 => CryptotestRsaSecurityLevel::Rsa2048,
-        3072 => CryptotestRsaSecurityLevel::Rsa3072,
-        4096 => CryptotestRsaSecurityLevel::Rsa4096,
-        _ => panic!("Unsupported RSA security level"),
-    }
-    .send(spi_console)?;
+    security_level(test_case.security_level).send(spi_console)?;
 
     // Get the hash function and hash the message to check signatures on the host (unfortunately
     // this code is challenging to deduplicate because the `Digest` trait is not object safe).

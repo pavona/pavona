@@ -43,6 +43,7 @@ VECTOR_SETS = {
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("RSA", "keyGen"): ("rsa_keygen", "keygen"),
     ("RSA", "sigVer"): ("rsa", "sigver"),
     ("SHA2-256", ""): ("sha256", "sha2"),
     ("SHA2-384", ""): ("sha384", "sha2"),
@@ -69,6 +70,7 @@ PARSER_NAMES = {
     "sha3_512": "hash",
     "shake128": "hash",
     "shake256": "hash",
+    "rsa_keygen": "rsa",
 }
 
 

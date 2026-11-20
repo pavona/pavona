@@ -39,6 +39,37 @@ PADDINGS = {
 }
 
 
+def parse_keygen(data):
+    """Parse an RSA keyGen prompt. Response: n, e, p, q, dmp1, dmq1, iqmp."""
+    if data["revision"] != "FIPS186-5":
+        raise SystemExit("parse_keygen: only revision FIPS186-5 is implemented")
+    test_vectors = []
+    for group in data["testGroups"]:
+        if group["randPQ"] != "probable":
+            raise SystemExit("parse_keygen: primes other than probable primes are not "
+                             "implemented")
+        if group["keyFormat"] != "crt":
+            raise SystemExit("parse_keygen: key formats other than CRT are not implemented")
+        if group["pubExp"] != "fixed" or group["fixedPubExp"] != "010001":
+            raise SystemExit("parse_keygen: public exponents other than 65537 are not "
+                             "implemented")
+        if group["primeTest"] != "2powSecStr":
+            raise SystemExit("parse_keygen: prime tests other than 2powSecStr are not "
+                             "implemented")
+        if group["pMod8"] != 0 or group["qMod8"] != 0:
+            raise SystemExit("parse_keygen: primes with a fixed residue mod 8 are not "
+                             "implemented")
+        for test in group["tests"]:
+            test_vectors.append({
+                **acvp_common(data, group),
+                "test_case_id": test["tcId"],
+                "operation": "keygen",
+                "padding": "pkcs1_1.5",
+                "security_level": group["modulo"],
+            })
+    return test_vectors
+
+
 def parse_sigver(data):
     """Parse an RSA sigVer prompt. Response: testPassed."""
     if data["revision"] != "FIPS186-5":
@@ -103,13 +134,17 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-type",
-        choices=["sigver"],
+        choices=["keygen", "sigver"],
         required=True,
         help="Type of test vectors to parse.",
     )
     args = parser.parse_args()
 
-    test_vectors = parse_sigver(load_vector_set(args.src))
+    raw_data = load_vector_set(args.src)
+    if args.test_type == "keygen":
+        test_vectors = parse_keygen(raw_data)
+    elif args.test_type == "sigver":
+        test_vectors = parse_sigver(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:

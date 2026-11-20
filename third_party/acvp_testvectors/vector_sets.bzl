@@ -113,6 +113,13 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "dd2c988a2a129e4a98e1556a58e858b9a542b39cd6456af8b52b0b6cad29ae28",
         },
     },
+    "rsa-keygen": {
+        "algorithm": "RSA-keyGen-FIPS186-5",
+        "registration_sha256": "110bdb68edb265f34840bf98ffa1d8135ed033b977b55d3c846853517e674429",
+        "files": {
+            "prompt.json": "b9034a3791d71e0e71d4bead7064ead0a7c1c2d22ffb32662de48289ecc6d5df",
+        },
+    },
     "rsa-sigver": {
         "algorithm": "RSA-sigVer-FIPS186-5",
         "registration_sha256": "2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392",

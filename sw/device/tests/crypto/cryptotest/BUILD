@@ -800,3 +800,14 @@ cryptotest(
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
     test_vectors = RSA_TESTVECTOR_TARGETS,
 )
+
+cryptotest(
+    name = "rsa_keygen_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    manual = True,
+    test_args = "--timeout=1200s --rsa-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_rsa_keygen_json)\"",
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_rsa_keygen_json"],
+)
