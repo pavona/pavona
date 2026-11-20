@@ -13,6 +13,7 @@ load("//rules:const.bzl", "CONST")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
+    "otp_hex",
     "otp_image",
     "otp_json",
     "otp_partition",
