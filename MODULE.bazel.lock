@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "uHNAD5kOLri3tjrcRDzBo1++8t6ylbLGklDIg6X9r50=",
+        "bzlTransitiveDigest": "IJLk23gQN/i2apLvK0RP/LiPsVIW/mpRBdN9xXufbk4=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -548,6 +548,14 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-keyGen-FIPS186-5/110bdb68edb265f34840bf98ffa1d8135ed033b977b55d3c846853517e674429/prompt.json"
             }
           },
+          "acvp_vectors_rsa-siggen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7ae3756e7347498b1ac0a1cf507c3363ce3582dec61f4e05f47695a24c3d6cdb",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigGen-FIPS186-5/db3e81a05717d6c937dfa168730ca6e3df84fbd873a00676cabf68d738d78de0/prompt.json"
+            }
+          },
           "acvp_vectors_rsa-sigver_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -738,6 +746,7 @@
                 "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
                 "ml-kem-keygen/prompt.json": "acvp_vectors_ml-kem-keygen_prompt.json",
                 "rsa-keygen/prompt.json": "acvp_vectors_rsa-keygen_prompt.json",
+                "rsa-siggen/prompt.json": "acvp_vectors_rsa-siggen_prompt.json",
                 "rsa-sigver/expectedResults.json": "acvp_vectors_rsa-sigver_expectedResults.json",
                 "rsa-sigver/prompt.json": "acvp_vectors_rsa-sigver_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",

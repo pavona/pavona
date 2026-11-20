@@ -859,6 +859,26 @@ run_binary(
 )
 
 run_binary(
+    name = "acvp_rsa_siggen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-siggen/prompt.json",
+    ],
+    outs = [":acvp_rsa_siggen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-siggen/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_siggen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--test-type",
+        "siggen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
+run_binary(
     name = "acvp_rsa_sigver_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",

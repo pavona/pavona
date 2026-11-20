@@ -55,7 +55,7 @@
       "operation": {
         "description": "RSA operation",
         "type": "string",
-        "enum": ["sign", "verify", "encrypt", "decrypt", "keygen"]
+        "enum": ["sign", "verify", "encrypt", "decrypt", "keygen", "keygen_sign"]
       },
       "padding": {
         "description": "RSA padding type",

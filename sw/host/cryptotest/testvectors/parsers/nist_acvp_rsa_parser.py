@@ -39,6 +39,25 @@ PADDINGS = {
 }
 
 
+def signature_scheme(where, group):
+    """Returns the padding and hash of a signature test group."""
+    hash_alg = group["hashAlg"]
+    if hash_alg not in HASH_ALGS:
+        raise SystemExit(f"{where}: {hash_alg} is not implemented")
+    sig_type = group["sigType"]
+    if sig_type not in PADDINGS:
+        raise SystemExit(f"{where}: {sig_type} is not implemented")
+    if sig_type == "pss":
+        if group["maskFunction"] != "mgf1":
+            raise SystemExit(f"{where}: mask functions other than MGF1 are not implemented")
+        if group["saltLen"] != DIGEST_BYTES[hash_alg]:
+            raise SystemExit(f"{where}: salts other than the digest length are not "
+                             "implemented")
+    if "conformance" in group:
+        raise SystemExit(f"{where}: {group['conformance']} is not implemented")
+    return PADDINGS[sig_type], HASH_ALGS[hash_alg]
+
+
 def parse_keygen(data):
     """Parse an RSA keyGen prompt. Response: n, e, p, q, dmp1, dmq1, iqmp."""
     if data["revision"] != "FIPS186-5":
@@ -70,25 +89,35 @@ def parse_keygen(data):
     return test_vectors
 
 
+def parse_siggen(data):
+    """Parse an RSA sigGen prompt. Response: n and e per group, signature."""
+    if data["revision"] != "FIPS186-5":
+        raise SystemExit("parse_siggen: only revision FIPS186-5 is implemented")
+    test_vectors = []
+    for group in data["testGroups"]:
+        padding, hash_alg = signature_scheme("parse_siggen", group)
+        for test in group["tests"]:
+            test_vectors.append({
+                **acvp_common(data, group),
+                "test_case_id": test["tcId"],
+                "operation": "keygen_sign",
+                "padding": padding,
+                "security_level": group["modulo"],
+                "hash_alg": hash_alg,
+                "message": list(bytes.fromhex(test["message"])),
+                # The signature must verify with the device's public key.
+                "result": True,
+            })
+    return test_vectors
+
+
 def parse_sigver(data):
     """Parse an RSA sigVer prompt. Response: testPassed."""
     if data["revision"] != "FIPS186-5":
         raise SystemExit("parse_sigver: only revision FIPS186-5 is implemented")
     test_vectors = []
     for group in data["testGroups"]:
-        hash_alg = group["hashAlg"]
-        if hash_alg not in HASH_ALGS:
-            raise SystemExit(f"parse_sigver: {hash_alg} is not implemented")
-        sig_type = group["sigType"]
-        if sig_type not in PADDINGS:
-            raise SystemExit(f"parse_sigver: {sig_type} is not implemented")
-        if sig_type == "pss":
-            if group["maskFunction"] != "mgf1":
-                raise SystemExit("parse_sigver: mask functions other than MGF1 are not "
-                                 "implemented")
-            if group["saltLen"] != DIGEST_BYTES[hash_alg]:
-                raise SystemExit("parse_sigver: salts other than the digest length are not "
-                                 "implemented")
+        padding, hash_alg = signature_scheme("parse_sigver", group)
         n = bytes.fromhex(group["n"])
         e = int(group["e"], 16)
         for test in group["tests"]:
@@ -96,9 +125,9 @@ def parse_sigver(data):
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
                 "operation": "verify",
-                "padding": PADDINGS[sig_type],
+                "padding": padding,
                 "security_level": group["modulo"],
-                "hash_alg": HASH_ALGS[hash_alg],
+                "hash_alg": hash_alg,
                 "message": list(bytes.fromhex(test["message"])),
                 "n": list(n),
                 "e": e,
@@ -134,7 +163,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-type",
-        choices=["keygen", "sigver"],
+        choices=["keygen", "siggen", "sigver"],
         required=True,
         help="Type of test vectors to parse.",
     )
@@ -143,6 +172,8 @@ def main() -> int:
     raw_data = load_vector_set(args.src)
     if args.test_type == "keygen":
         test_vectors = parse_keygen(raw_data)
+    elif args.test_type == "siggen":
+        test_vectors = parse_siggen(raw_data)
     elif args.test_type == "sigver":
         test_vectors = parse_sigver(raw_data)
     apply_expected(test_vectors, args.expected)

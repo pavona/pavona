@@ -15,6 +15,7 @@ use sha3::{
     Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256,
     digest::{ExtendableOutput, Update as Sha3Update},
 };
+use std::collections::HashMap;
 use std::fs;
 use std::io::Read;
 use std::time::Duration;
@@ -92,6 +93,48 @@ struct RsaTestCase {
     result: Option<bool>,
 }
 
+/// Verifies a signature from the device with the `rsa` crate.
+fn signature_is_valid(
+    padding: &CryptotestRsaPadding,
+    hash_alg: &CryptotestRsaHashAlg,
+    n: BigUint,
+    e: u32,
+    digest: &[u8],
+    signature: &[u8],
+) -> bool {
+    let public = RsaPublicKey::new(n, BigUint::from(e)).expect("Invalid public key");
+    match padding {
+        CryptotestRsaPadding::Pkcs15 => {
+            let scheme = match hash_alg {
+                CryptotestRsaHashAlg::Sha256 => Pkcs1v15Sign::new::<sha2::Sha256>(),
+                CryptotestRsaHashAlg::Sha384 => Pkcs1v15Sign::new::<sha2::Sha384>(),
+                CryptotestRsaHashAlg::Sha512 => Pkcs1v15Sign::new::<sha2::Sha512>(),
+                CryptotestRsaHashAlg::Sha3_224 => Pkcs1v15Sign::new::<sha3::Sha3_224>(),
+                CryptotestRsaHashAlg::Sha3_256 => Pkcs1v15Sign::new::<sha3::Sha3_256>(),
+                CryptotestRsaHashAlg::Sha3_384 => Pkcs1v15Sign::new::<sha3::Sha3_384>(),
+                CryptotestRsaHashAlg::Sha3_512 => Pkcs1v15Sign::new::<sha3::Sha3_512>(),
+                _ => panic!("SHAKE-based hashes are currently unsupported."),
+            };
+            public.verify(scheme, digest, signature)
+        }
+        CryptotestRsaPadding::Pss => {
+            let scheme = match hash_alg {
+                CryptotestRsaHashAlg::Sha256 => Pss::new::<sha2::Sha256>(),
+                CryptotestRsaHashAlg::Sha384 => Pss::new::<sha2::Sha384>(),
+                CryptotestRsaHashAlg::Sha512 => Pss::new::<sha2::Sha512>(),
+                CryptotestRsaHashAlg::Sha3_224 => Pss::new::<sha3::Sha3_224>(),
+                CryptotestRsaHashAlg::Sha3_256 => Pss::new::<sha3::Sha3_256>(),
+                CryptotestRsaHashAlg::Sha3_384 => Pss::new::<sha3::Sha3_384>(),
+                CryptotestRsaHashAlg::Sha3_512 => Pss::new::<sha3::Sha3_512>(),
+                _ => panic!("SHAKE-based hashes are currently unsupported"),
+            };
+            public.verify(scheme, digest, signature)
+        }
+        _ => panic!("Unsupported padding scheme for sign/verify operations"),
+    }
+    .is_ok()
+}
+
 fn padding_mode(padding: &str) -> CryptotestRsaPadding {
     match padding {
         "oaep" => CryptotestRsaPadding::Oaep,
@@ -121,6 +164,43 @@ fn generate_key(
     padding_mode(&test_case.padding).send(spi_console)?;
     security_level(test_case.security_level).send(spi_console)?;
     CryptotestRsaPrivateKey::recv(spi_console, opts.timeout, false, false)
+}
+
+/// Builds the device private key from the test case parameters.
+fn test_case_key(test_case: &RsaTestCase) -> CryptotestRsaPrivateKey {
+    // Convert parameters to unsigned little-endian
+    let le = |x: &[u8]| BigInt::from_signed_bytes_be(x).to_bytes_le().1;
+    let n = le(&test_case.n);
+    let p = le(&test_case.p);
+    let q = le(&test_case.q);
+    let d = le(&test_case.d);
+    let d_p = le(&test_case.d_p);
+    let d_q = le(&test_case.d_q);
+    let i_q = le(&test_case.i_q);
+    CryptotestRsaPrivateKey {
+        n: ArrayVec::try_from(n.as_slice())
+            .expect("RSA parameter n too long for device firmware configuration."),
+        n_len: n.len(),
+        p: ArrayVec::try_from(p.as_slice())
+            .expect("RSA parameter p too long for device firmware configuration."),
+        p_len: p.len(),
+        q: ArrayVec::try_from(q.as_slice())
+            .expect("RSA parameter q too long for device firmware configuration."),
+        q_len: q.len(),
+        d: ArrayVec::try_from(d.as_slice())
+            .expect("RSA parameter d too long for device firmware configuration."),
+        d_len: d.len(),
+        d_p: ArrayVec::try_from(d_p.as_slice())
+            .expect("RSA parameter d_p too long for device firmware configuration."),
+        d_p_len: d_p.len(),
+        d_q: ArrayVec::try_from(d_q.as_slice())
+            .expect("RSA parameter d_q too long for device firmware configuration."),
+        d_q_len: d_q.len(),
+        i_q: ArrayVec::try_from(i_q.as_slice())
+            .expect("RSA parameter i_q too long for device firmware configuration."),
+        i_q_len: i_q.len(),
+        e: test_case.e,
+    }
 }
 
 fn run_rsa_keygen(
@@ -183,6 +263,7 @@ fn run_rsa_testcase(
     spi_console: &SpiConsoleDevice,
     failures: &mut Vec<String>,
     responses: &mut ResponseBuilder,
+    keys: &mut HashMap<(usize, String), CryptotestRsaPrivateKey>,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -191,6 +272,11 @@ fn run_rsa_testcase(
     );
     if test_case.operation == "keygen" {
         return run_rsa_keygen(test_case, opts, spi_console, failures, responses);
+    }
+    // sigGen signs with one generated key per size and padding.
+    let key_id = (test_case.security_level, test_case.padding.clone());
+    if test_case.operation == "keygen_sign" && !keys.contains_key(&key_id) {
+        keys.insert(key_id.clone(), generate_key(test_case, opts, spi_console)?);
     }
     // Send algorithm name
     CryptotestCommand::Rsa.send(spi_console)?;
@@ -201,6 +287,7 @@ fn run_rsa_testcase(
         "verify" => CryptotestRsaOperation::Verify,
         "encrypt" => CryptotestRsaOperation::Encrypt,
         "decrypt" => CryptotestRsaOperation::Decrypt,
+        "keygen_sign" => CryptotestRsaOperation::Sign,
         _ => panic!("Unsupported RSA operation"),
     };
     operation.send(spi_console)?;
@@ -277,96 +364,46 @@ fn run_rsa_testcase(
     // what operation we're performing.
     let success = match operation {
         CryptotestRsaOperation::Sign => {
-            // Convert parameters to unsigned little-endian
-            let n_bigint = BigInt::from_signed_bytes_be(test_case.n.as_slice());
-            let n = n_bigint.to_bytes_le().1;
-            let p_bigint = BigInt::from_signed_bytes_be(test_case.p.as_slice());
-            let p = p_bigint.to_bytes_le().1;
-            let q_bigint = BigInt::from_signed_bytes_be(test_case.q.as_slice());
-            let q = q_bigint.to_bytes_le().1;
-            let d_bigint = BigInt::from_signed_bytes_be(test_case.d.as_slice());
-            let d = d_bigint.to_bytes_le().1;
-            let d_p_bigint = BigInt::from_signed_bytes_be(test_case.d_p.as_slice());
-            let d_p = d_p_bigint.to_bytes_le().1;
-            let d_q_bigint = BigInt::from_signed_bytes_be(test_case.d_q.as_slice());
-            let d_q = d_q_bigint.to_bytes_le().1;
-            let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
-            let i_q = i_q_bigint.to_bytes_le().1;
-
+            let private_key = match keys.get(&key_id) {
+                Some(key) if test_case.operation == "keygen_sign" => key.clone(),
+                _ => test_case_key(test_case),
+            };
             CryptotestRsaMessage {
                 message: ArrayVec::try_from(test_case.message.as_slice())
                     .expect("Message was too long for device firmware configuration."),
                 message_len: test_case.message.len(),
             }
             .send(spi_console)?;
-            CryptotestRsaPrivateKey {
-                n: ArrayVec::try_from(n.as_slice())
-                    .expect("RSA parameter n too long for device firmware configuration."),
-                n_len: n.len(),
-                p: ArrayVec::try_from(p.as_slice())
-                    .expect("RSA parameter p too long for device firmware configuration."),
-                p_len: p.len(),
-                q: ArrayVec::try_from(q.as_slice())
-                    .expect("RSA parameter q too long for device firmware configuration."),
-                q_len: q.len(),
-                d: ArrayVec::try_from(d.as_slice())
-                    .expect("RSA parameter d too long for device firmware configuration."),
-                d_len: d.len(),
-                d_p: ArrayVec::try_from(d_p.as_slice())
-                    .expect("RSA parameter d_p too long for device firmware configuration."),
-                d_p_len: d_p.len(),
-                d_q: ArrayVec::try_from(d_q.as_slice())
-                    .expect("RSA parameter d_q too long for device firmware configuration."),
-                d_q_len: d_q.len(),
-                i_q: ArrayVec::try_from(i_q.as_slice())
-                    .expect("RSA parameter i_q too long for device firmware configuration."),
-                i_q_len: i_q.len(),
-                e: test_case.e,
-            }
-            .send(spi_console)?;
+            private_key.send(spi_console)?;
             // RSA signing in cryptolib is nondeterministic, so we cannot compare against the
-            // provided signature. Instead, we use a known-good implementation to check that we can
-            // verify the returned signature.
+            // provided signature. Instead, we check that the `rsa` crate verifies it.
             let signature = CryptotestRsaSignature::recv(spi_console, opts.timeout, false, false)?;
-            let signature = BigUint::from_bytes_le(&signature.signature[..signature.signature_len])
-                .to_bytes_be();
-            let public = RsaPublicKey::new(
-                n_bigint
-                    .to_biguint()
-                    .expect("RSA parameter n cannot be negative"),
-                BigUint::from(test_case.e),
-            )
-            .expect("Invalid public key");
-            match padding {
-                CryptotestRsaPadding::Pkcs15 => {
-                    let scheme = match hash_alg {
-                        CryptotestRsaHashAlg::Sha256 => Pkcs1v15Sign::new::<sha2::Sha256>(),
-                        CryptotestRsaHashAlg::Sha384 => Pkcs1v15Sign::new::<sha2::Sha384>(),
-                        CryptotestRsaHashAlg::Sha512 => Pkcs1v15Sign::new::<sha2::Sha512>(),
-                        CryptotestRsaHashAlg::Sha3_224 => Pkcs1v15Sign::new::<sha3::Sha3_224>(),
-                        CryptotestRsaHashAlg::Sha3_256 => Pkcs1v15Sign::new::<sha3::Sha3_256>(),
-                        CryptotestRsaHashAlg::Sha3_384 => Pkcs1v15Sign::new::<sha3::Sha3_384>(),
-                        CryptotestRsaHashAlg::Sha3_512 => Pkcs1v15Sign::new::<sha3::Sha3_512>(),
-                        _ => panic!("SHAKE-based hashes are currently unsupported."),
-                    };
-                    public.verify(scheme, message_digest.as_slice(), signature.as_slice())
-                }
-                CryptotestRsaPadding::Pss => {
-                    let scheme = match hash_alg {
-                        CryptotestRsaHashAlg::Sha256 => Pss::new::<sha2::Sha256>(),
-                        CryptotestRsaHashAlg::Sha384 => Pss::new::<sha2::Sha384>(),
-                        CryptotestRsaHashAlg::Sha512 => Pss::new::<sha2::Sha512>(),
-                        CryptotestRsaHashAlg::Sha3_224 => Pss::new::<sha3::Sha3_224>(),
-                        CryptotestRsaHashAlg::Sha3_256 => Pss::new::<sha3::Sha3_256>(),
-                        CryptotestRsaHashAlg::Sha3_384 => Pss::new::<sha3::Sha3_384>(),
-                        CryptotestRsaHashAlg::Sha3_512 => Pss::new::<sha3::Sha3_512>(),
-                        _ => panic!("SHAKE-based hashes are currently unsupported"),
-                    };
-                    public.verify(scheme, message_digest.as_slice(), signature.as_slice())
-                }
-                _ => panic!("Unsupported padding scheme for sign/verify operations"),
+            let signature: Vec<u8> = signature.signature[..signature.signature_len]
+                .iter()
+                .rev()
+                .cloned()
+                .collect();
+            let n = BigUint::from_bytes_le(&private_key.n[..private_key.n_len]);
+            if test_case.vendor == "acvp" {
+                let mut group_fields = Fields::new();
+                group_fields.insert("n".to_string(), json!(hex(&n.to_bytes_be())));
+                group_fields.insert(
+                    "e".to_string(),
+                    json!(hex(&BigUint::from(private_key.e).to_bytes_be())),
+                );
+                responses.set_group_fields(&test_case.acvp, group_fields);
+                let mut fields = Fields::new();
+                fields.insert("signature".to_string(), json!(hex(&signature)));
+                responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
             }
-            .is_ok()
+            signature_is_valid(
+                &padding,
+                &hash_alg,
+                n,
+                private_key.e,
+                &message_digest,
+                &signature,
+            )
         }
         CryptotestRsaOperation::Verify => {
             // Convert parameters to unsigned little-endian
@@ -494,21 +531,6 @@ fn run_rsa_testcase(
                 .is_ok()
         }
         CryptotestRsaOperation::Decrypt => {
-            // Convert parameters to unsigned little-endian
-            let n_bigint = BigInt::from_signed_bytes_be(test_case.n.as_slice());
-            let n = n_bigint.to_bytes_le().1;
-            let p_bigint = BigInt::from_signed_bytes_be(test_case.p.as_slice());
-            let p = p_bigint.to_bytes_le().1;
-            let q_bigint = BigInt::from_signed_bytes_be(test_case.q.as_slice());
-            let q = q_bigint.to_bytes_le().1;
-            let d_bigint = BigInt::from_signed_bytes_be(test_case.d.as_slice());
-            let d = d_bigint.to_bytes_le().1;
-            let d_p_bigint = BigInt::from_signed_bytes_be(test_case.d_p.as_slice());
-            let d_p = d_p_bigint.to_bytes_le().1;
-            let d_q_bigint = BigInt::from_signed_bytes_be(test_case.d_q.as_slice());
-            let d_q = d_q_bigint.to_bytes_le().1;
-            let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
-            let i_q = i_q_bigint.to_bytes_le().1;
             let ciphertext: Vec<_> = test_case.ciphertext.iter().cloned().rev().collect();
             // Send ciphertext
             CryptotestRsaCiphertext {
@@ -530,31 +552,7 @@ fn run_rsa_testcase(
             }
             .send(spi_console)?;
             // Send private key
-            CryptotestRsaPrivateKey {
-                n: ArrayVec::try_from(n.as_slice())
-                    .expect("RSA parameter n too long for device firmware configuration."),
-                n_len: n.len(),
-                p: ArrayVec::try_from(p.as_slice())
-                    .expect("RSA parameter p too long for device firmware configuration."),
-                p_len: p.len(),
-                q: ArrayVec::try_from(q.as_slice())
-                    .expect("RSA parameter q too long for device firmware configuration."),
-                q_len: q.len(),
-                d: ArrayVec::try_from(d.as_slice())
-                    .expect("RSA parameter d too long for device firmware configuration."),
-                d_len: d.len(),
-                d_p: ArrayVec::try_from(d_p.as_slice())
-                    .expect("RSA parameter d_p too long for device firmware configuration."),
-                d_p_len: d_p.len(),
-                d_q: ArrayVec::try_from(d_q.as_slice())
-                    .expect("RSA parameter d_q too long for device firmware configuration."),
-                d_q_len: d_q.len(),
-                i_q: ArrayVec::try_from(i_q.as_slice())
-                    .expect("RSA parameter i_q too long for device firmware configuration."),
-                i_q_len: i_q.len(),
-                e: test_case.e,
-            }
-            .send(spi_console)?;
+            test_case_key(test_case).send(spi_console)?;
             let output = CryptotestRsaDecryptOutput::recv(spi_console, opts.timeout, false, false)?;
             output.success != 0
                 && output.plaintext[..output.plaintext_len].eq(test_case.message.as_slice())
@@ -580,7 +578,7 @@ fn run_rsa_testcase(
             test_case.test_case_id
         ));
     }
-    if test_case.vendor == "acvp" {
+    if test_case.vendor == "acvp" && test_case.operation == "verify" {
         let mut fields = Fields::new();
         fields.insert("testPassed".to_string(), json!(success));
         responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
@@ -596,6 +594,7 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut test_counter = 0u32;
     let mut failures = vec![];
     let mut responses = ResponseBuilder::new();
+    let mut keys = HashMap::new();
     let test_vector_files = opts.acvp.vectors(&opts.rsa_json);
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
@@ -610,6 +609,7 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
                 &spi_console_device,
                 &mut failures,
                 &mut responses,
+                &mut keys,
             )?;
         }
     }
