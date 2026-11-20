@@ -45,7 +45,9 @@ Some of them in use are:
     WakeupSysrst,
     WakeupDbgCable,
     WakeupPin,
+% if 'usb' in src_clks:
     WakeupUsb,
+% endif
     WakeupAonTimer,
     WakeupSensorCtrl
   } wakeup_e;

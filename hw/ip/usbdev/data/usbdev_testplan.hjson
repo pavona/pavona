@@ -42,6 +42,7 @@
             '''
       stage: V1
       tests: ["usbdev_smoke"]
+      features: []
     }
     {
       name: in_trans
@@ -58,6 +59,7 @@
             '''
       stage: V2
       tests: ["usbdev_in_trans"]
+      features: []
     }
     {
       name: data_toggle_clear
@@ -73,6 +75,7 @@
             '''
       stage: V2
       tests: ["usbdev_data_toggle_clear"]
+      features: []
     }
     {
       name: phy_pins_sense
@@ -86,6 +89,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_pins_sense"]
+      features: []
     }
     {
       name: av_buffer
@@ -102,6 +106,7 @@
             '''
       stage: V2
       tests: ["usbdev_av_buffer"]
+      features: []
     }
     {
       name: rx_fifo
@@ -118,6 +123,7 @@
             '''
       stage: V2
       tests: ["usbdev_pkt_buffer"]
+      features: []
     }
     {
       name: phy_config_tx_osc_test_mode
@@ -129,6 +135,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_tx_osc_test_mode"]
+      features: []
     }
     {
       name: phy_config_eop_single_bit_handling
@@ -144,6 +151,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_eop_single_bit_handling"]
+      features: []
     }
     {
       name: phy_config_pinflip
@@ -160,6 +168,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_pinflip"]
+      features: []
     }
     {
       name: phy_config_rand_bus_type
@@ -168,6 +177,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_rand_bus_type"]
+      features: []
     }
     {
       name: phy_config_rx_dp_dn
@@ -182,6 +192,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_rx_dp_dn"]
+      features: []
     }
     {
       name: phy_config_tx_use_d_se0
@@ -193,6 +204,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_tx_use_d_se0"]
+      features: []
     }
     {
       name: phy_config_usb_ref_disable
@@ -210,6 +222,7 @@
             '''
       stage: V2
       tests: ["usbdev_phy_config_usb_ref_disable"]
+      features: []
     }
     {
       name: max_length_out_transaction
@@ -224,6 +237,7 @@
             '''
       stage: V2
       tests: ["usbdev_max_length_out_transaction", "usbdev_stream_len_max"]
+      features: []
     }
     {
       name: max_length_in_transaction
@@ -240,6 +254,7 @@
             '''
       stage: V2
       tests: ["usbdev_max_length_in_transaction"]
+      features: []
     }
     {
       name: min_length_out_transaction
@@ -254,6 +269,7 @@
             '''
       stage: V2
       tests: ["usbdev_min_length_out_transaction"]
+      features: []
     }
     {
       name: min_length_in_transaction
@@ -270,6 +286,7 @@
             '''
       stage: V2
       tests: ["usbdev_min_length_in_transaction"]
+      features: []
     }
     {
       name: random_length_out_transaction
@@ -284,6 +301,7 @@
             '''
       stage: V2
       tests: ["usbdev_random_length_out_transaction"]
+      features: []
     }
     {
       name: random_length_in_transaction
@@ -298,6 +316,7 @@
             '''
       stage: V2
       tests: ["usbdev_random_length_in_transaction"]
+      features: []
     }
     {
       name: out_stall
@@ -310,6 +329,7 @@
             '''
       stage: V2
       tests: ["usbdev_out_stall"]
+      features: []
     }
     {
       name: in_stall
@@ -322,6 +342,7 @@
             '''
       stage: V2
       tests: ["usbdev_in_stall"]
+      features: []
     }
     {
       name: out_iso
@@ -334,6 +355,7 @@
             '''
       stage: V2
       tests: ["usbdev_out_iso"]
+      features: []
     }
     {
       name: in_iso
@@ -348,6 +370,7 @@
             '''
       stage: V2
       tests: ["usbdev_in_iso"]
+      features: []
     }
     {
       name: pkt_received
@@ -359,6 +382,7 @@
             '''
       stage: V2
       tests: ["usbdev_pkt_received"]
+      features: []
     }
     {
       name: pkt_sent
@@ -370,6 +394,7 @@
             '''
       stage: V2
       tests: ["usbdev_pkt_sent"]
+      features: []
     }
     {
       name: disconnected
@@ -381,6 +406,7 @@
             '''
       stage: V2
       tests: ["usbdev_disconnected"]
+      features: []
     }
     {
       name: host_lost
@@ -396,6 +422,7 @@
             '''
       stage: V2
       tests: ["usbdev_host_lost"]
+      features: []
     }
     {
       name: link_reset
@@ -409,6 +436,7 @@
             '''
       stage: V2
       tests: ["usbdev_link_reset"]
+      features: []
     }
     {
       name: link_suspend
@@ -422,6 +450,7 @@
             '''
       stage: V2
       tests: ["usbdev_link_suspend"]
+      features: []
     }
     {
       name: link_resume
@@ -434,6 +463,7 @@
             '''
       stage: V2
       tests: ["usbdev_link_resume"]
+      features: []
     }
     {
       name: av_empty
@@ -449,6 +479,7 @@
             '''
       stage: V2
       tests: ["usbdev_av_empty"]
+      features: []
     }
     {
       name: rx_full
@@ -462,6 +493,7 @@
             '''
       stage: V2
       tests: ["usbdev_rx_full"]
+      features: []
     }
     {
       name: av_overflow
@@ -477,6 +509,7 @@
             '''
       stage: V2
       tests: ["usbdev_av_overflow"]
+      features: []
     }
     {
       name: link_in_err
@@ -491,6 +524,7 @@
             '''
       stage: V2
       tests: ["usbdev_link_in_err"]
+      features: []
     }
     {
       name: rx_crc_err
@@ -502,6 +536,7 @@
             '''
       stage: V2
       tests: ["usbdev_rx_crc_err"]
+      features: []
     }
     {
       name: rx_pid_err
@@ -513,6 +548,7 @@
             '''
       stage: V2
       tests: ["usbdev_rx_pid_err"]
+      features: []
     }
     {
       name: rx_bitstuff_err
@@ -524,6 +560,7 @@
             '''
       stage: V2
       tests: ["usbdev_bitstuff_err"]
+      features: []
     }
     {
       name: link_out_err
@@ -536,6 +573,7 @@
             '''
       stage: V2
       tests: ["usbdev_link_out_err"]
+      features: []
     }
     {
       name: enable
@@ -548,6 +586,7 @@
             '''
       stage: V2
       tests: ["usbdev_enable"]
+      features: []
     }
     {
       name: resume_link_active
@@ -564,6 +603,7 @@
             '''
       stage: V2
       tests: ["usbdev_resume_link_active"]
+      features: []
     }
     {
       name: device_address
@@ -579,6 +619,7 @@
             '''
       stage: V2
       tests: ["usbdev_device_address"]
+      features: []
     }
     {
       name: invalid_data1_data0_toggle_test
@@ -592,6 +633,7 @@
             '''
       stage: V2
       tests: ["usbdev_invalid_data1_data0_toggle_test"]
+      features: []
     }
     {
       name: setup_stage
@@ -604,6 +646,7 @@
             '''
       stage: V2
       tests: ["usbdev_setup_stage"]
+      features: []
     }
     {
       name: endpoint_access
@@ -617,6 +660,7 @@
             '''
       stage: V2
       tests: ["usbdev_endpoint_access"]
+      features: []
     }
     {
       name: disable_endpoint
@@ -631,6 +675,7 @@
             '''
       stage: V2
       tests: ["usbdev_disable_endpoint"]
+      features: []
     }
     {
       name: endpoint_types
@@ -645,6 +690,7 @@
             '''
       stage: V2
       tests: ["usbdev_endpoint_types"]
+      features: []
     }
     {
       name: out_trans_nak
@@ -657,6 +703,7 @@
             '''
       stage: V2
       tests: ["usbdev_out_trans_nak"]
+      features: []
     }
     {
       name: setup_trans_ignored
@@ -670,6 +717,7 @@
             '''
       stage: V2
       tests: ["usbdev_setup_trans_ignored"]
+      features: []
     }
     {
       name: nak_trans
@@ -685,6 +733,7 @@
             '''
       stage: V2
       tests: ["usbdev_nak_trans"]
+      features: []
     }
     {
       name: stall_trans
@@ -697,6 +746,7 @@
             '''
       stage: V2
       tests: ["usbdev_stall_trans"]
+      features: []
     }
     {
       name: setup_priority_over_stall_response
@@ -712,6 +762,7 @@
             '''
       stage: V2
       tests: ["usbdev_setup_priority_over_stall_response"]
+      features: []
     }
     {
       name: stall_priority_over_nak
@@ -725,6 +776,7 @@
             '''
       stage: V2
       tests: ["usbdev_stall_priority_over_nak"]
+      features: []
     }
     {
       name: pending_in_trans
@@ -739,6 +791,7 @@
             '''
       stage: V2
       tests: ["usbdev_pending_in_trans"]
+      features: []
     }
     {
       name: streaming_test
@@ -755,6 +808,7 @@
             '''
       stage: V2
       tests: ["usbdev_streaming_out"]
+      features: []
     }
     {
       name: max_clock_error_untracked
@@ -773,6 +827,7 @@
       stage: V2
       tests: ["usbdev_freq_loclk",
               "usbdev_freq_hiclk"]
+              features: []
     }
     {
       name: max_clock_error_tracking
@@ -797,6 +852,7 @@
       stage: V2
       tests: ["usbdev_freq_loclk_max",
               "usbdev_freq_hiclk_max"]
+              features: []
     }
     {
       name: max_phase_error
@@ -811,6 +867,7 @@
             '''
       stage: V2
       tests: ["usbdev_freq_phase"]
+      features: []
     }
     {
       name: min_inter_pkt_delay
@@ -824,6 +881,7 @@
             '''
       stage: V2
       tests: ["usbdev_min_inter_pkt_delay"]
+      features: []
     }
     {
       name: max_inter_pkt_delay
@@ -837,6 +895,7 @@
             '''
       stage: V2
       tests: ["usbdev_max_inter_pkt_delay"]
+      features: []
     }
     {
       name: device_timeout_missing_host_handshake
@@ -855,6 +914,7 @@
             '''
       stage: V2
       tests: ["usbdev_timeout_missing_host_handshake"]
+      features: []
     }
     {
       name: device_timeout
@@ -875,6 +935,7 @@
             '''
       stage: V2
       tests: ["usbdev_device_timeout"]
+      features: []
     }
     {
       name: packet_buffer
@@ -895,6 +956,7 @@
             '''
       stage: V2
       tests: ["usbdev_pkt_buffer"]
+      features: []
     }
     {
       name: nak_to_out_trans_when_avbuffer_empty_rxfifo_full
@@ -909,6 +971,7 @@
             '''
       stage: V2
       tests: ["usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full"]
+      features: []
     }
     {
       name: aon_wake_resume
@@ -931,6 +994,7 @@
             '''
       stage: V2
       tests: ["usbdev_aon_wake_resume"]
+      features: []
     }
     {
       name: aon_wake_reset
@@ -953,6 +1017,7 @@
             '''
       stage: V2
       tests: ["usbdev_aon_wake_reset"]
+      features: []
     }
     {
       name: aon_wake_disconnect
@@ -975,6 +1040,7 @@
             '''
       stage: V2
       tests: ["usbdev_aon_wake_disconnect"]
+      features: []
     }
     {
       name: invalid_sync
@@ -994,6 +1060,7 @@
             '''
       stage: V2
       tests: ["usbdev_invalid_sync"]
+      features: []
     }
     {
       name: spurious_pids_ignored
@@ -1011,6 +1078,7 @@
             '''
       stage: V2
       tests: ["usbdev_spurious_pids_ignored"]
+      features: []
     }
     {
       name: low_speed_traffic
@@ -1032,6 +1100,7 @@
             '''
       stage: V2
       tests: ["usbdev_low_speed_traffic"]
+      features: []
     }
     {
       name: rand_bus_resets
@@ -1051,6 +1120,7 @@
             '''
       stage: V2
       tests: ["usbdev_rand_bus_resets"]
+      features: []
     }
     {
       name: rand_disconnects
@@ -1069,6 +1139,7 @@
             '''
       stage: V2
       tests: ["usbdev_rand_bus_disconnects"]
+      features: []
     }
     {
       name: rand_suspends
@@ -1078,6 +1149,7 @@
             '''
       stage: V2
       tests: ["usbdev_rand_suspends"]
+      features: []
     }
     {
       name: max_usb_traffic
@@ -1092,6 +1164,7 @@
         "usbdev_max_usb_traffic",
         "usbdev_max_non_iso_usb_traffic"
       ]
+      features: []
     }
     {
       name: stress_usb_traffic
@@ -1102,6 +1175,7 @@
             '''
       stage: V2
       tests: ["usbdev_stress_usb_traffic"]
+      features: []
     }
     {
       name: in_packet_retraction
@@ -1121,6 +1195,7 @@
             '''
       stage: V2
       tests: ["usbdev_iso_retraction"]
+      features: []
     }
     {
       name: data_toggle_restore
@@ -1150,6 +1225,7 @@
             '''
       stage: V2
       tests: ["usbdev_data_toggle_restore"]
+      features: []
     }
     {
       name: setup_priority
@@ -1175,6 +1251,7 @@
             '''
       stage: V2
       tests: ["usbdev_setup_priority"]
+      features: []
     }
     {
       name: fifo_resets
@@ -1192,6 +1269,7 @@
             '''
       stage: V2
       tests: ["usbdev_fifo_rst"]
+      features: []
     }
     {
       name: tx_rx_disruption
@@ -1216,6 +1294,7 @@
             '''
       stage: V2
       tests: ["usbdev_tx_rx_disruption"]
+      features: []
     }
     {
       name: fifo_levels
@@ -1236,6 +1315,7 @@
             '''
       stage: V2
       tests: ["usbdev_fifo_levels"]
+      features: []
     }
     {
       name: rxenable_out_conditional
@@ -1255,6 +1335,7 @@
             '''
       stage: V2
       tests: ["usbdev_rxenable_out"]
+      features: []
     }
     {
       name: dpi_config_host
@@ -1270,6 +1351,7 @@
             '''
       stage: V3
       tests: ["usbdev_dpi_config_host"]
+      features: []
     }
   ]
 

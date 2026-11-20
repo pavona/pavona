@@ -75,7 +75,7 @@
             '''
       stage: V1
       si_stage: NA
-      features: []
+      features: ["UART.BAUD_RATE_CONTROL"]
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
     {

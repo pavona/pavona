@@ -178,6 +178,41 @@
     }
   ]
 
+  features: [
+    { name: "SOC_PROXY.CTN_EGRESS.MUX",
+      desc: '''The CTN device port, the DMA host port and the MISC host port are multiplexed onto
+               the single TL-UL host port which egresses into the CTN.
+            '''
+    }
+    { name: "SOC_PROXY.CTN_EGRESS.BAT",
+      desc: '''Base address translation of CTN-bound requests: a request addressing the [1G, 2G)
+               window is downlifted into the [0, 1G) window before it leaves the block, and its
+               command integrity is regenerated for the modified address.
+            '''
+    }
+    { name: "SOC_PROXY.EXTERNAL_WAKEUP",
+      desc: '''An asynchronous, level-encoded wakeup request from the SoC is synchronized onto the
+               always-on domain and presented to the power manager as a wakeup request.
+            '''
+    }
+    { name: "SOC_PROXY.EXTERNAL_RESET",
+      desc: '''An asynchronous, level-encoded reset request from the SoC is synchronized onto the
+               always-on domain and glitch-filtered before being presented as a reset request.
+            '''
+    }
+    { name: "SOC_PROXY.GPIO",
+      desc: '''Sixteen general-purpose inputs from the SoC and sixteen general-purpose outputs to
+               the SoC are fed through between the chip IOs and the SoC-facing ports.
+            '''
+    }
+    { name: "SOC_PROXY.LSIO_TRIGGER",
+      desc: '''LSIO trigger signals from I2C, SPI Host and UART are synchronized onto the fast clock
+               domain and collated with the SoC-provided triggers into the trigger vector for the
+               DMA.
+            '''
+    }
+  ]
+
   regwidth: "32"
 
   registers: {

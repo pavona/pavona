@@ -117,6 +117,8 @@
     }
   ],
 
+  features: [],
+
   registers: [
     { multireg: {
       name: "KEY_SHARE0",

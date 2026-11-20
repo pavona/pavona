@@ -19,6 +19,7 @@
             '''
       stage: V1
       tests: ["csrng_smoke"]
+      features: ["CSRNG.INTERFACE.SOFTWARE"]
     }
     {
       name: interrupts
@@ -33,6 +34,7 @@
             '''
       stage: V2
       tests: ["csrng_intr"]
+      features: []
     }
     {
       name: alerts
@@ -51,6 +53,7 @@
             '''
       stage: V2
       tests: ["csrng_alert"]
+      features: []
     }
     {
       name: err
@@ -63,6 +66,7 @@
             '''
       stage: V2
       tests: ["csrng_err"]
+      features: []
     }
     {
       name: cmds
@@ -81,6 +85,7 @@
             '''
       stage: V2
       tests: ["csrng_cmds"]
+      features: ["CSRNG.INTERFACE.SOFTWARE", "CSRNG.INTERFACE.HARDWARE0", "CSRNG.INTERFACE.HARDWARE1", "CSRNG.READ_INT_STATE"]
     }
     {
       name: life cycle
@@ -90,6 +95,7 @@
             '''
       stage: V2
       tests: ["csrng_cmds"]
+      features: ["CSRNG.LIFECYCLE.DEBUGENABLE"]
     }
     {
       name: stress_all
@@ -98,6 +104,7 @@
             '''
       stage: V2
       tests: ["csrng_stress_all"]
+      features: []
     }
   ]
 

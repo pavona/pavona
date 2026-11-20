@@ -129,6 +129,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_idle_low_power"]
       bazel: ["//sw/device/tests:flash_ctrl_idle_low_power_test"]
+      features: []
     }
     {
       name: chip_sw_flash_keymgr_seeds
@@ -300,6 +301,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_prim_tl_access"]
+      features: []
     }
     {
       name: chip_sw_flash_ctrl_clock_freqs
@@ -314,6 +316,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
       bazel: ["//sw/device/tests:flash_ctrl_clock_freqs_test"]
+      features: []
     }
     {
       name: chip_sw_flash_ctrl_escalation_reset
@@ -327,6 +330,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_flash_crash_alert"]
+      features: []
     }
     {
       name: chip_sw_flash_ctrl_write_clear
@@ -352,6 +356,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_crash_alert"]
       bazel: ["//sw/device/tests:flash_ctrl_write_clear_test"]
+      features: []
     }
   ]
 }

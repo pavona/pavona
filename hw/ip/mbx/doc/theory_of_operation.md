@@ -98,6 +98,8 @@ The mailbox IP acts as a host on the TL-UL fabric and expects to transfer the re
 
 - Hard address decode based prevention of IBEX instruction fetch from this memory not possible (mixed with IBEX code memory)
 
+<!-- BEGIN-FEATURE: MBX.INBOUND -->
+<!-- BEGIN-FEATURE: MBX.OUTBOUND -->
 ### Mailbox Basics
 
 - PCIe specification section 6.30 defines the (optional) Data Object Exchange mechanism.\
@@ -152,6 +154,14 @@ For such a DOE mailbox instance, a fully PCIe compatible implementation is not r
 See [below](#system-level-use-cases) for more details.
 
 **Note**: Please refer to the [PCIe Specification](https://members.pcisig.com/wg/PCI-SIG/document/18363) for more detailed and up to date information on the PCIe compatible DOE Mailbox operation basics.
+<!-- END-FEATURE: MBX.INBOUND -->
+<!-- END-FEATURE: MBX.OUTBOUND -->
+
+<!-- BEGIN-FEATURE: MBX.ADDRESS_RANGE -->
+### Address Ranges
+The mailbox is configured with base and limit addresses which are the addresses of the inbound and outbound memory regions.
+The inbound side (the RoT side) then declares these ranges valid for use and optionally locks these address ranges from further changes until an IP block reset.
+<!-- END-FEATURE: MBX.ADDRESS_RANGE -->
 
 ### Integrated Root-of-Trust Usage Of DOE Mailbox Mechanism
 
@@ -304,6 +314,7 @@ The following DOE-related registers are present in all mailbox instances:
 | SoC   | System On Chip                                          |
 | ECR   | Engineering Change Request                              |
 
+<!-- BEGIN-FEATURE: MBX.ABORT -->
 ## Appendix
 
 A few important constraints from the PCIe specification for correct mailbox operation and error handling.
@@ -312,3 +323,4 @@ Please refer to the PCIe specification section 6.30 for detailed information, sp
 - Response time
 - Abort function
 - Error handling
+<!-- END-FEATURE: MBX.ABORT -->

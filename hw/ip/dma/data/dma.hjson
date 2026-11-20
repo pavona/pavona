@@ -151,6 +151,74 @@
       desc: "FSM is sparsely encoded. There is a single `ctrl_state` FSM."
     }
   ]
+  features: [
+    { name: "DMA.MODE.MEMORY",
+      desc: '''Memory-to-memory data movement: a transfer of the programmed total size is moved
+               from the source to the destination address once software sets CONTROL.go, without
+               any external pacing.
+            '''
+    }
+    { name: "DMA.MODE.HANDSHAKE",
+      desc: '''Hardware handshake mode: the transfer is paced by the low-speed IO trigger lines,
+               with one chunk moved per assertion, so that a peripheral FIFO can be drained or
+               filled as data or space becomes available.
+            '''
+    }
+    { name: "DMA.ADDRESSING",
+      desc: '''Per-endpoint addressing modes selected by SRC_CONFIG and DST_CONFIG: increment
+               controls whether consecutive transfers within a chunk advance the address, and wrap
+               controls whether the address returns to its programmed start at each chunk boundary.
+            '''
+    }
+    { name: "DMA.TRANSFER_WIDTH",
+      desc: '''Sub-word transfers: the configured transfer width selects byte, half-word or word
+               accesses, with extraction of the addressed lane on reads and replication across the
+               bus word together with the corresponding byte enables on writes.
+            '''
+    }
+    { name: "DMA.MEMORY_RANGE.CONFIG",
+      desc: '''The DMA-enabled memory range, programmed through ENABLED_MEMORY_RANGE_BASE and
+               ENABLED_MEMORY_RANGE_LIMIT and marked usable by RANGE_VALID, defines the window of
+               the secure internal address space which DMA transfers may touch.
+            '''
+    }
+    { name: "DMA.MEMORY_RANGE.LOCK",
+      desc: '''Clearing the multi-bit RANGE_REGWEN locks the DMA-enabled memory range registers
+               against further modification until the next reset.
+            '''
+    }
+    { name: "DMA.CONFIG_LOCK",
+      desc: '''While a transfer is in progress the hardware clears CFG_REGWEN, locking the transfer
+               configuration registers against modification; the control, status and comportable
+               registers remain writable.
+            '''
+    }
+    { name: "DMA.SECURITY_CHECKS",
+      desc: '''Hardware-enforced checks of the programmed configuration before and during a
+               transfer, covering the address space identifiers, the validity of the enabled memory
+               range, and the requirement that transfers between the SoC and the secure internal
+               address space are staged inside that range. A failing check aborts the transfer and
+               reports the reason in ERROR_CODE.
+            '''
+    }
+    { name: "DMA.ABORT",
+      desc: '''Setting CONTROL.abort terminates an in-progress transfer, drains the outstanding
+               secure-side transactions and reports completion of the abort in STATUS.
+            '''
+    }
+    { name: "DMA.ERROR_HANDLING",
+      desc: '''Bus errors encountered on any of the host interfaces stop the transfer, set the
+               error status together with the corresponding ERROR_CODE bit, and raise the error
+               interrupt.
+            '''
+    }
+    { name: "DMA.INLINE_HASHING",
+      desc: '''Selecting a SHA-2 opcode computes a SHA-256, SHA-384 or SHA-512 digest over the
+               transferred data as it moves, leaving the result in the SHA2_DIGEST registers.
+            '''
+    }
+  ]
+
   regwidth: "32"
   registers: [
     { name: "SRC_ADDR_LO"

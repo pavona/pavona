@@ -30,6 +30,7 @@
             '''
       stage: V1
       tests: ["aon_timer_smoke"]
+      features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST", "AON_TIMER.WAKEUP.INTERRUPT", "AON_TIMER.WATCHDOG.BARK", "AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.INTERRUPT"]
     }
     {
       name: prescaler
@@ -46,6 +47,7 @@
             '''
       stage: V2
       tests: ["aon_timer_prescaler"]
+      features: []
     }
     {
       name: jump
@@ -68,6 +70,7 @@
             '''
       stage: V2
       tests: ["aon_timer_jump"]
+      features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST", "AON_TIMER.WAKEUP.INTERRUPT", "AON_TIMER.WATCHDOG.BARK", "AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.INTERRUPT"]
     }
     {
       name: stress_all
@@ -82,6 +85,7 @@
             '''
       stage: V2
       tests: ["aon_timer_stress_all"]
+      features: []
     }
     {
       name: max_threshold
@@ -91,6 +95,7 @@
             '''
       stage: V3
       tests: ["aon_timer_smoke_max_thold"]
+      features: []
     }
     {
       name: min_threshold
@@ -100,6 +105,7 @@
             '''
       stage: V3
       tests: ["aon_timer_smoke_min_thold"]
+      features: []
     }
     {
       name: wkup_count_hi_cdc
@@ -110,6 +116,7 @@
             '''
       stage: V3
       tests: ["aon_timer_wkup_count_cdc_hi"]
+      features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST", "AON_TIMER.WAKEUP.INTERRUPT"]
     }
     {
       name: custom_intr
@@ -119,6 +126,7 @@
             '''
       stage: V3
       tests: ["aon_timer_custom_intr"]
+      features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST", "AON_TIMER.WAKEUP.INTERRUPT", "AON_TIMER.WATCHDOG.BARK", "AON_TIMER.WATCHDOG.BITE", "AON_TIMER.WATCHDOG.INTERRUPT"]
     }
     {
       name: alternating_on_off
@@ -129,6 +137,7 @@
             '''
       stage: V3
       tests: ["aon_timer_alternating_enable_on_off"]
+      features: []
     }
   ]
 

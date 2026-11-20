@@ -45,7 +45,6 @@ Some of them in use are:
     WakeupSysrst,
     WakeupDbgCable,
     WakeupPin,
-    WakeupUsb,
     WakeupAonTimer,
     WakeupSensorCtrl
   } wakeup_e;

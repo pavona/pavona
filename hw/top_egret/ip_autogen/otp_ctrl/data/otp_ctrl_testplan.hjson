@@ -32,6 +32,14 @@
             '''
       stage: V1
       tests: ["otp_ctrl_wake_up"]
+      features: [
+        "OTP_CTRL.INIT",
+        "OTP_CTRL.PROGRAM",
+        "OTP_CTRL.PARTITION.SECRET0",
+        "OTP_CTRL.PARTITION.SECRET1",
+        "OTP_CTRL.PARTITION.SECRET2",
+        "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
+      ]
     }
     {
       name: smoke
@@ -58,6 +66,14 @@
             '''
       stage: V1
       tests: ["otp_ctrl_smoke"]
+      features: [
+        "OTP_CTRL.INIT",
+        "OTP_CTRL.PROGRAM",
+        "OTP_CTRL.PARTITION.SECRET1",
+        "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
+        "OTP_CTRL.PARTITION.LIFE_CYCLE",
+        "OTP_CTRL.PARTITION.VENDOR_TEST",
+      ]
     }
     {
       name: dai_access_partition_walk
@@ -67,6 +83,7 @@
             '''
       stage: V2
       tests: ["otp_ctrl_partition_walk"]
+      features: ["OTP_CTRL.PROGRAM"]
     }
     {
       name: init_fail
@@ -90,6 +107,11 @@
             '''
       stage: V2
       tests: ["otp_ctrl_init_fail"]
+      features: [
+        "OTP_CTRL.INIT",
+        "OTP_CTRL.PROGRAM",
+        "OTP_CTRL.ERROR_HANDLING.FATAL",
+      ]
     }
     {
       name: partition_check
@@ -108,11 +130,17 @@
             **Checks**:
             - the corresponding alerts are triggered
             - the error_code register is set correctly
-            Note that due to limited simulation time, for background checks, this test only write
-            random value that is less than 20 to the check period.
+            Note that due to limited simulation time, for background checks, this test only writes
+            random values that are less than 20 to the check period.
             '''
       stage: V2
       tests: ["otp_ctrl_check_fail", "otp_ctrl_background_chks"]
+      features: [
+        "OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT",
+        "OTP_CTRL.BACKGROUND_CHECK.INTEGRITY_CHECK_PERIOD",
+        "OTP_CTRL.BACKGROUND_CHECK.CONSISTENCY_CHECK_PERIOD",
+        "OTP_CTRL.ERROR_HANDLING.FATAL",
+      ]
     }
     {
       name: regwen_during_otp_init
@@ -129,6 +157,7 @@
             '''
       stage: V2
       tests: ["otp_ctrl_regwen"]
+      features: ["OTP_CTRL.INIT"]
     }
     {
       name: partition_lock
@@ -139,6 +168,10 @@
             '''
       stage: V2
       tests: ["otp_ctrl_dai_lock"]
+      features: [
+        "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
+        "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
+      ]
     }
     {
       name: interface_key_check
@@ -149,6 +182,7 @@
             '''
       stage: V2
       tests: ["otp_ctrl_parallel_key_req"]
+      features: ["OTP_CTRL.KEY_DERIVATION"]
     }
     {
       name: lc_interactions
@@ -167,6 +201,11 @@
             '''
       stage: V2
       tests: ["otp_ctrl_parallel_lc_req", "otp_ctrl_parallel_lc_esc"]
+      features: [
+        "OTP_CTRL.PARTITION.LIFE_CYCLE",
+        "OTP_CTRL.ERROR_HANDLING.RECOVERABLE",
+        "OTP_CTRL.ERROR_HANDLING.FATAL",
+      ]
     }
     { name: otp_dai_errors
       desc: '''
@@ -182,6 +221,7 @@
             '''
       stage: V2
       tests: ["otp_ctrl_dai_errs"]
+      features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
     }
     { name: otp_macro_errors
       desc: '''
@@ -198,6 +238,10 @@
             '''
       stage: V2
       tests: ["otp_ctrl_macro_errs"]
+      features: [
+        "OTP_CTRL.ERROR_HANDLING.RECOVERABLE",
+        "OTP_CTRL.ERROR_HANDLING.FATAL",
+      ]
     }
     {
       name: test_access
@@ -210,7 +254,24 @@
             '''
       stage: V2
       tests: ["otp_ctrl_test_access"]
+      features: []
     }
+    {
+      name: zeroization
+      desc: '''Randomly zeroize partitions.
+
+            **Stimulus and Checks**:
+            - Use the zeroize command for the zeroization marker and other fields.
+            - Optionally perform consistency and integrity checks.
+            - Check for failures for non-zeroizable partitions to flag a DaiError.
+            '''
+      stage: V2
+      tests: [
+        "otp_ctrl_zeroization",
+        "otp_ctrl_zeroization_with_checks",
+      ]
+      features: ["OTP_CTRL.ZEROIZATION"]
+  }
     {
       name: stress_all
       desc: '''
@@ -219,6 +280,7 @@
             '''
       stage: V2
       tests: ["{name}_stress_all"]
+      features: []
     }
     {
       name: sec_cm_additional_check
@@ -235,6 +297,7 @@
             '''
       stage: V2S
       tests: ["otp_ctrl_sec_cm"]
+      features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
     }
     {
       name: otp_ctrl_low_freq_read
@@ -250,6 +313,7 @@
             '''
       stage: V3
       tests: ["otp_ctrl_low_freq_read"]
+      features: []
     }
   ]
 

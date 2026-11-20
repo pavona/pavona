@@ -12,11 +12,28 @@ The read-write regions are:
 
 All other regions are read only.
 
+<!-- BEGIN-FEATURE: RV_DM.DBG.DATA_REGS -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.DMCONTROL_REG -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.DMSTATUS_REG -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.HARTINFO_REG -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.HALTSUM0_REG -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.ABSTRACT_COMMAND -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.PROGBUF -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.SBA -->
+<!-- BEGIN-FEATURE: RV_DM.DBG.NDM_RESET -->
 ### Debug Module Registers
 
 The [Debug Module Registers](../../../vendor/pulp_riscv_dbg/doc/debug-system.md#debug-module-registers) are only accessible via the Debug Module Interface (DMI) accessed via JTAG.
 There is no access to these via the TL-UL device interface.
-
+<!-- END-FEATURE: RV_DM.DBG.DATA_REGS -->
+<!-- END-FEATURE: RV_DM.DBG.DMCONTROL_REG -->
+<!-- END-FEATURE: RV_DM.DBG.DMSTATUS_REG -->
+<!-- END-FEATURE: RV_DM.DBG.HARTINFO_REG -->
+<!-- END-FEATURE: RV_DM.DBG.HALTSUM0_REG -->
+<!-- END-FEATURE: RV_DM.DBG.ABSTRACT_COMMAND -->
+<!-- END-FEATURE: RV_DM.DBG.PROGBUF -->
+<!-- END-FEATURE: RV_DM.DBG.SBA -->
+<!-- END-FEATURE: RV_DM.DBG.NDM_RESET -->
 
 ## Late Debug Enable Mechanism
 

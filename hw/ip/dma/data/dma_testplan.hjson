@@ -37,6 +37,8 @@
               '''
         stage: V1
         tests: ["dma_memory_smoke"]
+        features: ["DMA.MODE.MEMORY", "DMA.MEMORY_RANGE.CONFIG", "DMA.TRANSFER_WIDTH",
+                   "DMA.INLINE_HASHING"]
       }
       {
         name: dma_handshake_smoke
@@ -67,6 +69,8 @@
               '''
         stage: V1
         tests: ["dma_handshake_smoke"]
+        features: ["DMA.MODE.HANDSHAKE", "DMA.MEMORY_RANGE.CONFIG", "DMA.TRANSFER_WIDTH",
+                   "DMA.INLINE_HASHING"]
       }
       {
         name: dma_generic_smoke
@@ -88,6 +92,8 @@
               '''
         stage: V1
         tests: ["dma_generic_smoke"]
+        features: ["DMA.MODE.MEMORY", "DMA.MODE.HANDSHAKE", "DMA.MEMORY_RANGE.CONFIG",
+                   "DMA.INLINE_HASHING"]
       }
       {
         name: dma_memory_region_lock
@@ -115,6 +121,7 @@
               '''
         stage: V2
         tests: ["dma_memory_region_lock"]
+        features: ["DMA.MEMORY_RANGE.CONFIG", "DMA.MEMORY_RANGE.LOCK"]
       }
       {
         name: dma_memory_tl_error
@@ -134,6 +141,7 @@
               '''
         stage: V2
         tests: ["dma_memory_stress"]
+        features: ["DMA.MODE.MEMORY", "DMA.ERROR_HANDLING"]
       }
       {
         name: dma_handshake_tl_error
@@ -153,6 +161,7 @@
               '''
         stage: V2
         tests: ["dma_handshake_stress"]
+        features: ["DMA.MODE.HANDSHAKE", "DMA.ERROR_HANDLING"]
       }
       {
         name: dma_handshake_stress
@@ -184,6 +193,8 @@
               '''
         stage: V2
         tests: ["dma_handshake_stress"]
+        features: ["DMA.MODE.HANDSHAKE", "DMA.ADDRESSING", "DMA.TRANSFER_WIDTH",
+                   "DMA.MEMORY_RANGE.CONFIG", "DMA.INLINE_HASHING"]
       }
       {
         name: dma_memory_stress
@@ -209,6 +220,8 @@
              '''
         stage: V2
         tests: ["dma_memory_stress"]
+        features: ["DMA.MODE.MEMORY", "DMA.TRANSFER_WIDTH", "DMA.MEMORY_RANGE.CONFIG",
+                   "DMA.INLINE_HASHING"]
       }
       {
         name: dma_generic_stress
@@ -217,6 +230,62 @@
               '''
         stage: V2
         tests: ["dma_generic_stress"]
+        features: ["DMA.MODE.MEMORY", "DMA.MODE.HANDSHAKE"]
+      }
+      {
+        name: dma_short_transfer
+        desc: '''
+              Test to check DMA behavior at the lower extreme of the transfer size range
+
+              Stimulus:
+              - Restrict the randomization to valid DMA configurations only, since invalid
+                configurations are covered by the stress tests
+              - Constrain the total transfer size to fewer than 16 bytes, so that transfers complete
+                in very few bus transactions
+              - Randomize everything else, covering all source and destination address space
+                combinations, both 'memory-to-memory' and 'hardware handshake' modes, all transfer
+                widths, and inline hashing wherever its requirements are met
+              - Perform many iterations, since each transfer is short
+
+              Checking:
+              - Check that each transfer completes successfully and that the data presented at the
+                source appears unchanged at the destination
+              - Check that transfers which are shorter than, or not a multiple of, the configured
+                transfer width are handled without loss or corruption of data
+              - Check that any inline hash digest matches the expected digest of the transferred data
+              '''
+        stage: V2
+        tests: ["dma_short_transfer"]
+        features: ["DMA.MODE.MEMORY", "DMA.MODE.HANDSHAKE", "DMA.MEMORY_RANGE.CONFIG",
+                   "DMA.TRANSFER_WIDTH", "DMA.INLINE_HASHING"]
+      }
+      {
+        name: dma_longer_transfer
+        desc: '''
+              Test to check DMA behavior at the upper extreme of the transfer size range
+
+              Stimulus:
+              - Restrict the randomization to valid DMA configurations only
+              - Disable the default constraint which keeps transfers short, and instead choose the
+                total transfer size from a range starting at 4KiB and extending upwards with
+                inverse logarithmic probability, so that occasional very large transfers occur
+              - Restrict the transfer width to 4 bytes and remove the access and response delays, to
+                keep the simulation time of these transfers manageable
+              - Perform a single transfer per run, relying on multiple seeds for coverage
+              - Cover all source and destination address space combinations, both 'memory-to-memory'
+                and 'hardware handshake' modes, and inline hashing wherever its requirements are met
+
+              Checking:
+              - Check that the transfer completes successfully and that the data presented at the
+                source appears unchanged at the destination
+              - Check that the transfer completes without any address, size or counter wrapping
+                errors as the total size grows
+              - Check that any inline hash digest matches the expected digest of the transferred data
+              '''
+        stage: V2
+        tests: ["dma_longer_transfer"]
+        features: ["DMA.MODE.MEMORY", "DMA.MODE.HANDSHAKE", "DMA.MEMORY_RANGE.CONFIG",
+                   "DMA.INLINE_HASHING"]
       }
       {
         name: dma_handshake_mem_buffer_overflow
@@ -242,6 +311,7 @@
               '''
         stage: V2
         tests: ["dma_handshake_stress"]
+        features: ["DMA.MODE.HANDSHAKE", "DMA.ADDRESSING"]
       }
       {
         name: dma_abort
@@ -262,6 +332,7 @@
               '''
         stage: V2
         tests: ["dma_abort"]
+        features: ["DMA.ABORT"]
       }
       {
         name: dma_stress_all
@@ -270,6 +341,8 @@
               '''
         stage: V2
         tests: ["dma_stress_all"]
+        features: ["DMA.MODE.MEMORY", "DMA.MODE.HANDSHAKE", "DMA.MEMORY_RANGE.CONFIG",
+                   "DMA.MEMORY_RANGE.LOCK", "DMA.ERROR_HANDLING"]
       }
       {
         name: dma_illegal_addr_range
@@ -291,6 +364,7 @@
               '''
         stage: V2S
         tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled"]
+        features: ["DMA.SECURITY_CHECKS", "DMA.MEMORY_RANGE.CONFIG"]
       }
       {
         name: dma_config_lock
@@ -311,6 +385,7 @@
               '''
         stage: V2S
         tests: ["dma_config_lock"]
+        features: ["DMA.CONFIG_LOCK"]
       }
     ]
     covergroups: [

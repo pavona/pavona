@@ -221,6 +221,7 @@
               - Outputs from the lockstep or the main core are corrupted.
               - Inputs into the lockstep core are corrupted.
            '''
+     features: []
      stage: V2S
      si_stage: NA
      tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
@@ -237,6 +238,7 @@
              - PC mismatch fault
              - ECC error in the register file
             '''
+      features: []
       stage: V3
       si_stage: NA
       tests: []

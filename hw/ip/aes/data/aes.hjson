@@ -341,6 +341,12 @@
             -AES only starts the operation after receiving a start trigger.
             '''
     }
+    {
+      name: "AES.STATUS.STALL",
+      desc: '''
+            AES can stall to avoid overwriting output data not read yet by the processor.
+            '''
+    }
   ],
 
   /////////////////////

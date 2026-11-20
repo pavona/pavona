@@ -37,6 +37,7 @@
             '''
       stage: V1
       tests: ["keymgr_dpe_smoke"]
+      features: ["KEYMGR_DPE.GENERATE.OUTPUT", "KEYMGR_DPE.DPE.ADVANCE"]
     }
   ]
 }

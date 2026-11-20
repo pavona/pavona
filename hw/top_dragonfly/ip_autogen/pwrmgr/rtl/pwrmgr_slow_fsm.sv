@@ -66,18 +66,12 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic main_pok_st;
 
   // all clocks sources are valid
-  // if clocks (usb) not configured to be active, then just bypass check
   assign all_clks_valid = (
       ast_i.core_clk_val &
       ast_i.io_clk_val
   );
 
-  // usb clock state during low power is not completely controlled by
-  // input.
-  // if main_pd_ni is 0, (ie power will be turned off), then the low power
-  // state of usb is also off.  If main_pd_ni is 1 (power will be kept on),
-  // then the low power state of usb is directly controlled.
-  // Non-usb clocks are disabled when power is turned off.
+  // Clocks are disabled when power is turned off.
 
   logic main_clk_en;
   assign main_clk_en = main_pd_ni & main_clk_en_i;

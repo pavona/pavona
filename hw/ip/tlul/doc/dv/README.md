@@ -33,7 +33,7 @@ XBAR testbench has been constructed based on the `hw/dv/sv/dv_lib`
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/tlul/dv/tb/tb.sv`. It instantiates the XBAR DUT module `hw/top_egret/ip/xbar/rtl/autogen/xbar_main.sv`.
+Top level testbench is located at `hw/ip/tlul/generic_dv/tb/tb.sv`. It includes the generated `tb__xbar_connect.sv` for the crossbar under test, which instantiates the XBAR DUT module, for example `hw/top_egret/ip/xbar_main/rtl/autogen/xbar_main.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)

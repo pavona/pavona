@@ -41,7 +41,7 @@ Parameter      | Default (Max)    | Description
 
 ### Signals
 
-* [Interface Tables](../data/alert_handler.hjson#interfaces)
+* [Interface Tables](interfaces.md)
 
 The table below lists other alert handler module signals.
 The number of alert instances is parametric and hence alert and ping diff pairs are grouped together in packed arrays.
@@ -64,6 +64,7 @@ Signal                   | Direction        | Type                      | Descri
 The LFSR ping timer needs to be periodically reseeded.
 Therefore, the alert handler is connected to the entropy distribution network via the `edn_i/o` signals.
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.OBSERVE -->
 #### Alert Channels
 
 For each alert, there is a pair of input and two pairs of output signals.
@@ -71,13 +72,16 @@ These signals are connected to a differential sender module within the source, a
 Both of these modules are described in more detail in the following section.
 These signal pairs carry differentially encoded messages that enable two types of signaling: a native alert and a ping/response test of the alert mechanism.
 The latter is to ensure that all alert senders are always active and have not been the target of an attack.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.OBSERVE -->
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 #### Escalation Channels
 
 For each escalation action in the system, there is a pair of input and a pair of output signals, encapsulated in the `esc_rx_t` and `esc_tx_t` types.
 These signals are connected to a differential sender module within the alert handler, and a differential receiver module within the module that performs a particular escalation action (for example the reset manager or life cycle controllers).
 The signal pairs carry differentially encoded messages that enable two types of signaling: a native escalation and a ping/response test of the escalation mechanism.
 The latter is to ensure that all escalation receivers are always active and have not been the target of an attack.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 
 #### Low-power Indication Signals
 
@@ -85,6 +89,7 @@ The `lpg_cg_en_i` and `lpg_rst_en_i` are two arrays with multibit indication sig
 These indication signals convey whether a specific group of alert senders are either clock gated or in reset.
 As explained in [more detail below](#low-power-management-of-alert-channels), this information is used to temporarily halt the ping timer mechanism on channels that are in a low-power state in order to prevent false positives.
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.CRASH_DUMP -->
 #### Crashdump Output
 
 The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits that can be read by hardware debugging circuitry:
@@ -104,10 +109,11 @@ The `crashdump_o` struct outputs a snapshot of CSRs and alert handler state bits
 This can be useful for extracting more information about possible failures or bugs without having to use the tile-link bus interface (which may become unresponsive under certain circumstances).
 It is recommended for the top level to store this information in an always-on location.
 
-Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see [`CLASSA_CRASHDUMP_TRIGGER_SHADOWED`](../data/alert_handler.hjson#classa_crashdump_trigger_shadowed)).
+Note that the crashdump state is continuously output via `crashdump_o` until the latching trigger condition is true for the first time (see [`CLASSA_CRASHDUMP_TRIGGER_SHADOWED`](registers.md#classa_crashdump_trigger_shadowed)).
 After that, the `crashdump_o` is held constant until all classes that have escalated are cleared.
 This is done so that it is possible to capture the true alert cause before spurious alert events start to pop up due to escalation countermeasures with excessive side effects (like life cycle scrapping for example).
 If classes that have escalated are not configured as clearable, then it is not possible to re-arm the crashdump latching mechanism at runtime and the alert handler has to be reset.
+<!-- END-FEATURE: ALERT_HANDLER.CRASH_DUMP -->
 
 ## Design Details
 
@@ -316,7 +322,7 @@ After selecting one of the peripherals to ping, the LFSR timer waits until eithe
 In both cases, the LFSR timer proceeds with the next ping, but in the second case it will additionally raise a "pingfail" alert.
 The ping enable signal remains asserted during the time where the LFSR counter waits.
 
-The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register [`PING_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#ping_timeout_cyc_shadowed).
+The timeout value is a function of the ratios between the alert handler clock and peripheral clocks present in the system, and can be programmed at startup time via the register [`PING_TIMEOUT_CYC_SHADOWED`](registers.md#ping_timeout_cyc_shadowed).
 
 Note that the ping timer directly flags a "pingfail" alert if a spurious "ping ok" message comes in that has not been requested.
 
@@ -340,6 +346,7 @@ All of the `integ_fail` signals are OR'ed together to create one alert for class
 The ping responses are fed to the LFSR timer, which determines whether a ping has correctly completed within the timeout window or not.
 
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.INTERRUPT -->
 ### Alert Classification and Interrupts
 
 Each of the incoming and local alert signals can be classified generically to one of four classes, or disabled for no classification at all.
@@ -358,8 +365,11 @@ This feature is explained in more detail in the next subsection about escalation
 
 Note that an interrupt always fires once an alert has been registered in the corresponding class.
 Interrupts are not dependent on escalation mechanisms like alert accumulation or timeout as described in the next subsection.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.INTERRUPT -->
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.COUNT -->
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.TIMEOUT -->
 ### Escalation Mechanisms
 
 There are two mechanisms per class that can trigger the corresponding escalation
@@ -374,25 +384,27 @@ protocol:
 
     - Accumulation max value.
       This is the total number (sum of all alerts classified in this group) of alerts required to enter escalation phase (see below).
-      Example register is [`CLASSA_ACCUM_THRESH_SHADOWED`](../data/alert_handler.hjson#classa_accum_thresh_shadowed).
+      Example register is [`CLASSA_ACCUM_THRESH_SHADOWED`](registers.md#classa_accum_thresh_shadowed).
     - Current accumulation register.
       This clearable register indicates how many alerts have been accumulated to date.
       Software should clear before it reaches the accumulation setting to avoid escalation.
-      Example register is [`CLASSA_ACCUM_CNT`](../data/alert_handler.hjson#classa_accum_cnt).
+      Example register is [`CLASSA_ACCUM_CNT`](registers.md#classa_accum_cnt).
 
 2. The second way is an interrupt timeout counter which triggers escalation if an alert interrupt is not handled within the programmable timeout window.
    Once the counter hits the timeout threshold, the escalation protocol is triggered.
    The corresponding CSRs are:
 
-    - Interrupt timeout value in cycles [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed).
+    - Interrupt timeout value in cycles [`CLASSA_TIMEOUT_CYC_SHADOWED`](registers.md#classa_timeout_cyc_shadowed).
       The interrupt timeout is disabled if this is set to 0 (default).
-    - The current interrupt timeout value can be read via [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt) if [`CLASSA_STATE`](../data/alert_handler.hjson#classa_state) is in the `Timeout` state.
-      Software should clear the corresponding interrupt state bit [`INTR_STATE.CLASSA`](../data/alert_handler.hjson#intr_state) before the timeout expires to avoid escalation.
+    - The current interrupt timeout value can be read via [`CLASSA_ESC_CNT`](registers.md#classa_esc_cnt) if [`CLASSA_STATE`](registers.md#classa_state) is in the `Timeout` state.
+      Software should clear the corresponding interrupt state bit [`INTR_STATE.CLASSA`](registers.md#intr_state) before the timeout expires to avoid escalation.
 
 Technically, the interrupt timeout feature (2. above) is implemented using the same counter used to time the escalation phases.
 This is possible since escalation phases or interrupt timeout periods are non-overlapping (escalation always takes precedence should it be triggered).
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.TIMEOUT -->
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.COUNT -->
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.ESCALATION.PHASES -->
 ### Programmable Escalation Protocol
 
 There are four output escalation signals, 0, 1, 2, and 3.
@@ -404,13 +416,13 @@ triggers.
 
 Each class can be programmed with its own escalation protocol.
 If one of the two mechanisms described above fires, a timer for that particular class is started.
-The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC`](../data/alert_handler.hjson#classa_phase0_cyc)), each representing a distinct escalation phase (0 - 3).
+The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC`](registers.md#classa_phase0_cyc)), each representing a distinct escalation phase (0 - 3).
 Each of the four escalation severity outputs (0 - 3) are by default configured to be asserted during the corresponding phase, e.g., severity 0 in phase 0,  severity 1 in phase 1, etc.
-However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.E0_MAP`](../data/alert_handler.hjson#classa_ctrl_shadowed) for enable bit 0 of class A).
+However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.E0_MAP`](registers.md#classa_ctrl_shadowed) for enable bit 0 of class A).
 This mapping will be locked in together with the alert enable configuration after initial configuration.
 
-SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt)).
-Protection of this clearing is up to software, see the register control section that follows for [`CLASSA_CTRL_SHADOWED.LOCK`](../data/alert_handler.hjson#classa_ctrl_shadowed).
+SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., [`CLASSA_ESC_CNT`](registers.md#classa_esc_cnt)).
+Protection of this clearing is up to software, see the register control section that follows for [`CLASSA_CTRL_SHADOWED.LOCK`](registers.md#classa_ctrl_shadowed).
 
 It should be noted that each of the escalation phases have a duration of at least 1 clock cycle, even if the cycle count of a particular phase has been
 set to 0.
@@ -501,6 +513,7 @@ The next wave shows a case where an interrupt remains unhandled and hence the in
 It should be noted here that the differential escalation signaling protocol distinguishes 'true' escalation conditions from mere pings by encoding them as pulses that are N + 1 cycles long.
 This is reflected in the two wave diagrams above.
 Refer to the subsequent section on escalation signaling for more details.
+<!-- END-FEATURE: ALERT_HANDLER.ESCALATION.PHASES -->
 
 ### Escalation Signaling
 
@@ -586,7 +599,7 @@ Some signal integrity failure cases are illustrated in the wave diagram below:
 }
 ```
 
-
+<!-- BEGIN-FEATURE: ALERT_HANDLER.PING_TIMER -->
 ### Ping Testing of the Escalation Signals
 
 
@@ -650,6 +663,7 @@ This ensures that we are seeing the same clock frequency, and the mechanism is p
 
 3. the maximum cycle count between subsequent pings on the same escalation line is bounded, even though the wait counts are randomized.
 This allows us to compute a safe and fixed timeout threshold based on design constants.
+<!-- END-FEATURE: ALERT_HANDLER.ALERT.ESCALATE -->
 
 
 ### Low-power Management of Alert Channels
@@ -658,6 +672,8 @@ Due to the various clock and reset domains in a system, the alert handler ping m
 This is needed to ensure that no false alarms are produced by the ping mechanism when an alert channel (sender / receiver pair) does not respond due to the sender being either in reset or clock gated.
 
 Since the FSMs associated with an alert channel may end up in an inconsistent state when the sender is reset or gated while an asynchronous event handshake is in progress, this logic also needs to be able to re-initialize affected alert channels whenever the channels comes back from reset / clock gated state.
+<!-- END-FEATURE: ALERT_HANDLER.PING_TIMER -->
+
 
 #### Assumptions
 
@@ -728,12 +744,14 @@ Since the sender FSMs fall back into the `Idle` state once the signal integrity 
 
 #### Implementation Aspects
 
+<!-- BEGIN-FEATURE: ALERT_HANDLER.PING_TIMER -->
 ##### Ping Mechanism Bypass
 
 Note that the ping bypass mechanism is to be implemented in a way that pings are only ack'ed immediately if 1) the FSM is in the `InitReq` state, and 2) the `init_trig` signal is still asserted.
 
 This allows to subject the initialization process of each alert channel to the ping mechanism for channels that are recovering from a reset or clock gated cycle on the sender side.
 I.e., alert channels that get stuck during the initialization process can be detected by the ping mechanism since ping requests are not immediately ack'ed anymore once `init_trig` is deasserted.
+<!-- END-FEATURE: ALERT_HANDLER.PING_TIMER -->
 
 ##### FSM Encoding
 
@@ -748,7 +766,7 @@ Due to asynchronous transitions and different path latencies in the system, a ch
 It is consequently possible for a group of alert senders to already be in reset or clock gated state, while the corresponding LPG logic does not yet know about this state change - and vice versa.
 
 In practice, this means that ping requests may be pending for several cycles until the LPG logic detects a reset or clock-gated condition and disables the corresponding alert channel(s).
-Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed)).
+Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`CLASSA_TIMEOUT_CYC_SHADOWED`](registers.md#classa_timeout_cyc_shadowed)).
 
 As for alert events, this latency difference should not pose a problem.
 Alert events may get stuck in the alert sender due to a reset or clock-gated condition - but this is to be expected.

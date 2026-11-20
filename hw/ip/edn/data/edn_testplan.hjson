@@ -19,6 +19,7 @@
             '''
       stage: V1
       tests: ["edn_smoke"]
+      features: []
     }
     {
       name: firmware
@@ -30,6 +31,7 @@
             '''
       stage: V2
       tests: ["edn_genbits"]
+      features: ["EDN.MODE.SW"]
     }
     {
       name: csrng_commands
@@ -45,6 +47,7 @@
             '''
       stage: V2
       tests: ["edn_genbits"]
+      features: ["EDN.MODE.BOOT", "EDN.MODE.AUTO", "EDN.MODE.SW"]
     }
     {
       name: genbits
@@ -54,6 +57,7 @@
             '''
       stage: V2
       tests: ["edn_genbits"]
+      features: ["EDN.TRACK_SEED_COMPLIANCE"]
     }
     {
       name: interrupts
@@ -63,6 +67,7 @@
             '''
       stage: V2
       tests: ["edn_intr"]
+      features: []
     }
     {
       name: alerts
@@ -71,6 +76,7 @@
             '''
       stage: V2
       tests: ["edn_alert"]
+      features: ["EDN.BUS_CMP_ALERT"]
     }
     {
       name: errs
@@ -80,6 +86,7 @@
             '''
       stage: V2
       tests: ["edn_err"]
+      features: []
     }
     {
       name: disable
@@ -88,6 +95,7 @@
             '''
       stage: V2
       tests: ["edn_disable", "edn_disable_auto_req_mode"]
+      features: []
     }
     {
       name: stress_all
@@ -97,6 +105,7 @@
             '''
       stage: V2
       tests: ["edn_stress_all"]
+      features: []
     }
   ]
 

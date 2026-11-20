@@ -1,3 +1,13 @@
+<!-- BEGIN-FEATURE: AES.KEY_LEN.128 -->
+<!-- BEGIN-FEATURE: AES.KEY_LEN.192 -->
+<!-- BEGIN-FEATURE: AES.KEY_LEN.256 -->
+<!-- BEGIN-FEATURE: AES.MODE.ECB -->
+<!-- BEGIN-FEATURE: AES.MODE.CBC -->
+<!-- BEGIN-FEATURE: AES.MODE.CFB-128 -->
+<!-- BEGIN-FEATURE: AES.MODE.OFB -->
+<!-- BEGIN-FEATURE: AES.MODE.CTR -->
+<!-- BEGIN-FEATURE: AES.MANUAL_OPERATION -->
+<!-- BEGIN-FEATURE: AES.STATUS.STALL -->
 # Theory of Operation
 
 The AES unit supports both encryption and decryption for AES-128/192/256 in ECB, CBC, CFB, OFB and CTR modes as well as GCM using a single, shared data path.
@@ -42,7 +52,7 @@ Every output register must be read at least once for the AES unit to continue.
 This is the default behavior.
 It can be disabled by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
 In this case, the AES unit never stalls and just overwrites previous output data, independent of whether it has been read or not.
-
+<!-- END-FEATURE: AES.STATUS.STALL -->
 
 ## Block Diagram
 
@@ -77,7 +87,6 @@ The initialization vector (IV) register and the register to hold the previous in
 ## Design Details
 
 This section discusses different design details of the AES module.
-
 
 ### Datapath Architecture and Operation
 
@@ -177,7 +186,15 @@ The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 
 The expected circuit area of the entire AES unit with masking enabled is around 136 kGE (112 kGE if support for GCM is disabled).
 
 For a description of the various sub modules, see the following sections.
-
+<!-- END-FEATURE: AES.KEY_LEN.128 -->
+<!-- END-FEATURE: AES.KEY_LEN.192 -->
+<!-- END-FEATURE: AES.KEY_LEN.256 -->
+<!-- END-FEATURE: AES.MODE.ECB -->
+<!-- END-FEATURE: AES.MODE.CBC -->
+<!-- END-FEATURE: AES.MODE.CFB-128 -->
+<!-- END-FEATURE: AES.MODE.OFB -->
+<!-- END-FEATURE: AES.MODE.CTR -->
+<!-- END-FEATURE: AES.MANUAL_OPERATION -->
 
 ### SubBytes / S-Box
 
@@ -265,6 +282,7 @@ Support for this mode is thus optional and can be enabled/disabled via a design-
 Once we have cost estimates in terms of gate count increase for 192-bit mode, we can decide on whether or not to use it.
 Typically, systems requiring security above AES-128 go directly for AES-256.
 
+<!-- BEGIN-FEATURE: AES.KEY.SIDELOAD -->
 ### System Key-Manager Interface
 
 By default, the AES unit is controlled entirely by the processor.
@@ -280,9 +298,10 @@ However, it then doesn't load the sideload key but instead uses the current cont
 To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register to start a new message.
 The AES unit will then load the sideload key, and if the KEY_TOUCH_FORCES_RESEED bit in [`CTRL_AUX_SHADOWED`](registers.md#ctrl_aux_shadowed) is set, it will trigger a reseed operation of the internal pseudo-random number generators (PRNGs).
 
-After using a sideload key, it is the responsibility of software to trigger the clearing of the key registers either via the [`TRIGGER`](registers.md#trigger) register or by writing the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register twice to start a new message.
+After using a sideload key, it is the responsibility of software to trigger the clearing of the key registers either via the [`TRIGGER`](registers.md#trigger) register or by writing the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register twice to start a new message (see [De-Initialization](programmers_guide.md#de-initialization) below). 
 In the latter case, the AES unit will automatically trigger the clearing of the key registers.
 Software needs to do this both when the AES unit is operated in normal/automatic mode or in manual mode.
+<!-- END-FEATURE: AES.KEY.SIDELOAD -->
 
 # Security Hardening
 
@@ -292,6 +311,9 @@ The AES unit employs different means at architectural, micro-architectural and p
 
 To deter side-channel analysis (SCA), the AES unit implements the following countermeasures.
 
+<!-- BEGIN-FEATURE: AES.PRNG.RESEED_RATE -->
+<!-- BEGIN-FEATURE: AES.PRNG.KEY_TOUCH_FORCES_RESEED -->
+<!-- BEGIN-FEATURE: AES.PRNG.FORCE_MASKS -->
 ### 1st-order Masking of the Cipher Core
 
 The AES unit employs 1st-order masking of the AES cipher core.
@@ -329,6 +351,9 @@ Both are fully combinational and allow for one S-Box evaluation every clock cycl
 
 It's worth noting that since input/output data are provided/retrieved via register interface in unmasked form, the AES unit should not be used to form an identity ladder where the output of one AES operation is used to form the key for the next AES operation in the ladder.
 In Pavona, the [Keccak Message Authentication Code (KMAC) unit](../../kmac/README.md) is used for that purpose.
+<!-- END-FEATURE: AES.PRNG.RESEED_RATE -->
+<!-- END-FEATURE: AES.PRNG.KEY_TOUCH_FORCES_RESEED -->
+<!-- END-FEATURE: AES.PRNG.FORCE_MASKS -->
 
 ### Fully-Parallel Data Path
 
@@ -441,6 +466,8 @@ Following this methodology, the following observations can be made:
 For this reason, the AES unit uses reset flops only.
 However, all major key and data registers are cleared with pseudo-random data upon reset.
 
+<!-- BEGIN-FEATURE: AES.CLEAR.DATA_OUT -->
+<!-- BEGIN-FEATURE: AES.CLEAR.KEY_IV_DATA_IN -->
 ### Clearing Registers with Pseudo-Random Data
 
 Upon reset or if initiated by software, all major key and data registers inside the AES module are cleared with pseudo-random data (PRD).
@@ -448,6 +475,8 @@ This helps to reduce SCA leakage when both writing these registers for reconfigu
 
 In addition, the state registers inside the cipher core are cleared with PRD during the last round of every encryption/decryption.
 This prevents Hamming distance leakage between the states of the last two rounds as well as between output and input data.
+<!-- END-FEATURE: AES.CLEAR.KEY_IV_DATA_IN -->
+<!-- END-FEATURE: AES.CLEAR.DATA_OUT -->
 
 ## Fault Injection
 

@@ -1,5 +1,11 @@
 # Theory of Operation
 
+<!-- BEGIN RV_TIMER.RISCV_CSRS_INTEGRATION -->
+<!-- BEGIN RV_TIMER.ENABLE -->
+<!-- BEGIN RV_TIMER.DISABLE -->
+<!-- BEGIN RV_TIMER.INTERRUPT -->
+<!-- BEGIN RV_TIMER.COUNTER -->
+<!-- BEGIN RV_TIMER.COMPARE -->
 ## Block Diagram
 
 ![Timer Block Diagram](../doc/timer_block_diagram.svg)
@@ -10,8 +16,17 @@ A tick generator creates a tick every time its internal counter hits the
 value. The 64-bit `mtime` value is compared with the 64-bit `mtimecmp`. If
 `mtime` is greater than or equal to `mtimecmp`, the timer raises an interrupt.
 
+The timer can be enabled and disabled with the [`CTRL`](registers.md#ctrl) register.
+<!-- END RV_TIMER.COMPARE -->
+<!-- END RV_TIMER.COUNTER -->
+<!-- END RV_TIMER.INTERRUPT -->
+<!-- END RV_TIMER.DISABLE -->
+<!-- END RV_TIMER.ENABLE -->
+<!-- END RV_TIMER.RISCV_CSRS_INTEGRATION -->
+
 ## Design Details
 
+<!-- BEGIN RV_TIMER.CONFIG -->
 ### Tick Generator
 
 The tick module inside the timer IP is used to generate a fixed period of pulse
@@ -25,6 +40,7 @@ For instance, if a system switches between 48MHz and 200MHz clocks, a prescaler
 value of **47** for 48MHz and **199** for 200MHz will generate a 1us tick.
 In this version, the timer only supports a single fixed clock, so the firmware
 should change [`CFG0.prescaler`](registers.md#cfg0) appropriately.
+<!-- END RV_TIMER.CONFIG -->
 
 ### Configurable number of timers and harts
 

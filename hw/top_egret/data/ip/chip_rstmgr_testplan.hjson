@@ -164,20 +164,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
-        "RSTMGR.SW_RST.I2C2_ENABLE",
-        "RSTMGR.SW_RST.I2C2_REQUEST",
-        "RSTMGR.SW_RST.I2C1_ENABLE",
-        "RSTMGR.SW_RST.I2C1_REQUEST",
-        "RSTMGR.SW_RST.I2C0_ENABLE",
-        "RSTMGR.SW_RST.I2C0_REQUEST",
-        "RSTMGR.SW_RST.USB_ENABLE",
-        "RSTMGR.SW_RST.USB_REQUEST",
-        "RSTMGR.SW_RST.SPI_HOST1_ENABLE",
-        "RSTMGR.SW_RST.SPI_HOST1_REQUEST",
-        "RSTMGR.SW_RST.SPI_HOST0_ENABLE",
-        "RSTMGR.SW_RST.SPI_HOST0_REQUEST",
-        "RSTMGR.SW_RST.SPI_DEVICE_ENABLE",
-        "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
+        "RSTMGR.SW_RST.REQUEST"
       ]
       tests: ["chip_sw_rstmgr_sw_rst"]
       bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test"]

@@ -48,18 +48,8 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
-        "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
-        "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.ADC_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
-        "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.PINMUX_AON_PIN_WKUP_REQ_WAKEUP_REQUEST",
-        "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.PINMUX_AON_USB_WKUP_REQ_WAKEUP_REQUEST",
-        "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST",
-        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP",
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
@@ -80,6 +70,10 @@
             '''
       stage: V2
       si_stage: SV3
+      features: [
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_wake_ups"]
     }
@@ -136,6 +130,11 @@
             '''
       stage: V2
       si_stage: SV3
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP",
+        "PWRMGR.LOW_POWER.WAKE_INFO"
+      ]
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_deep_sleep_all_wake_ups"]
     }
@@ -161,12 +160,9 @@
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.DISABLE_POWER"
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.REQUEST",
         "PWRMGR.RESET.ESCALATION_REQUEST",
-        "PWRMGR.RESET.SW_RST_REQUEST",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST"
       ]
       tests: [
         "chip_sw_aon_timer_wdog_bite_reset",
@@ -188,8 +184,8 @@
       stage: V3
       si_stage: NA
       features: [
-        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
-        "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.WAKEUP"
         "PWRMGR.LOW_POWER.WAKE_INFO"
       ]
       tests: ["chip_sw_pwrmgr_sensor_ctrl_deep_sleep_wake_up"]
@@ -212,12 +208,9 @@
       lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.REQUEST",
         "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
       ]
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_reset_reqs_test"]
@@ -236,8 +229,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       features: [
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.REQUEST"
       ]
       tests: ["chip_sw_pwrmgr_wdog_reset"]
       bazel: ["//sw/device/tests:pwrmgr_wdog_reset_reqs_test"]
@@ -257,6 +249,7 @@
       si_stage: NA
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
       bazel: []
+      features: []
     }
     {
       name: chip_sw_pwrmgr_main_power_glitch_reset
@@ -269,6 +262,7 @@
             '''
       stage: V2
       si_stage: NA
+      features: ["PWRMGR.RESET.MAIN_POWER_GLITCH_RESET"]
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
     }
     {
@@ -291,6 +285,10 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
     }
     {
@@ -310,6 +308,11 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
     }
     {
@@ -324,6 +327,10 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.RESET.MAIN_POWER_GLITCH_RESET",
+      ]
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
@@ -348,12 +355,9 @@
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.DISABLE_POWER"
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.REQUEST",
         "PWRMGR.RESET.ESCALATION_REQUEST",
-        "PWRMGR.RESET.SW_RST_REQUEST",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
+        "PWRMGR.RESET.SW_RST_REQUEST"
       ]
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
       bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test"]
@@ -374,6 +378,7 @@
             '''
       stage: V2
       si_stage: SV3
+      features: ["PWRMGR.RESET.REQUEST"]
       lc_states: ["PROD"]
       tests: [
         "chip_sw_pwrmgr_sysrst_ctrl_reset",
@@ -388,6 +393,12 @@
             '''
       stage: V2
       si_stage: NA
+      features: [
+        "PWRMGR.RESET.POR_REQUEST",
+        "PWRMGR.LOW_POWER.ENTRY",
+        "PWRMGR.LOW_POWER.DISABLE_POWER"
+        "PWRMGR.LOW_POWER.WAKEUP",
+      ]
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
     }
     {
@@ -419,7 +430,10 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
+      features: [
+        "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE",
+        "PWRMGR.RESET.REQUEST",
+      ]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
       bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test"]
     }
@@ -438,13 +452,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
-        "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
+        "PWRMGR.RESET.REQUEST"
         "PWRMGR.RESET.ESCALATION_REQUEST",
         "PWRMGR.RESET.SW_RST_REQUEST",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_ENABLE",
-        "PWRMGR.RESET.SYSRST_CTRL_AON_RST_REQ_REQUEST",
-        "PWRMGR.RESET.POR_REQUEST",
+        "PWRMGR.RESET.POR_REQUEST"
       ]
       tests: ["chip_sw_pwrmgr_all_reset_reqs"]
       bazel: ["//sw/device/tests:pwrmgr_all_reset_reqs_test"]

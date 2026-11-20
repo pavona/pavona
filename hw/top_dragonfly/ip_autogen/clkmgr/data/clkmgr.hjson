@@ -78,34 +78,30 @@
   ],
 
   features: [
-    { name: "CLKMGR.ENABLE.IO",
-      desc: "Gating of IO peripheral clock."
+    { name: "CLKMGR.ENABLE.PERIPH_CLK",
+      desc: "Clock manager supports the gating of clocks to peripheral devices"
     }
-    { name: "CLKMGR.HINT.ACC",
-      desc: "Gating of ACC transactional clock."
-    }
-    { name: "CLKMGR.HINT.AES",
-      desc: "Gating of AES transactional clock."
-    }
-    { name: "CLKMGR.HINT.HMAC",
-      desc: "Gating of HMAC transactional clock."
-    }
-    { name: "CLKMGR.HINT.KMAC",
-      desc: "Gating of KMAC transactional clock."
-    }
-    { name: "CLKMGR.MEAS_CTRL.REGWEN",
-      desc: '''Control modification of all clock frequency and timeout
-            measurements.
+    { name: "CLKMGR.HINT.TRANS_CLK",
+      desc: '''Clock manager is able to suggest (hint) that transactional
+               modules (such as hmac or aes) manipulate their clocks. This
+               suggestion is carried forwards when the module in question
+               completes any ongoing transactional tasks
             '''
     }
-    { name: "CLKMGR.MEAS_CTRL.IO",
-      desc: "Frequency and timeout measurements of IO clock."
+    { name: "CLKMGR.MEAS_CTRL.REGWEN",
+      desc: '''All of clock manager's frequency and timeout measurements can be
+            modified via the `MEASURE_CTRL_REGWEN` control register.
+            '''
     }
-    { name: "CLKMGR.MEAS_CTRL.MAIN",
-      desc: "Frequency and timeout measurements of MAIN clock."
+    { name: "CLKMGR.MEAS_CTRL.RG_SRC",
+      desc: '''Clock manager supports frequency and timeout measurements
+            of root-gated clock sources
+            '''
     }
     { name: "CLKMGR.MEAS_CTRL.RECOV_ERR",
-      desc: "Frequency and timeout measurements can flag recoverable errors."
+      desc: '''Clock manager's frequency and timeout measurements
+            can flag recoverable errors.
+            '''
     }
     { name: "CLKMGR.JITTER.REGWEN",
       desc: "Control modification of clock jitter enable."

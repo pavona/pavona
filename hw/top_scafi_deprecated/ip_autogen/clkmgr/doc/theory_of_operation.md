@@ -1,3 +1,5 @@
+<!-- BEGIN-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
+<!-- BEGIN-FEATURE: CLKMGR.HINT.TRANS_CLK -->
 # Theory of Operation
 
 Clock management is divided into groups.
@@ -36,6 +38,7 @@ Large portions of these modules operate to release clocks and resets for the res
 They are the only group running clocks directly from the source.
 All follow groups are derived after root clock gating.
 See [block diagram](#block-diagram) for more details.
+<!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
 
 ## Transactional Clock Group
 
@@ -57,6 +60,7 @@ Wait-for-interrupt based control is already a software hint, it can thus be appl
 
 For modules in this group, each module can be individually influenced, and thus each has its own dedicated clock gating logic.
 The added benefit of allowing software control in this group is to save power, as some transactional modules can be both power and area hungry.
+<!-- END-FEATURE: CLKMGR.HINT.TRANS_CLK -->
 
 ## Infrastructure Clock Group
 
@@ -88,6 +92,7 @@ As influencing time can change the perspective of software and potentially revea
 
 Functionally, this group is identical to the security group.
 
+<!-- BEGIN-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
 ## Peripheral Clock Group
 
 The peripheral clock group is composed of I/O peripherals modules.
@@ -95,8 +100,9 @@ By their nature, I/O peripherals are both transactional and most of the time not
 
 These modules can be both directly and indirectly controlled by software.
 The controls can also be individual to each peripheral.
+<!-- END-FEATURE: CLKMGR.ENABLE.PERIPH_CLK -->
 
-## Wait-for-Interrupt (wfi) Gating
+## Wait-for-Interrupt (`wfi`) Gating
 
 Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
 
@@ -108,22 +114,22 @@ Of the groups enumerated, only transactional, infrastructural and peripheral gro
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
 The interaction with each clock group is briefly described below.
 
-### Transactional Clock Group
+### Transactional Clock Group `wfi` Gating
 
 While `wfi` gating can be applied to this group, the modules in this category are already expected to be turned off and on by software depending on usage.
 Specifically, these modules are already completely managed by software when not in use, thus may not see significant benefit from `wfi` gating.
 
-### Peripheral Clock Group
+### Peripheral Clock Group `wfi` Gating
 
 Since peripherals, especially those in device mode, are often operated in an interrupt driven way, the peripheral's core operating clock frequently must stay alive even if the processor is asleep.
 This implies that in order for peripherals to completely support `wfi` clock gating, they must be split between functional clocks and bus clocks.
 
-The bus clocks represent the software interface and can be turned off based on `wfi gating`, while the functional clocks should be kept running to ensure outside activity can be captured and interrupts created.
+The bus clocks represent the software interface and can be turned off based on `wfi` gating, while the functional clocks should be kept running to ensure outside activity can be captured and interrupts created.
 In this scenario, it is important to ensure the functional clocks are responsible for creating interrupts and not the bus clocks, as the latter may not be available during `wfi`.
 
 This division may only be beneficial for peripherals where register and local fabric size is large relative to the functional component.
 
-### Infrastructural Clock Group
+### Infrastructural Clock Group `wfi` Gating
 
 This clock group matches `wfi` functionality well.
 Most infrastructural components such as fabric, gaskets and memories, have no need to be clocked when the processor is idle.
@@ -136,6 +142,16 @@ Further, since it is possible hardware may issue requests at the boundary of a c
 The bus requests themselves thus become dynamic clock request signals to help enable components in its path.
 
 There is thus a moderate design and high verification cost to supporting `wfi` gating for the infrastructural group.
+
+<!-- BEGIN-FEATURE: CLKMGR.JITTER.ENABLE -->
+<!-- BEGIN-FEATURE: CLKMGR.JITTER.REGWEN -->
+### Clock Jitter
+The main clock, running at 100 MHz in the assumed diagram above, drives the main crypto engines.
+In order to protect the device from side channel analysis attacks, the main clock can be configured to add jitter at the source.
+The jitter generation is expected to cause each clock cycle to be randomly reduced from the nominal frequency.
+The clock manager can enable jitter, and can also lock jitter so that it cannot be disabled until the device is reset.
+<!-- END-FEATURE: CLKMGR.JITTER.REGWEN -->
+<!-- END-FEATURE: CLKMGR.JITTER.ENABLE -->
 
 ## Block Diagram
 
@@ -202,6 +218,7 @@ There are two occasions where this is required:
 -  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
+<!-- BEGIN-FEATURE: CLKMGR.LC_EXTCLK.SPEED -->
 #### Life Cycle Requested External Clock
 
 The life cycle controller only requests the io clock input to be switched.
@@ -212,7 +229,11 @@ When the clock switch is complete, the clock dividers are stepped down by a fact
 Note that this division factor change is done since the external clock is expected to be 48MHz while the nominal frequency of the internal clock is 96MHz.
 I.e. this division factor change keeps the nominal frequencies of the div_2 and div_4 clocks stable at 48Mhz and 24MHz, respectively.
 See [Clock Frequency Summary](#clock-frequency-summary) for more details.
+<!-- END-FEATURE: CLKMGR.LC_EXTCLK.SPEED -->
 
+<!-- BEGIN-FEATURE: CLKMGR.SW_EXTCLK.REGWEN -->
+<!-- BEGIN-FEATURE: CLKMGR.SW_EXTCLK.HIGH_SPEED -->
+<!-- BEGIN-FEATURE: CLKMGR.SW_EXTCLK.LOW_SPEED -->
 #### Software Requested External Clocks
 
 Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
@@ -236,6 +257,9 @@ If software requests a high speed external clock, the dividers are kept as is.
 Note, software external clock switch support is meant to be a debug / evaluation feature, and should not be used in conjunction with the clock frequency and timeout measurement features.
 This is because if the clock frequency suddenly changes, the thresholds used for timeout / measurement checks will no longer apply.
 There is currently no support in hardware to dynamically synchronize a threshold change to the expected frequency.
+<!-- END-FEATURE: CLKMGR.SW_EXTCLK.REGWEN -->
+<!-- END-FEATURE: CLKMGR.SW_EXTCLK.HIGH_SPEED -->
+<!-- END-FEATURE: CLKMGR.SW_EXTCLK.LOW_SPEED -->
 
 #### Clock Frequency Summary
 
@@ -261,26 +285,30 @@ This table also assumes that high speed external clock is 96MHz, while low speed
 
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
-
+<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.REGWEN -->
+<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.RG_SRC -->
+<!-- BEGIN-FEATURE: CLKMGR.MEAS_CTRL.RECOV_ERR -->
 ### Clock Frequency Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
-Software sets both an expected maximum and minimum for each measured clock.
+Software sets both an expected maximum and minimum cycle count for each measured clock.
 
 Clock manager then counts the number of relevant root clock cycles in each always-on clock period.
-If the resulting count differs from the programmed thresholds, a recoverable error is registered.
+A recoverable error is triggered if the resulting count does not fall between the programmed minimum and maximum counts.
 
-Since the counts are measured against a single cycle of always on clock, the minimal error that can be detected is dependent on the clock ratio between the measured clock and 1 cycle of the always on clock.
+The counts can be measured against a number of cycles of always on clock, depending on the clock ratios.
+The minimal error that can be detected depends on the clock ratio between the measured clock and the always on clock, and on the cycles of the always on clock used to perform each measurement.
 Assume a 24MHz clock and an always-on clock of 200KHz.
-The minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
-
+With a single always on clock cycle the minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
 This means if the clock's actual value is between 23.8MHz and 24.2MHz, this deviation will not be detected.
 Conversely, if the clock's natural operation has an error range wider than this resolution, the min / max counts must be adjusted to account for this error.
 
-Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
+If the clock ratios are smaller it is necessary to configure the hardware to count over a suitable number of always on clock cycles in order to achieve a certain error detection.
+
+Additionally, clock manager uses a time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
 This is done by creating an artificial handshake between the root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.
 Based on the nature of the handshake and the margin window, the minimal timeout detection window is approximately 2-4 always on clock cycles.
 If the root clock domain stops and resumes in significantly less time than this window, the time-out may not be detected.
@@ -295,3 +323,6 @@ Clock too slow is registered when the clock cycle count is less than the softwar
 Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen).
+<!-- END-FEATURE: CLKMGR.MEAS_CTRL.REGWEN -->
+<!-- END-FEATURE: CLKMGR.MEAS_CTRL.RG_SRC -->
+<!-- END-FEATURE: CLKMGR.MEAS_CTRL.RECOV_ERR -->

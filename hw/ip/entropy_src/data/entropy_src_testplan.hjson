@@ -17,6 +17,7 @@
             '''
       stage: V1
       tests: ["entropy_src_smoke"]
+      features: []
     }
     {
       name: firmware
@@ -28,6 +29,7 @@
             '''
       stage: V2
       tests: ["entropy_src_smoke", "entropy_src_fw_ov", "entropy_src_rng"]
+      features: ["ENTROPY_SRC.ROUTE_TO_FIRMWARE"]
     }
     {
       name: firmware_mode
@@ -39,6 +41,7 @@
             '''
       stage: V2
       tests: ["entropy_src_fw_ov"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.ROUTE_TO_FIRMWARE", "ENTROPY_SRC.FW_OV.OBSERVE"]
     }
     {
       name: rng_mode
@@ -51,6 +54,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: rng_max_rate
@@ -59,6 +63,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng_max_rate"]
+      features: []
     }
     {
       name: health_checks
@@ -77,6 +82,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS", "ENTROPY_SRC.HEALTH_TESTS_EXT", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: conditioning
@@ -86,6 +92,7 @@
             '''
       stage: V2
       tests: ["entropy_src_rng"]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: interrupts
@@ -96,6 +103,7 @@
             '''
       stage: V2
       tests: ["entropy_src_intr", "entropy_src_rng"]
+      features: ["ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: alerts
@@ -106,6 +114,7 @@
             '''
       stage: V2
       tests: ["entropy_src_functional_alerts", "entropy_src_rng"]
+      features: ["ENTROPY_SRC.RNG_BIT_ENABLE"]
     }
     {
       name: stress_all
@@ -115,6 +124,7 @@
             '''
       stage: V2
       tests: ["entropy_src_stress_all"]
+      features: []
     }
     {
       name: functional_errors
@@ -125,6 +135,7 @@
             '''
       stage: V2
       tests: ["entropy_src_functional_errors"]
+      features: []
     }
     {
       name: firmware_ov_read_contiguous_data
@@ -133,6 +144,7 @@
             '''
       stage: V2
       tests: ["entropy_src_fw_ov_contiguous"]
+      features: ["ENTROPY_SRC.ROUTE_TO_FIRMWARE", "ENTROPY_SRC.FW_OV.OBSERVE", "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"]
     }
     {
       name: external_health_tests
@@ -141,7 +153,8 @@
             and windowed functionality and different high/low thresholds and watermarks.
             '''
       stage: V3
-      tests: ["entropy_src_rng_with_xht_rsps"], // TODO(lowrisc/opentitan#16276): Complete XHT verification
+      tests: ["entropy_src_rng_with_xht_rsps"], // TODO(#16276): Complete XHT verification
+      features: ["ENTROPY_SRC.HEALTH_TESTS_EXT"]
     }
   ]
   covergroups: [

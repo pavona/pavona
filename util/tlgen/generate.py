@@ -33,6 +33,11 @@ def generate(xbar: Xbar, outpath: str, library_name: str = "ip") -> List[Tuple[s
         filename=str(importlib.resources.files('tlgen') / 'xbar.BUILD.tpl'))
     xbar_databuild_tpl = Template(
         filename=str(importlib.resources.files('tlgen') / 'xbar.data_BUILD.tpl'))
+    xbar_testplan_tpl = Template(
+        filename=str(importlib.resources.files('tlgen') / 'xbar_testplan.hjson.tpl'))
+    xbar_spec_tpl = Template(
+        filename=str(importlib.resources.files('tlgen') / 'theory_of_operation.md.tpl'))
+
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
@@ -41,6 +46,8 @@ def generate(xbar: Xbar, outpath: str, library_name: str = "ip") -> List[Tuple[s
         out_hjson = xbar_hjson_tpl.render(xbar=xbar)
         out_build = xbar_build_tpl.render(xbar=xbar, outpath=outpath)
         out_databuild = xbar_databuild_tpl.render(xbar=xbar, outpath=outpath)
+        out_testplan = xbar_testplan_tpl.render(xbar=xbar)
+        out_spec = xbar_spec_tpl.render(xbar=xbar)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())
 
@@ -51,5 +58,7 @@ def generate(xbar: Xbar, outpath: str, library_name: str = "ip") -> List[Tuple[s
     results.append(("data/autogen/xbar_%s.hjson" % (xbar.name), out_hjson))
     results.append(("BUILD", out_build))
     results.append(("data/BUILD", out_databuild))
+    results.append(("data/autogen/xbar_%s_testplan.hjson" % (xbar.name), out_testplan))
+    results.append(("doc/theory_of_operation.md", out_spec))
 
     return results

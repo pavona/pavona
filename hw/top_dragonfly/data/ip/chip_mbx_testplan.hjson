@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "mbx"
+  testpoints: [
+    {
+      name: chip_sw_mbx_smoke
+      desc: '''Verify the mailbox integrations with a basic smoketest
+
+            - Random-cyclically select a mailbox to perform a req-rsp transaction with
+            - TB(requester) writes a message into the imbx, then awaits a response
+            - sw(responder) awaits the request, reads it then replies with a modified version
+              of the original message
+            - TB checks if the received response is as-expected
+            - Requester randomly selects between an irq or polling-based handler
+            - Responder polls the peripheral to await transaction completed
+            - Repeat process for all mailboxes in the system
+            '''
+      features: ["MBX.INBOUND", "MBX.OUTBOUND"]
+      stage: V2
+      tests: ["chip_sw_mbx_smoke"]
+    }
+  ]
+}

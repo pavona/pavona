@@ -36,6 +36,32 @@
       local:   "true",
     },
   ],
+  features: [
+    {
+      name: "AST.CLOCKS"
+      desc: '''
+        AST provides clocks to the digital toplevel.
+      '''
+    },
+    {
+      name: "AST.POWER"
+      desc: '''
+        AST provides power supplies to the digital toplevel.
+      '''
+    },
+    {
+      name: "AST.ENTROPY"
+      desc: '''
+        AST provides entropy to the digital toplevel.
+      '''
+    },
+    {
+      name: "AST.REGISTER_INTERFACE"
+      desc: '''
+        AST provides a register-based interface for test and calibration.
+      '''
+    }
+  ],
   regwidth: "32",
   registers: [
     { name: "REGA0",
