@@ -43,6 +43,7 @@ VECTOR_SETS = {
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("RSA", "sigVer"): ("rsa", "sigver"),
     ("SHA2-256", ""): ("sha256", "sha2"),
     ("SHA2-384", ""): ("sha384", "sha2"),
     ("SHA2-512", ""): ("sha512", "sha2"),

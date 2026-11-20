@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "afI/MgMxCKRwglC2F6lHdF9hVuV+wd0fEKznjngOGtw=",
+        "bzlTransitiveDigest": "ojfKKRHkFQA8Nh8QksCA7j97UIx6bsGEf7DDPBsuDYc=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -540,6 +540,22 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-keyGen-FIPS203/449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85/prompt.json"
             }
           },
+          "acvp_vectors_rsa-sigver_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "894267419505f9dc82bbfaeb7dba755a8e56f54f1edf4e3e97493aae6304fff9",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/expectedResults.json"
+            }
+          },
+          "acvp_vectors_rsa-sigver_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "a27d70493930cdb62ba30277878f0f87adf026b77848770ce849434c703991ef",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/prompt.json"
+            }
+          },
           "acvp_vectors_sha2-256_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -713,6 +729,8 @@
                 "ml-kem-encapdecap/prompt.json": "acvp_vectors_ml-kem-encapdecap_prompt.json",
                 "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
                 "ml-kem-keygen/prompt.json": "acvp_vectors_ml-kem-keygen_prompt.json",
+                "rsa-sigver/expectedResults.json": "acvp_vectors_rsa-sigver_expectedResults.json",
+                "rsa-sigver/prompt.json": "acvp_vectors_rsa-sigver_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
                 "sha2-256/prompt.json": "acvp_vectors_sha2-256_prompt.json",
                 "sha2-384/expectedResults.json": "acvp_vectors_sha2-384_expectedResults.json",
