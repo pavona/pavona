@@ -224,9 +224,8 @@ package top_egret_rnd_cnst_pkg;
     }),
     2688'({
       64'h187A352F7669266C,
-      192'h0, // unallocated space
+      224'h0, // unallocated space
       256'h0,
-      32'h0,
       32'h0,
       32'h0,
       32'h0,
