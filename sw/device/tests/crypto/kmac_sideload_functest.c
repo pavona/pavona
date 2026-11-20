@@ -33,7 +33,7 @@ typedef enum kmac_test_operation_t {
 } kmac_test_operation_t;
 
 typedef struct kmac_test_vector {
-  char *vector_identifier;
+  const char *vector_identifier;
   kmac_test_operation_t test_operation;
   size_t security_strength;
   otcrypto_blinded_key_t key;

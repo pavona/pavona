@@ -28,7 +28,7 @@ typedef enum kmac_test_operation_t {
 
 // This struct allows us to neatly pack SHA-3/SHAKE/cSHAKE/KMAC vectors
 typedef struct kmac_test_vector {
-  char* vector_identifier;
+  const char *vector_identifier;
   kmac_test_operation_t test_operation;
   size_t security_strength;
   otcrypto_blinded_key_t key;
