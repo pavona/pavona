@@ -112,7 +112,19 @@ bool test_main(void) {
         dwords_diff += compare_dword(readout, 2, 7, 0xbaa7bc074a97c885);
         dwords_diff += compare_dword(readout, 2, 8, 0xdda3ceb51b6cbc3b);
         dwords_diff += compare_dword(readout, 2, 9, 0xe889c1ccf0f57d6d);
-        CHECK(partition->size == 10, "Unexpected size of SECRET2 partition!");
+        dwords_diff += compare_dword(readout, 2, 10, 0x0343820682b74714);
+        dwords_diff += compare_dword(readout, 2, 11, 0x8a5124e708ea0552);
+        dwords_diff += compare_dword(readout, 2, 12, 0x88c77c439889dce5);
+        dwords_diff += compare_dword(readout, 2, 13, 0x739142d608e14998);
+        CHECK(partition->size == 14, "Unexpected size of SECRET2 partition!");
+        break;
+
+      case 3:
+        dwords_diff += compare_dword(readout, 2, 0, 0x0b160aec1bc94e5f);
+        dwords_diff += compare_dword(readout, 2, 1, 0x565e67f03a193617);
+        dwords_diff += compare_dword(readout, 2, 2, 0xc0d41c18aaa536a5);
+        dwords_diff += compare_dword(readout, 2, 3, 0xefbfc086ad514a9a);
+        CHECK(partition->size == 4, "Unexpected size of SECRET3 partition!");
         break;
 
       default:

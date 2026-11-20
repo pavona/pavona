@@ -220,10 +220,10 @@ bool test_main(void) {
       check_state(dump.fault_state,
                   (dif_rv_core_ibex_crash_dump_state_t){
                       .mtval = (uint32_t)kIllegalAddr0,
-                      .mpec = (uint32_t)kSingleFaultAddr + 4,
+                      .mpec = (uint32_t)kSingleFaultAddr,
                       .mdaa = (uint32_t)&addr_val,
                       .mcpc = (uint32_t)kSingleFaultAddrCurrentPc,
-                      .mnpc = (uint32_t)kSingleFaultAddrNextPc,
+                      .mnpc = (uint32_t)kSingleFaultAddrCurrentPc + 4,
                   },
                   kDifToggleDisabled);
 

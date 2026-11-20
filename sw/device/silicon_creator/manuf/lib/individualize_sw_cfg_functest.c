@@ -130,7 +130,7 @@ static status_t check_otp_sw_cfg_digest(otp_partition_t partition) {
   // Compute expected_digest.
   hmac_sha256_init();
   const unsigned char *const kOtpSwCfgWindowBase =
-      (const unsigned char *)TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR +
+      (const unsigned char *)dt_otp_ctrl_primary_reg_block(kDtOtpCtrl) +
       OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET;
   switch (partition) {
     case kOtpPartitionCreatorSwCfg:
@@ -146,17 +146,61 @@ static status_t check_otp_sw_cfg_digest(otp_partition_t partition) {
           OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
               OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE);
       break;
-    case kOtpPartitionRotCreatorAuthCodesign:
+    case kOtpPartitionRotOwnerAuthSlot0:
       hmac_sha256_update(
-          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
-          OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
-              OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE);
+          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_DIGEST_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_ZER_SIZE);
       break;
-    case kOtpPartitionRotCreatorAuthState:
+    case kOtpPartitionRotOwnerAuthSlot1:
       hmac_sha256_update(
-          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
-          OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
-              OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE);
+          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_DIGEST_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_ZER_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot2:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_DIGEST_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_ZER_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot3:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase + OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_DIGEST_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_ZER_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot0State:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase +
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_STATE_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_STATE_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_STATE_DIGEST_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot1State:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase +
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_STATE_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_STATE_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_STATE_DIGEST_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot2State:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase +
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_STATE_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_STATE_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT2_STATE_DIGEST_SIZE);
+      break;
+    case kOtpPartitionRotOwnerAuthSlot3State:
+      hmac_sha256_update(
+          kOtpSwCfgWindowBase +
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_STATE_OFFSET,
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_STATE_SIZE -
+              OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT3_STATE_DIGEST_SIZE);
       break;
     default:
       return INVALID_ARGUMENT();
@@ -221,21 +265,69 @@ bool test_main(void) {
     perform_reset |= true;
   }
 
-  // Provision ROT_CREATOR_AUTH_CODESIGN partition.
-  if (!status_ok(manuf_individualize_device_rot_creator_auth_codesign_check(
-          &otp_ctrl))) {
-    CHECK_STATUS_OK(
-        manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
-    LOG_INFO("Provisioned and locked ROT_CREATOR_AUTH_CODESIGN OTP partition.");
+  // Provision ROT_OWNER_AUTH_SLOT0 partition.
+  if (!status_ok(
+          manuf_individualize_device_rot_owner_auth_slot0_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot0(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_OWNER_AUTH_SLOT0 OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT1 partition.
+  if (!status_ok(
+          manuf_individualize_device_rot_owner_auth_slot1_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot1(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_OWNER_AUTH_SLOT1 OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT2 partition.
+  if (!status_ok(
+          manuf_individualize_device_rot_owner_auth_slot2_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot2(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_OWNER_AUTH_SLOT2 OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT3 partition.
+  if (!status_ok(
+          manuf_individualize_device_rot_owner_auth_slot3_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(manuf_individualize_device_rot_owner_auth_slot3(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_OWNER_AUTH_SLOT3 OTP partition.");
     perform_reset |= true;
   }
 
-  // Provision ROT_CREATOR_AUTH_STATE partition.
-  if (!status_ok(
-          manuf_individualize_device_rot_creator_auth_state_check(&otp_ctrl))) {
+  // Provision ROT_OWNER_AUTH_SLOT0_STATE partition.
+  if (!status_ok(manuf_individualize_device_rot_owner_auth_slot0_state_check(
+          &otp_ctrl))) {
     CHECK_STATUS_OK(
-        manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
-    LOG_INFO("Provisioned and locked ROT_CREATOR_AUTH_STATE OTP partition.");
+        manuf_individualize_device_rot_owner_auth_slot0_state(&otp_ctrl));
+    LOG_INFO(
+        "Provisioned and locked ROT_OWNER_AUTH_SLOT0_STATE OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT1_STATE partition.
+  if (!status_ok(manuf_individualize_device_rot_owner_auth_slot1_state_check(
+          &otp_ctrl))) {
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rot_owner_auth_slot1_state(&otp_ctrl));
+    LOG_INFO(
+        "Provisioned and locked ROT_OWNER_AUTH_SLOT1_STATE OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT2_STATE partition.
+  if (!status_ok(manuf_individualize_device_rot_owner_auth_slot2_state_check(
+          &otp_ctrl))) {
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rot_owner_auth_slot2_state(&otp_ctrl));
+    LOG_INFO(
+        "Provisioned and locked ROT_OWNER_AUTH_SLOT2_STATE OTP partition.");
+    perform_reset |= true;
+  }
+  // Provision ROT_OWNER_AUTH_SLOT3_STATE partition.
+  if (!status_ok(manuf_individualize_device_rot_owner_auth_slot3_state_check(
+          &otp_ctrl))) {
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rot_owner_auth_slot3_state(&otp_ctrl));
+    LOG_INFO(
+        "Provisioned and locked ROT_OWNER_AUTH_SLOT3_STATE OTP partition.");
     perform_reset |= true;
   }
 
@@ -247,21 +339,48 @@ bool test_main(void) {
   // Check all SW_CFG and ROT_CREATOR_AUTH partitions have been locked.
   if (status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl)) &&
       status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl)) &&
-      status_ok(manuf_individualize_device_rot_creator_auth_codesign_check(
-          &otp_ctrl)) &&
       status_ok(
-          manuf_individualize_device_rot_creator_auth_state_check(&otp_ctrl))) {
+          manuf_individualize_device_rot_owner_auth_slot0_check(&otp_ctrl)) &&
+      status_ok(
+          manuf_individualize_device_rot_owner_auth_slot1_check(&otp_ctrl)) &&
+      status_ok(
+          manuf_individualize_device_rot_owner_auth_slot2_check(&otp_ctrl)) &&
+      status_ok(
+          manuf_individualize_device_rot_owner_auth_slot3_check(&otp_ctrl)) &&
+      status_ok(manuf_individualize_device_rot_owner_auth_slot0_state_check(
+          &otp_ctrl)) &&
+      status_ok(manuf_individualize_device_rot_owner_auth_slot1_state_check(
+          &otp_ctrl)) &&
+      status_ok(manuf_individualize_device_rot_owner_auth_slot2_state_check(
+          &otp_ctrl)) &&
+      status_ok(manuf_individualize_device_rot_owner_auth_slot3_state_check(
+          &otp_ctrl))) {
     // Check OTP AST and digest contents.
     CHECK_STATUS_OK(check_otp_ast_cfg(&otp_ctrl));
     LOG_INFO("Checking CreatorSwCfg digest ...");
     CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionCreatorSwCfg));
     LOG_INFO("Checking OwnerSwCfg digest ...");
     CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionOwnerSwCfg));
-    LOG_INFO("Checking RotCreatorAuthCodesign digest ...");
+    LOG_INFO("Checking RotOwnerAuthSlot0 digest ...");
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot0));
+    LOG_INFO("Checking RotOwnerAuthSlot1 digest ...");
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot1));
+    LOG_INFO("Checking RotOwnerAuthSlot2 digest ...");
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot2));
+    LOG_INFO("Checking RotOwnerAuthSlot3 digest ...");
+    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot3));
+    LOG_INFO("Checking RotOwnerAuthSlot0State digest ...");
     CHECK_STATUS_OK(
-        check_otp_sw_cfg_digest(kOtpPartitionRotCreatorAuthCodesign));
-    LOG_INFO("Checking RotCreatorAuthState digest ...");
-    CHECK_STATUS_OK(check_otp_sw_cfg_digest(kOtpPartitionRotCreatorAuthState));
+        check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot0State));
+    LOG_INFO("Checking RotOwnerAuthSlot1State digest ...");
+    CHECK_STATUS_OK(
+        check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot1State));
+    LOG_INFO("Checking RotOwnerAuthSlot2State digest ...");
+    CHECK_STATUS_OK(
+        check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot2State));
+    LOG_INFO("Checking RotOwnerAuthSlot3State digest ...");
+    CHECK_STATUS_OK(
+        check_otp_sw_cfg_digest(kOtpPartitionRotOwnerAuthSlot3State));
     return true;
   }
 
