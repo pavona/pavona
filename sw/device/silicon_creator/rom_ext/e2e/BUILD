@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:const.bzl",
+    "CONST",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_hex",
