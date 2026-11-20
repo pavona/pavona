@@ -5,7 +5,6 @@
 """Helpers shared by the ACVP prompt parsers."""
 
 import json
-import sys
 
 
 def load_vector_set(path):
@@ -54,15 +53,3 @@ def acvp_common(data, group):
         "tg_id": group["tgId"],
     })
     return common
-
-
-def report_skipped(where, counts, skip_unsupported):
-    """Reports test cases this cryptolib cannot answer. Skipping is opt-in,
-    so by default the first one is an error."""
-    for reason, count in sorted(counts.items()):
-        if not count:
-            continue
-        if not skip_unsupported:
-            raise SystemExit(f"{where}: {reason}")
-        print(f"{where}: skipped {count} test case(s), {reason}",
-              file=sys.stderr)

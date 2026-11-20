@@ -176,7 +176,6 @@ The ACC backends are built into the firmware by default; `--no-acc-pqc` tests th
 `--test-arg` forwards an argument to the test itself, such as `--test-arg=--usb-serial=<serial>` to pick between attached boards.
 
 The parser rejects any test case this cryptolib cannot answer.
-Pass `--skip-unsupported` to tolerate and skip unsupported vectors, e.g., when testing against NIST's samples which cover every capability.
 
 ## Generating test vectors
 

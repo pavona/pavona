@@ -31,7 +31,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import acvp_common, load_vector_set, report_skipped
+from acvp_util import acvp_common, load_vector_set
 
 # Longest inputs and output, in bytes, the cryptotest firmware accepts.
 KDF_HMAC_CMD_MAX_KEY_IN_BYTES = 64
@@ -72,31 +72,24 @@ def apply_expected(test_vectors, path):
             vector["result"] = True
 
 
-def parse_kdf_hmac(data, skip_unsupported):
+def parse_kdf_hmac(data):
     """Parse a KDF prompt or internalProjection."""
     if data["revision"] != "1.0":
         raise SystemExit("parse_kdf_hmac: only revision 1.0 is implemented")
     test_vectors = []
-    skipped_mode = 0
-    skipped_mac = 0
-    skipped_counter = 0
-    skipped_iv = 0
-    skipped_key_in = 0
-    skipped_fixed_data = 0
-    skipped_bits = 0
-    skipped_key_out = 0
     for group in data["testGroups"]:
         mode = group["kdfMode"]
         if mode not in MODES:
-            skipped_mode += len(group["tests"])
-            continue
+            raise SystemExit("parse_kdf_hmac: KDF modes other than counter and feedback are not "
+                             "implemented")
         if group["macMode"] not in HASH_BYTES:
-            skipped_mac += len(group["tests"])
-            continue
+            raise SystemExit("parse_kdf_hmac: MACs other than HMAC-SHA2-256/384/512 are not "
+                             "implemented")
         counter = (group.get("counterLocation"), group.get("counterLength"))
         if counter != MODES[mode]:
-            skipped_counter += len(group["tests"])
-            continue
+            raise SystemExit("parse_kdf_hmac: counters other than 32 bits before the fixed data "
+                             "(counter mode) and 8 bits after the fixed data (feedback mode) are "
+                             "not implemented")
         key_out_bits = group["keyOutLength"]
         for test in group["tests"]:
             key_in = bytes.fromhex(test["keyIn"])
@@ -105,24 +98,23 @@ def parse_kdf_hmac(data, skip_unsupported):
             else:
                 fixed_data = os.urandom(FIXED_DATA_BYTES)
             if mode == "feedback" and test.get("iv", ""):
-                skipped_iv += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: feedback mode with an IV is not implemented")
             if (mode == "feedback" and
                     len(key_in) != HASH_BYTES[group["macMode"]]):
-                skipped_key_in += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: key derivation keys other than the hash length "
+                                 "are not implemented in feedback mode")
             if len(key_in) > KDF_HMAC_CMD_MAX_KEY_IN_BYTES:
-                skipped_key_in += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: key derivation keys longer than "
+                                 f"{KDF_HMAC_CMD_MAX_KEY_IN_BYTES} bytes are not implemented")
             if len(fixed_data) > KDF_HMAC_CMD_MAX_FIXED_DATA_BYTES:
-                skipped_fixed_data += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: fixed data longer than "
+                                 f"{KDF_HMAC_CMD_MAX_FIXED_DATA_BYTES} bytes is not implemented")
             if key_out_bits % 8 != 0:
-                skipped_bits += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: output lengths that are not a multiple of 8 "
+                                 "bits are not implemented")
             if key_out_bits > KDF_HMAC_CMD_MAX_KEY_OUT_BYTES * 8:
-                skipped_key_out += 1
-                continue
+                raise SystemExit("parse_kdf_hmac: derived keys longer than "
+                                 f"{KDF_HMAC_CMD_MAX_KEY_OUT_BYTES} bytes are not implemented")
             vector = {
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
@@ -136,26 +128,6 @@ def parse_kdf_hmac(data, skip_unsupported):
                 vector["key_out"] = list(bytes.fromhex(test["keyOut"]))
                 vector["result"] = True
             test_vectors.append(vector)
-    report_skipped("parse_kdf_hmac", {
-        "KDF modes other than counter and feedback are not implemented":
-            skipped_mode,
-        "MACs other than HMAC-SHA2-256/384/512 are not implemented":
-            skipped_mac,
-        "counters other than 32 bits before the fixed data (counter mode) "
-        "and 8 bits after the fixed data (feedback mode) are not implemented":
-            skipped_counter,
-        "feedback mode with an IV is not implemented": skipped_iv,
-        "key derivation keys other than the hash length (feedback mode) or "
-        f"longer than {KDF_HMAC_CMD_MAX_KEY_IN_BYTES} bytes are not "
-        "implemented": skipped_key_in,
-        "fixed data longer than "
-        f"{KDF_HMAC_CMD_MAX_FIXED_DATA_BYTES} bytes is not implemented":
-            skipped_fixed_data,
-        "output lengths that are not a multiple of 8 bits are not "
-        "implemented": skipped_bits,
-        f"derived keys longer than {KDF_HMAC_CMD_MAX_KEY_OUT_BYTES} bytes are "
-        "not implemented": skipped_key_out,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -190,16 +162,10 @@ def main() -> int:
         required=True,
         help="Type of test vectors to parse.",
     )
-    parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer instead of "
-        "failing on the first one.",
-    )
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    test_vectors = parse_kdf_hmac(raw_data, args.skip_unsupported)
+    test_vectors = parse_kdf_hmac(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:
