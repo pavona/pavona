@@ -54,6 +54,8 @@
 
 // Scratch buffers for crypto tests.
 static union {
+  aes_test_scratch_t aes;
+  aes_gcm_test_scratch_t aes_gcm;
   hash_test_scratch_t hash;
   hkdf_test_scratch_t hkdf;
   hmac_test_scratch_t hmac;
@@ -74,10 +76,10 @@ status_t process_cmd(ujson_t *uj) {
     TRY(ujson_deserialize_cryptotest_cmd_t(uj, &cmd));
     switch (cmd) {
       case kCryptotestCommandAes:
-        RESP_ERR(uj, handle_aes(uj));
+        RESP_ERR(uj, handle_aes(uj, &cryptotest_scratch.aes));
         break;
       case kCryptotestCommandAesGcm:
-        RESP_ERR(uj, handle_aes_gcm(uj));
+        RESP_ERR(uj, handle_aes_gcm(uj, &cryptotest_scratch.aes_gcm));
         break;
       case kCryptotestCommandAesKwp:
         RESP_ERR(uj, handle_aes_kwp(uj));

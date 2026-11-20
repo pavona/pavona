@@ -11,7 +11,7 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'b', 'e')
 
-#define AES_GCM_CMD_MAX_MSG_BYTES 64
+#define AES_GCM_CMD_MAX_MSG_BYTES 8192
 #define AES_GCM_CMD_MAX_KEY_BYTES 32  // 256 / 8
 #define AES_GCM_CMD_MAX_TAG_BYTES 16  // 128 / 8
 
@@ -31,9 +31,9 @@ UJSON_SERDE_ENUM(CryptotestAesGcmOperation, cryptotest_aes_gcm_operation_t, AES_
     field(key_length, size_t) \
     field(iv, uint8_t, 16) \
     field(iv_length, size_t) \
-    field(input, uint8_t, AES_GCM_CMD_MAX_MSG_BYTES) \
+    bytes(input, AES_GCM_CMD_MAX_MSG_BYTES, input_length) \
     field(input_length, size_t) \
-    field(aad, uint8_t, AES_GCM_CMD_MAX_MSG_BYTES) \
+    bytes(aad, AES_GCM_CMD_MAX_MSG_BYTES, aad_length) \
     field(aad_length, size_t) \
     field(tag, uint8_t, AES_GCM_CMD_MAX_TAG_BYTES) \
     field(tag_length, size_t)
