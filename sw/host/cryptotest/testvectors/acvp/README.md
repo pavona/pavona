@@ -35,6 +35,7 @@ The supported algorithms below mark those with deferred test cases.
 - [KDF KMAC](https://pages.nist.gov/ACVP/draft-celi-acvp-kbkdf.html) with KMAC-128 and KMAC-256: AFT, revision Sp800-108r1.
 - [ML-DSA](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-dsa.html): keyGen, sigGen, sigVer.
 - [ML-KEM](https://pages.nist.gov/ACVP/draft-celi-acvp-ml-kem.html): keyGen, encapDecap.
+- [RSA](https://pages.nist.gov/ACVP/draft-celi-acvp-rsa.html) with 2048-, 3072- and 4096-bit moduli: sigVer with PKCS #1 v1.5 and PSS, revision FIPS186-5.
 - [SHA2-256, SHA2-384, SHA2-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha.html): AFT, MCT.
 - [SHA3-224, SHA3-256, SHA3-384, SHA3-512](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, MCT.
 - [SHAKE-128, SHAKE-256](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, revision FIPS202.
@@ -120,6 +121,20 @@ The parser chooses the fixed data.
   The cryptolib exposes no public key validation API.
   The pinned vector sets still run these groups as regression tests, mapped onto encapsulation and decapsulation, whose internal checks reject invalid keys.
 - The `FIPS203-tr1` revision of encapDecap, which adds a `keyFormats` capability.
+
+### RSA
+
+- keyGen and sigGen.
+  These will be added in a follow-up.
+- The signature and decryption primitives.
+  The cryptolib exposes no raw RSA operation.
+- Public exponents other than 65537.
+  The cryptolib only supports 65537.
+- Moduli other than 2048, 3072 and 4096 bits.
+- SHA2-224, SHA2-512/224 and SHA2-512/256.
+  The cryptolib does not implement them.
+- PSS with mask functions other than MGF1, or with salts other than the digest length.
+  The cryptolib uses MGF1 with the message hash and a salt of the digest length.
 
 ### SHA2 and SHA3
 

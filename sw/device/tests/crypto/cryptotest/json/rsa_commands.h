@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#define RSA_CMD_MAX_MESSAGE_DIGEST_BYTES 64
+#define RSA_CMD_MAX_MESSAGE_BYTES 256
 #define RSA_CMD_MAX_RAW_MESSAGE_BYTES 446
 #define RSA_CMD_MAX_LABEL_BYTES 68
 #define RSA_CMD_MAX_SIGNATURE_BYTES 1024
@@ -71,10 +71,10 @@ UJSON_SERDE_STRUCT(CryptotestRsaDecryptOutput, cryptotest_rsa_decrypt_output_t, 
     field(label_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaLabel, cryptotest_rsa_label_t, RSA_LABEL);
 
-#define RSA_MESSAGE_DIGEST(field, string, bytes) \
-    bytes(message_digest, RSA_CMD_MAX_MESSAGE_DIGEST_BYTES, message_digest_len) \
-    field(message_digest_len, size_t)
-UJSON_SERDE_STRUCT(CryptotestRsaMessageDigest, cryptotest_rsa_message_digest_t, RSA_MESSAGE_DIGEST);
+#define RSA_MESSAGE(field, string, bytes) \
+    bytes(message, RSA_CMD_MAX_MESSAGE_BYTES, message_len) \
+    field(message_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaMessage, cryptotest_rsa_message_t, RSA_MESSAGE);
 
 #define RSA_SIGNATURE(field, string, bytes) \
     bytes(signature, RSA_CMD_MAX_SIGNATURE_BYTES, signature_len) \

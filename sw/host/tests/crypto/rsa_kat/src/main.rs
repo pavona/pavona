@@ -8,6 +8,7 @@ use arrayvec::ArrayVec;
 use clap::Parser;
 use num_bigint_dig::{BigInt, BigUint};
 use serde::Deserialize;
+use serde_json::json;
 use sha2::{Digest as Sha2Digest, Sha256, Sha384, Sha512};
 use sha3::{
     Sha3_224, Sha3_256, Sha3_384, Sha3_512, Shake128, Shake256,
@@ -17,10 +18,11 @@ use std::fs;
 use std::io::Read;
 use std::time::Duration;
 
+use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
     CryptotestRsaCiphertext, CryptotestRsaDecryptOutput, CryptotestRsaExpectedLength,
-    CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessageDigest, CryptotestRsaOperation,
+    CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessage, CryptotestRsaOperation,
     CryptotestRsaPadding, CryptotestRsaPrivateKey, CryptotestRsaPublicKey, CryptotestRsaRawMessage,
     CryptotestRsaSecurityLevel, CryptotestRsaSignature, CryptotestRsaVerifyOutput,
 };
@@ -44,13 +46,17 @@ struct Opts {
 
     #[arg(long, num_args = 1..)]
     rsa_json: Vec<String>,
+
+    #[command(flatten)]
+    acvp: AcvpOpts,
 }
 
 #[derive(Debug, Deserialize)]
 struct RsaTestCase {
     vendor: String,
     test_case_id: usize,
-    algorithm: String,
+    #[serde(flatten)]
+    acvp: AcvpIds,
     operation: String,
     padding: String,
     security_level: usize,
@@ -77,7 +83,9 @@ struct RsaTestCase {
     signature: Vec<u8>,
     #[serde(default)]
     ciphertext: Vec<u8>,
-    result: bool,
+    /// Absent where the outcome is the answer, as in an ACVP prompt.
+    #[serde(default)]
+    result: Option<bool>,
 }
 
 fn run_rsa_testcase(
@@ -85,14 +93,13 @@ fn run_rsa_testcase(
     opts: &Opts,
     spi_console: &SpiConsoleDevice,
     failures: &mut Vec<String>,
+    responses: &mut ResponseBuilder,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
         test_case.vendor,
         test_case.test_case_id
     );
-    assert_eq!(test_case.algorithm.as_str(), "rsa");
-
     // Send algorithm name
     CryptotestCommand::Rsa.send(spi_console)?;
 
@@ -124,8 +131,8 @@ fn run_rsa_testcase(
     }
     .send(spi_console)?;
 
-    // Get the hash function and hash the message to get the digest (unfortunately this code is
-    // challenging to deduplicate because the `Digest` trait is not object safe).
+    // Get the hash function and hash the message to check signatures on the host (unfortunately
+    // this code is challenging to deduplicate because the `Digest` trait is not object safe).
     let (hash_alg, message_digest): (CryptotestRsaHashAlg, Vec<u8>) =
         match test_case.hash_alg.as_str() {
             "sha-256" => {
@@ -185,15 +192,6 @@ fn run_rsa_testcase(
     // Send message hash algorithm
     hash_alg.send(spi_console)?;
 
-    // Size of `input` is determined at compile-time by type inference
-    let mut message_digest_buf = ArrayVec::new();
-    // Fill the buffer until we run out of bytes, truncating the rightmost bytes if we have too
-    // many
-    let message_digest_len = message_digest.len();
-    let mut message_digest_iter = message_digest.iter();
-    while !message_digest_buf.is_full() {
-        message_digest_buf.push(*message_digest_iter.next().unwrap_or(&0u8));
-    }
     // From here, the rest of the state to send and receive depends on
     // what operation we're performing.
     let success = match operation {
@@ -214,9 +212,10 @@ fn run_rsa_testcase(
             let i_q_bigint = BigInt::from_signed_bytes_be(test_case.i_q.as_slice());
             let i_q = i_q_bigint.to_bytes_le().1;
 
-            CryptotestRsaMessageDigest {
-                message_digest: message_digest_buf,
-                message_digest_len,
+            CryptotestRsaMessage {
+                message: ArrayVec::try_from(test_case.message.as_slice())
+                    .expect("Message was too long for device firmware configuration."),
+                message_len: test_case.message.len(),
             }
             .send(spi_console)?;
             CryptotestRsaPrivateKey {
@@ -290,13 +289,12 @@ fn run_rsa_testcase(
         }
         CryptotestRsaOperation::Verify => {
             // Convert parameters to unsigned little-endian
-            let n = BigInt::from_signed_bytes_be(test_case.n.as_slice())
-                .to_bytes_le()
-                .1;
+            let n = BigUint::from_bytes_be(test_case.n.as_slice()).to_bytes_le();
             let signature: Vec<_> = test_case.signature.iter().cloned().rev().collect();
-            CryptotestRsaMessageDigest {
-                message_digest: message_digest_buf,
-                message_digest_len,
+            CryptotestRsaMessage {
+                message: ArrayVec::try_from(test_case.message.as_slice())
+                    .expect("Message was too long for device firmware configuration."),
+                message_len: test_case.message.len(),
             }
             .send(spi_console)?;
             CryptotestRsaPublicKey {
@@ -482,11 +480,11 @@ fn run_rsa_testcase(
         }
         _ => unreachable!("Invalid value for RSA operation"),
     };
-    if test_case.result != success {
+    if test_case.result.is_some_and(|result| result != success) {
         log::info!(
             "FAILED test #{}: expected = {}, actual = {}",
             test_case.test_case_id,
-            test_case.result,
+            !success,
             success
         );
         failures.push(format!(
@@ -499,6 +497,11 @@ fn run_rsa_testcase(
             test_case.test_case_id
         ));
     }
+    if test_case.vendor == "acvp" {
+        let mut fields = Fields::new();
+        fields.insert("testPassed".to_string(), json!(success));
+        responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
+    }
     Ok(())
 }
 
@@ -509,7 +512,8 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let mut test_counter = 0u32;
     let mut failures = vec![];
-    let test_vector_files = &opts.rsa_json;
+    let mut responses = ResponseBuilder::new();
+    let test_vector_files = opts.acvp.vectors(&opts.rsa_json);
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let rsa_tests: Vec<RsaTestCase> = serde_json::from_str(&raw_json)?;
@@ -517,7 +521,13 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for rsa_test in &rsa_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_rsa_testcase(rsa_test, opts, &spi_console_device, &mut failures)?;
+            run_rsa_testcase(
+                rsa_test,
+                opts,
+                &spi_console_device,
+                &mut failures,
+                &mut responses,
+            )?;
         }
     }
     assert_eq!(
@@ -528,7 +538,7 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         test_counter,
         failures
     );
-    Ok(())
+    responses.finish(&opts.acvp)
 }
 
 fn main() -> Result<()> {

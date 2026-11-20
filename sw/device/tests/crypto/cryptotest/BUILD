@@ -769,6 +769,8 @@ RSA_TESTVECTOR_TARGETS = [
     ]
     for wy_suffix in suffixes
 ] + [
+    "//sw/host/cryptotest/testvectors/data:acvp_rsa_sigver_json",
+] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_rsa_{}_{}_json".format(
         padding_mode,
         operation,
@@ -790,6 +792,9 @@ RSA_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "rsa_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = RSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
