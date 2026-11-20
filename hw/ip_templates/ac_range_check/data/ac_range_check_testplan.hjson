@@ -3,190 +3,192 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "ac_range_check"
-    import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
-                       "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson"]
-    testpoints: [
-      {
-        name: ac_range_check_smoke
-        desc: '''
-              Smoke test in which we configure a randomized number of ranges to allow a transfer
-              and perform transfers.
+  import_testplans: [
+    "hw/dv/tools/dvsim/testplans/rst_safe_csr_testplan.hjson",
+    "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+    "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+    "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+    "hw/dv/tools/dvsim/testplans/rst_safe_tl_device_access_types_testplan.hjson",
+    "hw/dv/tools/dvsim/testplans/rst_safe_stress_testplan.hjson"
+  ]
+  testpoints: [
+    {
+      name: ac_range_check_smoke
+      desc: '''
+            Smoke test in which we configure a randomized number of ranges to allow a transfer
+            and perform transfers.
 
-              Stimulus:
-                - Assert range_check_overwrite_i to MuBi8::False
-                - Configure a random number of ranges:
-                  * Randomize the RANGE_BASE and RANGE_LIMIT register (RANGE_LIMIT > RANGE_BASE)
-                  * Randomize the RANGE_ATTR register and set the RANGE_ATTR.enable bit to 1
-                  * Set RANGE_RACL_POLICY_SHADOWED.read_perm and
-                    RANGE_RACL_POLICY_SHADOWED.write_perm to 0xFFFF (disables RACL checks)
-                - Perform random TLUL requests on the unfiltered interface (ctn_tl_h2d_i) and
-                  provide random TLUL responses on the filtered interface (ctn_filtered_tl_d2h_i).
+            Stimulus:
+              - Assert range_check_overwrite_i to MuBi8::False
+              - Configure a random number of ranges:
+                * Randomize the RANGE_BASE and RANGE_LIMIT register (RANGE_LIMIT > RANGE_BASE)
+                * Randomize the RANGE_ATTR register and set the RANGE_ATTR.enable bit to 1
+                * Set RANGE_RACL_POLICY_SHADOWED.read_perm and
+                  RANGE_RACL_POLICY_SHADOWED.write_perm to 0xFFFF (disables RACL checks)
+              - Perform random TLUL requests on the unfiltered interface (ctn_tl_h2d_i) and
+                provide random TLUL responses on the filtered interface (ctn_filtered_tl_d2h_i).
 
-              Checking:
-                - If a request falls outside of any enabled range:
-                  * The request should be denied and an error should be returned in the response on
-                    the unfiltered TLUL D channel (ctn_tl_d2h_o).
-                  * Read and Execute requests should return all zero as data on the unfiltered TLUL
-                    D channel (ctn_tl_d2h_o).
-                - If the request falls into the address space of at least one enabled range, the
-                  request is allowed if and only if the permissions of that range allow it (e.g., if
-                  the access is a data read, the range needs to allow reads for the access to be
-                  allowed) and it does not fall into the address space of any other enabled range
-                  with lower index whose permissions deny the request.
-                  Allowed requests should propagate without modifications on the A channel. And the
-                  corresponding responses should propagate unmodified on the D channel. One
-                  exception to this is the d_data field for AccessAck responses (i.e., responses to
-                  writes): the TL-UL spec defines that this field in this case can be any value, and
-                  the current implementation sets it to zero (for the reason described in PR #1236).
-              '''
-        stage: V1
-        tests: ["ac_range_check_rst_safe_smoke",
-                "ac_range_check_rst_safe_smoke_high_threshold",
-                "ac_range_check_rst_safe_smoke_with_rand_reset"]
-      }
-      {
-        name: ac_range_check_smoke_racl
-        desc: '''
-              TODO
-              '''
-        stage: V1
-        tests: ["ac_range_check_rst_safe_smoke_racl",
-                "ac_range_check_rst_safe_racl_cov"]
-      }
-      {
-        name: ac_range_check_lock_range
-        desc: '''
-              Test the range lock functionality
+            Checking:
+              - If a request falls outside of any enabled range:
+                * The request should be denied and an error should be returned in the response on
+                  the unfiltered TLUL D channel (ctn_tl_d2h_o).
+                * Read and Execute requests should return all zero as data on the unfiltered TLUL
+                  D channel (ctn_tl_d2h_o).
+              - If the request falls into the address space of at least one enabled range, the
+                request is allowed if and only if the permissions of that range allow it (e.g., if
+                the access is a data read, the range needs to allow reads for the access to be
+                allowed) and it does not fall into the address space of any other enabled range
+                with lower index whose permissions deny the request.
+                Allowed requests should propagate without modifications on the A channel. And the
+                corresponding responses should propagate unmodified on the D channel. One
+                exception to this is the d_data field for AccessAck responses (i.e., responses to
+                writes): the TL-UL spec defines that this field in this case can be any value, and
+                the current implementation sets it to zero (for the reason described in PR #1236).
+            '''
+      stage: V1
+      tests: ["ac_range_check_rst_safe_smoke",
+              "ac_range_check_rst_safe_smoke_high_threshold",
+              "ac_range_check_rst_safe_smoke_with_rand_reset"]
+    }
+    {
+      name: ac_range_check_smoke_racl
+      desc: '''
+            TODO
+            '''
+      stage: V1
+      tests: ["ac_range_check_rst_safe_smoke_racl",
+              "ac_range_check_rst_safe_racl_cov"]
+    }
+    {
+      name: ac_range_check_lock_range
+      desc: '''
+            Test the range lock functionality
 
-              Stimulus:
-              - Configure a range's RANGE_BASE, RANGE_LIMIT, RANGE_ATTR, RANGE_RACL_POLICY_SHADOWED
-                register
-              - Clear RANGE_REGWEN to MuBi4::False in a randomized way
-              - Try to reconfigure the range with different values
-              - Assert random reset while any functional phase is active, then restart the
-                lock-range operation after reset is released
+            Stimulus:
+            - Configure a range's RANGE_BASE, RANGE_LIMIT, RANGE_ATTR, RANGE_RACL_POLICY_SHADOWED
+              register
+            - Clear RANGE_REGWEN to MuBi4::False in a randomized way
+            - Try to reconfigure the range with different values
+            - Assert random reset while any functional phase is active, then restart the
+              lock-range operation after reset is released
 
-              Checking:
-              - If RANGE_REGWEN was cleared to MuBi4::False, the reconfigured register values
-                The original configuration should remain in the registers. If RANGE_REGWEN was not
-                cleared, the reconfigured values should have replaced the original ones.
-              - After reset, no pre-reset lock or sequence state affects the restarted operation.
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset",
-                "ac_range_check_rst_safe_lock_cov"]
-      }
-      {
-        name: ac_range_check_attr_permissions
-        desc: '''
-              Test all read, write, and execute permission combinations for every range.
+            Checking:
+            - If RANGE_REGWEN was cleared to MuBi4::False, the reconfigured register values
+              The original configuration should remain in the registers. If RANGE_REGWEN was not
+              cleared, the reconfigured values should have replaced the original ones.
+            - After reset, no pre-reset lock or sequence state affects the restarted operation.
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_lock_range_with_rand_reset",
+              "ac_range_check_rst_safe_lock_cov"]
+    }
+    {
+      name: ac_range_check_attr_permissions
+      desc: '''
+            Test all read, write, and execute permission combinations for every range.
 
-              Stimulus:
-              - Configure deterministic, non-overlapping enabled ranges.
-              - Permit every RACL role.
-              - Apply all eight R/W/X permission combinations to every range.
-              - Issue read, write, and execute requests for each combination.
+            Stimulus:
+            - Configure deterministic, non-overlapping enabled ranges.
+            - Permit every RACL role.
+            - Apply all eight R/W/X permission combinations to every range.
+            - Issue read, write, and execute requests for each combination.
 
-              Checking:
-              - A request is granted only when its corresponding strict MuBi permission is true.
-              - Granted requests and downstream responses pass through unchanged.
-              - Denied requests return an error and zero read data.
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_attr_cov"]
-      }
-      {
-        name: ac_range_check_log_intr_boundaries
-        desc: '''
-              Test deny logging and interrupt behavior at low, middle, and high thresholds.
+            Checking:
+            - A request is granted only when its corresponding strict MuBi permission is true.
+            - Granted requests and downstream responses pass through unchanged.
+            - Denied requests return an error and zero read data.
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_attr_cov"]
+    }
+    {
+      name: ac_range_check_log_intr_boundaries
+      desc: '''
+            Test deny logging and interrupt behavior at low, middle, and high thresholds.
 
-              Stimulus:
-              - Use deterministic logging-enabled and logging-disabled denied ranges.
-              - Exercise thresholds 1-5, 128, and 250-255.
-              - Sample the deny counter at equality and, where possible, one count above.
-              - Clear the log and issue a denial while global logging is disabled.
+            Stimulus:
+            - Use deterministic logging-enabled and logging-disabled denied ranges.
+            - Exercise thresholds 1-5, 128, and 250-255.
+            - Sample the deny counter at equality and, where possible, one count above.
+            - Clear the log and issue a denial while global logging is disabled.
 
-              Checking:
-              - The deny counter saturates and changes only for a strictly enabled range log field.
-              - The interrupt asserts only when deny_cnt is greater than the programmed threshold.
-              - Log status and address preserve the first logged denial until cleared.
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_log_intr_cov"]
-      }
-      {
-        name: ac_range_check_mubi_encodings
-        desc: '''
-              Test all raw MuBi4 encodings in range attributes and range write enables.
+            Checking:
+            - The deny counter saturates and changes only for a strictly enabled range log field.
+            - The interrupt asserts only when deny_cnt is greater than the programmed threshold.
+            - Log status and address preserve the first logged denial until cleared.
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_log_intr_cov"]
+    }
+    {
+      name: ac_range_check_mubi_encodings
+      desc: '''
+            Test all raw MuBi4 encodings in range attributes and range write enables.
 
-              Stimulus:
-              - In separate reset epochs, write each of the 16 raw encodings.
-              - Apply each encoding to enable, R/W/X permission, logging, and RANGE_REGWEN fields.
-              - Attempt to modify protected range CSRs after programming RANGE_REGWEN.
+            Stimulus:
+            - In separate reset epochs, write each of the 16 raw encodings.
+            - Apply each encoding to enable, R/W/X permission, logging, and RANGE_REGWEN fields.
+            - Attempt to modify protected range CSRs after programming RANGE_REGWEN.
 
-              Checking:
-              - ENABLE uses loose decoding: only MuBi4False disables a range.
-              - Permissions and logging use strict decoding: only MuBi4True enables behavior.
-              - Only MuBi4True leaves RANGE_REGWEN writable; all other encodings lock the range.
-              - Raw attribute values and the resulting RANGE_REGWEN state read back as expected.
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_mubi_cov"]
-      }
-      {
-        name: ac_range_check_tl_datapath
-        desc: '''
-              Test legal outstanding and reset behavior on the unfiltered and filtered TL paths.
+            Checking:
+            - ENABLE uses loose decoding: only MuBi4False disables a range.
+            - Permissions and logging use strict decoding: only MuBi4True enables behavior.
+            - Only MuBi4True leaves RANGE_REGWEN writable; all other encodings lock the range.
+            - Raw attribute values and the resulting RANGE_REGWEN state read back as expected.
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_mubi_cov"]
+    }
+    {
+      name: ac_range_check_tl_datapath
+      desc: '''
+            Test legal outstanding and reset behavior on the unfiltered and filtered TL paths.
 
-              Stimulus:
-              - Hold filtered responses while issuing all 16 legal source IDs to one address.
-              - Drain the burst and issue a request to a different address.
-              - Reset with one accepted request pending.
-              - After reset, return a downstream response with d_error asserted.
+            Stimulus:
+            - Hold filtered responses while issuing all 16 legal source IDs to one address.
+            - Drain the burst and issue a request to a different address.
+            - Reset with one accepted request pending.
+            - After reset, return a downstream response with d_error asserted.
 
-              Checking:
-              - Requests and responses remain correctly paired at maximum legal occupancy.
-              - Same-address and different-address outstanding states are observed.
-              - Reset cleanly discards the pending request.
-              - A downstream d_error propagates unchanged to the unfiltered response.
+            Checking:
+            - Requests and responses remain correctly paired at maximum legal occupancy.
+            - Same-address and different-address outstanding states are observed.
+            - Reset cleanly discards the pending request.
+            - A downstream d_error propagates unchanged to the unfiltered response.
 
-              Malformed upstream TL request bins are intentionally excluded from this testpoint
-              until the shared TL error-stimulus strategy is resolved.
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_tl_cov"]
-      }
-      {
-        name: ac_range_bypass_enable
-        desc: '''
-              Test the bypass functionality for enabled ranges.
+            Malformed upstream TL request bins are intentionally excluded from this testpoint
+            until the shared TL error-stimulus strategy is resolved.
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_tl_cov"]
+    }
+    {
+      name: ac_range_bypass_enable
+      desc: '''
+            Test the bypass functionality for enabled ranges.
 
-              Stimulus:
-              - Assert range_check_overwrite_i to Mubi8::True
-              - Configure the AC range check to block certain address ranges
-                * Randomize type of denial (R/W/X, RACL policies)
-              - Perform random TLUL requests that fall within blocked ranges and outside with:
-                * Random request type (R/W/X) and random RACL role
+            Stimulus:
+            - Assert range_check_overwrite_i to Mubi8::True
+            - Configure the AC range check to block certain address ranges
+              * Randomize type of denial (R/W/X, RACL policies)
+            - Perform random TLUL requests that fall within blocked ranges and outside with:
+              * Random request type (R/W/X) and random RACL role
 
-              Checking:
-              - Check if all transfers are allowed
-              - LOG_STATUS.deny_cnt must stay 0
-              '''
-        stage: V2
-        tests: ["ac_range_check_rst_safe_bypass"]
-      }
-    ]
-    covergroups: [
-      {
-        name: ac_range_check_log_status_cg
-        desc: '''
-              Cover all status fields of the LOG_STATUS.
-              (deny_cnt and deny_range_index are not part of this).
-              '''
-      }
-    ]
-  }
+            Checking:
+            - Check if all transfers are allowed
+            - LOG_STATUS.deny_cnt must stay 0
+            '''
+      stage: V2
+      tests: ["ac_range_check_rst_safe_bypass"]
+    }
+  ]
+  covergroups: [
+    {
+      name: ac_range_check_log_status_cg
+      desc: '''
+            Cover all status fields of the LOG_STATUS.
+            (deny_cnt and deny_range_index are not part of this).
+            '''
+    }
+  ]
+}

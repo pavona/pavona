@@ -8,6 +8,7 @@ package ${module_instance_name}_test_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import ${module_instance_name}_ral_pkg::*;
   import ${module_instance_name}_env_pkg::*;
 
   // Macro includes
@@ -21,5 +22,6 @@ package ${module_instance_name}_test_pkg;
   // Package sources
   `include "${module_instance_name}_base_test.sv"
   `include "${module_instance_name}_rst_safe_base_test.sv"
+  `include "${module_instance_name}_rst_safe_common_test.sv"
 
 endpackage

@@ -29,6 +29,8 @@ function ${module_instance_name}_virtual_sequencer::new(string name, uvm_compone
 endfunction : new
 
 function void ${module_instance_name}_virtual_sequencer::handle_reset_assertion();
+  // Discard common alert observations before the next reset epoch consumes them.
+  super.handle_reset_assertion();
   `uvm_info(`gfn, "Reset Assertion - Anything at a sequence level that needs to be reset", UVM_LOW)
 
   // Low level agent that have not used 'dv_rst_safe_base_agent' as the parent class will need to

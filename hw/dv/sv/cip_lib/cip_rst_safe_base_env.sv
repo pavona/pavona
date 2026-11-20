@@ -164,6 +164,10 @@ class cip_rst_safe_base_env #(type CFG_T               = cip_rst_safe_base_env_c
       string alert_name = cfg.list_of_alerts[i];
       m_alert_agent[alert_name].monitor.alert_esc_port.connect(
           scoreboard.alert_fifos[alert_name].analysis_export);
+      // Broadcast the same immutable observations to a separate sequence subscription.
+      // Checking and automatic responses retain their existing FIFO ownership.
+      m_alert_agent[alert_name].monitor.alert_esc_port.connect(
+          virtual_sequencer.alert_observation_fifos[alert_name].analysis_export);
     end
 
     foreach (cfg.m_tl_agent_cfgs[i]) begin
