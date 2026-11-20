@@ -1,5 +1,13 @@
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CPU.ISA -->
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CPU.EPMP -->
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CPU.MEMORY -->
 # Theory of Operation
+This module wraps a RISC-V core capable of executing RV32ICMB instructions (a subset of bitmanip is implemented, see the Ibex core documentation for details), and exposes the available address space to software through a TileLink-UL (TL-UL)interface with system memory. The core also implements the enhanced Physical Memory Protection (ePMP) scheme defined by the RISC-V Privileged Architecture Specification. Sixteen programmable protection regions are available. Memory transactions may optionally pass through the address translation logic described below before being forwarded into the memry system.
+<!-- END-FEATURE: RV_CORE_IBEX.CPU.ISA -->
+<!-- END-FEATURE: RV_CORE_IBEX.CPU.EPMP -->
+<!-- END-FEATURE: RV_CORE_IBEX.CPU.MEMORY -->
 
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.ADDRESS_TRANSLATION -->
 ## Simple Address Translation
 
 The wrapper supports a simple address translation scheme.
@@ -22,7 +30,9 @@ Each control contains two programmable regions (2 for instruction and 2 for data
 If a transaction matches multiple regions, the lowest indexed region has priority.
 
 For details on how to program the related registers, please see [`IBUS_ADDR_MATCHING_0`](registers.md#ibus_addr_matching) and [`IBUS_REMAP_ADDR_0`](registers.md#ibus_remap_addr).
+<!-- END-FEATURE: RV_CORE_IBEX.ADDRESS_TRANSLATION -->
 
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CPU.ICACHE -->
 ### Translation and Instruction Caching
 
 The simple address translation scheme used in this design is not aware of the processor context, specifically, any instruction caching done in the core.
@@ -30,7 +40,9 @@ This means if the address translation scheme were to change, instructions that a
 
 In order to correctly utilize simple address translation along with instruction caching, it is recommended that after the address is updated a `FENCE.I` instruction is issued.
 The `FENCE.I` instruction forces the instruction cache to flush, and this aligns the core to the new address setting.
+<!-- END-FEATURE: RV_CORE_IBEX.CPU.ICACHE -->
 
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.RND -->
 ## Random Number Generation
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)](../../../../ip/edn/README.md) with a register based interface.
@@ -47,7 +59,20 @@ A request is made to the EDN immediately out of reset, this will not be answered
 Software should take care not to enable the EDN until the entropy complex configuration is as desired.
 When the entropy complex configuration is changed reading [`RND_DATA`](registers.md#rnd_data) when it is valid will suffice to flush any old random data to trigger a new request under the new configuration.
 If a EDN request is pending when the entropy complex configuration is changed ([`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) is clear), it is advisable to wait until it is complete and then flush out the data to ensure the fresh value was produced under the new configuration.
+<!-- END-FEATURE: RV_CORE_IBEX.RND -->
 
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CPU.INTERRUPTS -->
+## Interrupts
+
+The wrapped RISC-V core supports the following interrupt sources:
+
+* Software interrupt, controlled by a memory mapped PLIC register
+* External interrupt, from interrupts prioritised by the PLIC
+* Timer interrupt, from rv_timer module
+* Non-maskable interrupt, triggered by watchdog or alert handler
+<!-- END-FEATURE: RV_CORE_IBEX.CPU.INTERRUPTS -->
+
+<!-- BEGIN-FEATURE: RV_CORE_IBEX.CRASH_DUMP -->
 ## Crash Dump Collection
 
 In general, when the CPU encounters an error, it is software's responsibility to collect error status and supply it for debug.
@@ -80,6 +105,7 @@ When the CPU encounters a double fault, the current crash dump is moved to previ
 This allows the software to see both fault locations and debug accordingly.
 
 In terms of how the crash state information can be used, the following are a few examples.
+<!-- END-FEATURE: RV_CORE_IBEX.CRASH_DUMP -->
 
 ### Hung Transaction
 

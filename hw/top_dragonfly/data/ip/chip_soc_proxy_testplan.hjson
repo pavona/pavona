@@ -1,0 +1,51 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: soc_proxy
+  testpoints: [
+    // soc_proxy tests:
+    {
+      name: chip_sw_soc_proxy_external_reset_requests
+      desc: '''Verify that external reset requests reset (parts of) OT.
+
+               - In DV env, trigger the external reset request.
+               - In DV env, ensure that the desired parts of OT get reset and the others don't.
+               - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
+           '''
+      features: ["SOC_PROXY.EXTERNAL_RESET"]
+      stage: V2
+      tests: ["chip_sw_soc_proxy_smoketest"]
+    }
+    {
+      name: chip_sw_soc_proxy_external_wakeup_requests
+      desc: '''Verify that external wakeup requests are forwarded to Power Manager.
+
+               - In SW, enable the wakeup in Power Manager.
+               - In DV env, trigger the wakeup request.
+               - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
+            '''
+      features: ["SOC_PROXY.EXTERNAL_WAKEUP"]
+      stage: V2
+      tests: ["chip_sw_soc_proxy_external_wakeup"]
+    }
+    {
+      name: chip_sw_soc_proxy_gpios
+      desc: '''Verify that GPI/Os of the SoC into/from OT are correctly connected to multiplexed I/Os.
+
+               For each of the general-purpose outputs of the SoC into OT
+               - In SW, configure Pinmux MIO such that the pin is externally observable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the configured pin.
+
+               For each of the general-purpose inputs of the SoC from OT
+               - In SW, configure Pinmux MIO such that the pin is externally controllable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the SoC input.
+            '''
+      features: ["SOC_PROXY.GPIO"]
+      stage: V2
+      tests: ["chip_sw_soc_proxy_gpios"]
+    }
+  ]
+}

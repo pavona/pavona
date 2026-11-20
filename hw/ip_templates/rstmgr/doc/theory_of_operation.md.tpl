@@ -86,6 +86,7 @@ The reset topology also contains additional properties:
     *   In a production system, `TRSTn` only needs to be released for RMA transitions and nothing else.
 .
 
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
 <%text>## Reset Manager</%text>
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
@@ -103,6 +104,7 @@ These requests primarily come from the following sources:
 *  Power manager request for low power entry and exit.
 *  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
 *  Direct software request for reset.
+<!-- END-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
 
 <%text>### Shadow Resets</%text>
 
@@ -111,6 +113,7 @@ These are registers stored in two constantly checking copies to ensure the value
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targeted attack on the reset line cannot easily defeat shadow registers.
 
+<!-- BEGIN-FEATURE: RSTMGR.RESET_CONSISTENCY_CHECKS -->
 <%text>### Reset Consistency Checks</%text>
 
 The reset manager implements reset consistency checks to ensure that triggered resets are supposed to happen and not due to some fault in the system.
@@ -133,11 +136,14 @@ The reset manager then checks as follows:
   - If the appropriate pairing is not seen in the given amount of time, signal an error, as the leaf reset asserted without cause.
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
+<!-- END-FEATURE: RSTMGR.RESET_CONSISTENCY_CHECKS -->
 
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_HANDLER.RESET_STATUS -->
 <%text>### Reset Indications for Alert Handler</%text>
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
+<!-- END-FEATURE: RSTMGR.ALERT_HANDLER.RESET_STATUS -->
 
 <%text>## Design Details</%text>
 
@@ -146,6 +152,7 @@ As a result, a particular reset tree (for example `rst_lc_n`) may have multiple 
 
 Each reset tree is discussed in detail below.
 
+<!-- BEGIN-FEATURE: RSTMGR.POR.SCRETCHER -->
 <%text>## POR Reset Tree</%text>
 
 The POR reset tree, `rst_por_n`, is the root reset of the entire device.
@@ -160,7 +167,7 @@ The stretch parameters are design time configurations.
     *   The counter increments only when all stages of the filter are 1.
     *   If any stage at any point becomes '0', the reset counter returns to 0 and downstream logic is driven to reset again.
 *   Both functions are expected to operate on slow, always available KHz clocks.
-
+<!-- END-FEATURE: RSTMGR.POR.SCRETCHER -->
 
 <%text>## Life Cycle Reset Tree</%text>
 
@@ -204,6 +211,7 @@ For example, assume a system with two power domains - `Domain A` is always-on, a
 When `Domain B` is powered off, all of `Domain B`'s resets, from `rst_lc_n`, `rst_sys_n` to `rst_module_n` are asserted.
 However, the corresponding resets for `Domain A` are left untouched because it has not been powered off.
 
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.REQUEST -->
 <%text>## Software Controlled Resets</%text>
 
 Certain leaf resets can be directly controlled by software.
@@ -220,6 +228,7 @@ In general, the following rules apply:
 *   If a module can alter the software's perception of time or general control flow (timer or interrupt aggregator), it cannot be software resettable.
 *   If a module contains sensor functions for security, it cannot be software resettable.
 *   If a module controls life cycle or related function, it cannot be software resettable.
+<!-- END-FEATURE: RSTMGR.SW_RST.REQUEST -->
 
 <%text>## Summary</%text>
 
@@ -235,7 +244,9 @@ Ndm reset request (Other states)  | `rv_dm` non-debug-module reset request in DE
 SW low power entry                | wait-for-interrupt deep sleep entry                           |                | non-aon domains | non-aon domains | non-aon domains
 SW controlled reset request       | `rstmgr` SW_RST_CTRL_N                                        |                |                 |                 | all domains
 
-
+<!-- BEGIN-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
+<!-- BEGIN-FEATURE: RSTMGR.RESET_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.RESET_INFO.CLEAR -->
 <%text>## Reset Information</%text>
 
 The reset information register is a reflection of the reset state from the perspective of the system.
@@ -278,7 +289,14 @@ Even though four reset causes are labeled as warm boot, their effects on the sys
 *  When the reset cause is `HW_REQ` or `SW_REQ`, it means everything other than power / clock / reset managers have reset.
 
 This behavioral difference may be important to software, as it implies the configuration of the system may need to be different.
+<!-- END-FEATURE: RSTMGR.SW_RST.CHIP_RESET -->
+<!-- END-FEATURE: RSTMGR.RESET_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.RESET_INFO.CLEAR -->
 
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.ALERT_INFO.ENABLE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 <%text>## Crash Dump Information</%text>
 
 The reset manager manages crash dump information for software debugging across unexpected resets and watchdogs.
@@ -287,6 +305,8 @@ When enabled, the latest alert information and latest CPU information are captur
 When the software resumes after the reset, it is then able to examine the last CPU state or the last set of alert information to understand why the system has reset.
 
 The enable for such debug capture can be locked such that it never captures.
+<!-- END-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 
 <%text>### Alert Information</%text>
 
@@ -297,7 +317,11 @@ The [`ALERT_INFO_ATTR`](registers.md#alert_info_attr) register indicates how man
 To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#alert_info_ctrl) to 1.
 Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
 Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
+<!-- END-FEATURE: RSTMGR.ALERT_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.ALERT_INFO.ENABLE -->
 
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- BEGIN-FEATURE: RSTMGR.CPU_INFO.ENABLE -->
 <%text>### CPU Information</%text>
 
 The CPU information register contains the value of the CPU state prior to a triggered reset.
@@ -307,3 +331,5 @@ For more details on the CPU dump details, please see [crash dump](../../rv_core_
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.
+<!-- END-FEATURE: RSTMGR.CPU_INFO.CAPTURE -->
+<!-- END-FEATURE: RSTMGR.CPU_INFO.ENABLE -->

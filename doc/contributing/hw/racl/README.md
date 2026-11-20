@@ -15,7 +15,7 @@ Each register (or window) that can be accessed by processing elements is an _obj
 For each object or group of objects, an access-control-list (ACL), or _policy_, is defined that determines if the subject in its current role can read the object and if the subject in its current role can write the object.
 
 A role is defined by a 4-bit encoding.
-The role encoding is determined by the implementer, and may have different meaning depending on their use case.
+The role encoding is determined by the implementer, and may have different meanings depending on their use case.
 The implementation shall provide an abstraction to allow different implementers defining their role assignments based on their needs.
 The role is transmitted across the fabric as part of a transaction so that a given policy can be enforced at the target based on this role.
 For the TLUL fabric, the [top-level RACL configuration](#top-level-racl-configuration) defines which bits of the `a_user` field are used to carry this information.
@@ -29,47 +29,10 @@ The RoleSelector - selects the current role - muxes out the ID corresponding to 
 At the target, the role and the attributes of the transaction (Read/Write, address, and size) are used to determine if the access is allowed or denied.
 If the access is denied then the error is logged into an Error-Log register.
 
-### RACL Policies
-Each policy register takes the form of a pair of permission bitmaps, `ReadPerm` and `WritePerm`, where each bit corresponds to a role.
-E.g., if 16 different roles are defined, the register looks as follows, where the bit position of each role is defined by the role encoding that is specified via the `role_id` in the [configuration file](#top-level-racl-configuration).
-
-|                 | Role 0 | Role 1 | ... | Role 14 | Role 15 |
-|-----------------|:------:|:------:|:---:|:-------:|:-------:|
-| *Bit position:* | *0*    | *1*    | ... | *14*    | *15*    |
-| `WritePerm`     |        |        |     |         |         |
-| `ReadPerm`      |        |        |     |         |         |
-
-Each `ReadPerm` bit indicates if the corresponding role (see column header) has read permission to objects (e.g., registers) controlled by this policy.
-Each `WritePerm` bit indicates if the corresponding role has write permission.
-When the bit is 1, the corresponding permission is granted and when it is 0 it is denied.
-
-The policy registers is mapped as shown below.
-Note, the policy registers are 64-bit aligned to allow room for future use.
-
-| Name     | Offset | Bits 31:16  | Bits 15:0  |
-|----------|:------:|:-----------:|:----------:|
-| Policy 0 | 0x000  | `writePerm` | `readPerm` |
-|          | 0x004  | reserved    | reserved   |
-| Policy 1 | 0x008  | `writePerm` | `readPerm` |
-|          | 0x00c  | reserved    | reserved   |
-| Policy 2 | 0x010  | `writePerm` | `readPerm` |
-|          | 0x014  | reserved    | reserved   |
-| Policy 3 | 0x018  | `writePerm` | `readPerm` |
-|          | 0x01c  | reserved    | reserved   |
-| Policy 4 | 0x020  | `writePerm` | `readPerm` |
-|          | 0x024  | reserved    | reserved   |
-
-In the [RACL configuration file](#top-level-racl-configuration), exactly one policy must be defined with `rot_private: true`.
-This policy is then used to statically protect the policy registers themselves.
-The read and write permissions are used from this policy as defined in the configuration file at design time.
-For all policy registers, the configuration specified in the configuration file is the reset default value.
-However, depending on the permissions defined for the `rot_private`-designated policy, the policy registers may also be updated at runtime.
-
 ### RACL Controller
 
 For a top-level that uses RACL, there is an associated RACL Controller (`racl_ctrl`), which acts as the interface between the TileLink bus and the RACL matching logic.
-For example, see the documentation for the [Dragonfly racl_ctrl](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/README.md).
-The RACL Controller implements the policy registers, distributes them to subscribing IPs and collects error logs from them through its hardware interface.
+For more information regarding the RACL controller, see the docs for the top-specific instantiation of `racl_ctrl`, such as [Dragonfly's RACL controller documentation](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/theory_of_operation.md).
 
 ### RACL Controller Groups
 A RACL controller group is defined by a name and a set of policies.
@@ -300,48 +263,6 @@ If no RACL mapping is provided to an instance, the instance does not use RACL an
 ```
 
 In this example, RACL is only generated for the `soc` interface of the mailbox.
-
-## RTL Implementation
-
-RACL is opt-in.
-If no `racl.hjson` is defined in the top-level HJSON and no RACL mappings are used there, no RACL logic is generated.
-There will be no logic overhead to the design (see [System with No RACL Use](#system-with-no-racl-use) for details).
-
-![Implementation structure](implementation.svg)
-
-The tooling generates a parameterized [RACL controller](#racl-controller) based on the top-level configuration.
-This controller implements the policy registers (statically protected via the `rot_private`-designated policy) and exposes all policies via a top-level vector.
-
-![Connections](connections.svg)
-
-The RACL policy vector gets distributed to all IPs that subscribe to that RACL group.
-The RACL policy vector, along with a static per-instance selection vector is routed to the IP that subscribes to RACL.
-A RACL-supported IP’s top-level I/O interface is changed to include RACL signals such as the policy vector, a policy selection vector, and a RACL error log output.
-
-These wires are routed to the internal reg\_top.
-If IPs use more than one reg\_top, each reg\_top will get a dedicated selection vector.
-- `racl_policies_i`: A vector of all possible policies defined by `racl.hjson`.
-  This is coming from the RACL controller.
-- `racl_policy_sel_i`: A vector of indices that select the policy from the policy vector.
-  Entry 0 of this array defines the policy selection for register 0 in that IP, entry 1 defines the selection for register 1, etc.
-  In the example from above, the vector might look like `[1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 2, 1]`.
-  + If an IP features multiple reg\_tops, each will have its own `racl_policy_sel_<reg_top_name>_i` policy selector input.
-    `racl_violation_o` will then be the OR combination of violations among reg\_tops.
-    If multiple RACL violations can happen at the same time, they must be arbitrated appropriately before passing the error log to the RACL controller.
-
-### System with No RACL Use
-The system supports instantiating IPs with and without RACL alongside.
-If an IP is instantiated in a non-RACL use case, no overhead is added to the IP.
-The additional inputs are tied off, and the outputs are left open.
-Inside the IP, the RACL comparison logic is gated via a per-instance synthesis parameter, hence the (unused) RACL logic appears neither in synthesis nor in DV.
-If the system does not use RACL at all, there is no overhead in terms of additional transported bits in the crossbar.
-
-## Out of Tree Usage
-
-RACL may also be used outside of Pavona.
-For this purpose, the RACL controller provides an additional input to collect error logs from externally subscribing IPs.
-See the [interface documentation for the Dragonfly racl_ctrl](../../../../hw/top_dragonfly/ip_autogen/racl_ctrl/doc/interfaces.md).
-Additionally, the [`util/raclgen.py`](../../../../util/raclgen/README.md) tool can be used to generate the necessary policy selection vectors.
 
 ## RACL Configuration and Mapping
 

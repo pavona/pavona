@@ -31,6 +31,7 @@
             '''
       stage: V1
       tests: ["rv_dm_smoke"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.DMSTATUS_REG"]
 
     }
     {
@@ -46,6 +47,7 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dtm_csr_hw_reset"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dtm_csr_rw
@@ -57,6 +59,7 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dtm_csr_rw"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dtm_csr_bit_bash
@@ -68,6 +71,7 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dtm_csr_bit_bash"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dtm_csr_aliasing
@@ -79,6 +83,7 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dtm_csr_aliasing"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dmi_csr_hw_reset
@@ -96,6 +101,18 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dmi_csr_hw_reset"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: jtag_dmi_csr_rw
@@ -107,6 +124,18 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dmi_csr_rw"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: jtag_dmi_csr_bit_bash
@@ -118,6 +147,18 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dmi_csr_bit_bash"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: jtag_dmi_csr_aliasing
@@ -129,6 +170,18 @@
             '''
       stage: V1
       tests: ["rv_dm_jtag_dmi_csr_aliasing"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: idcode
@@ -141,6 +194,7 @@
             '''
       stage: V2
       tests: ["rv_dm_smoke"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dtm_hard_reset
@@ -154,6 +208,7 @@
             '''
       stage: V2
       tests: ["rv_dm_jtag_dtm_hard_reset"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dtm_idle_hint
@@ -168,6 +223,7 @@
             '''
       stage: V2
       tests: ["rv_dm_jtag_dtm_idle_hint"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dmi_failed_op
@@ -183,6 +239,7 @@
             '''
       stage: V2
       tests: ["rv_dm_dmi_failed_op"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dmi_dm_inactive
@@ -199,6 +256,18 @@
             '''
       stage: V2
       tests: ["rv_dm_jtag_dmi_dm_inactive"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
 
     {
@@ -216,6 +285,7 @@
             '''
       stage: V2
       tests: ["rv_dm_sba_tl_access", "rv_dm_delayed_resp_sba_tl_access"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.SBA"]
     }
     {
       name: bad_sba
@@ -242,6 +312,7 @@
             '''
       stage: V2
       tests: ["rv_dm_bad_sba_tl_access"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.SBA"]
     }
     {
       name: sba_autoincrement
@@ -262,6 +333,7 @@
             '''
       stage: V2
       tests: ["rv_dm_autoincr_sba_tl_access"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.SBA"]
     }
     {
       name: jtag_dmi_debug_disabled
@@ -281,6 +353,18 @@
             '''
       stage: V2
       tests: ["rv_dm_jtag_dmi_debug_disabled"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: sba_debug_disabled
@@ -294,6 +378,11 @@
             '''
       stage: V2
       tests: ["rv_dm_sba_debug_disabled"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.SBA"
+      ]
     }
     {
       name: ndmreset_req
@@ -319,6 +408,7 @@
             '''
       stage: V2
       tests: ["rv_dm_ndmreset_req"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.NDM_RESET", "RV_DM.DBG.DMCONTROL_REG"]
     }
     {
       name: hart_unavail
@@ -333,6 +423,7 @@
             '''
       stage: V2
       tests: ["rv_dm_hart_unavail"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.HARTINFO_REG"]
     }
     {
       name: tap_ctrl_transitions
@@ -343,6 +434,7 @@
             '''
       stage: V2
       tests: ["rv_dm_tap_fsm", "rv_dm_tap_fsm_rand_reset"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: jtag_dmi_cmderr_busy
@@ -359,6 +451,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_busy"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
     {
       name: jtag_dmi_cmderr_not_supported
@@ -373,6 +466,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_not_supported"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
     {
       name: cmderr_exception
@@ -385,6 +479,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_exception"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
      {
       name: mem_tl_access_resuming
@@ -398,6 +493,7 @@
             '''
       stage: V1
       tests: ["rv_dm_mem_tl_access_resuming"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.HARTINFO_REG"]
     }
     {
       name: mem_tl_access_halted
@@ -410,6 +506,7 @@
             '''
       stage: V1
       tests: ["rv_dm_mem_tl_access_halted"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.HARTINFO_REG"]
     }
     {
       name: cmderr_halt_resume
@@ -424,6 +521,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_halt_resume"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.HARTINFO_REG", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
     {
       name: dataaddr_rw_access
@@ -435,6 +533,7 @@
             '''
       stage: V1
       tests: ["rv_dm_dataaddr_rw_access"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.HARTINFO_REG"]
     }
     {
       name: halt_resume
@@ -457,6 +556,7 @@
       '''
       stage: V1
       tests: ["rv_dm_halt_resume_whereto"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.HARTINFO_REG", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
     {
       name: progbuf_busy
@@ -469,6 +569,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_busy"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.ABSTRACT_COMMAND", "RV_DM.DBG.PROGBUF"]
     }
     {
       name: abstractcmd_status
@@ -486,6 +587,7 @@
             '''
       stage: V1
       tests: ["rv_dm_abstractcmd_status"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.ABSTRACT_COMMAND"]
     }
     {
       name: progbuf_read_write_execute
@@ -502,6 +604,7 @@
             '''
       stage: V1
       tests: ["rv_dm_progbuf_read_write_execute"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.PROGBUF"]
     }
     {
       name: progbuf_exception
@@ -518,6 +621,7 @@
             '''
       stage: V1
       tests: ["rv_dm_cmderr_exception"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG", "RV_DM.DBG.ABSTRACT_COMMAND", "RV_DM.DBG.PROGBUF"]
     }
     {
       name: rom_read_access
@@ -528,6 +632,7 @@
             '''
       stage: V1
       tests: ["rv_dm_rom_read_access"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: hartsel_warl
@@ -539,6 +644,7 @@
       '''
       stage: V2
       tests: ["rv_dm_hartsel_warl"]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMCONTROL_REG"]
     }
     {
       name: stress_all
@@ -551,6 +657,19 @@
             '''
       stage: V2
       tests: ["rv_dm_stress_all"]
+      features: [
+        "RV_DM.JTAG.FSM",
+        "RV_DM.JTAG.DTM",
+        "RV_DM.DBG.DATA_REGS",
+        "RV_DM.DBG.DMCONTROL_REG",
+        "RV_DM.DBG.DMSTATUS_REG",
+        "RV_DM.DBG.HARTINFO_REG",
+        "RV_DM.DBG.HALTSUM0_REG",
+        "RV_DM.DBG.ABSTRACT_COMMAND",
+        "RV_DM.DBG.PROGBUF",
+        "RV_DM.DBG.SBA",
+        "RV_DM.DBG.NDM_RESET"
+      ]
     }
   ]
 

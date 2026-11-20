@@ -224,7 +224,67 @@
     },
   ],
 
-countermeasures: [
+  features: [
+    {
+      name: "KEYMGR_DPE.SIDELOAD.KMAC",
+      desc: '''Generation of keys for KMAC. The key is only visible to hardware. This is tracked in
+            KMAC as KMAC.KEY.SIDELOAD.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.SIDELOAD.AES",
+      desc: '''Generation of keys for AES. The key is only visible to hardware.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.SIDELOAD.ACC",
+      desc: '''Generation of keys for ACC. The key is only visible to hardware and ACC code.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.DERIVE.ATTESTATION",
+      desc: '''DICE compliant key derivation. Used to generate attestation keys. Derived keys can
+            be directed to registers exposed to software, or sideloaded to ACC
+            (KEYMGR_DPE.SIDELOAD.ACC). 256Bit measurements can be provided to the key derivation
+            function using a dedicated set of registers.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.GENERATE.OUTPUT",
+      desc: '''Derivation of output keys with additional salt and version. Software provided
+            salt and version values are used as inputs in the key derivation function along with
+            the internal key manager state. The derived keys can be directed to software registers,
+            or sideloaded to hardware security blocks.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.KEY_VERSIONING",
+      desc: '''The maximum version value supported by KEYMGR_DPE.GENERATE.OUTPUT is configurable via a
+            set of write-lockable registers. KEYMGR_DPE.GENERATE.OUTPUT will fail to derive a key with
+            a version greater than the version set in the write lockable register for any given
+            key manager internal state.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.DPE.ADVANCE",
+      desc: '''Advancing state derives a destination slot from source. The destination slot creation
+            only occurs when the creation of such a destination slot is compatible with the source
+            slot's data.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.DPE.ERASE",
+      desc: '''Erasing operation clears DICE context from a destination slot.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.DPE.DISABLE",
+      desc: '''Disabling operation clears all DICE contexts and prevents further use until reset.
+            '''
+    }
+  ],
+
+  countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }

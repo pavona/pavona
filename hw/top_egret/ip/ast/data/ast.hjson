@@ -45,6 +45,7 @@
       local: "true"
     },
   ],
+  features: [],
   regwidth: "32",
   registers: [
     { name: "REGA0",

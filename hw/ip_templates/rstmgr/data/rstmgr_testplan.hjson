@@ -36,6 +36,12 @@
             '''
       stage: V1
       tests: ["rstmgr_smoke"]
+      features: [
+        "RSTMGR.SW_RST.REQUEST",
+        "RSTMGR.RESET_INFO.CAPTURE",
+        "RSTMGR.ALERT_INFO.CAPTURE",
+        "RSTMGR.CPU_INFO.CAPTURE",
+      ]
     }
     {
       name: reset_stretcher
@@ -55,6 +61,7 @@
             '''
       stage: V2
       tests: ["rstmgr_por_stretcher"]
+      features: ["RSTMGR.POR.STRETCHER"]
     }
     {
       name: sw_rst
@@ -81,6 +88,7 @@
             '''
       stage: V2
       tests: ["rstmgr_sw_rst"]
+      features: ["RSTMGR.SW_RST.REQUEST"]
     }
     {
       name: sw_rst_reset_race
@@ -99,6 +107,10 @@
             '''
       stage: V2
       tests: ["rstmgr_sw_rst_reset_race"]
+      features: [
+        "RSTMGR.SW_RST.REQUEST",
+        "RSTMGR.RESET_INFO.CAPTURE",
+      ]
     }
     {
       name: reset_info
@@ -115,6 +127,10 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: [
+        "RSTMGR.RESET_INFO.CAPTURE",
+        "RSTMGR.RESET_INFO.CLEAR",
+      ]
     }
     {
       name: cpu_info
@@ -136,6 +152,10 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: [
+        "RSTMGR.CPU_INFO.CAPTURE",
+        "RSTMGR.CPU_INFO.ENABLE",
+      ]
     }
     {
       name: alert_info
@@ -157,6 +177,10 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: [
+        "RSTMGR.ALERT_INFO.CAPTURE",
+        "RSTMGR.ALERT_INFO.ENABLE",
+      ]
     }
     {
       name: reset_info_capture
@@ -174,6 +198,7 @@
             '''
       stage: V2
       tests: ["rstmgr_reset"]
+      features: ["RSTMGR.RESET_INFO.CAPTURE"]
     }
     {
       name: stress_all
@@ -186,6 +211,38 @@
             '''
       stage: V2
       tests: ["rstmgr_stress_all"]
+      features: []
+    }
+    {
+      name: rstmgr_cnsty_chk
+      desc: '''This is a dedicated test environment for consistency checks.
+
+            This checks are performed by the rstmgr_cnsty_chk module, which
+            contains logic to check whether conditions allow for a reset to
+            be asserted. For example, if a child reset asserts, either its
+            parent reset or a software control must have asserted; otherwise
+            it is considered a fatal error.
+
+            The environment is very simple, and consists of a testbench that
+            instantiates a rstmgr_cnsty_chk module and classes to generate
+            stimulus for it.
+
+            This testbench generates combinations of parent resets, software
+            reset requests, and child resets. It verifies ilegitimate child
+            resets are detected and flag an error. It can also can be used
+            to determine the actual delay between the parent or software
+            reset and the child reset they trigger.
+
+            It uses a combination of randomized variables and exhaustive
+            delays over a certain range to trigger the various resets
+            mentioned above.
+
+            The dedicated environment is under dv/rstmgr_cnsty_chk relative
+            to rstmgr.
+            '''
+      stage: V2S
+      tests: []
+      features: ["RSTMGR.RESET_CONSISTENCY_CHECKS"]
     }
   ]
 

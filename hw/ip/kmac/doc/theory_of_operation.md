@@ -1,5 +1,9 @@
 # Theory of Operation
 
+<!-- BEGIN-FEATURE: KMAC.MODE.SHA3 -->
+<!-- BEGIN-FEATURE: KMAC.MODE.SHAKE -->
+<!-- BEGIN-FEATURE: KMAC.MODE.CSHAKE -->
+<!-- BEGIN-FEATURE: KMAC.MODE.XOF -->
 ## Block Diagram
 
 ![](../doc/kmac-block-diagram.svg)
@@ -33,6 +37,10 @@ Both the internal state width and the masking of the Keccak core are configurabl
 By default, 1600 bits of internal state are used and stored in two shares (1st order masking).
 The masked Keccak core takes 4 clock cycles per round if sufficient entropy is available.
 If desired, the masking can be disabled and the internal state width can be reduced to 25, 50, or 100 bits at compile time.
+<!-- END-FEATURE: KMAC.MODE.SHA3 -->
+<!-- END-FEATURE: KMAC.MODE.SHAKE -->
+<!-- END-FEATURE: KMAC.MODE.CSHAKE -->
+<!-- END-FEATURE: KMAC.MODE.XOF -->
 
 ## Design Details
 
@@ -112,6 +120,7 @@ If the output length is greater than the Keccak block rate in SHAKE and cSHAKE m
 The software completes the operation by issuing Done command after reading the digest.
 The padding logic clears internal variables and goes back to Idle state.
 
+<!-- BEGIN-FEATURE: KMAC.MODE.KMAC -->
 ### Padding for KMAC
 
 ![](../doc/kmac-padding.svg)
@@ -125,14 +134,18 @@ The first six bytes of [`PREFIX`](registers.md#prefix) represents the value of `
 The KMAC padding logic prepends a block containing the encoded secret key to the output message.
 The KMAC first sends the block of secret key then accepts the incoming message bitstream.
 At the end of the message, the software writes `right_encode(output_length)` to MSG_FIFO prior to issue Process command.
+<!-- END-FEATURE: KMAC.MODE.KMAC -->
 
+<!-- BEGIN-FEATURE: KMAC.ENDIANNESS.MESSAGE -->
 ### Message FIFO
 
 The KMAC HWIP has a compile-time configurable depth message FIFO inside.
 The message FIFO receives incoming message bitstream regardless of its byte position in a word.
+Data written to the message FIFO may be in either big or little endian order depending on the [`CFG_SHADOWED.msg_endianness`](registers.md#cfg_shadowed--msg_endianness) register value.
 Then it packs the partial message bytes into the internal 64 bit data width.
 After packing the data, the logic stores the data into the FIFO until the internal KMAC/SHA3 engine consumes the data.
 
+<!-- END-FEATURE: KMAC.ENDIANNESS.MESSAGE -->
 #### FIFO Depth calculation
 
 The depth of the message FIFO is chosen to cover the throughput of the software or other producers such as DMA engine.
@@ -184,10 +197,12 @@ This is useful when software interface compatibility between the masked and unma
 
 If the `EnMasking` parameter is set, the `SwKeyMasked` parameter has no effect: Software always provides the key in two shares.
 
+<!-- BEGIN-FEATURE: KMAC.ENDIANNESS.DIGEST -->
 ### Keccak State Access
 
 After the Keccak round completes the KMAC/SHA3 operation, the contents of the Keccak state contain the digest value.
 The software can access the 1600 bit of the Keccak state directly through the window of the KMAC/SHA3 register.
+The endianness of the Keccak state may be big or little, depending on the [`CFG_SHADOWED.state_endianness`](registers.md#cfg_shadowed--state_endianness) register configuration.
 
 If the compile-time parameter masking feature is enabled, the upper 256B of the window is the second share of the Keccak state.
 If not, the upper address space is zero value.
@@ -197,7 +212,9 @@ The Keccak state is valid after the sponge absorbing process is completed.
 While in an idle state or in the sponge absorbing stage, the value is zero.
 This ensures that the logic does not expose the secret key XORed with the keccak_f results of the prefix to the software.
 In addition to that, the KMAC/SHA3 blocks the software access to the Keccak state when it processes the request from KeyMgr for Key Derivation Function (KDF).
+<!-- END-FEATURE: KMAC.ENDIANNESS.DIGEST -->
 
+<!-- BEGIN-FEATURE: KMAC.KEY.SIDELOAD -->
 ### Application Interface
 
 ![](../doc/application-interface.svg)
@@ -256,6 +273,7 @@ After the encoded output length is pushed to the KMAC core, the interface logic 
 After hashing operation is completed, KMAC does not raise a `kmac_done` interrupt; rather it triggers the `done` status in the App response channel.
 The result digest always comes in two shares.
 If the `EnMasking` parameter is not set, the second share is always zero.
+<!-- END-FEATURE: KMAC.KEY.SIDELOAD -->
 
 #### ACC Interface Connection
 
@@ -274,6 +292,7 @@ The FIFO should only be read from when an AppIntf response is active for an ACC 
 FIFO writes are controlled by the state machine and should occur when the FIFO is ready with an available digest.
 The Keccak state should not change while digest words from the current permutation are still being packed/squeezed into the FIFO.
 
+<!-- BEGIN-FEATURE: KMAC.ENTROPY_MODES -->
 ### Entropy Generator
 
 This section explains the entropy generator inside the KMAC HWIP.
@@ -289,6 +308,7 @@ The module periodically refreshes the PRNG seed with fresh entropy from EDN.
 Software can explicitly request a complete reseed of the PRNG state from EDN through [`CMD.entropy_req`](registers.md#cmd).
 
 [edn]: ../../edn/README.md
+<!-- END-FEATURE: KMAC.ENTROPY_MODES -->
 
 ### Error Report
 

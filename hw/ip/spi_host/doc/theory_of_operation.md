@@ -7,6 +7,11 @@
     - [Block Diagrams](#block-diagrams)
 - [Appendices](#appendices)
 
+<!-- BEGIN-FEATURE: SPIHOST.USECASE.SERIALNORFLASH -->
+<!-- BEGIN-FEATURE: SPIHOST.RATE.STANDARD -->
+<!-- BEGIN-FEATURE: SPIHOST.RATE.DUAL -->
+<!-- BEGIN-FEATURE: SPIHOST.RATE.QUAD -->
+<!-- BEGIN-FEATURE: SPIHOST.CONFIG.CPOL -->
 # SPI Protocol Basics
 
 SPI is a source-synchronous serial interface, consisting of data lines (`SD[x]`), a clock (`SCK`), and an active-low chip select (`CS#`) per target device.
@@ -45,6 +50,11 @@ As well as supporting any combination of CPOL/CPHA, this IP also offers an addit
 For even faster transfer rates, some flash chips support double transfer rate (DTR) variations to the SPI protocol wherein the device receives and transmits fresh data on *both* the leading and trailing edge.
 This IP only supports single transfer rate (STR), *not* DTR.
 A preliminary investigation of DTR transfer mode suggests that proper support for setup and hold times in this mode may require a level of sub-cycle timing control which is not currently planned for this IP.
+<!-- END-FEATURE: SPIHOST.USECASE.SERIALNORFLASH -->
+<!-- END-FEATURE: SPIHOST.RATE.STANDARD -->
+<!-- END-FEATURE: SPIHOST.RATE.DUAL -->
+<!-- END-FEATURE: SPIHOST.RATE.QUAD -->
+<!-- END-FEATURE: SPIHOST.CONFIG.CPOL -->
 
 # API Details
 
@@ -223,6 +233,7 @@ The following sections give details on how the SPI_HOST IP can be used to contro
 For simplicity, this section describes how to interact one device, attached to `CSB[0]`, and as such references are made to the multi-registers [`CONFIGOPTS`](registers.md#configopts) and [`COMMAND`](registers.md#command).
 To configure timing and send commands to devices on other `CSB` lines, instead use the `CONFIGOPTS` multi-register corresponding to desired `CSB` line.
 
+<!-- BEGIN-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 #### Clock rate selection
 
 The SPI clock rate for each peripheral is set by two factors:
@@ -236,6 +247,7 @@ Since some peripheral devices attached to the same SPI_HOST IP may require diffe
 This is configured per-peripheral by setting the field [`CONFIGOPTS.CLKDIV`](#configopts--clkdiv).
 
 $$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}+1}$$
+<!-- END-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 
 #### Chip-select Timing Control
 
@@ -286,10 +298,12 @@ This time delay is a half `SCK` cycle by default but can be extended to as long 
 
 These settings are all minimum bounds, and delays in the FSM implementation may create more margin in each of these timing constraints.
 
+<!-- BEGIN-FEATURE: SPIHOST.CONFIG.CPOL -->
 #### Clock Phase and Polarity
 
 The most common differences between target devices are the requirements for a specific SPI clock polarity and phase, CPOL and CPHA, which were described in the previous section [SPI Protocol Basics](#spi-protocol-basics).
 These clock parameters can be set via the [`CONFIGOPTS.CPOL`](registers.md#configopts) or [`CONFIGOPTS.CPHA`](registers.md#configopts) register fields.
+<!-- END-FEATURE: SPIHOST.CONFIG.CPOL -->
 
 #### Full-Cycle Sampling
 
@@ -538,13 +552,14 @@ If such transactions ever occur, they trigger an "Invalid Access" error event, w
 The RX FIFO has no special provisions for packing received data in any unaligned fashion.
 Depending on the `ByteOrder` parameter, the first byte received is always packed into either the most- or least-significant byte read from the [`RXDATA`](registers.md#rxdata) memory window.
 
-
+<!-- BEGIN-FEATURE: SPIHOST.USECASE.PASSTHROUGH -->
 ## Pass-through Mode
 
 The SPI_HOST IP also supports a special "Pass-through" mode, which allows for the direct control of the serial interface by another block (namely SPI_DEVICE).
 This feature is entirely controlled by intermodule signals `passthrough_i` and `passthrough_o`, which control a set of multiplexers.
 If `passthrough_i.passthrough_en` is asserted the SPI_HOST peripheral bus signals reflect the corresponding signals in the `passthrough_i` structure.
 Otherwise, the peripheral signals are controlled by the SPI_HOST FSM and the internal shift register.
+<!-- END-FEATURE: SPIHOST.USECASE.PASSTHROUGH -->
 
 ## Interrupt Aggregation
 
@@ -553,6 +568,9 @@ Within these two interrupt classes, there are a number of conditions which can t
 
 Each interrupt class has a secondary status and mask register, to control which sub-classes of SPI events will cause an interrupt.
 
+<!-- BEGIN-FEATURE: SPIHOST.EVENT.WATERMARK -->
+<!-- BEGIN-FEATURE: SPIHOST.EVENT.FULL -->
+<!-- BEGIN-FEATURE: SPIHOST.EVENT.EMPTY -->
 ### SPI Events and Event Interrupts
 
 The SPI_HOST IP supports interrupts for the following SPI events:
@@ -578,6 +596,9 @@ They need to be enabled by writing to the corresponding field in [`EVENT_ENABLE`
 The SPI event interrupt is signaled only when the IP enters the corresponding state.
 For example if an interrupt is requested when the TX FIFO is empty, the IP will only generate one interrupt when the last data word is transmitted from the TX FIFO.
 In this case, no new interrupts will be created until more data has been added to the FIFO, and all of it has been transmitted.
+<!-- END-FEATURE: SPIHOST.EVENT.WATERMARK -->
+<!-- END-FEATURE: SPIHOST.EVENT.FULL -->
+<!-- END-FEATURE: SPIHOST.EVENT.EMPTY -->
 
 #### Stall Conditions
 
@@ -858,6 +879,7 @@ It also controls the timing of shift register operations, coordinating I/O on th
 
 This section describes the SPI_HOST FSM and its control of the `SCK` and `CSB` lines as well as its interactions with the Shift Register and the Command FIFO.
 
+<!-- BEGIN-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 ### Clock Divider
 
 The SPI_HOST FSM is driven by the rising edge of the input clock, however the FSM state registers are not *enabled* during every cycle.
@@ -884,6 +906,7 @@ $$T_\textrm{timeslice} = \frac{T_{\textrm{clk},\textrm{clk}}}{\texttt{clkdiv}+1}
  foot: { text: "The fsm_en signal is always high in idle states, to allow exit transitions at any time"}
 }
 ```
+<!-- END-FEATURE: SPIHOST.CONFIG.CLOCKDIV -->
 
 #### Other Internal Counters
 

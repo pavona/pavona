@@ -20,6 +20,7 @@
             '''
       stage: V1
       tests: ["sysrst_ctrl_smoke"]
+      features: []
     }
 
     {
@@ -34,6 +35,7 @@
             '''
       stage: V1
       tests: ["sysrst_ctrl_in_out_inverted"]
+      features: []
     }
 
     {
@@ -51,6 +53,7 @@
             '''
       stage: V1
       tests: ["sysrst_ctrl_combo_detect_ec_rst"]
+      features: []
     }
 
     {
@@ -68,6 +71,7 @@
             '''
       stage: V1
       tests: ["sysrst_ctrl_combo_detect_ec_rst_with_pre_cond"]
+      features: []
     }
 
     {
@@ -84,6 +88,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_combo_detect"]
+      features: []
     }
 
     {
@@ -104,6 +109,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_combo_detect_with_pre_cond"]
+      features: []
     }
 
     {
@@ -119,6 +125,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_auto_blk_key_output"]
+      features: []
     }
 
     {
@@ -133,6 +140,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_edge_detect"]
+      features: []
     }
 
     {
@@ -147,6 +155,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_pin_override_test"]
+      features: []
     }
 
     {
@@ -159,6 +168,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_pin_access_test"]
+      features: []
     }
 
     {
@@ -173,6 +183,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_ec_pwr_on_rst"]
+      features: []
     }
 
     {
@@ -188,6 +199,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_flash_wr_prot_out"]
+      features: []
     }
 
     {
@@ -204,6 +216,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_ultra_low_pwr"]
+      features: []
     }
 
     {
@@ -217,6 +230,7 @@
             '''
       stage: V2
       tests: ["sysrst_ctrl_feature_disable"]
+      features: []
     }
 
     {
@@ -229,6 +243,7 @@
       '''
       stage: V2
       tests: ["sysrst_ctrl_stress_all"]
+      features: []
     }
   ]
 

@@ -652,7 +652,7 @@
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_A",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
@@ -672,7 +672,7 @@
       swaccess: "rw1c",
       hwaccess: "hrw",
       fields: [
-        { bits: "0", name: "A", desc: "Cause bit ", resval: 0}
+        { bits: "0", name: "A", desc: "Cause bit", resval: 0}
       ],
       }
     },
@@ -748,7 +748,7 @@
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_LA",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
@@ -777,7 +777,7 @@
              // automatically.
              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
-        { bits: "0", name: "LA", desc: "Cause bit ", resval: 0}
+        { bits: "0", name: "LA", desc: "Cause bit", resval: 0}
       ]
       }
     },

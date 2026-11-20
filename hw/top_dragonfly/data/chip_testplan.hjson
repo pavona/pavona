@@ -12,62 +12,25 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson",
                      "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
-                     "hw/top_dragonfly/data/chip_conn_testplan.hjson"]
+                     "hw/top_dragonfly/data/chip_conn_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_ac_range_check_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_dma_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_mbx_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_rom_ctrl_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_rv_core_ibex_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_rv_dm_testplan.hjson"
+                     "hw/top_dragonfly/data/ip/chip_rv_timer_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_soc_proxy_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_spi_device_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_spi_host_testplan.hjson",
+                     "hw/top_dragonfly/data/ip/chip_uart_testplan.hjson"
+                     ]
 
   testpoints: [
     /////////////////////////////////////////////////////////////
     // IO Peripherals                                          //
     // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL, MBX //
     /////////////////////////////////////////////////////////////
-
-    // UART (pre-verified IP) integration tests:
-    {
-      name: chip_sw_uart_tx_rx
-      desc: '''Verify transmission of data over the TX and RX port.
-
-            SW test sends a known payload over the TX port. The testbench, at the same time
-            sends a known payload over RX. On reception, both payloads are checked for integrity.
-            SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
-            Choosing the max supported baud rate for the UART is sufficient.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx"]
-      tags: ["gls"]
-    }
-    {
-      name: chip_sw_uart_rx_overflow
-      desc: '''Verify the RX overflow interrupt.
-
-            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
-            ignores the received the data to allow the RX overflow interrupt to assert.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx"]
-    }
-    {
-      name: chip_sw_uart_rand_baudrate
-      desc: '''Verify UART transmission of data at various speeds.
-
-            Randomly pick one of the UART instances and configure it to run with any of these baud
-            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
-
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_rand_baudrate"]
-    }
-    {
-      name: chip_sw_uart_tx_rx_alt_clk_freq
-      desc: '''Verify the transmission of UART via using external clock as uart core clock.
-
-            Extend from chip_sw_uart_rand_baudrate with following added settings.
-            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
-            - Configure clkmgr to select external clock.
-            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
-              ext_clk_freq / 4 or ext_clk_freq / 2.
-            '''
-      stage: V1
-      tests: ["chip_sw_uart_tx_rx_alt_clk_freq"]
-    }
 
     // GPIO (pre-verified IP) integration tests:
     {
@@ -101,134 +64,6 @@
             '''
       stage: V1
       tests: ["chip_sw_gpio"]
-    }
-
-    // SPI_DEVICE (pre-verified IP) integration tests:
-    {
-      name: chip_sw_spi_device_flash_mode
-      desc: '''Verify the SPI device in flash mode.
-
-            - SW puts the SPI device in flash mode
-            - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
-            - SW verifies the integrity of the image upon reception by reading the spi_device
-              memory.
-            - Ensure the image is executed correctly
-            '''
-      stage: V2
-      tests: ["chip_sw_uart_tx_rx_bootstrap"]
-    }
-    {
-      name: chip_sw_spi_device_pass_through
-      desc: '''Verify the pass through mode from an end-to-end perspective.
-
-            - Configure the SPI device and host in pass through mode.
-            - Program the cmd_filter_* CSRs to filter out random commands.
-            - Configure and enable spi_host0
-            - Send a random flash commands over the SPI device interface (chip IOs) from the
-              testbench.
-            - Verify the flash commands which pass through spi_host0, are received on chip IOs.
-            - Verify that only the payloads that are not filtered show up on the SPI host interface
-              at chip IOs.
-            - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
-            - Run with single, dual and quad SPI modes.
-            - Testbench should test the following commands:
-            - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_pass_through"]
-    }
-
-    {
-      name: chip_sw_spi_device_pass_through_flash_model
-      desc: '''Verify the command filtering mechanism in passthrough mode.
-
-            - Extend the chip_spi_device_pass_through test.
-            - Connect with a real flash model on spi_host
-            - Verify that the flash commands are received and interpreted correctly in the flash
-              model
-            '''
-      stage: V3
-      tests: []
-    }
-
-    {
-      name: chip_sw_spi_device_pass_through_collision
-      desc: '''Verify the collisions on driving spi_host is handled properly.
-
-            - Enable upload related interrupts and configure the spi_device in passthrough mode.
-            - Configure a command slot to enable upload for a flash program/erase command.
-            - Execute two parallel threads:
-              1. SPI host agent.
-                - Send this command via an upstream SPI host agent, then the agent keeps sending
-                read_status to poll the busy bit.
-                - When the busy bit is low, issue a read command to read data from the downstream
-                  SPI port, and check data correctness.
-              2. A SW process.
-                - SW receives an upload interrupt and reads the command in the upload fifo to check.
-                - SW configures the SPI host that shows the same downstream port, to send the
-                  uploaded command to the downstream SPI port.
-                - SW clears busy bit to allow the upstream SPI host to proceed to the next command.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_pass_through_collision"]
-    }
-    {
-      name: chip_sw_spi_device_tpm
-      desc: '''Verify the basic operation of the spi tpm mode.
-
-            - The testbench sends a known payload over the chip's SPI device tpm input port.
-            - The testbench sends a read command.
-            - The software test should playback the data received in the write command as the read
-              response.
-            - The testbench should check if the written and read data match.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_device_tpm"]
-    }
-
-    {
-      name: chip_sw_spi_device_output_when_disabled_or_sleeping
-      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
-
-               SW needs to be able to set the SPI output value when spi_device is disabled or the
-               chip is sleeping, to either all-zeros or all-ones, depending on integration
-               requirements.  The following scenarios have to be verified:
-
-               After power-on reset:
-               - SW to configure pinmux retention logic so that the chip pins connected to
-                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
-                 choose between a and b).
-               - DV environment to check that SPI outputs match configuration by SW.
-
-               Going to sleep:
-               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
-                 as it would after POR, and put chip to sleep.
-               - DV environment to check that SPI outputs match configuration by SW.
-
-               Wake up from sleep:
-               - DV environment to wake chip from sleep.
-               - SW to enable spi_device and disable retention logic.
-               - DV environment to check that SPI transactions work as usual.
-             '''
-      stage: V3
-      tests: []
-    }
-
-    // SPI_HOST (pre-verified IP) integration tests:
-    {
-      name: chip_sw_spi_host_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI host port.
-
-            - Program the SPI host to send a known payload out of the chip on the SPI host ports.
-            - The testbench receives the payload and plays it back to the SPI host interface.
-            - The SW verifies the sent payload matches the read response and services SPI event
-              interrupts.
-            - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
-
-            Verify all SPI host instances in the chip.
-            '''
-      stage: V2
-      tests: ["chip_sw_spi_host_tx_rx"]
     }
 
     // I2C (pre-verified IP) integration tests:
@@ -362,22 +197,6 @@
       stage: V2
       tests: ["chip_sw_sleep_pin_retention"]
     }
-    {
-      name: chip_sw_mbx_smoke
-      desc: '''Verify the mailbox integrations with a basic smoketest
-
-            - Random-cyclically select a mailbox to perform a req-rsp transaction with
-            - TB(requester) writes a message into the imbx, then awaits a response
-            - sw(responder) awaits the request, reads it then replies with a modified version
-              of the original message
-            - TB checks if the received response is as-expected
-            - Requester randomly selects between an irq or polling-based handler
-            - Responder polls the peripheral to await transaction completed
-            - Repeat process for all mailboxes in the system
-            '''
-      stage: V2
-      tests: ["chip_sw_mbx_smoke"]
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // System Peripherals                                                               //
@@ -414,149 +233,6 @@
             '''
       stage: V2
       tests: ["chip_sw_data_integrity_escalation"]
-    }
-
-    // RV_DM (JTAG) tests:
-    {
-      name: chip_jtag_csr_rw
-      desc: '''
-            Verify accessibility of all the CSRs in the chip over JTAG.
-
-            - Shuffle the list of CSRs first to remove the effect of ordering.
-            - Write all CSRs via JTAG interface with a random value.
-            - Shuffle the list of CSRs yet again.
-            - Read all CSRs back and check their values for correctness while adhering to the CSR's
-              access policies.
-            - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
-            '''
-      stage: V2
-      tests: ["chip_jtag_csr_rw"]
-    }
-    {
-      name: chip_jtag_mem_access
-      desc: '''
-            Verify accessibility of all the memories in the chip over JTAG.
-
-            This test will target the following memories in the chip:
-              sram_main, sram_ret, acc i|dmem, ROM
-
-            - Shuffle the list of memories first to remove the effect of ordering.
-            - Write a location in a randomly chosen set of addresses within each memory via JTAG
-              interface with random values.
-            - For read-only memories, preload the memory with random data via backdoor.
-            - Shuffle the list of memories again.
-            - Read the previously written addresses in the memories back again and check the read
-              value for correctness. Pick some random addresses to verify in case of read-only
-              memories.
-            '''
-      stage: V2
-      tests: ["chip_jtag_mem_access"]
-    }
-    {
-      name: chip_rv_dm_perform_debug
-      desc: '''
-            - X-ref'ed with rom_e2e_jtag_inject from rom testplan.
-            - X-ref'ed with chip_sw_flash_lc_iso_part_sw_wr_en.
-            - X-ref'ed with manuf_cp_device_info_flash_wr from manufacturing testplan.
-            - Using the sram injection mechanism from rom_e2e_jtag_inject, load a SRAM program that
-              writes to isolated flash partition while the device is in TEST_UNLOCKED state.
-            - After writing, verify that the test program cannot read back the written value.
-
-            '''
-      stage: V3
-      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
-              "rom_e2e_jtag_debug_rma"]
-    }
-    {
-      name: chip_rv_dm_ndm_reset_req
-      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
-
-            - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
-            - Configure RV_DM to send NDM reset request to reset system reset tree.
-            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
-              accessed.
-            - Read the programmed CSRs / mem to ensure that everything under system reset tree is
-              reset to the original values, while values under life cycle reset will be preserved.
-            - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
-            '''
-      stage: V2
-      tests: ["chip_rv_dm_ndm_reset_req"]
-    }
-    {
-      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
-      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
-
-            - Initialize the DUT in a HW-debug enabled life cycle state.
-            - Activate the RISCV debug module.
-            - Run some SW test on the CPU.
-            - Initiate a CPU halt request via JTAG.
-            - Wait for the CPU to be in halted state via JTAG by polling dmstatus.anyhalted.
-            - Deassert the CPU haltreq and verify that we are still in halted state.
-            - (Optional) Using the abstract command, read the dcsr register to verify the cause
-              reflects the debug halt request.
-            - Issue an NDM reset request. All non-debug parts of the chip should reset. Read the
-              dmstatus.anyhalted / dvstatus.allhalted and verify that they are cleared.
-            - Verify that the debug logic is fully accessible during this time, while the NDM reset
-              is being processed and the chip is rebooted, by continuously accessing the DMI
-              register space in `rv_dm` over JTAG.
-            - De-assert the NDM reset request and wait for the CPU to reboot and finish the post-NDM
-              reset phase of the test.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
-    }
-    {
-      name: chip_rv_dm_access_after_wakeup
-      desc: '''Verify RV_DM works after wakes up from sleep.
-
-            - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
-            - If waking up from normal sleep, an activation should not be required for RV_DM CSR
-              accesses to work.
-            - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_dm_access_after_wakeup"]
-    }
-    {
-      name: chip_sw_rv_dm_access_after_hw_reset
-      desc: '''Verify RV_DM works after a watchdog or escalated reset.
-
-            - Access some RV_DM CSRs both before and after resets.
-            - An activation would be required, and the tap strap would also be sampled again.
-            '''
-      stage: V3
-      tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
-    }
-    {
-      name: chip_rv_dm_lc_disabled
-      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
-
-            - Put life cycle in a random life cycle state.
-            - Verify that the rv_dm bus device is inaccessible from the CPU as well as external
-              JTAG if the life cycle state is not in TEST_UNLOCKED*, DEV or RMA.
-            - The bus access check is performed by randomly reading or writing a CSR inside the
-              RV_DM and checking whether the TL-UL bus errors out.
-            - The JTAG access check is performed by writing and then reading a register that is
-              accessible via the TAP/DMI inside the RV_DM. If the JTAG wires are gated, it is
-              expected that the RV_DM returns all-zero instead of the written value.
-            - X-ref'ed with `chip_tap_strap_sampling`
-            '''
-      stage: V2
-      tests: ["chip_rv_dm_lc_disabled"]
-    }
-
-    // RV_TIMER (pre-verified IP) integration tests:
-    {
-      name: chip_sw_timer
-      desc: '''Verify the timeout interrupt assertion.
-
-            - Configure the RV_TIMER to generate interrupt after a set timeout.
-            - Issue a WFI to wait for the interrupt to trigger.
-            - Service the interrupt when it triggers; verify that it came from rv_timer.
-            - Verify that the interrupt triggered only after the timeout elapsed.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_timer_irq"]
     }
 
     // AON_TIMER (pre-verified IP) integration tests:
@@ -1949,45 +1625,6 @@
     // ROM_CTRL, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
     /////////////////////////////////////////////////////
 
-    // ROM_CTRL (pre-verified IP) integration tests:
-    {
-      name: chip_sw_rom_access
-      desc: '''Verify that the CPU can access the rom contents.
-
-            - Verify that the CPU can fetch instructions from the ROM.
-            '''
-      stage: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check"]
-    }
-    {
-      name: chip_sw_rom_ctrl_integrity_check
-      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
-
-            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
-              the ROM. Verify that we can successfully power up the chip in this case.
-            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
-              digest does not match the top 8 words of the ROM.
-            '''
-      stage: V2
-      tests: ["chip_sw_rom_ctrl_integrity_check"]
-    }
-    {
-      name: chip_sw_rom_ctrl_kmac_error
-      desc: '''
-            Verify the effect of KMAC reporting an error during ROM digest computation.
-
-            - Backdoor load a valid test ROM image and bring the DUT out of reset.
-            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
-              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
-              fault.
-            - Verify that KMAC returns an error signal to the ROM controller.
-            - Verify that the ROM controller itself transitions to invalid state and the chip is
-              effectively dead.
-            '''
-      stage: V3
-      tests: []
-    }
-
     // SRAM (pre-verified IP) integration tests:
     {
       name: chip_sw_sram_scrambled_access
@@ -2381,176 +2018,6 @@
       stage: V2
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
-
-    // soc_proxy tests:
-    {
-      name: chip_sw_soc_proxy_external_reset_requests
-      desc: '''Verify that external reset requests reset (parts of) OT.
-
-               - In DV env, trigger the external reset request.
-               - In DV env, ensure that the desired parts of OT get reset and the others don't.
-               - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
-           '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_smoketest"]
-    }
-    {
-      name: chip_sw_soc_proxy_external_irqs
-      desc: '''Verify that external IRQs are forwarded to the PLIC.
-
-               For each of the external IRQs:
-               - In DV env, trigger the external IRQ.
-               - In DV env, ensure that an internal wakeup is requested.
-               - In SW, ensure that the IRQ shows up in the respective *Interrupt Pending* register of the PLIC.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_smoketest"]
-    }
-    {
-      name: chip_sw_soc_proxy_external_wakeup_requests
-      desc: '''Verify that external wakeup requests are forwarded to Power Manager.
-
-               - In SW, enable the wakeup in Power Manager.
-               - In DV env, trigger the wakeup request.
-               - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_external_wakeup"]
-    }
-    {
-      name: chip_sw_soc_proxy_gpios
-      desc: '''Verify that GPI/Os of the SoC into/from OT are correctly connected to multiplexed I/Os.
-
-               For each of the general-purpose outputs of the SoC into OT
-               - In SW, configure Pinmux MIO such that the pin is externally observable.
-               - In DV env, toggle the pin.
-               - In DV env, ensure that the pattern shows up on the configured pin.
-
-               For each of the general-purpose inputs of the SoC from OT
-               - In SW, configure Pinmux MIO such that the pin is externally controllable.
-               - In DV env, toggle the pin.
-               - In DV env, ensure that the pattern shows up on the SoC input.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_gpios"]
-    }
-
-    //////////////////
-    // CPU          //
-    // RV_CORE_IBEX //
-    //////////////////
-
-    {
-      name: chip_sw_nmi_irq
-      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
-
-            Randomly use these two methods (simultaneously or choose one of them) to trigger the
-            NMI interrupt:
-            - Trigger the alert_handler escalation pair that maps to NMI.
-            - Trigger a watchdog bark.
-
-            Check rv_core_ibex's NMI interrupt register and clear the interrupt.
-            If the NMI interrupt is triggered by alert_handle and the `class_clr_regwen` register
-            is not locked, check that alert_handler can clear this NMI escalation stage. Then make
-            sure that the alert_handler won't move forward to the next escalation stage.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_core_ibex_nmi_irq"]
-    }
-    {
-      name: chip_sw_rv_core_ibex_rnd
-      desc: '''Verify the functionality of the random number generation CSRs.
-
-               - Enable entropy complex so `RND_DATA` can get entropy.
-               - Perform multiple reads from `RND_DATA` polling `RND_STATUS` in
-                 between to only read valid data. Check different random bits
-                 are provided each time and that the random data is never zero or all ones.
-               - Ensure `RND_STATUS` indicate invalid data immediately after
-                 `RND_DATA` read.
-               - Perform repeated reads from `RND_DATA` without `RND_STATUS`
-                 polling to check read when invalid doesn't block.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_core_ibex_rnd"]
-    }
-    {
-      name: chip_sw_rv_core_ibex_address_translation
-      desc: '''Verify the simple address translation functionality.
-
-               - Setup address translation for both slots on the I and D
-                 side and check correct translation for I and D accesses.
-               - Switch address translation to use different regions that
-                 overlap for both slots and check translation again. Ensure some
-                 test accesses match both regions, where the lowest indexed one
-                 takes priority.
-               - Turn off address translation and confirm regions are no longer
-                 being remapped.
-            '''
-      stage: V2
-      tests: ["chip_sw_rv_core_ibex_address_translation"]
-   }
-   {
-     name: chip_sw_rv_core_ibex_icache_scrambled_access
-     desc: '''Verify scrambled memory accesses to CPU icache.
-
-           - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
-             done by the test_rom startup code).
-           - Execute the `fence` instruction to invalidate the icache.
-           - Verify using probes, that this resulted in a new scrambling key fetched from the OTP
-             ctrl.
-           '''
-     stage: V2
-     tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
-   }
-   {
-      name: chip_sw_rv_core_ibex_fault_dump
-      desc: '''Verify the functionality of the ibex fault dump.
-
-               - Purposely create an ibex exception during execution through reads to an unmapped
-                 address.
-               - Ensure the rstmgr fault dump correctly captures the related addresses to the
-                 exception.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_cpu_info"]
-   }
-   {
-      name: chip_sw_rv_core_ibex_double_fault
-      desc: '''Verify the functionality of the ibex double fault dump.
-
-               - Purposely create an ibex double exception during execution, by performing an
-                 unmapped read and in the exception handler perform another unmapped read.
-               - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates
-                 the previous dump is valid.
-            '''
-      stage: V2
-      tests: ["chip_sw_rstmgr_cpu_info"]
-   }
-   {
-    name: chip_sw_rv_core_ibex_lockstep_glitch
-    desc: '''Verify lockstep checking of the Ibex core.
-
-             Ensure suitable alerts are triggered when:
-             - Outputs from the lockstep or the main core are corrupted.
-             - Inputs into the lockstep core are corrupted.
-          '''
-    stage: V2S
-    tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
-   }
-   {
-     name: chip_sw_rv_core_ibex_alerts
-     desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
-
-            Inject faults in the following areas and verify the alert is fired leading to an
-            escalation.
-
-            - Bus integrity error on the data and instruction TL interface (on the response channel)
-            - PC mismatch fault
-            - ECC error in the register file
-           '''
-      stage: V3
-      tests: []
-   }
 
     ////////////////////////////
     // System level scenarios //

@@ -30,6 +30,7 @@
             '''
       stage: V1
       tests: ["adc_ctrl_smoke"]
+      features: []
     }
     {
       name: filters_polled
@@ -51,6 +52,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_polled"]
+      features: []
     }
     {
       name: filters_polled_fixed
@@ -59,6 +61,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_polled_fixed"]
+      features: []
     }
     {
       name: filters_interrupt
@@ -81,6 +84,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_interrupt"]
+      features: []
     }
     {
       name: filters_interrupt_fixed
@@ -89,6 +93,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_interrupt_fixed"]
+      features: []
     }
     {
       name: filters_wakeup
@@ -109,6 +114,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_wakeup"]
+      features: []
     }
     {
       name: filters_wakeup_fixed
@@ -117,6 +123,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_wakeup_fixed"]
+      features: []
     }
     {
       name: filters_both
@@ -139,6 +146,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_filters_both"]
+      features: []
     }
     {
       name: clock_gating
@@ -164,6 +172,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_clock_gating"]
+      features: []
     }
     {
       name: poweron_counter
@@ -183,6 +192,7 @@
           '''
       stage: V2
       tests: ["adc_ctrl_poweron_counter"]
+      features: []
     }
     {
       name: lowpower_counter
@@ -202,6 +212,7 @@
         '''
       stage: V2
       tests: ["adc_ctrl_lowpower_counter"]
+      features: []
     }
     {
       name: fsm_reset
@@ -222,6 +233,7 @@
         '''
       stage: V2
       tests: ["adc_ctrl_fsm_reset"]
+      features: []
     }
 
     {
@@ -237,6 +249,7 @@
       '''
       stage: V2
       tests: ["adc_ctrl_stress_all"]
+      features: []
     }
 
   ]

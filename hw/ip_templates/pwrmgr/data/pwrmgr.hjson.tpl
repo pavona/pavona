@@ -75,6 +75,7 @@
             low power mode.
             '''
     }
+% if 'usb' in src_clks:
     { name: "PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER",
       desc: '''Controls whether the USB clock remains active in
             low power mode.
@@ -83,6 +84,7 @@
     { name: "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE",
       desc: "Controls whether the USB clock is enabled in active state."
     }
+% endif
     { name: "PWRMGR.LOW_POWER.ENTRY",
       desc: '''Controls of low power entry, and cases when low power is
             not entered due to interrupts or specific units getting busy.
@@ -93,36 +95,20 @@
             in low power.
             '''
     }
-% for wkup in Wkups:
-<%
-  wakeup_name = wkup["module"].upper() + "_" + wkup["name"].upper()
-%>\
-    { name: "PWRMGR.LOW_POWER.${wakeup_name}_WAKEUP_ENABLE"
-      desc: "Enable wakeup request ${wkup["name"]} from ${wkup["module"]}."
+    { name: "PWRMGR.LOW_POWER.WAKEUP"
+      desc: '''Power manager can enable/disable wakeup requests from various modules
+            in low power mode.
+            '''
     }
-    { name: "PWRMGR.LOW_POWER.${wakeup_name}_WAKEUP_REQUEST"
-      desc: "Wakeup request ${wkup["name"]} from ${wkup["module"]}."
-    }
-% endfor
     { name: "PWRMGR.LOW_POWER.WAKE_INFO"
       desc: "Record what caused the chip to wakeup from low power."
     }
     { name: "PWRMGR.RESET.CHECK_ROM_INTEGRITY",
       desc: "Wait for successful completion of ROM integrity checks."
     }
-% for reset in rst_reqs["peripheral"]:
-<%
-  description = reset["desc"]
-  reset_name = reset["module"].upper() + "_" + reset["name"].upper()
-  description = description[:1].upper() + description[1:].rstrip(".")
-%>\
-    { name: "PWRMGR.RESET.${reset_name}_ENABLE",
-      desc: "Enable reset request from ${reset["module"]}."
+    { name: "PWRMGR.RESET.REQUEST",
+      desc: "Power manager can enable/disable reset requests from various modules"
     }
-    { name: "PWRMGR.RESET.${reset_name}_REQUEST",
-      desc: "Reset request from ${reset["module"]}."
-    }
-% endfor
     { name: "PWRMGR.RESET.ESCALATION_REQUEST",
       desc: "Trigger reset in response to incoming escalation requests."
     }

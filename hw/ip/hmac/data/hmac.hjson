@@ -162,6 +162,11 @@
       name: "HMAC.SECURE_WIPE",
       desc: "Wipe of internal state and secret key with constant value provided by software."
     }
+    {
+      name: "HMAC.STREAM_MODE",
+      desc: '''HMAC block can stream 6 SHA-2/HMAC operations in parallel
+            '''
+    }
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY",

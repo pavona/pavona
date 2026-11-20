@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
+all_srcs = get_all_srcs(src_clks, derived_clks)
+rg_srcs = get_rg_srcs(typed_clocks)
+%>
 {
   name: "clkmgr"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
@@ -44,6 +49,7 @@
             '''
       stage: V1
       tests: ["clkmgr_smoke"]
+      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE", "CLKMGR.ENABLE.PERIPH_CLK", "CLKMGR.HINT.TRANS_CLK"]
     }
     {
       name: peri_enables
@@ -67,6 +73,7 @@
             '''
       stage: V2
       tests: ["clkmgr_peri"]
+      features: ["CLKMGR.ENABLE.PERIPH_CLK"]
     }
     {
       name: trans_enables
@@ -91,6 +98,7 @@
             '''
       stage: V2
       tests: ["clkmgr_trans"]
+      features: ["CLKMGR.HINT.TRANS_CLK"]
     }
   % if ext_clk_bypass:
     {
@@ -144,6 +152,7 @@
             '''
       stage: V2
       tests: ["clkmgr_extclk"]
+      features: ["CLKMGR.LC_EXTCLK.SPEED", "CLKMGR.SW_EXTCLK.REGWEN", "CLKMGR.SW_EXTCLK.HIGH_SPEED", "CLKMGR.SW_EXTCLK.LOW_SPEED"]
     }
   % endif
     {
@@ -163,6 +172,7 @@
             '''
       stage: V2
       tests: ["clkmgr_clk_status"]
+      features: []
     }
     {
       name: jitter
@@ -182,6 +192,7 @@
             '''
       stage: V2
       tests: ["clkmgr_smoke"]
+      features: ["CLKMGR.JITTER.REGWEN", "CLKMGR.JITTER.ENABLE"]
     }
     {
       name: frequency
@@ -211,6 +222,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.RG_SRC"]
     }
     {
       name: frequency_timeout
@@ -230,6 +242,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency_timeout"]
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.MEAS_CTRL.RECOV_ERR", "CLKMGR.MEAS_CTRL.RG_SRC"]
     }
     {
       name: frequency_overflow
@@ -248,6 +261,7 @@
             '''
       stage: V2
       tests: ["clkmgr_frequency"]
+      features: []
     }
     {
       name: regwen
@@ -266,6 +280,11 @@
             '''
       stage: V3
       tests: ["clkmgr_regwen"]
+      % if ext_clk_bypass:
+      features: ["CLKMGR.MEAS_CTRL.REGWEN", "CLKMGR.SW_EXTCLK.REGWEN"]
+      % else:
+      features: ["CLKMGR.MEAS_CTRL.REGWEN"]
+      % endif                 
     }
     {
       name: stress_all
@@ -283,6 +302,7 @@
             '''
       stage: V2
       tests: ["clkmgr_stress_all"]
+      features: []
     }
   ]
 

@@ -259,20 +259,28 @@
       desc: '''
         ACC implements a custom ISA based on RV32I. It is split into base (32-bit) and bignum
         (256-bit) parts. There is a separate register file for each.
-      ''',
+      '''
+    },
+    {
       name: "ACC.RANDOM"
       desc: '''
         ACC has a connection to the EDN allowing it to receive 256-bits of entropy.
       '''
+    },
+    {
       name: "ACC.KEYMGR"
       desc: '''
         ACC has a connection to the keymgr and it can receive key material from it.
       '''
+    },
+    {
       name: "ACC.SECUREWIPE"
       desc: '''
         ACC has a secure wipe facility that can target the internal state as well as the
         instruction and data memories.
       '''
+    },
+    {
       name: "ACC.MEM_SCRAMBLE"
       desc: '''
         ACC scrambles its instruction and data memories using keys received from OTP.

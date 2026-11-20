@@ -417,6 +417,94 @@
       expose:  "true"
     },
   ],
+  features: [
+    { name: "PINMUX.MIO.INSEL"
+      desc: '''Signals sent to peripherals can be configurably tied to any MIO port or to a constant
+            value (0 or 1). If the selected MIO port index is invalid, the output value should be 0.
+            MIO-to-peripheral communication is disabled if JTAG is enabled or in sleep mode.
+            '''
+    }
+    { name: "PINMUX.MIO.OUTSEL"
+      desc: '''Signals sent to MIO can be configurably tied to any peripheral with available
+            connections, to a constant value (0 or 1), or to high impedance. If the selected
+            peripheral index is invalid, the output value should be 0. Peripheral-to-MIO
+            communication is disabled if JTAG is enabled or in sleep mode.
+            '''
+    }
+    { name: "PINMUX.MIO.EN"
+      desc: '''Outputs to MIO can be accopanied by an output-enable signal, which is appropriately
+            high or low based on the output value. Output-enable is appropriately high or low
+            depending on whether or not in sleep mode or JTAG, depending on the output-enable signal
+            coming from the peripheral, and depending on if output should be high-Z.
+            '''
+    }
+    { name: "PINMUX.MIO.ATTRS"
+      desc: '''Pinmux keeps track of impementation-specific MIO pad attributes. Attributes are
+            configured differently when JTAG is used because JTAG uses MIO pads.
+            '''
+    }
+    { name: "PINMUX.MIO.MUX"
+      desc: '''Signals are correctly routed between any MIO port and any peripheral.
+            '''
+    }
+    { name: "PINMUX.DIO.EN"
+      desc: '''Signals from peripherals to DIO can be accompanied by an output-enable signal. The
+            output-enable is appropriately low or high depending on whether in sleep mode and
+            depending on the output-enable signal coming from the peripheral.
+            '''
+    }
+    { name: "PINMUX.DIO.ATTRS"
+      desc: '''Pinmux keeps track of implementation-specific DIO pad attributes.
+            '''
+    }
+    { name: "PINMUX.DIO.CONNECTED"
+      desc: '''DIO ports are directly connected to a given peripheral port. Communication between
+            peripheral and DIO is disabled when in sleep mode.
+            '''
+    }
+    { name: "PINMUX.JTAG.LC"
+      desc: '''Configuration allows selection of JTAG life cycle TAP strap group. JTAG communication
+            takes precedence over peripheral-MIO communication.
+            '''
+    }
+    { name: "PINMUX.JTAG.RV"
+      desc: '''Configuration allows selection of JTAG RISC-V TAP strap group. JTAG communication
+            takes precedence over peripheral-MIO communication.
+            '''
+    }
+    { name: "PINMUX.JTAG.DFT"
+      desc: '''Configuration allows selection of JTAG design-for-test TAP strap group. JTAG
+            communication takes precedence over peripheral-MIO communication.
+            '''
+    }
+    { name: "PINMUX.JTAG.SCANMODE"
+      desc: '''If scanmode is enabled, JTAG `trst_ni` comes from internal reset signal; else, JTAG
+            reset matches `trst_ni` from MIO.
+            '''
+    }
+    { name: "PINMUX.WKUP.MODE"
+      desc: '''Wakeup detector can be configured to trigger on rising edge, falling edge, positive
+            pulse cycles, or negative pulse cycles.
+            '''
+    }
+    { name: "PINMUX.WKUP.CAUSE"
+      desc: '''Wakeup may be triggered by any one of the configured debounced-signal patterns.
+            '''
+    }
+    { name: "PINMUX.SLEEP.MODE"
+      desc: '''All MIO/DIO outputs are held at proper values during sleep mode. Sleep mode can be
+            configured to drive pads to 0, 1, high-Z, or stable.
+            '''
+    }
+    { name: "PINMUX.SLEEP.STABLE"
+      desc: '''All sleep mode values are held until sleep mode is cleared with a write from TL-UL.
+            '''
+    }
+    { name: "PINMUX.USB_CONNECTION"
+      desc: '''Pinmux suports connectivity with USB module.
+            '''
+    }
+  ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."

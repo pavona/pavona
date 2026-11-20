@@ -23,6 +23,7 @@
             '''
       stage: V1
       tests: ["flash_ctrl_smoke"]
+      features: []
     }
     {
       name: smoke_hw
@@ -33,6 +34,7 @@
             '''
       stage: V1
       tests: ["flash_ctrl_smoke_hw"]
+      features: []
     }
     {
       name: sw_op
@@ -43,6 +45,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_sw_op"]
+      features: []
     }
     {
       name: host_read_direct
@@ -53,6 +56,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_host_dir_rd"]
+      features: []
     }
     {
       name: rma_hw_if
@@ -62,6 +66,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset", "flash_ctrl_lcmgr_intg"]
+      features: []
     }
     {
       name: host_controller_arb
@@ -74,6 +79,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_host_ctrl_arb"]
+      features: []
     }
     {
       name: erase_suspend
@@ -85,6 +91,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_erase_suspend"]
+      features: []
     }
     {
       name: program_reset
@@ -94,6 +101,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_prog_reset"]
+      features: []
     }
     {
       name: full_memory_access
@@ -104,6 +112,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_full_mem_access"]
+      features: []
     }
     {
       name: rd_buff_eviction
@@ -115,6 +124,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_rd_buff_evict"]
+      features: []
     }
     {
       name: rd_buff_eviction_w_ecc
@@ -125,6 +135,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_rw_evict", "flash_ctrl_re_evict", "flash_ctrl_rw_evict_all_en"]
+      features: []
     }
     {
       name: host_arb
@@ -137,6 +148,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_phy_arb"]
+      features: []
     }
     {
       name: host_interleave
@@ -149,6 +161,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_phy_arb"]
+      features: []
     }
     {
       name: memory_protection
@@ -160,6 +173,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_mp_regions"]
+      features: []
     }
     {
       name: fetch_code
@@ -170,6 +184,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_fetch_code"]
+      features: []
     }
     {
       name: all_partitions
@@ -179,6 +194,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_rand_ops"]
+      features: []
     }
     {
       name: error_mp
@@ -188,6 +204,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_error_mp"]
+      features: []
     }
     {
       name: error_prog_win
@@ -197,6 +214,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_error_prog_win"]
+      features: []
     }
     {
       name: error_prog_type
@@ -206,6 +224,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_error_prog_type"]
+      features: []
     }
     {
       name: error_read_seed
@@ -215,6 +234,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_hw_read_seed_err"]
+      features: []
     }
     {
       name: read_write_overflow
@@ -232,6 +252,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_oversize_error"]
+      features: []
     }
     {
       name: flash_ctrl_disable
@@ -242,6 +263,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_disable"]
+      features: []
     }
     {
       name: flash_ctrl_connect
@@ -251,6 +273,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_connect"]
+      features: []
     }
     {
       name: stress_all
@@ -260,6 +283,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_stress_all"]
+      features: []
     }
     {
       name: secret_partition
@@ -271,6 +295,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_hw_sec_otp", "flash_ctrl_otp_reset"]
+      features: []
     }
     {
       name: isolation_partition
@@ -281,6 +306,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_hw_rma"]
+      features: []
     }
     {
       name: interrupts
@@ -291,6 +317,7 @@
       stage: V2
       tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr",
               "flash_ctrl_intr_rd_slow_flash", "flash_ctrl_intr_wr_slow_flash"]
+      features: []
     }
     {
       name: invalid_op
@@ -300,6 +327,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_invalid_op"]
+      features: []
     }
     {
       name: mid_op_rst
@@ -309,6 +337,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_mid_op_rst"]
+      features: []
     }
     {
       name: double_bit_err
@@ -323,6 +352,7 @@
       stage: V2
       tests: ["flash_ctrl_read_word_sweep_derr", "flash_ctrl_ro_derr",
               "flash_ctrl_rw_derr", "flash_ctrl_derr_detect", "flash_ctrl_integrity"]
+      features: []
     }
     {
       name: single_bit_err
@@ -334,6 +364,7 @@
       stage: V2
       tests: ["flash_ctrl_read_word_sweep_serr",
               "flash_ctrl_ro_serr", "flash_ctrl_rw_serr"]
+      features: []
     }
     {
       name: singlebit_err_counter
@@ -345,6 +376,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_serr_counter"]
+      features: []
     }
     {
       name: singlebit_err_address
@@ -356,6 +388,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_serr_address"]
+      features: []
     }
     {
       name: scramble
@@ -370,6 +403,7 @@
       stage: V2
       tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw",
               "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep"]
+      features: []
     }
     {
       name: filesystem_support
@@ -386,6 +420,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_fs_sup"]
+      features: []
     }
     {
       name: rma_write_process_error
@@ -398,6 +433,7 @@
             '''
       stage: V2
       tests: ["flash_ctrl_rma_err", "flash_ctrl_hw_prog_rma_wipe_err"]
+      features: []
     }
     {
       name: asymmetric_read_path
@@ -409,6 +445,7 @@
             '''
       stage: V3
       tests: ["flash_ctrl_rd_ooo"]
+      features: []
     }
   ]
 

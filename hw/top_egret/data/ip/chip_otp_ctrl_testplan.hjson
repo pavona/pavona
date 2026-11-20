@@ -184,6 +184,7 @@
       lc_states: ["TEST_UNLOCKED", "RMA"]
       tests: ["chip_prim_tl_access"]
       bazel: []
+      features: []
     }
     {
       name: chip_sw_otp_ctrl_vendor_test_csr_access

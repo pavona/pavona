@@ -38,6 +38,7 @@
             '''
       stage: V1
       tests: ["keymgr_smoke"]
+      features: []
     }
     {
       name: random
@@ -57,6 +58,7 @@
             '''
       stage: V1
       tests: ["keymgr_random"]
+      features: []
     }
     {
       name: cfgen_during_op
@@ -69,6 +71,7 @@
             '''
       stage: V2
       tests: ["keymgr_cfg_regwen"]
+      features: []
     }
     {
       name: sideload
@@ -86,6 +89,7 @@
       stage: V2
       tests: ["keymgr_sideload", "keymgr_sideload_kmac",
               "keymgr_sideload_aes", "keymgr_sideload_acc"]
+              features: []
     }
     {
       name: direct_to_disabled_state
@@ -95,6 +99,7 @@
             '''
       stage: V2
       tests: ["keymgr_direct_to_disabled"]
+      features: []
     }
     {
       name: lc_disable
@@ -113,6 +118,7 @@
             '''
       stage: V2
       tests: ["keymgr_lc_disable"]
+      features: []
     }
     {
       name: kmac_error_response
@@ -129,6 +135,7 @@
             '''
       stage: V2
       tests: ["keymgr_kmac_rsp_err"]
+      features: []
     }
     {
       name: invalid_sw_input
@@ -146,6 +153,7 @@
             '''
       stage: V2
       tests: ["keymgr_sw_invalid_input"]
+      features: []
     }
     {
       name: invalid_hw_input
@@ -164,6 +172,7 @@
             '''
       stage: V2
       tests: ["keymgr_hwsw_invalid_input"]
+      features: []
     }
     {
       name: sync_async_fault_cross
@@ -182,6 +191,7 @@
             '''
       stage: V2
       tests: ["keymgr_sync_async_fault_cross"]
+      features: []
     }
     {
       name: stress_all
@@ -192,6 +202,7 @@
             '''
       stage: V2
       tests: ["keymgr_stress_all"]
+      features: []
     }
     {
       name: sec_cm_additional_check
@@ -207,6 +218,7 @@
             '''
       stage: V2S
       tests: ["keymgr_sec_cm"]
+      features: []
     }
   ]
   covergroups: [

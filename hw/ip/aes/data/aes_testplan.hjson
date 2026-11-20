@@ -23,6 +23,7 @@
            Basic hello world,  encrypt a plain text read it back - decrypt and compare to input.'''
       stage: V1
       tests: ["aes_wake_up"]
+      features: ["AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256", "AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.OFB", "AES.MODE.CTR", "AES.MODE.CFB-128", "AES.MANUAL_OPERATION"]
     }
     {
       name: smoke
@@ -30,6 +31,7 @@
            Encrypt a plain text read it back - decrypt and compare to input but use reference model to compare after both encryption and decryption.'''
       stage: V1
       tests: ["aes_smoke"]
+      features: ["AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256", "AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.OFB", "AES.MODE.CTR", "AES.MODE.CFB-128", "AES.MANUAL_OPERATION"]
     }
     {
       name: algorithm
@@ -37,6 +39,7 @@
            Compare cypher text from DUT with the output of a C model using same key and data.'''
            stage: V2
       tests: ["aes_smoke", "aes_stress", "aes_config_error"]
+      features: ["AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256", "AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.OFB", "AES.MODE.CTR", "AES.MODE.CFB-128", "AES.MANUAL_OPERATION"]
     }
     {
       name: key_length
@@ -44,6 +47,7 @@
            Randomly select key length to verify all supported key lengths are working.'''
            stage: V2
       tests: ["aes_stress", "aes_smoke", "aes_config_error"]
+      features: ["AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256", "AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.OFB", "AES.MODE.CTR", "AES.MODE.CFB-128", "AES.MANUAL_OPERATION"]
     }
     {
       name: back2back
@@ -52,6 +56,7 @@
            But Back2back verifies that DUT can handle back to back data blocks and other spacings.'''
       stage: V2
       tests: ["aes_b2b", "aes_stress"]
+      features: []
     }
     {
       name: backpressure
@@ -59,6 +64,7 @@
         Try to write data to registers without offloading the DUT output to verify Stall functionality.'''
         stage: V2
       tests: ["aes_stress"]
+      features: ["AES.STATUS.STALL", "AES.MANUAL_OPERATION"]
     }
     {
       name: multi_message
@@ -67,6 +73,7 @@
         Each message should select its mode randomly.'''
       stage: V2
       tests: ["aes_stress", "aes_smoke", "aes_config_error", "aes_alert_reset"]
+      features: ["AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256", "AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.OFB", "AES.MODE.CTR", "AES.MODE.CFB-128"]
     }
     {
       name: failure_test
@@ -80,6 +87,7 @@
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
       stage: V2
       tests: ["aes_config_error", "aes_alert_reset", "aes_man_cfg_err"]
+      features: []
     }
     {
       name: trigger_clear_test
@@ -88,6 +96,7 @@
             Example of a cornercases clearing data input or data output before the data is consumed or the DUT finishes an operation.'''
       stage: V2
       tests: ["aes_clear"]
+      features: ["AES.CLEAR.DATA_OUT", "AES.CLEAR.KEY_IV_DATA_IN", "AES.MANUAL_OPERATION"]
     }
     {
       name: nist_test_vectors
@@ -95,14 +104,7 @@
             Verify that the DUT handles the NIST test vectors correctly.'''
       stage: V2
       tests: ["aes_nist_vectors"]
-    }
-    {
-      name: nist_test_vectors_gcm
-      desc: '''
-            Verify that the DUT handles the NIST GCM test vectors correctly.'''
-      stage: V2
-      tags: ["gcm"]
-      tests: ["aes_nist_vectors_gcm"]
+      features: []
     }
     {
       name: reset_recovery
@@ -110,6 +112,7 @@
             Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
       stage: V2
       tests: ["aes_alert_reset"]
+      features: []
     }
     {
       name: stress
@@ -117,6 +120,7 @@
             This will combine the other individual testpoints to ensure we stress test everything across the board.'''
       stage: V2
       tests: ["aes_stress"]
+      features: []
     }
     {
       name: sideload
@@ -125,6 +129,7 @@
             and that it ignores any valid on the bus when disabled.'''
       stage: V2
       tests: ["aes_stress", "aes_sideload"]
+      features: ["AES.KEY.SIDELOAD", "AES.MANUAL_OPERATION"]
     }
     {
       name: deinitialization
@@ -132,6 +137,7 @@
             Make sure that there is no residual data from latest operation. '''
       stage: V2
       tests: ["aes_deinit"]
+      features: []
     }
     {
       name: stress_all
@@ -140,16 +146,7 @@
             '''
       stage: V2
       tests: ["aes_stress_all"]
-    }
-    {
-      name: gcm_save_and_restore
-      desc: '''
-            Verify that saving and restoring contexts in GCM works correctly.
-            When triggered, save the current context, clear the entire state, restore the context, and proceed with the operation.
-            '''
-      stage: V2
-      tags: ["gcm"]
-      tests: ["aes_gcm_save_restore"]
+      features: []
     }
     {
       name: reseeding
@@ -162,14 +159,16 @@
             '''
       stage: V2S
       tests: ["aes_reseed"]
+      features: ["AES.PRNG.RESEED_RATE", "AES.PRNG.KEY_TOUCH_FORCES_RESEED", "AES.PRNG.FORCE_MASKS", "AES.MANUAL_OPERATION"]
     }
     {
       name:fault_inject
       desc: '''
             Verify that injecting bit errors in one of the state machines or the round counter triggers an error '''
       stage: V2S
-        tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi",
-                "aes_control_fi_walk", "aes_cipher_fi_walk", "aes_core_fi_walk"]
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi",
+              "aes_control_fi_walk", "aes_cipher_fi_walk", "aes_core_fi_walk"]
+      features: []
     }
   ]
 
@@ -198,28 +197,6 @@ covergroups: [
            - manual operation
 
            All valid combinations of these will be crossed.
-           '''
-    }
-    {
-     name: ctrl_gcm_reg_cg
-     desc: '''
-           Covers that all valid settings have been tested.
-           Further more it covers that also illegal values have been tested.
-           Individual control settings that are covered include:
-           - phase (all phases including illegal values)
-           - restore after init
-           - save after aad/text
-           '''
-    }
-    {
-     name: gcm_len_cg
-     desc: '''
-           Covers that, when in AES-GCM mode, different sized AAD and TEXT blocks have
-           been tested. This includes:
-           - enc / dec
-           - zero sized AAD block
-           - Full and partial AAD / TEXT blocks
-           - Single and multiple AAD / TEXT blocks
            '''
     }
     {

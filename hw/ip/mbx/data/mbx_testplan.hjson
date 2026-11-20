@@ -26,6 +26,7 @@
             '''
       stage: V1
       tests: ["mbx_smoke"]
+      features: ["MBX.INBOUND", "MBX.OUTBOUND"]
     }
     { name: mbx_stress
       desc: '''
@@ -38,6 +39,7 @@
             '''
       stage: V2
       tests: ["mbx_stress"]
+      features: ["MBX.INBOUND", "MBX.OUTBOUND", "MBX.ABORT"]
     }
     {
       name: mbx_max_activity
@@ -49,6 +51,7 @@
             '''
       stage: V2
       tests: ["mbx_stress_zero_delays"]
+      features: ["MBX.INBOUND", "MBX.OUTBOUND", "MBX.ABORT"]
     }
     { name: mbx_stress_all
       desc: '''
@@ -56,6 +59,7 @@
             '''
       stage: V2
       tests: ["mbx_stress_all"]
+      features: ["MBX.INBOUND", "MBX.OUTBOUND", "MBX.ABORT"]
     }
     { name: mbx_imbx_oob
       desc: '''
@@ -63,6 +67,7 @@
             '''
       stage: V2
       tests: ["mbx_imbx_oob"]
+      features: ["MBX.INBOUND", "MBX.ADDRESS_RANGE"]
     }
     { name: mbx_range_lock
       desc: '''
@@ -76,6 +81,7 @@
             '''
       stage: V2
       tests: [""]
+      features: ["MBX.ADDRESS_RANGE"]
     }
     { name: mbx_doe_intr_msg
       desc: '''
@@ -88,6 +94,7 @@
             '''
       stage: V2
       tests: ["mbx_doe_intr_msg"]
+      features: []
     }
   ]
 }
