@@ -11,7 +11,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import acvp_common, load_vector_set, report_skipped
+from acvp_util import acvp_common, load_vector_set
 
 # Longest key and message, in bytes, the cryptotest firmware accepts.
 HMAC_CMD_MAX_KEY_BYTES = 512
@@ -33,21 +33,19 @@ def apply_expected(test_vectors, path):
             vector["result"] = True
 
 
-def parse_hmac(data, skip_unsupported):
+def parse_hmac(data):
     """Parse an HMAC prompt."""
     if data["revision"] != "2.0":
         raise SystemExit("parse_hmac: only revision 2.0 is implemented")
     test_vectors = []
-    skipped_key = 0
-    skipped_msg = 0
     for group in data["testGroups"]:
         for test in group["tests"]:
             if test["keyLen"] > HMAC_CMD_MAX_KEY_BYTES * 8:
-                skipped_key += 1
-                continue
+                raise SystemExit(f"parse_hmac: keys longer than {HMAC_CMD_MAX_KEY_BYTES} bytes are "
+                                 "not implemented")
             if test["msgLen"] > HMAC_CMD_MAX_MESSAGE_BYTES * 8:
-                skipped_msg += 1
-                continue
+                raise SystemExit(f"parse_hmac: messages longer than {HMAC_CMD_MAX_MESSAGE_BYTES} "
+                                 "bytes are not implemented")
             test_vectors.append({
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
@@ -55,12 +53,6 @@ def parse_hmac(data, skip_unsupported):
                 "message": list(bytes.fromhex(test["msg"])[:test["msgLen"] // 8]),
                 "mac_len": test["macLen"] // 8,
             })
-    report_skipped("parse_hmac", {
-        f"keys longer than {HMAC_CMD_MAX_KEY_BYTES} bytes are not implemented":
-            skipped_key,
-        f"messages longer than {HMAC_CMD_MAX_MESSAGE_BYTES} bytes are not "
-        "implemented": skipped_msg,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -95,16 +87,10 @@ def main() -> int:
         required=True,
         help="Type of test vectors to parse.",
     )
-    parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer instead of "
-        "failing on the first one.",
-    )
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    test_vectors = parse_hmac(raw_data, args.skip_unsupported)
+    test_vectors = parse_hmac(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:

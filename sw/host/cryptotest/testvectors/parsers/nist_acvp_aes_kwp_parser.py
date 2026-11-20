@@ -24,7 +24,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import acvp_common, load_vector_set, report_skipped
+from acvp_util import acvp_common, load_vector_set
 
 # Shortest payload, in bits, the cryptolib wraps.
 MIN_PAYLOAD_LEN = 72
@@ -53,19 +53,15 @@ def apply_expected(test_vectors, path):
             vector["result"] = answer["testPassed"]
 
 
-def parse_kwp(data, skip_unsupported):
+def parse_kwp(data):
     """Parse an ACVP-AES-KWP prompt.
     Response: ct when wrapping; pt, or testPassed false, when unwrapping."""
     test_vectors = []
-    skipped_inverse = 0
-    skipped_short = 0
     for group in data["testGroups"]:
         if group["kwCipher"] != "cipher":
-            skipped_inverse += len(group["tests"])
-            continue
+            raise SystemExit("parse_kwp: the inverse cipher is not implemented")
         if group["payloadLen"] < MIN_PAYLOAD_LEN:
-            skipped_short += len(group["tests"])
-            continue
+            raise SystemExit("parse_kwp: payloads of at most 64 bits are not implemented")
 
         for test in group["tests"]:
             vector = {
@@ -81,10 +77,6 @@ def parse_kwp(data, skip_unsupported):
             else:
                 vector["ciphertext"] = list(bytes.fromhex(test["ct"]))
             test_vectors.append(vector)
-    report_skipped("parse_kwp", {
-        "the inverse cipher is not implemented": skipped_inverse,
-        "payloads of at most 64 bits are not implemented": skipped_short,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -119,16 +111,10 @@ def main() -> int:
         required=True,
         help="Type of test vectors to parse.",
     )
-    parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer instead of "
-        "failing on the first one.",
-    )
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    test_vectors = parse_kwp(raw_data, args.skip_unsupported)
+    test_vectors = parse_kwp(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:

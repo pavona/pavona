@@ -18,10 +18,10 @@ rebuild the test group structure the response requires.
 Within the external interface, pure ML-DSA and HashML-DSA are supported
 for the hash functions the cryptolib implements (SHA2-256/384/512,
 SHA3-224/256/384/512, SHAKE-128/256); other HashML-DSA groups are
-skipped.
+rejected.
 
 The internal signature interface is only supported with externalMu=true
-(a precomputed mu); externalMu=false groups are skipped, since this
+(a precomputed mu); externalMu=false groups are rejected, since this
 cryptolib has no path to derive mu from a raw message internally.
 """
 
@@ -31,8 +31,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import (acvp_common, apply_expected, load_vector_set,
-                       report_skipped)
+from acvp_util import acvp_common, apply_expected, load_vector_set
 
 PARAMETER_SETS = {
     "ML-DSA-44": 44,
@@ -99,11 +98,9 @@ def parse_keygen(data):
     return test_vectors
 
 
-def parse_siggen(data, skip_unsupported):
+def parse_siggen(data):
     """Parse an ML-DSA-sigGen prompt. Response: the signature."""
     test_vectors = []
-    skipped_hash_alg = 0
-    skipped_interface = 0
     for group in data["testGroups"]:
         interface = group.get("signatureInterface")
         if interface not in ("external", "internal"):
@@ -111,16 +108,15 @@ def parse_siggen(data, skip_unsupported):
         if interface == "external" and group.get("externalMu", False):
             continue
         if interface == "internal" and not group.get("externalMu", False):
-            skipped_interface += len(group["tests"])
-            continue
+            raise SystemExit("parse_siggen: the internal signature interface needs a precomputed "
+                             "mu")
 
         deterministic = group.get("deterministic", False)
         param_set = PARAMETER_SETS[group["parameterSet"]]
         for test in group["tests"]:
             message, sign_mode, context = message_and_sign_mode(group, test)
             if sign_mode is None:
-                skipped_hash_alg += 1
-                continue
+                raise SystemExit("parse_siggen: the hash algorithm is not implemented")
 
             sk = bytes.fromhex(test["sk"])
             rnd = bytes(32) if deterministic else bytes.fromhex(test["rnd"])
@@ -136,19 +132,12 @@ def parse_siggen(data, skip_unsupported):
                 "rnd": list(rnd),
                 "result": True,
             })
-    report_skipped("parse_siggen", {
-        "the hash algorithm is not implemented": skipped_hash_alg,
-        "the internal signature interface needs a precomputed mu":
-            skipped_interface,
-    }, skip_unsupported)
     return test_vectors
 
 
-def parse_sigver(data, skip_unsupported):
+def parse_sigver(data):
     """Parse an ML-DSA-sigVer prompt. Response: testPassed."""
     test_vectors = []
-    skipped_hash_alg = 0
-    skipped_interface = 0
     for group in data["testGroups"]:
         interface = group.get("signatureInterface")
         if interface not in ("external", "internal"):
@@ -156,15 +145,14 @@ def parse_sigver(data, skip_unsupported):
         if interface == "external" and group.get("externalMu", False):
             continue
         if interface == "internal" and not group.get("externalMu", False):
-            skipped_interface += len(group["tests"])
-            continue
+            raise SystemExit("parse_sigver: the internal signature interface needs a precomputed "
+                             "mu")
 
         param_set = PARAMETER_SETS[group["parameterSet"]]
         for test in group["tests"]:
             message, sign_mode, context = message_and_sign_mode(group, test)
             if sign_mode is None:
-                skipped_hash_alg += 1
-                continue
+                raise SystemExit("parse_sigver: the hash algorithm is not implemented")
 
             pk = bytes.fromhex(test["pk"])
             sig = bytes.fromhex(test["signature"])
@@ -179,11 +167,6 @@ def parse_sigver(data, skip_unsupported):
                 "context": list(context),
                 "signature": list(sig),
             })
-    report_skipped("parse_sigver", {
-        "the hash algorithm is not implemented": skipped_hash_alg,
-        "the internal signature interface needs a precomputed mu":
-            skipped_interface,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -213,14 +196,6 @@ def main() -> int:
         help="JSON schema file for validation.",
     )
     parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer. Without it any "
-        "such test case is an error. NIST's published "
-        "sample sets declare every capability an algorithm has, so parsing "
-        "one of those needs this.",
-    )
-    parser.add_argument(
         "--test-type",
         choices=["keygen", "siggen", "sigver"],
         required=True,
@@ -233,9 +208,9 @@ def main() -> int:
     if args.test_type == "keygen":
         test_vectors = parse_keygen(raw_data)
     elif args.test_type == "siggen":
-        test_vectors = parse_siggen(raw_data, args.skip_unsupported)
+        test_vectors = parse_siggen(raw_data)
     elif args.test_type == "sigver":
-        test_vectors = parse_sigver(raw_data, args.skip_unsupported)
+        test_vectors = parse_sigver(raw_data)
 
     apply_expected(test_vectors, args.expected)
 

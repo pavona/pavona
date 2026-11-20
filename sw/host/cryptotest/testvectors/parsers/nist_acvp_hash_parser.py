@@ -11,7 +11,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import acvp_common, load_vector_set, report_skipped
+from acvp_util import acvp_common, load_vector_set
 
 
 def apply_expected(test_vectors, path):
@@ -38,20 +38,16 @@ def message(test):
     return list(bytes.fromhex(test["msg"])[:test["len"] // 8])
 
 
-def parse_hash(data, skip_unsupported):
+def parse_hash(data):
     """Parse a SHA2 or SHA3 prompt."""
     test_vectors = []
-    skipped_bits = 0
-    skipped_large = 0
     for group in data["testGroups"]:
         test_type = group["testType"]
         if test_type == "LDT":
-            skipped_large += len(group["tests"])
-            continue
+            raise SystemExit("parse_hash: the large data test is not implemented")
         for test in group["tests"]:
             if test["len"] % 8 != 0:
-                skipped_bits += 1
-                continue
+                raise SystemExit("parse_hash: bit-length messages are not implemented")
             vector = {
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
@@ -61,28 +57,21 @@ def parse_hash(data, skip_unsupported):
             if test_type == "MCT":
                 vector["mct_version"] = group["mctVersion"]
             test_vectors.append(vector)
-    report_skipped("parse_hash", {
-        "bit-length messages are not implemented": skipped_bits,
-        "the large data test is not implemented": skipped_large,
-    }, skip_unsupported)
     return test_vectors
 
 
-def parse_shake(data, skip_unsupported):
+def parse_shake(data):
     """Parse a SHAKE prompt."""
     if data["revision"] != "FIPS202":
         raise SystemExit("parse_shake: only the FIPS202 revision is implemented")
     test_vectors = []
-    skipped_bits = 0
-    skipped_output = 0
     for group in data["testGroups"]:
         for test in group["tests"]:
             if test["len"] % 8 != 0:
-                skipped_bits += 1
-                continue
+                raise SystemExit("parse_shake: bit-length messages are not implemented")
             if test["outLen"] % 32 != 0:
-                skipped_output += 1
-                continue
+                raise SystemExit("parse_shake: outputs that are not whole words are not "
+                                 "implemented")
             test_vectors.append({
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
@@ -90,11 +79,6 @@ def parse_shake(data, skip_unsupported):
                 "message": message(test),
                 "output_len": test["outLen"] // 8,
             })
-    report_skipped("parse_shake", {
-        "bit-length messages are not implemented": skipped_bits,
-        "outputs that are not whole words are not implemented":
-            skipped_output,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -129,19 +113,13 @@ def main() -> int:
         required=True,
         help="Type of test vectors to parse.",
     )
-    parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer instead of "
-        "failing on the first one.",
-    )
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
     if args.test_type in ("sha2", "sha3"):
-        test_vectors = parse_hash(raw_data, args.skip_unsupported)
+        test_vectors = parse_hash(raw_data)
     else:
-        test_vectors = parse_shake(raw_data, args.skip_unsupported)
+        test_vectors = parse_shake(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:

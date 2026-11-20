@@ -104,7 +104,7 @@ def load_vector_set(path):
     return data[1] if isinstance(data, list) else data
 
 
-def convert(prompt, answers, out_dir, skip_unsupported):
+def convert(prompt, answers, out_dir):
     """Runs the parser for one vector set, returning (harness, vectors path)."""
     vector_set = load_vector_set(prompt)
     # Algorithms such as the AES modes have no mode.
@@ -129,11 +129,6 @@ def convert(prompt, answers, out_dir, skip_unsupported):
     expected = answers.get(vector_set["vsId"])
     if expected:
         args += ["--expected", str(expected)]
-    # Only the AES-KWP, hash, HKDF, HMAC, KDF and ML-DSA parsers take
-    # --skip-unsupported.
-    if skip_unsupported and parser in ("aes_kwp", "hash", "hkdf", "hmac",
-                                       "kdf_hmac", "kdf_kmac", "mldsa"):
-        args += ["--skip-unsupported"]
     if not bazel(*args, check=False):
         return FAILED, None
     return harness, out
@@ -160,8 +155,6 @@ def main() -> int:
     parser.add_argument("--acc-pqc", action=argparse.BooleanOptionalAction,
                         default=True,
                         help="Build the ACC PQC backends into the firmware.")
-    parser.add_argument("--skip-unsupported", action="store_true",
-                        help="Skip test cases this cryptolib cannot answer.")
     parser.add_argument("--timeout", type=int, default=7200,
                         help="Test timeout in seconds.")
     args = parser.parse_args()
@@ -174,8 +167,7 @@ def main() -> int:
     answers = {load_vector_set(p)["vsId"]: p for p in args.expected}
     vectors, failed, skipped = {}, [], 0
     for prompt in args.prompts:
-        harness, out = convert(prompt, answers, vectors_dir,
-                               args.skip_unsupported)
+        harness, out = convert(prompt, answers, vectors_dir)
         if harness == SKIPPED:
             skipped += 1
         elif harness == FAILED:

@@ -16,7 +16,7 @@ import sys
 
 import jsonschema
 
-from acvp_util import acvp_common, load_vector_set, report_skipped
+from acvp_util import acvp_common, load_vector_set
 
 # Longest inputs and output, in bytes, the cryptotest firmware accepts.
 KDF_KMAC_CMD_MAX_LABEL_BYTES = 32
@@ -48,23 +48,17 @@ def apply_expected(test_vectors, path):
             vector["result"] = True
 
 
-def parse_kdf_kmac(data, skip_unsupported):
+def parse_kdf_kmac(data):
     """Parse a KMAC KDF prompt or internalProjection."""
     if data["revision"] != "Sp800-108r1":
         raise SystemExit("parse_kdf_kmac: only revision Sp800-108r1 is "
                          "implemented")
     test_vectors = []
-    skipped_mac = 0
-    skipped_key_in = 0
-    skipped_label = 0
-    skipped_context = 0
-    skipped_words = 0
-    skipped_key_out = 0
     for group in data["testGroups"]:
         mac_mode = group["macMode"]
         if mac_mode not in MIN_KEY_IN_BYTES:
-            skipped_mac += len(group["tests"])
-            continue
+            raise SystemExit("parse_kdf_kmac: MACs other than KMAC-128 and KMAC-256 are not "
+                             "implemented")
         for test in group["tests"]:
             key_in = bytes.fromhex(test["keyDerivationKey"])
             label = bytes.fromhex(test["label"])
@@ -72,20 +66,21 @@ def parse_kdf_kmac(data, skip_unsupported):
             key_out_bits = test["derivedKeyLength"]
             if (len(key_in) not in KEY_IN_BYTES or
                     len(key_in) < MIN_KEY_IN_BYTES[mac_mode]):
-                skipped_key_in += 1
-                continue
+                raise SystemExit("parse_kdf_kmac: key derivation keys other than 128, 192, 256, "
+                                 "384 and 512 bits, or shorter than 256 bits for KMAC-256, are "
+                                 "not implemented")
             if len(label) > KDF_KMAC_CMD_MAX_LABEL_BYTES:
-                skipped_label += 1
-                continue
+                raise SystemExit("parse_kdf_kmac: labels longer than "
+                                 f"{KDF_KMAC_CMD_MAX_LABEL_BYTES} bytes are not implemented")
             if len(context) > KDF_KMAC_CMD_MAX_CONTEXT_BYTES:
-                skipped_context += 1
-                continue
+                raise SystemExit("parse_kdf_kmac: contexts longer than "
+                                 f"{KDF_KMAC_CMD_MAX_CONTEXT_BYTES} bytes are not implemented")
             if key_out_bits % 32 != 0:
-                skipped_words += 1
-                continue
+                raise SystemExit("parse_kdf_kmac: derived key lengths that are not a multiple of "
+                                 "32 bits are not implemented")
             if key_out_bits > KDF_KMAC_CMD_MAX_KEY_OUT_BYTES * 8:
-                skipped_key_out += 1
-                continue
+                raise SystemExit("parse_kdf_kmac: derived keys longer than "
+                                 f"{KDF_KMAC_CMD_MAX_KEY_OUT_BYTES} bytes are not implemented")
             vector = {
                 **acvp_common(data, group),
                 "test_case_id": test["tcId"],
@@ -99,21 +94,6 @@ def parse_kdf_kmac(data, skip_unsupported):
                 vector["key_out"] = list(bytes.fromhex(test["derivedKey"]))
                 vector["result"] = True
             test_vectors.append(vector)
-    report_skipped("parse_kdf_kmac", {
-        "MACs other than KMAC-128 and KMAC-256 are not implemented":
-            skipped_mac,
-        "key derivation keys other than 128, 192, 256, 384 and 512 bits, "
-        "or shorter than 256 bits for KMAC-256, are not implemented":
-            skipped_key_in,
-        f"labels longer than {KDF_KMAC_CMD_MAX_LABEL_BYTES} bytes are not "
-        "implemented": skipped_label,
-        f"contexts longer than {KDF_KMAC_CMD_MAX_CONTEXT_BYTES} bytes are not "
-        "implemented": skipped_context,
-        "derived key lengths that are not a multiple of 32 bits are not "
-        "implemented": skipped_words,
-        f"derived keys longer than {KDF_KMAC_CMD_MAX_KEY_OUT_BYTES} bytes are "
-        "not implemented": skipped_key_out,
-    }, skip_unsupported)
     return test_vectors
 
 
@@ -148,16 +128,10 @@ def main() -> int:
         required=True,
         help="Type of test vectors to parse.",
     )
-    parser.add_argument(
-        "--skip-unsupported",
-        action="store_true",
-        help="Skip test cases this cryptolib cannot answer instead of "
-        "failing on the first one.",
-    )
     args = parser.parse_args()
 
     raw_data = load_vector_set(args.src)
-    test_vectors = parse_kdf_kmac(raw_data, args.skip_unsupported)
+    test_vectors = parse_kdf_kmac(raw_data)
     apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:
