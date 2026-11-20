@@ -10,6 +10,7 @@ package rv_timer_test_pkg;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import tl_agent_pkg::*;
+  import rv_timer_ral_pkg::*;
   import rv_timer_env_pkg::*;
 
   // macro includes
@@ -23,4 +24,5 @@ package rv_timer_test_pkg;
   // package sources
   `include "rv_timer_base_test.sv"
   `include "rv_timer_rst_safe_base_test.sv"
+  `include "rv_timer_rst_safe_common_test.sv"
 endpackage
