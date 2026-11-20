@@ -34,10 +34,6 @@
             name: Secret2Key
             value: <random>
           }
-          {
-            name: Secret3Key
-            value: <random>
-          }
         ]
         digests:
         [
@@ -62,7 +58,7 @@
             cnst_value: <random>
           }
         ]
-        num_keys: 4
+        num_keys: 3
         num_digests: 4
       }
       partitions:
@@ -173,13 +169,9 @@
               offset: 220
             }
             {
-              name: CREATOR_SW_CFG_AST_INIT_SIZE
+              name: CREATOR_SW_CFG_ROM_EXT_SKU
               size: 4
-              desc:
-                '''
-                Controls how many 32-bit words from the CREATOR_SW_CFG_AST_CFG item
-                get copied to the AST CSRs during ROM execution.
-                '''
+              desc: SKU identifier metadata. Unused by SiliconCreator software.
               isdigest: false
               iszer: false
               ismubi: false
@@ -198,6 +190,8 @@
                 be executed when the ROM attempts to boot the ROM_EXT.
                 A value of kSigverifySpxDisabledOtp disables SPHINCS+
                 signature verification, while all other values enable it.
+                Note, SPHINCS+ signature verification is always disabled in
+                TEST_UNLOCKED* LC states.
                 '''
               isdigest: false
               iszer: false
@@ -368,10 +362,8 @@
               desc:
                 '''
                 Value to write to the Ibex CPUCTRL CSR during ROM execution.
-                This field controls settings such as ICACHE enablement.
-
-                See the Ibex documentation for more information:
-                https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
+                This field controls settings such as ICACHE enablement. See
+                Ibex documentation for more information.
                 '''
               isdigest: false
               iszer: false
@@ -417,6 +409,65 @@
               offset: 272
             }
             {
+              name: CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN
+              size: 4
+              desc:
+                '''
+                Whether or not to enable the default boot data in PROD and
+                PROD_END life cycle states. A value of kHardenedBoolTrue
+                enables, all other values disable. If left disabled,
+                provisioning flows are required to setup boot data pages
+                prior to enabling ROM execution. The default personalization
+                flow in `ft_personalize.c` configures these pages.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 276
+            }
+            {
+              name: CREATOR_SW_CFG_RMA_SPIN_EN
+              size: 4
+              desc:
+                '''
+                Whether or not to enable a busy-wait delay loop in the ROM,
+                when a specific SW strapping configuration is applied during
+                boot, to provide time to trigger an RMA lifecycle transition
+                over JTAG. A value of kHardenedBoolTrue enables, all other
+                values disable.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 280
+            }
+            {
+              name: CREATOR_SW_CFG_RMA_SPIN_CYCLES
+              size: 4
+              desc:
+                '''
+                The number of Ibex clock cycles to spin for when waiting for
+                an RMA transition. Used in combination with the
+                CREATOR_SW_CFG_RMA_SPIN_EN field.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 284
+            }
+            {
               name: CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS
               size: 4
               desc:
@@ -433,7 +484,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 276
+              offset: 288
             }
             {
               name: CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS
@@ -452,7 +503,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 280
+              offset: 292
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS
@@ -471,7 +522,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 284
+              offset: 296
             }
             {
               name: CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS
@@ -490,7 +541,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 288
+              offset: 300
             }
             {
               name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
@@ -509,7 +560,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 292
+              offset: 304
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
@@ -528,7 +579,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 296
+              offset: 308
             }
             {
               name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
@@ -547,7 +598,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 300
+              offset: 312
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
@@ -566,7 +617,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 304
+              offset: 316
             }
             {
               name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
@@ -585,7 +636,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 308
+              offset: 320
             }
             {
               name: CREATOR_SW_CFG_RNG_ALERT_THRESHOLD
@@ -604,7 +655,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 312
+              offset: 324
             }
             {
               name: CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST
@@ -623,7 +674,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 316
+              offset: 328
             }
             {
               name: CREATOR_SW_CFG_SRAM_KEY_RENEW_AND_INIT_EN
@@ -643,7 +694,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 320
+              offset: 332
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN
@@ -661,7 +712,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 324
+              offset: 336
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET
@@ -678,7 +729,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 328
+              offset: 340
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH
@@ -691,7 +742,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 332
+              offset: 344
             }
             {
               name: CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH
@@ -704,12 +755,29 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 336
+              offset: 348
+            }
+            {
+              name: CREATOR_SW_CFG_RESERVED
+              size: 32
+              desc:
+                '''
+                Unused bits in the CREATOR_SW_CFG OTP partition. These can
+                be claimed by software as needed.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 380
             }
             {
               name: CREATOR_SW_CFG_DIGEST
               size: 8
-              offset: 392
+              offset: 424
               ismubi: false
               isdigest: true
               iszer: false
@@ -728,7 +796,7 @@
           iskeymgr_owner: false
           zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 336
+          size: 368
           offset: 64
         }
         {
@@ -762,7 +830,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 400
+              offset: 432
             }
             {
               name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
@@ -784,7 +852,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 404
+              offset: 436
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
@@ -805,7 +873,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 408
+              offset: 440
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
@@ -826,7 +894,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 412
+              offset: 444
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
@@ -851,7 +919,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 416
+              offset: 448
             }
             {
               name: OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION
@@ -870,7 +938,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 736
+              offset: 768
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
@@ -891,7 +959,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 800
+              offset: 832
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
@@ -909,7 +977,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 816
+              offset: 848
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
@@ -938,7 +1006,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 832
+              offset: 864
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
@@ -962,7 +1030,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 896
+              offset: 928
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
@@ -980,7 +1048,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 900
+              offset: 932
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
@@ -998,7 +1066,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 904
+              offset: 936
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
@@ -1016,7 +1084,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 908
+              offset: 940
             }
             {
               name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
@@ -1029,7 +1097,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 912
+              offset: 944
             }
             {
               name: OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN
@@ -1051,7 +1119,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 916
+              offset: 948
             }
             {
               name: OWNER_SW_CFG_MANUF_STATE
@@ -1069,7 +1137,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 920
+              offset: 952
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
@@ -1095,7 +1163,20 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 924
+              offset: 956
+            }
+            {
+              name: OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN
+              size: 4
+              desc: Unused. Set to 0.
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 960
             }
             {
               name: OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG
@@ -1121,7 +1202,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 928
+              offset: 964
             }
             {
               name: OWNER_SW_CFG_ROM_SRAM_READBACK_EN
@@ -1143,7 +1224,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 940
+              offset: 976
             }
             {
               name: OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN
@@ -1163,7 +1244,7 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 944
+              offset: 980
             }
             {
               name: OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE
@@ -1186,7 +1267,26 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 948
+              offset: 984
+            }
+            {
+              name: OWNER_SW_CFG_ROM_BANNER_EN
+              size: 4
+              desc:
+                '''
+                Whether or not the ROM should print a banner message to the
+                console UART during boot. A value of kHardenedBoolFalse
+                disables the message printing, while all other values enable
+                it.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 988
             }
             {
               name: OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN
@@ -1211,12 +1311,29 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 952
+              offset: 992
+            }
+            {
+              name: OWNER_SW_CFG_RESERVED
+              size: 128
+              desc:
+                '''
+                Unused bits in the OWNER_SW_CFG OTP partition. These can be
+                claimed by software as needed.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 996
             }
             {
               name: OWNER_SW_CFG_DIGEST
               size: 8
-              offset: 976
+              offset: 1136
               ismubi: false
               isdigest: true
               iszer: false
@@ -1236,44 +1353,11 @@
           iskeymgr_owner: false
           zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 584
-          offset: 400
+          size: 712
+          offset: 432
         }
         {
-          name: OWNERSHIP_SLOT_STATE
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: false
-          hw_digest: false
-          write_lock: None
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          items:
-          [
-            {
-              name: OWNERSHIP_SLOT_STATE_ZER
-              size: 8
-              offset: 984
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 8
-          offset: 984
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT0
+          name: ROT_CREATOR_AUTH_CODESIGN
           variant: Unbuffered
           absorb: false
           secret: false
@@ -1284,25 +1368,11 @@
           key_sel: NoKey
           integrity: true
           bkout_type: false
-          zeroizable: true
           items:
           [
             {
-              name: ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_KEY_TYPE
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0
               size: 4
-              desc:
-                '''
-                Key usage type. One of the following 32-bit values defined
-                by the sigverify API:
-                - kSigverifyKeyTypeTest for manufacturing, testing and RMA keys.
-                  Keys of this type can be used only in TEST_UNLOCKED* and RMA life
-                  cycle states.
-                - kSigverifyKeyTypeProd for production keys.
-                  Keys of this type can be used in all operational life cycle states, i.e.
-                  states in which CPU execution is enabled.
-                - kSigverifyKeyTypeDev for development keys.
-                  Keys of this type can be used only in the DEV life cycle state.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1310,17 +1380,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 992
+              offset: 1144
             }
             {
-              name: ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_ECDSA_KEY
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0
               size: 64
-              desc:
-                '''
-                ECDSA public key used to verify firmware images.
-                Key Type: ECC NIST-P256 Curve.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1328,163 +1392,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 996
+              offset: 1148
             }
             {
-              name: ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_SPX_KEY
-              size: 32
-              desc:
-                '''
-                SPHINCS+ public key used to verify firmware images.
-                Key Type: SPHINCS+, see modes in ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_SPX_KEY_CONFIG.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1060
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_SPX_KEY_CONFIG
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1
               size: 4
-              desc:
-                '''
-                Configuration value for ROT_OWNER_AUTH_SLOT0_FIRMWARE_CODESIGN_SPX_KEY:
-                - kSigverifySpxConfigIdSha2128s: SPHINCS+-SHA2-128s without pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20: SPHINCS+-SHA2-128s-q20 without pre-hashing
-                - kSigverifySpxConfigIdSha2128sPrehash: SPHINCS+-SHA2-128s with SHA256 pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20Prehash: SPHINCS+-SHA2-128s-q20 with SHA256 pre-hashing.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1092
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT0_DIGEST
-              size: 8
-              offset: 1096
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT0_ZER
-              size: 8
-              offset: 1104
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc: Software managed partition for a RoT Owner (a.k.a. Silicon Creator) key manifest.
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 120
-          offset: 992
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT1
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          items:
-          [
-            {
-              name: ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_KEY_TYPE
-              size: 4
-              desc:
-                '''
-                Key usage type. One of the following 32-bit values defined
-                by the sigverify API:
-                - kSigverifyKeyTypeTest for manufacturing, testing and RMA keys.
-                  Keys of this type can be used only in TEST_UNLOCKED* and RMA life
-                  cycle states.
-                - kSigverifyKeyTypeProd for production keys.
-                  Keys of this type can be used in all operational life cycle states, i.e.
-                  states in which CPU execution is enabled.
-                - kSigverifyKeyTypeDev for development keys.
-                  Keys of this type can be used only in the DEV life cycle state.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1112
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_ECDSA_KEY
-              size: 64
-              desc:
-                '''
-                ECDSA public key used to verify firmware images.
-                Key Type: ECC NIST-P256 Curve.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1116
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_SPX_KEY
-              size: 32
-              desc:
-                '''
-                SPHINCS+ public key used to verify firmware images.
-                Key Type: SPHINCS+, see modes in ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_SPX_KEY_CONFIG.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1180
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_SPX_KEY_CONFIG
-              size: 4
-              desc:
-                '''
-                Configuration value for ROT_OWNER_AUTH_SLOT1_FIRMWARE_CODESIGN_SPX_KEY:
-                - kSigverifySpxConfigIdSha2128s: SPHINCS+-SHA2-128s without pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20: SPHINCS+-SHA2-128s-q20 without pre-hashing
-                - kSigverifySpxConfigIdSha2128sPrehash: SPHINCS+-SHA2-128s with SHA256 pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20Prehash: SPHINCS+-SHA2-128s-q20 with SHA256 pre-hashing.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1495,84 +1407,8 @@
               offset: 1212
             }
             {
-              name: ROT_OWNER_AUTH_SLOT1_DIGEST
-              size: 8
-              offset: 1216
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT1_ZER
-              size: 8
-              offset: 1224
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc: Software managed partition for a RoT Owner (a.k.a. Silicon Creator) key manifest.
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 120
-          offset: 1112
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT2
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          items:
-          [
-            {
-              name: ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_KEY_TYPE
-              size: 4
-              desc:
-                '''
-                Key usage type. One of the following 32-bit values defined
-                by the sigverify API:
-                - kSigverifyKeyTypeTest for manufacturing, testing and RMA keys.
-                  Keys of this type can be used only in TEST_UNLOCKED* and RMA life
-                  cycle states.
-                - kSigverifyKeyTypeProd for production keys.
-                  Keys of this type can be used in all operational life cycle states, i.e.
-                  states in which CPU execution is enabled.
-                - kSigverifyKeyTypeDev for development keys.
-                  Keys of this type can be used only in the DEV life cycle state.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1232
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_ECDSA_KEY
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1
               size: 64
-              desc:
-                '''
-                ECDSA public key used to verify firmware images.
-                Key Type: ECC NIST-P256 Curve.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1580,37 +1416,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1236
+              offset: 1216
             }
             {
-              name: ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_SPX_KEY
-              size: 32
-              desc:
-                '''
-                SPHINCS+ public key used to verify firmware images.
-                Key Type: SPHINCS+, see modes in ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_SPX_KEY_CONFIG.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1300
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_SPX_KEY_CONFIG
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2
               size: 4
-              desc:
-                '''
-                Configuration value for ROT_OWNER_AUTH_SLOT2_FIRMWARE_CODESIGN_SPX_KEY:
-                - kSigverifySpxConfigIdSha2128s: SPHINCS+-SHA2-128s without pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20: SPHINCS+-SHA2-128s-q20 without pre-hashing
-                - kSigverifySpxConfigIdSha2128sPrehash: SPHINCS+-SHA2-128s with SHA256 pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20Prehash: SPHINCS+-SHA2-128s-q20 with SHA256 pre-hashing.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1618,69 +1428,35 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1332
+              offset: 1280
             }
             {
-              name: ROT_OWNER_AUTH_SLOT2_DIGEST
-              size: 8
-              offset: 1336
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT2_ZER
-              size: 8
-              offset: 1344
-              ismubi: false
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2
+              size: 64
               isdigest: false
-              iszer: true
-              inv_default: 0
+              iszer: false
+              ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1284
             }
-          ]
-          desc: Software managed partition for a RoT Owner (a.k.a. Silicon Creator) key manifest.
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 120
-          offset: 1232
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT3
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          items:
-          [
             {
-              name: ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_KEY_TYPE
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3
               size: 4
-              desc:
-                '''
-                Key usage type. One of the following 32-bit values defined
-                by the sigverify API:
-                - kSigverifyKeyTypeTest for manufacturing, testing and RMA keys.
-                  Keys of this type can be used only in TEST_UNLOCKED* and RMA life
-                  cycle states.
-                - kSigverifyKeyTypeProd for production keys.
-                  Keys of this type can be used in all operational life cycle states, i.e.
-                  states in which CPU execution is enabled.
-                - kSigverifyKeyTypeDev for development keys.
-                  Keys of this type can be used only in the DEV life cycle state.
-                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1348
+            }
+            {
+              name: ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3
+              size: 64
               isdigest: false
               iszer: false
               ismubi: false
@@ -1691,14 +1467,8 @@
               offset: 1352
             }
             {
-              name: ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_ECDSA_KEY
-              size: 64
-              desc:
-                '''
-                ECDSA public key used to verify firmware images.
-                Key Type: ECC NIST-P256 Curve.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0
+              size: 4
               isdigest: false
               iszer: false
               ismubi: false
@@ -1706,17 +1476,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1356
+              offset: 1416
             }
             {
-              name: ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_SPX_KEY
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0
               size: 32
-              desc:
-                '''
-                SPHINCS+ public key used to verify firmware images.
-                Key Type: SPHINCS+, see modes in ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_SPX_KEY_CONFIG.
-                It is expected to be provisioned at Final Test (FT) stage when LC = TEST_UNLOCKED.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1727,16 +1491,8 @@
               offset: 1420
             }
             {
-              name: ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_SPX_KEY_CONFIG
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0
               size: 4
-              desc:
-                '''
-                Configuration value for ROT_OWNER_AUTH_SLOT3_FIRMWARE_CODESIGN_SPX_KEY:
-                - kSigverifySpxConfigIdSha2128s: SPHINCS+-SHA2-128s without pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20: SPHINCS+-SHA2-128s-q20 without pre-hashing
-                - kSigverifySpxConfigIdSha2128sPrehash: SPHINCS+-SHA2-128s with SHA256 pre-hashing.
-                - kSigverifySpxConfigIdSha2128sQ20Prehash: SPHINCS+-SHA2-128s-q20 with SHA256 pre-hashing.
-                '''
               isdigest: false
               iszer: false
               ismubi: false
@@ -1747,53 +1503,20 @@
               offset: 1452
             }
             {
-              name: ROT_OWNER_AUTH_SLOT3_DIGEST
-              size: 8
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
               offset: 1456
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
             }
             {
-              name: ROT_OWNER_AUTH_SLOT3_ZER
-              size: 8
-              offset: 1464
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc: Software managed partition for a RoT Owner (a.k.a. Silicon Creator) key manifest.
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 120
-          offset: 1352
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT0_STATE
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          items:
-          [
-            {
-              name: ROT_OWNER_AUTH_SLOT0_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE
-              size: 4
-              desc: Enablement state of the firmware verification ECDSA key in ROT_OWNER_AUTH_SLOT0.
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1
+              size: 32
               isdigest: false
               iszer: false
               ismubi: false
@@ -1801,82 +1524,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1472
+              offset: 1460
             }
             {
-              name: ROT_OWNER_AUTH_SLOT0_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1
               size: 4
-              desc: Enablement state of the firmware verification SPHINCS+ key in ROT_OWNER_AUTH_SLOT0.
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1476
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT0_STATE_DIGEST
-              size: 8
-              offset: 1480
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc:
-            '''
-            This OTP partition is used to capture the state of each key in ROT_OWNER_AUTH_SLOT0.
-            Each key can be in one of the following states: BLANK, ENABLED, DISABLED. The
-            encoded values are such that transitions between BLANK -> ENABLED ->  DISABLED are
-            Possible without causing ECC errors (this is a mechanism similar to how we manage
-            life cycle state transitions). The partition is left unlocked to allow STATE
-            updates in the field. The ROM_EXT is required to lock access to the OTP Direct
-            Access Interface to prevent DoS attacks from malicious code executing on Silicon
-            Owner partitions. DAI write locking is available.
-            '''
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          zeroizable: false
-          ignore_read_lock_in_rma: false
-          size: 16
-          offset: 1472
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT1_STATE
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          items:
-          [
-            {
-              name: ROT_OWNER_AUTH_SLOT1_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE
-              size: 4
-              desc: Enablement state of the firmware verification ECDSA key in ROT_OWNER_AUTH_SLOT1.
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1488
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT1_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE
-              size: 4
-              desc: Enablement state of the firmware verification SPHINCS+ key in ROT_OWNER_AUTH_SLOT1.
               isdigest: false
               iszer: false
               ismubi: false
@@ -1887,53 +1539,20 @@
               offset: 1492
             }
             {
-              name: ROT_OWNER_AUTH_SLOT1_STATE_DIGEST
-              size: 8
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
               offset: 1496
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
             }
-          ]
-          desc:
-            '''
-            This OTP partition is used to capture the state of each key in ROT_OWNER_AUTH_SLOT1.
-            Each key can be in one of the following states: BLANK, ENABLED, DISABLED. The
-            encoded values are such that transitions between BLANK -> ENABLED ->  DISABLED are
-            Possible without causing ECC errors (this is a mechanism similar to how we manage
-            life cycle state transitions). The partition is left unlocked to allow STATE
-            updates in the field. The ROM_EXT is required to lock access to the OTP Direct
-            Access Interface to prevent DoS attacks from malicious code executing on Silicon
-            Owner partitions. DAI write locking is available.
-            '''
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          zeroizable: false
-          ignore_read_lock_in_rma: false
-          size: 16
-          offset: 1488
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT2_STATE
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          items:
-          [
             {
-              name: ROT_OWNER_AUTH_SLOT2_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE
-              size: 4
-              desc: Enablement state of the firmware verification ECDSA key in ROT_OWNER_AUTH_SLOT2.
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2
+              size: 32
               isdigest: false
               iszer: false
               ismubi: false
@@ -1941,12 +1560,11 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1504
+              offset: 1500
             }
             {
-              name: ROT_OWNER_AUTH_SLOT2_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2
               size: 4
-              desc: Enablement state of the firmware verification SPHINCS+ key in ROT_OWNER_AUTH_SLOT2.
               isdigest: false
               iszer: false
               ismubi: false
@@ -1954,159 +1572,227 @@
               iskeymgr_owner: false
               absorb: false
               inv_default: 0
-              offset: 1508
+              offset: 1532
             }
             {
-              name: ROT_OWNER_AUTH_SLOT2_STATE_DIGEST
-              size: 8
-              offset: 1512
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc:
-            '''
-            This OTP partition is used to capture the state of each key in ROT_OWNER_AUTH_SLOT2.
-            Each key can be in one of the following states: BLANK, ENABLED, DISABLED. The
-            encoded values are such that transitions between BLANK -> ENABLED ->  DISABLED are
-            Possible without causing ECC errors (this is a mechanism similar to how we manage
-            life cycle state transitions). The partition is left unlocked to allow STATE
-            updates in the field. The ROM_EXT is required to lock access to the OTP Direct
-            Access Interface to prevent DoS attacks from malicious code executing on Silicon
-            Owner partitions. DAI write locking is available.
-            '''
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          zeroizable: false
-          ignore_read_lock_in_rma: false
-          size: 16
-          offset: 1504
-        }
-        {
-          name: ROT_OWNER_AUTH_SLOT3_STATE
-          variant: Unbuffered
-          absorb: false
-          secret: false
-          sw_digest: true
-          hw_digest: false
-          write_lock: Digest
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          items:
-          [
-            {
-              name: ROT_OWNER_AUTH_SLOT3_STATE_FIRMWARE_CODESIGN_ECDSA_KEY_STATE
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3
               size: 4
-              desc: Enablement state of the firmware verification ECDSA key in ROT_OWNER_AUTH_SLOT3.
               isdigest: false
               iszer: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              inv_default: 0
-              offset: 1520
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT3_STATE_FIRMWARE_CODESIGN_SPX_KEY_STATE
-              size: 4
-              desc: Enablement state of the firmware verification SPHINCS+ key in ROT_OWNER_AUTH_SLOT3.
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              inv_default: 0
-              offset: 1524
-            }
-            {
-              name: ROT_OWNER_AUTH_SLOT3_STATE_DIGEST
-              size: 8
-              offset: 1528
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc:
-            '''
-            This OTP partition is used to capture the state of each key in ROT_OWNER_AUTH_SLOT3.
-            Each key can be in one of the following states: BLANK, ENABLED, DISABLED. The
-            encoded values are such that transitions between BLANK -> ENABLED ->  DISABLED are
-            Possible without causing ECC errors (this is a mechanism similar to how we manage
-            life cycle state transitions). The partition is left unlocked to allow STATE
-            updates in the field. The ROM_EXT is required to lock access to the OTP Direct
-            Access Interface to prevent DoS attacks from malicious code executing on Silicon
-            Owner partitions. DAI write locking is available.
-            '''
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          zeroizable: false
-          ignore_read_lock_in_rma: false
-          size: 16
-          offset: 1520
-        }
-        {
-          name: SCRATCH_FUSES
-          variant: Unbuffered
-          absorb: true
-          secret: false
-          sw_digest: false
-          hw_digest: false
-          write_lock: None
-          read_lock: CSR
-          key_sel: NoKey
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          items:
-          [
-            {
-              name: SCRATCH_FUSES_DATA
-              absorb: true
-              desc:
-                '''
-                Fully SW managed partition.
-                Unstructured, single item partition for any RoT firmware (runtime,
-                bootstrap, manufacturing) to use and organize freely.
-                '''
-              size: 16
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
               inv_default: 0
               offset: 1536
             }
             {
-              name: SCRATCH_FUSES_ZER
-              size: 8
-              offset: 1552
-              ismubi: false
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3
+              size: 32
               isdigest: false
-              iszer: true
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
               inv_default: 0
+              offset: 1540
+            }
+            {
+              name: ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1572
+            }
+            {
+              name: ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH
+              size: 32
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1576
+            }
+            {
+              name: ROT_CREATOR_AUTH_CODESIGN_DIGEST
+              size: 8
+              offset: 1608
+              ismubi: false
+              isdigest: true
+              iszer: false
+              inv_default: <random>
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
           ]
-          desc: Unstructured scratch data partition.
+          desc:
+            '''
+            This OTP partition is used to store four P-256 keys
+            and four Sphincs+ keys. The partition requires 464
+            bytes of software visible storage. The partition is
+            locked at manufacturing time to protect against
+            malicious write attempts.
+            '''
           iskeymgr_creator: false
           iskeymgr_owner: false
+          zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 24
-          offset: 1536
+          size: 472
+          offset: 1144
+        }
+        {
+          name: ROT_CREATOR_AUTH_STATE
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY0
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1616
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY1
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1620
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY2
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1624
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_ECDSA_KEY3
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1628
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_SPX_KEY0
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1632
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_SPX_KEY1
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1636
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_SPX_KEY2
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1640
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_SPX_KEY3
+              size: 4
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              inv_default: 0
+              offset: 1644
+            }
+            {
+              name: ROT_CREATOR_AUTH_STATE_DIGEST
+              size: 8
+              offset: 1648
+              ismubi: false
+              isdigest: true
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            This OTP partition is used to capture the state of
+            each key slot. Each key can be in one of the
+            following states: BLANK, ENABLED, DISABLED. The
+            encoded values are such that transitions between
+            BLANK -> ENABLED ->  DISABLED are possible without
+            causing ECC errors (this is a mechanism similar to
+            how we manage life cycle state transitions). The
+            partition is left unlocked to allow STATE updates in
+            the field. The ROM_EXT is required to lock access to
+            the OTP Direct Access Interface to prevent DoS
+            attacks from malicious code executing on Silicon
+            Owner partitions. DAI write locking is available in
+            Egret.
+            '''
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          zeroizable: false
+          ignore_read_lock_in_rma: false
+          size: 40
+          offset: 1616
         }
         {
           name: HW_CFG0
@@ -2137,12 +1823,29 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1560
+              offset: 1656
+            }
+            {
+              name: MANUF_STATE
+              size: 32
+              inv_default: <random>
+              desc:
+                '''
+                Field to capture manufacturing status. Currently unused. Set
+                to 0.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              absorb: false
+              offset: 1688
             }
             {
               name: HW_CFG0_DIGEST
               size: 8
-              offset: 1592
+              offset: 1720
               ismubi: false
               isdigest: true
               iszer: false
@@ -2161,8 +1864,8 @@
           iskeymgr_owner: false
           zeroizable: false
           ignore_read_lock_in_rma: false
-          size: 40
-          offset: 1560
+          size: 72
+          offset: 1656
         }
         {
           name: HW_CFG1
@@ -2194,7 +1897,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1600
+              offset: 1728
             }
             {
               name: EN_CSRNG_SW_APP_READ
@@ -2213,7 +1916,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1601
+              offset: 1729
             }
             {
               name: DIS_RV_DM_LATE_DEBUG
@@ -2233,12 +1936,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1602
+              offset: 1730
             }
             {
               name: HW_CFG1_DIGEST
               size: 8
-              offset: 1608
+              offset: 1736
               ismubi: false
               isdigest: true
               iszer: false
@@ -2258,69 +1961,7 @@
           zeroizable: false
           ignore_read_lock_in_rma: false
           size: 16
-          offset: 1600
-        }
-        {
-          name: HW_CFG2
-          variant: Buffered
-          secret: false
-          sw_digest: false
-          hw_digest: true
-          write_lock: Digest
-          read_lock: None
-          key_sel: NoKey
-          integrity: true
-          bkout_type: true
-          zeroizable: true
-          items:
-          [
-            {
-              name: MANUF_STATE
-              size: 32
-              inv_default: <random>
-              desc: Field to capture the manufacturing state.
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              absorb: false
-              offset: 1616
-            }
-            {
-              name: HW_CFG2_DIGEST
-              size: 8
-              offset: 1648
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-            {
-              name: HW_CFG2_ZER
-              size: 8
-              offset: 1656
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc:
-            '''
-            Hardware configuration partition 2.
-            This contains the manufacturing state.
-            '''
-          absorb: false
-          iskeymgr_creator: false
-          iskeymgr_owner: false
-          ignore_read_lock_in_rma: false
-          size: 48
-          offset: 1616
+          offset: 1728
         }
         {
           name: SECRET0
@@ -2347,7 +1988,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1664
+              offset: 1744
             }
             {
               name: TEST_EXIT_TOKEN
@@ -2359,12 +2000,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1680
+              offset: 1760
             }
             {
               name: SECRET0_DIGEST
               size: 8
-              offset: 1696
+              offset: 1776
               ismubi: false
               isdigest: true
               iszer: false
@@ -2383,7 +2024,7 @@
           iskeymgr_owner: false
           zeroizable: false
           size: 40
-          offset: 1664
+          offset: 1744
         }
         {
           name: SECRET1
@@ -2410,7 +2051,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1704
+              offset: 1784
             }
             {
               name: FLASH_DATA_KEY_SEED
@@ -2422,7 +2063,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1736
+              offset: 1816
             }
             {
               name: SRAM_DATA_KEY_SEED
@@ -2434,12 +2075,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1768
+              offset: 1848
             }
             {
               name: SECRET1_DIGEST
               size: 8
-              offset: 1784
+              offset: 1864
               ismubi: false
               isdigest: true
               iszer: false
@@ -2458,7 +2099,7 @@
           iskeymgr_owner: false
           zeroizable: false
           size: 88
-          offset: 1704
+          offset: 1784
         }
         {
           name: SECRET2
@@ -2485,7 +2126,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1792
+              offset: 1872
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
@@ -2497,7 +2138,7 @@
               ismubi: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1808
+              offset: 1888
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
@@ -2509,29 +2150,12 @@
               ismubi: false
               iskeymgr_owner: false
               absorb: false
-              offset: 1840
-            }
-            {
-              name: CREATOR_SEED
-              inv_default: <random>
-              size: 32
-              iskeymgr_creator: true
-              desc:
-                '''
-                Random seed value generated at manufacturing time for FIPS-compliance
-                when deriving the creator root keys during boot.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_owner: false
-              absorb: false
-              offset: 1872
+              offset: 1920
             }
             {
               name: SECRET2_DIGEST
               size: 8
-              offset: 1904
+              offset: 1952
               ismubi: false
               isdigest: true
               iszer: false
@@ -2549,75 +2173,8 @@
           iskeymgr_creator: true
           iskeymgr_owner: false
           zeroizable: false
-          size: 120
-          offset: 1792
-        }
-        {
-          name: SECRET3
-          variant: Buffered
-          secret: true
-          sw_digest: false
-          hw_digest: true
-          write_lock: Digest
-          read_lock: Digest
-          key_sel: Secret3Key
-          integrity: true
-          bkout_type: false
-          zeroizable: true
-          skip_sw_header: true
-          items:
-          [
-            {
-              name: OWNER_SEED
-              inv_default: <random>
-              size: 32
-              iskeymgr_owner: true
-              desc:
-                '''
-                Random seed value generated at manufacturing time for FIPS-compliance
-                when deriving the owner keys during boot.
-                '''
-              isdigest: false
-              iszer: false
-              ismubi: false
-              iskeymgr_creator: false
-              absorb: false
-              offset: 1912
-            }
-            {
-              name: SECRET3_DIGEST
-              size: 8
-              offset: 1944
-              ismubi: false
-              isdigest: true
-              iszer: false
-              inv_default: <random>
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-            {
-              name: SECRET3_ZER
-              size: 8
-              offset: 1952
-              ismubi: false
-              isdigest: false
-              iszer: true
-              inv_default: 0
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-            }
-          ]
-          desc:
-            '''
-            Secret partition 3.
-            This contains the owner intermediate and owner seeds.
-            '''
-          absorb: false
-          iskeymgr_creator: false
-          iskeymgr_owner: true
-          ignore_read_lock_in_rma: false
-          size: 48
-          offset: 1912
+          size: 88
+          offset: 1872
         }
         {
           name: LIFE_CYCLE

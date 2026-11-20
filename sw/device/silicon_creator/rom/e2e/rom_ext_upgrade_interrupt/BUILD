@@ -16,6 +16,14 @@ load(
     "hex",
 )
 load("//rules:manifest.bzl", "manifest")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_hex",
+    "otp_image",
+    "otp_json",
+    "otp_partition",
+)
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 
 package(default_visibility = ["//visibility:public"])
@@ -26,6 +34,28 @@ manifest(d = {
     "identifier": hex(CONST.ROM_EXT),
     "security_version": hex(10),
 })
+
+otp_json(
+    name = "otp_json_rom_ext_upgrade_interrupt",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": otp_hex(CONST.HARDENED_TRUE),
+            },
+        ),
+    ],
+)
+
+[
+    otp_image(
+        name = "otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
+        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_rom_ext_upgrade_interrupt"],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, _ in get_lc_items()
+]
 
 [
     pavona_test(
@@ -39,6 +69,7 @@ manifest(d = {
             "//hw/top_egret:fpga_cw310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
+            otp = ":otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """
                 --exec="transport init"
