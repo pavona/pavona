@@ -209,6 +209,26 @@ OT_NONNULL
 void *OT_PREFIX_IF_NOT_RV32(memset)(void *dest, int value, size_t len);
 
 /**
+ * Set a region of memory to a particular byte value and prevents the compiler
+ * from optimizing it away. The purpose is to make sensitive information from
+ * a buffer inaccessible.
+ *
+ * This function conforms to the semantics defined in ISO C23 S7.26.6.2.
+ *
+ * @param dest the region to write to.
+ * @param value the value, converted to a byte, to write to each byte cell.
+ * @param len the number of bytes to write.
+ * @return the value of `dest`.
+ */
+OT_NONNULL
+void *OT_PREFIX_IF_NOT_RV32(memset_explicit)(void *dest, int value, size_t len);
+
+// Host libc may not provide this function, so host builds use ours.
+#ifndef OT_PLATFORM_RV32
+#define memset_explicit ot_memset_explicit
+#endif
+
+/**
  * Compare two (potentially overlapping) regions of memory for byte-wise
  * lexicographic order.
  *
