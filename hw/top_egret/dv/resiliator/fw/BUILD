@@ -25,7 +25,10 @@ ld_library(
             "start.S",
             "//hw:resiliator_firmware_hdrs",
         ],
-        copts = ["-O0", "-DVERDICT_" + variant.upper()],
+        copts = [
+            "-O0",
+            "-DVERDICT_" + variant.upper(),
+        ],
         exec_env = ["//hw/top_egret:sim_verilator_base"],
         kind = "ram",
         linker_script = ":resiliator_fw_ld",

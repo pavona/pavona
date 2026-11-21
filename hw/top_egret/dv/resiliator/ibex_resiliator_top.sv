@@ -4,7 +4,7 @@
 
 // Resiliator fault-injection wrapper around the Egret Ibex core.
 //
-// The driver supplies clk and active-high rst. Firmware reports 
+// The driver supplies clk and active-high rst. Firmware reports
 // whether fault injection succeeded or failed through gpio.
 // Uses Egret's secure Ibex configuration with flat SRAM and a matching PMP map.
 // Keep these memory-map constants in sync:

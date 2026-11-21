@@ -13,9 +13,9 @@ flips bypass a security property.
 
 This testbench points it at the Egret Ibex core **with the dual-core lockstep
 shadow core enabled**, running a deliberately unhardened firmware that emulates an
-authentication procedure (see `fw/auth_check.c`). 
+authentication procedure (see `fw/auth_check.c`).
 
-This Resiliator setup flags any single bit-flips that change the 
+This Resiliator setup flags any single bit-flips that change the
 program-visible outcome of a software, but do not raise a major alert.
 
 
@@ -85,5 +85,5 @@ Verilator prints during the build:
 ```
 
 The `ci/scripts/run-resiliator-campaign.py` script fails the job if the
-campaign reports `Total Flip-Flops : 0` in order to avoid silent failures in case, e.g., 
+campaign reports `Total Flip-Flops : 0` in order to avoid silent failures in case, e.g.,
 a part of the design is renamed.

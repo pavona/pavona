@@ -65,7 +65,7 @@ targets:
           # The fork requires a single-threaded model. NPROC controls parallelism.
           - '--threads 1'
 
-          # NPROC sets the campaign worker count at compile time. 
+          # NPROC sets the campaign worker count at compile time.
           - >-
             -CFLAGS "-std=c++17 -DTOP_NAME=ibex_resiliator_top -DOUT_DIR=resiliator_out
             -DNPROC=8 -DSTART_RESET_CYCLE=0 -DRESET_DURATION=4 -DHASHING_PERIODICITY=10
