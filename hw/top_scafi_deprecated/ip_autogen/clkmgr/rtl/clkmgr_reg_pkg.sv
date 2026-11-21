@@ -7,7 +7,7 @@
 package clkmgr_reg_pkg;
 
   // Param list
-  parameter int NumGroups = 8;
+  parameter int NumGroups = 7;
   parameter int NumSwGateableClocks = 4;
   parameter int NumHintableClocks = 1;
   parameter int NumAlerts = 2;

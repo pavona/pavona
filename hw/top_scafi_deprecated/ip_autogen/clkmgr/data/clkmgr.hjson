@@ -66,7 +66,7 @@
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "8",
+      default: "7",
       local: "true"
     },
     { name: "NumSwGateableClocks",
