@@ -77,7 +77,7 @@ Run `./run_sim.sh`. The following arguments may be used:
 
 ### Evaluation
 
-- All files produced by Resiliator will be written into the directory identified by `OUT_DIR` (see `tb_config.cfg`).
+- All files produced by Resiliator are written to the directory specified by the required compile-time setting `OUT_DIR`, set using `-DOUT_DIR=<path>`.
 - During the exhaustive FI campaign, sending `s\n` to stdin (press 's' and Enter) makes it print current statistics about the ongoing campaign.
 - When the exhaustive FI campaign is done, the same statistics (also on a per-FF basis) as well as details on the successful FI attacks will be present in `OUT_DIR/sim_results`.
 - When using the option `-d`, the propagation of the fault can be inspected using `view_diff.py`. It uses the framework `streamlit`, see [https://docs.streamlit.io/](https://docs.streamlit.io/).

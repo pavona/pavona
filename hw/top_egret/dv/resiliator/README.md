@@ -55,10 +55,12 @@ Run the full campaign the way CI does:
 ./ci/scripts/run-resiliator-campaign.py egret
 ```
 
-The simulator writes into `resiliator_out/`.
+The campaign runner creates a temporary working directory `<tmp_dir>` and runs
+the simulator there. The simulator writes its results to
+`<tmp_dir>/resiliator_out/`.
 
 The firmware implements two ways to encode the result of the authentication check, branch-less and branching.
-By default, this setup tests the branch-less version. To the branch variant instead, point the campaign
+By default, this setup tests the branch-less version. To test the branching variant instead, point the campaign
 at `//hw/top_egret/dv/resiliator/fw:auth_check_branch_hex`.
 
 
