@@ -115,6 +115,8 @@ targets:
     tools:
       verilator:
         mode: lint-only
+        verilator_options:
+          - "-Wall"
 
   lint-core:
     filesets:
@@ -126,6 +128,8 @@ targets:
     tools:
       verilator:
         mode: lint-only
+        verilator_options:
+          - "-Wall"
 
   syn:
     <<: *default_target
