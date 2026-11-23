@@ -37,7 +37,10 @@ Alert Test Register
 
 ## DEBUG_POLICY_VALID_SHADOWED
 Debug Policy Valid.
-Once valid is set to Mubi4::True, the debug policy cannot be written anymore.
+The debug policy category can only be written while this register holds Mubi4::False.
+Any other value, including an invalid encoding, locks the category.
+In the production debug state, with the CPU enabled and outside of RMA, the value of
+this register is broadcast as the valid field of the debug policy.
 - Offset: `0x4`
 - Reset default: `0x9`
 - Reset mask: `0xf`

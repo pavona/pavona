@@ -139,8 +139,8 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
 
   case (csr.get_name())
     "debug_policy_valid_shadowed": begin
-      // Broadcast valid stays MuBi4True in Prod+cpu_en, but recompute so any other state
-      // path stays consistent
+      // The broadcast valid field follows this register in the Prod state with the CPU
+      // enabled, so the trace prediction is recomputed on every write.
       if (tl_phase == AddrWrite) begin
         predict_trace_regs();
       end
@@ -312,6 +312,7 @@ function soc_dbg_policy_t soc_dbg_ctrl_scoreboard::compute_expected_policy();
   lc_tx_t          cpu_en    = latest_misc.lc_cpu_en;
   logic            lc_done   = latest_misc.boot_status.lc_done;
   mubi4_t          sw_reloc  = mubi4_t'(ral.debug_policy_relocked.get_mirrored_value());
+  mubi4_t          sw_valid  = mubi4_t'(ral.debug_policy_valid_shadowed.get_mirrored_value());
 
   case (dbg_state)
     SocDbgStBlank: begin
@@ -332,7 +333,7 @@ function soc_dbg_policy_t soc_dbg_ctrl_scoreboard::compute_expected_policy();
         exp.relocked = MuBi4False;
       end else if (lc_tx_test_true_strict(cpu_en)) begin
         exp.category = sw_category_hw;
-        exp.valid    = MuBi4True;
+        exp.valid    = sw_valid;
         exp.relocked = sw_reloc;
       end else begin
         exp.category = DbgCategoryLocked;

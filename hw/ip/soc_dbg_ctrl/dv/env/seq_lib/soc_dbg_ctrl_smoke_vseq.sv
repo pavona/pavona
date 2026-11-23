@@ -50,6 +50,14 @@ class soc_dbg_ctrl_smoke_vseq extends soc_dbg_ctrl_base_vseq;
     wr_status_val[3] == 0;
   }
   constraint valid_delay_c { valid_delay inside {[1:10]}; }
+  // Random values going into DEBUG_POLICY_VALID_SHADOWED
+  constraint wr_valid_c {
+    wr_valid dist {
+      MuBi4True   :/ 2,
+      MuBi4False  :/ 1,
+      [4'h0:4'hF] :/ 1
+    };
+  }
 
   // Standard SV/UVM methods
   extern function new(string name="");
