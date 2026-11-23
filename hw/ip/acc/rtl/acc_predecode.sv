@@ -569,14 +569,19 @@ module acc_predecode
 
         InsnOpcodeBignumShiftv: begin
           if (AccPQCEn) begin
-            rf_we_bignum                = 1'b1;
-            rf_ren_b_bignum             = 1'b1;
-            alu_bignum_shifter_b_en     = 1'b1;
-            alu_bignum_vector_type_pqc  = alu_vector_type_t'({2'b01, imem_rdata_i[16]});
-            alu_bignum_shift_right      = imem_rdata_i[30];
-            alu_bignum_shift_amt        = shift_amt_v_type_bignum;
-            alu_bignum_logic_shifter_en = 1'b1;
-            alu_bignum_vector_sel_pqc   = 1'b1;
+            unique case (imem_rdata_i[14:12])
+              3'b011: begin
+                rf_we_bignum                = 1'b1;
+                rf_ren_b_bignum             = 1'b1;
+                alu_bignum_shifter_b_en     = 1'b1;
+                alu_bignum_vector_type_pqc  = alu_vector_type_t'({2'b01, imem_rdata_i[16]});
+                alu_bignum_shift_right      = imem_rdata_i[30];
+                alu_bignum_shift_amt        = shift_amt_v_type_bignum;
+                alu_bignum_logic_shifter_en = 1'b1;
+                alu_bignum_vector_sel_pqc   = 1'b1;
+              end
+              default: ;
+            endcase
           end
         end
 
@@ -586,10 +591,15 @@ module acc_predecode
 
         InsnOpcodeBignumTrn: begin
           if (AccPQCEn) begin
-            rf_ren_a_bignum          = 1'b1;
-            rf_ren_b_bignum          = 1'b1;
-            rf_we_bignum             = 1'b1;
-            alu_bignum_trn_type_pqc  = alu_trn_type_t'(imem_rdata_i[27:25]);
+            unique case (imem_rdata_i[14:12])
+              3'b010: begin
+                rf_ren_a_bignum          = 1'b1;
+                rf_ren_b_bignum          = 1'b1;
+                rf_we_bignum             = 1'b1;
+                alu_bignum_trn_type_pqc  = alu_trn_type_t'(imem_rdata_i[27:25]);
+              end
+              default: ;
+            endcase
           end
         end
 

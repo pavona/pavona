@@ -828,11 +828,16 @@ module acc_decoder
 
       InsnOpcodeBignumShiftv: begin
         if (AccPQCEn) begin
-          insn_subset                = InsnSubsetBignum;
-          rf_ren_b_bignum            = 1'b1;
-          rf_wdata_sel_bignum        = RfWdSelEx;
-          rf_we_bignum               = 1'b1;
-          alu_vector_type_bignum_pqc = alu_vector_type_t'({2'b01, insn[16]});
+          unique case(insn_alu[14:12])
+            3'b011: begin
+              insn_subset                = InsnSubsetBignum;
+              rf_ren_b_bignum            = 1'b1;
+              rf_wdata_sel_bignum        = RfWdSelEx;
+              rf_we_bignum               = 1'b1;
+              alu_vector_type_bignum_pqc = alu_vector_type_t'({2'b01, insn[16]});
+            end
+            default: illegal_insn = 1'b1;
+          endcase
         end else begin
           illegal_insn = 1'b1;
         end
@@ -844,11 +849,16 @@ module acc_decoder
 
       InsnOpcodeBignumTrn: begin
         if (AccPQCEn) begin
-          insn_subset         = InsnSubsetBignum;
-          rf_ren_a_bignum     = 1'b1;
-          rf_ren_b_bignum     = 1'b1;
-          rf_wdata_sel_bignum = RfWdSelEx;
-          rf_we_bignum        = 1'b1;
+          unique case(insn_alu[14:12])
+            3'b010: begin
+              insn_subset         = InsnSubsetBignum;
+              rf_ren_a_bignum     = 1'b1;
+              rf_ren_b_bignum     = 1'b1;
+              rf_wdata_sel_bignum = RfWdSelEx;
+              rf_we_bignum        = 1'b1;
+            end
+            default: illegal_insn = 1'b1;
+          endcase
         end else begin
           illegal_insn = 1'b1;
         end
