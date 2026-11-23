@@ -61,6 +61,13 @@ interface spi_if
     `uvm_fatal(msg_id, "Don't call this function - get_active_csb when there is no active CSB")
   endfunction : get_active_csb
 
+  task automatic wait_active_csb(output bit [CSB_WIDTH-1:0] active_csb);
+    do begin
+      wait (csb != '1);
+    end while (csb == '1);
+    active_csb = get_active_csb();
+  endtask : wait_active_csb
+
   initial forever begin
     @(posedge sck);
     if (rst_n === 1)
@@ -73,4 +80,6 @@ interface spi_if
     @(csb);
     if (en_chk) `DV_CHECK_LE($countones(NUM_CSB'(~csb)), 1, , , msg_id)
   end
+
+  `ASSERT_KNOWN(CsbKnown_A, csb, sck, !rst_n)
 endinterface : spi_if

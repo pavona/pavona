@@ -313,6 +313,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     // indication that this is a new transaction
     string             txt = "";
     bit [7:0]          host_data, device_data, extracted_data;
+    bit [CSB_WIDTH-1:0] active_csb;
 
     forever begin
       // Get predicted item
@@ -323,9 +324,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       txt = "\n\t byte      actual     expected";
       for (int i=0; i < exp_segment.command_reg.len+1; i++) begin
 
-        wait (cfg.m_spi_agent_cfg.vif.csb == '0);
+        cfg.m_spi_agent_cfg.vif.wait_active_csb(active_csb);
         // After the sampling edge the plain_item should've been populated
-        cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, cfg.m_spi_agent_cfg.vif.get_active_csb());
+        cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, active_csb);
 
         // Extract data based on segment: task below blocks if data has not yet been fully sampled
         extract_data_for_segment(exp_segment.command_reg, host_data, device_data);

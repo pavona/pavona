@@ -47,8 +47,7 @@ class spi_monitor extends dv_base_monitor#(
     bit flash_opcode_received;
 
     wait (cfg.en_monitor);
-    wait (cfg.vif.csb == '0);
-    active_csb = cfg.vif.get_active_csb();
+    cfg.vif.wait_active_csb(active_csb);
 
     cfg.vif.sck_polarity = cfg.sck_polarity[active_csb];
     cfg.vif.sck_phase = cfg.sck_phase[active_csb];
