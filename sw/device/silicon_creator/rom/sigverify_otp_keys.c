@@ -19,21 +19,20 @@ enum {
 
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` partition ignoring the size of
   // the partition digest.
-  kAuthCodesignPartitionSize =
-      OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+  kAuthCodesignPartitionSize = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
 
-  kAuthCodesignPartitionSizeInWords =
-      kAuthCodesignPartitionSize / sizeof(uint32_t),
+  kAuthCodesignPartitionSizeInWords = kAuthCodesignPartitionSize /
+      sizeof(uint32_t),
 
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` region used to store the key
   // material. This is the size of the partition minus the size of the HMAC
   // digest used to measure the integrity of the keys.
-  kAuthcodesignPartitionMsgSize =
-      kAuthCodesignPartitionSize - sizeof(hmac_digest_t),
+  kAuthcodesignPartitionMsgSize = kAuthCodesignPartitionSize -
+      sizeof(hmac_digest_t),
 
-  kAuthcodesignPartitionMsgSizeInWords =
-      kAuthcodesignPartitionMsgSize / sizeof(uint32_t),
+  kAuthcodesignPartitionMsgSizeInWords = kAuthcodesignPartitionMsgSize /
+      sizeof(uint32_t),
 
   // Offset of the `ROT_CREATOR_AUTH_STATE` partition.
   kAuthStatePartitionOffset = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
@@ -41,7 +40,7 @@ enum {
   // The size of the `ROT_CREATOR_AUTH_STATE` partition ignoring the size of the
   // partition digest.
   kAuthStatePartitionSize = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
-                            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
+      OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
 
   kAuthStatePartitionSizeInWords = kAuthStatePartitionSize / sizeof(uint32_t),
 };
@@ -63,12 +62,12 @@ enum {
 
   // Size of the `ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN` partition.
   kAuthCodesignPartitionSize =
-      OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE_SIZE +
+          OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_TYPE_SIZE +
       OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_ROLE_SIZE +
       OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_NON_RAW_MFW_CODESIGN_KEY_SIZE,
 
-  kAuthCodesignPartitionSizeInWords =
-      kAuthCodesignPartitionSize / sizeof(uint32_t),
+  kAuthCodesignPartitionSizeInWords = kAuthCodesignPartitionSize /
+      sizeof(uint32_t),
 };
 #endif
 
