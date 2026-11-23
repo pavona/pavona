@@ -29,6 +29,9 @@ class soc_dbg_ctrl_scoreboard extends cip_base_scoreboard #(
   halt_state_e   halt_state;      // halt FSM shadow, advanced one state per misc snapshot
   logic [1:0]    halt_pin_sync;   // models the RTL 2-flop sync on halt_cpu_boot
 
+  soc_dbg_state_t prev_dbg_state;
+  bit             prev_dbg_state_valid;
+
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
@@ -86,6 +89,14 @@ task soc_dbg_ctrl_scoreboard::process_misc_fifo();
   forever begin
     misc_fifo.get(latest_misc);
     if (cfg.under_reset) continue;
+    if (cfg.en_cov && prev_dbg_state_valid) begin
+      cov.sample_soc_dbg_policy_cg(prev_dbg_state,
+                                   latest_misc.soc_dbg_policy_bus.valid,
+                                   latest_misc.soc_dbg_policy_bus.category,
+                                   latest_misc.soc_dbg_policy_bus.relocked);
+    end
+    prev_dbg_state       = latest_misc.soc_dbg_state;
+    prev_dbg_state_valid = 1'b1;
     check_continue_cpu_boot();
     advance_halt_fsm();
   end
@@ -252,6 +263,7 @@ function void soc_dbg_ctrl_scoreboard::reset(string kind = "HARD");
   halt_state          = Idle;
   halt_pin_sync       = '0;
   trace_predict_valid = 1'b0;
+  prev_dbg_state_valid = 1'b0;
   misc_fifo.flush();
 endfunction : reset
 
@@ -274,11 +286,6 @@ function void soc_dbg_ctrl_scoreboard::predict_trace_regs();
   soc_dbg_policy_t exp     = compute_expected_policy();
   uvm_reg_data_t   cat_val = exp.category;
   uvm_reg_data_t   vr_val  = {exp.relocked, exp.valid};
-
-  if (cfg.en_cov) begin
-    cov.sample_soc_dbg_policy_cg(latest_misc.soc_dbg_state,
-                                 exp.valid, exp.category, exp.relocked);
-  end
 
   void'(ral.trace_debug_policy_category.predict(
       .value(cat_val), .kind(UVM_PREDICT_DIRECT)));
