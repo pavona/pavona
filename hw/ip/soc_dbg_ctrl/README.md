@@ -83,6 +83,6 @@ The debug policy CSRs are broadcast to all TAPs / Debug modules in the SOC throu
 
 The debug policy bus encompasses the fields of all three CSRs:
 
-* **Debug policy_valid:** corresponds to the valid field in the `DEBUG_POLICY_VALID` register.
+* **Debug policy_valid:** corresponds to the valid field in the `DEBUG_POLICY_VALID_SHADOWED` register.
 * **Debug policy_relocked:** corresponds to the relocked field in the `DEBUG_POLICY_RELOCKED` register.
-* **Debug policy:** maps to the set debug category in the `DEBUG_POLICY_CATEGORY` register.
+* **Debug policy:** maps to the set debug category in the `DEBUG_POLICY_CATEGORY_SHADOWED` register.

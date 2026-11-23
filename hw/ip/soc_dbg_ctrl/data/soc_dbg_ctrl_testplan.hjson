@@ -27,9 +27,11 @@
               - `boot_status.lc_done = 1'b1`
             - Repeat the following steps a random number of times (5 to 20):
               - Write a random `dbg_category_e` value to `DEBUG_POLICY_CATEGORY_SHADOWED`
-                over the core interface. On the first iteration, set `DEBUG_POLICY_VALID_SHADOWED`
-                to `MuBi4True` after a random delay so the category register locks; later
-                iterations continue to issue writes to exercise the write-gating.
+                over the core interface.
+              - After a random delay, write `DEBUG_POLICY_VALID_SHADOWED` with `MuBi4True`,
+                `MuBi4False` or an invalid encoding. Any value other than `MuBi4False` will lock
+                the category register, which allows following category writes to exercise the
+                gating mechanism of this register.
               - Read the four trace registers (two core-side, two JTAG-side) in interleaved order
                 with random inter-access delays.
               - Write a random `MuBi4` value to `DEBUG_POLICY_RELOCKED` and read the `relocked` field
