@@ -176,7 +176,7 @@ An appropriate hook can be installed by executing this from the root of your rep
 
 ```sh
 cat <<"EOF" > .git/hooks/prepare-commit-msg
-#!/bin/sh
+#!/usr/bin/env sh
 
 # Add a Signed-off-by line to the commit message if not already present.
 git interpret-trailers --if-exists doNothing --trailer \
