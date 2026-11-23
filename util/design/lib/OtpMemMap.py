@@ -610,8 +610,8 @@ class OtpMemMap():
 
                 if check_bool(item["isdigest"]):
                     granule = "64bit"
-                    name = "[{}](registers.md#{})".format(
-                        item["name"], item["name"].lower())
+                    name = "[{}](#Reg_{}_0)".format(item["name"],
+                                                    item["name"].lower())
                 elif check_bool(item["iszer"]):
                     granule = "64bit"
                     name = item["name"]
@@ -686,7 +686,7 @@ class OtpMemMap():
                 is_hw_digest = "yes" if check_bool(part["hw_digest"]) else "no"
                 for item in part["items"]:
                     if check_bool(item["isdigest"]):
-                        name = "[{}](registers.md#{})".format(
+                        name = "[{}](#Reg_{}_0)".format(
                             item["name"], item["name"].lower())
                         row = [name, part["name"], is_hw_digest]
                         table.append(row)
