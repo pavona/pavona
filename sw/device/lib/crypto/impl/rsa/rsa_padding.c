@@ -615,11 +615,8 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   // Generate a random string the same length as a hash digest (step 2d).
   uint32_t seed[kHmacMaxDigestWords];
   HARDENED_TRY(entropy_complex_check());
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed, digest_wordlen,
-                                      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_uninstantiate());
+  HARDENED_TRY(entropy_csrng_oneshot(seed, digest_wordlen,
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 2e).
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);

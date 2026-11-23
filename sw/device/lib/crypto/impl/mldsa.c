@@ -189,31 +189,6 @@ static int mldsa_native_prehash_alg(otcrypto_mldsa_sign_mode_t sign_mode) {
 }
 #endif
 
-/**
- * Fills `buf` from a fresh CSRNG instance, uninstantiating it on every exit.
- *
- * Shreds `buf` on failure.
- *
- * @param[out] buf Destination buffer.
- * @param len Length of `buf` in words.
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t mldsa_csrng_generate(uint32_t *buf, size_t len) {
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  status_t status = entropy_csrng_generate(&kEntropyEmptySeed, buf, len,
-                                           /*fips_check=*/kHardenedBoolTrue);
-  status_t uninstantiate_status = entropy_csrng_uninstantiate();
-  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
-    status = uninstantiate_status;
-  }
-  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
-    hardened_memshred(buf, len);
-  }
-  return status;
-}
-
 otcrypto_status_t otcrypto_mldsa44_keygen(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key,
     uint32_t work[kOtcryptoMldsa44WorkBufferKeypairWords]) {
@@ -223,7 +198,8 @@ otcrypto_status_t otcrypto_mldsa44_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa44SeedWords];
 #endif
-  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
+  HARDENED_TRY(entropy_csrng_oneshot(seed, ARRAYSIZE(seed),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
@@ -322,7 +298,8 @@ otcrypto_status_t otcrypto_mldsa44_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa44SeedWords];
-  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
+  HARDENED_TRY(entropy_csrng_oneshot(rnd, ARRAYSIZE(rnd),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   otcrypto_status_t status = otcrypto_mldsa44_sign_derand(
@@ -585,7 +562,8 @@ otcrypto_status_t otcrypto_mldsa65_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa65SeedWords];
 #endif
-  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
+  HARDENED_TRY(entropy_csrng_oneshot(seed, ARRAYSIZE(seed),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
@@ -684,7 +662,8 @@ otcrypto_status_t otcrypto_mldsa65_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa65SeedWords];
-  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
+  HARDENED_TRY(entropy_csrng_oneshot(rnd, ARRAYSIZE(rnd),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   otcrypto_status_t status = otcrypto_mldsa65_sign_derand(
@@ -946,7 +925,8 @@ otcrypto_status_t otcrypto_mldsa87_keygen(
 #else
   uint32_t seed[kOtcryptoMldsa87SeedWords];
 #endif
-  HARDENED_TRY(mldsa_csrng_generate(seed, ARRAYSIZE(seed)));
+  HARDENED_TRY(entropy_csrng_oneshot(seed, ARRAYSIZE(seed),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t seed_buf = {.data = seed,
                                                 .len = sizeof(seed)};
@@ -1045,7 +1025,8 @@ otcrypto_status_t otcrypto_mldsa87_sign(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t rnd[kOtcryptoMldsa87SeedWords];
-  HARDENED_TRY(mldsa_csrng_generate(rnd, ARRAYSIZE(rnd)));
+  HARDENED_TRY(entropy_csrng_oneshot(rnd, ARRAYSIZE(rnd),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_aligned_byte_buf_t rnd_buf = {.data = rnd, .len = sizeof(rnd)};
   otcrypto_status_t status = otcrypto_mldsa87_sign_derand(

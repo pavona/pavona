@@ -89,12 +89,8 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
       uint32_t salt[kHmacMaxDigestWords];
       HARDENED_TRY(entropy_complex_check());
       HARDENED_TRY(entropy_csrng_uninstantiate());
-      HARDENED_TRY(entropy_csrng_instantiate(
-          /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-      HARDENED_TRY(entropy_csrng_generate(&kEntropyEmptySeed, salt,
-                                          message_digest.len,
-                                          /*fips_check=*/kHardenedBoolTrue));
-      HARDENED_TRY(entropy_csrng_uninstantiate());
+      HARDENED_TRY(entropy_csrng_oneshot(salt, message_digest.len,
+                                         /*fips_check=*/kHardenedBoolTrue));
       return rsa_padding_pss_encode(message_digest, salt, message_digest.len,
                                     encoded_message_len, encoded_message);
     }

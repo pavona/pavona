@@ -175,6 +175,7 @@ dual_cc_library(
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:hardened_memory",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:math",
             "//sw/device/lib/base:memory",

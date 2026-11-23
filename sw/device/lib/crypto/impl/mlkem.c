@@ -79,31 +79,6 @@ _Static_assert(kOtcryptoMlkem1024MaskedSecretKeyBytes ==
                    kMlkem1024MaskedKeyblobBytes,
                "ML-KEM-1024 masked secret key size mismatch");
 
-/**
- * Fills `buf` from a fresh CSRNG instance, uninstantiating it on every exit.
- *
- * Shreds `buf` on failure.
- *
- * @param[out] buf Destination buffer.
- * @param len Length of `buf` in words.
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t mlkem_csrng_generate(uint32_t *buf, size_t len) {
-  HARDENED_TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  status_t status = entropy_csrng_generate(&kEntropyEmptySeed, buf, len,
-                                           /*fips_check=*/kHardenedBoolTrue);
-  status_t uninstantiate_status = entropy_csrng_uninstantiate();
-  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
-    status = uninstantiate_status;
-  }
-  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
-    hardened_memshred(buf, len);
-  }
-  return status;
-}
-
 // ML-KEM-512 functions
 
 otcrypto_status_t otcrypto_mlkem512_keygen_derand(
@@ -267,7 +242,8 @@ otcrypto_status_t otcrypto_mlkem512_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem512KeygenSeedWords];
 #endif
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
@@ -284,7 +260,8 @@ otcrypto_status_t otcrypto_mlkem512_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem512EncapsSeedWords];
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
@@ -555,7 +532,8 @@ otcrypto_status_t otcrypto_mlkem768_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem768KeygenSeedWords];
 #endif
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
@@ -572,7 +550,8 @@ otcrypto_status_t otcrypto_mlkem768_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem768EncapsSeedWords];
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
@@ -843,7 +822,8 @@ otcrypto_status_t otcrypto_mlkem1024_keygen(
 #else
   uint32_t randomness[kOtcryptoMlkem1024KeygenSeedWords];
 #endif
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
@@ -860,7 +840,8 @@ otcrypto_status_t otcrypto_mlkem1024_encapsulate(
   HARDENED_TRY(entropy_complex_check());
 
   uint32_t randomness[kOtcryptoMlkem1024EncapsSeedWords];
-  HARDENED_TRY(mlkem_csrng_generate(randomness, ARRAYSIZE(randomness)));
+  HARDENED_TRY(entropy_csrng_oneshot(randomness, ARRAYSIZE(randomness),
+                                     /*fips_check=*/kHardenedBoolTrue));
 
   otcrypto_const_word32_buf_t randomness_buf = {.data = randomness,
                                                 .len = ARRAYSIZE(randomness)};
