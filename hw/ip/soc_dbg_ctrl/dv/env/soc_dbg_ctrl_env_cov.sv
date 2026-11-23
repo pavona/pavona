@@ -26,9 +26,10 @@ class soc_dbg_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(soc_dbg_ctrl_env_cf
       bins other   = default;
     }
 
-    cp_bcast_valid: coverpoint bcast_valid_cp {
-      bins t = {MuBi4True};
-      bins f = {MuBi4False};
+    cp_bcast_valid: coverpoint 4'(bcast_valid_cp) {
+      bins t       = {MuBi4True};
+      bins f       = {MuBi4False};
+      bins invalid = {[0:15]} with (!(item inside {MuBi4True, MuBi4False}));
     }
     cp_bcast_category: coverpoint bcast_category_cp {
       bins locked = {DbgCategoryLocked};
@@ -44,7 +45,9 @@ class soc_dbg_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(soc_dbg_ctrl_env_cf
     }
 
     cr_state_x_bcast_category: cross cp_dbg_state, cp_bcast_category;
-    cr_state_x_bcast_valid:    cross cp_dbg_state, cp_bcast_valid;
+    cr_state_x_bcast_valid:    cross cp_dbg_state, cp_bcast_valid {
+      ignore_bins sw_only = binsof(cp_bcast_valid.invalid) && !binsof(cp_dbg_state.prod);
+    }
     cr_state_x_bcast_relocked: cross cp_dbg_state, cp_bcast_relocked;
   endgroup
 
