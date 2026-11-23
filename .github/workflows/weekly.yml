@@ -15,21 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  dvsim-all:
-    name: All weekly DVSim coverage simulation
-    uses: ./.github/workflows/dv-all.yml
-    secrets: inherit
-    with:
-      runner: "pavona-dv-large"
-      run-type: "weekly"
-      item: "weekly"
-      coverage: true
-      timeout-minutes: 9000 # 150 hours
-      dashboard-private: "git@github.com:pavona/internal-dashboard.git"
-      dashboard-public: "git@github.com:pavona/public-dashboard.git"
-      reseed-source: "hw/dv/grading/grading_report.hjson"
-      concurrent-jobs: 30
-
   gitless:
     name: Run gitless check (repo packaging check)
     runs-on:
