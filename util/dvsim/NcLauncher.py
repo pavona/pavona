@@ -28,7 +28,7 @@ class NcLauncher(Launcher):
     def create_run_sh(self, full_path, cmd):
         run_file = os.path.join(full_path, 'run.sh')
         rm_path(run_file)
-        lines = ['#!/bin/sh',
+        lines = ['#!/usr/bin/env sh',
                  'function realpath {',
                  '  python -c "import os; print (os.path.realpath(\'$1\'))"',
                  '}',
