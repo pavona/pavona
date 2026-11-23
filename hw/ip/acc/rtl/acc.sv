@@ -158,6 +158,9 @@ module acc
     end else begin : gen_inactive_app_intf
       assign kmac_data_o = '0;
       assign kmac_rsp    = '0;
+
+      logic unused_kmac;
+      assign unused_kmac = ^{kmac_req, kmac_data_i};
     end
   endgenerate
 
@@ -249,8 +252,8 @@ module acc
 
   // Instruction Memory (IMEM) =================================================
 
-  localparam int ImemSizeWords = AccImemSizeByte / 4;
-  localparam int ImemIndexWidth = vbits(ImemSizeWords);
+  localparam int ImemDepth = AccImemSizeByte / 4;
+  localparam int ImemIndexWidth = vbits(ImemDepth);
 
   // Access select to IMEM: core (1), or bus (0)
   logic imem_access_core;
@@ -356,8 +359,8 @@ module acc
   // SEC_CM: MEM.SCRAMBLE
   prim_ram_1p_scr #(
     .Width          (39),
-    .Depth          (ImemSizeWords),
-    .InstDepth      (ImemSizeWords),
+    .Depth          (ImemDepth),
+    .InstDepth      (ImemDepth),
     .DataBitsPerMask(39),
     .EnableParity   (0)
   ) u_imem (
@@ -512,8 +515,8 @@ module acc
 
   // Data Memory (DMEM) ========================================================
 
-  localparam int DmemSizeWords = AccDmemSizeByte / (WLEN / 8);
-  localparam int DmemIndexWidth = vbits(DmemSizeWords);
+  localparam int DmemDepth = AccDmemSizeByte / (WLEN / 8);
+  localparam int DmemIndexWidth = vbits(DmemDepth);
 
   localparam int DmemBusSizeWords = int'(acc_reg_pkg::ACC_DMEM_SIZE) / (WLEN / 8);
   localparam int DmemBusIndexWidth = vbits(DmemBusSizeWords);
@@ -572,8 +575,8 @@ module acc
   // SEC_CM: MEM.SCRAMBLE
   prim_ram_1p_scr #(
     .Width             (ExtWLEN),
-    .Depth             (DmemSizeWords),
-    .InstDepth         (DmemSizeWords),
+    .Depth             (DmemDepth),
+    .InstDepth         (DmemDepth),
     .DataBitsPerMask   (39),
     .EnableParity      (0),
     .ReplicateKeyStream(1)
