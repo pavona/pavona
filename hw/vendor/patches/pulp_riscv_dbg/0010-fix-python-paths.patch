@@ -1,0 +1,10 @@
+diff --git a/tb/veri-run-openocd.py b/tb/veri-run-openocd.py
+index a5d7a455f4..ea22e70cef 100755
+--- a/tb/veri-run-openocd.py
++++ b/tb/veri-run-openocd.py
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python3
++#!/usr/bin/env python3
+ """Launch riscv-dbg testbench and connect to openocd"""
+
+ import sys
