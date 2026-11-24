@@ -40,6 +40,15 @@ py_binary(
 )
 
 py_binary(
+    name = "gen-flash-info-mmap",
+    srcs = ["gen-flash-info-mmap.py"],
+    deps = [
+        "//util/design/lib:common",
+        "//util/design/lib:flash_info_mem_map",
+    ],
+)
+
+py_binary(
     name = "gen-lc-state-enc",
     srcs = ["gen-lc-state-enc.py"],
     data = ["//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson"],

@@ -70,15 +70,15 @@ static status_t print_certs(void) {
   // trigger an ECC error when trying to read a page that has scrambling setup
   // by the ROM_EXT but is not erased after.
   if (kDeviceType == kDeviceSilicon) {
-    TRY(print_cert(buf, &kFlashCtrlInfoPageFactoryCerts));
+    TRY(print_cert(buf, &FLASH_CTRL_INFO_PAGE_FACTORY_CERTS));
   }
-  TRY(print_cert(buf, &kFlashCtrlInfoPageDiceCerts));
+  TRY(print_cert(buf, &FLASH_CTRL_INFO_PAGE_DICE_CERTS));
 
   // Print owner information.
-  TRY(print_owner_block(buf, &kFlashCtrlInfoPageOwnerSlot0));
+  TRY(print_owner_block(buf, &FLASH_CTRL_INFO_PAGE_OWNER_SLOT0));
   LOG_INFO("OWNER_PAGE_0: %s", buf);
 
-  TRY(print_owner_block(buf, &kFlashCtrlInfoPageOwnerSlot1));
+  TRY(print_owner_block(buf, &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1));
   LOG_INFO("OWNER_PAGE_1: %s", buf);
 
   return OK_STATUS();

@@ -46,8 +46,8 @@ static status_t peripheral_handles_init(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_tpm_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved6);
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved6,
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6);
+  TRY(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }

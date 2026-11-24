@@ -432,16 +432,34 @@
       default: "10",
       local: "true"
     },
+    { name: "Infos0Offset",
+      desc: "Page offset of the first info page of type 0 within the bank",
+      type: "int",
+      default: "0",
+      local: "true"
+    },
     { name: "NumInfos1",
       desc: "Number of configurable flash info pages for info type 1",
       type: "int",
       default: "1",
       local: "true"
     },
+    { name: "Infos1Offset",
+      desc: "Page offset of the first info page of type 1 within the bank",
+      type: "int",
+      default: "10",
+      local: "true"
+    },
     { name: "NumInfos2",
       desc: "Number of configurable flash info pages for info type 2",
       type: "int",
       default: "2",
+      local: "true"
+    },
+    { name: "Infos2Offset",
+      desc: "Page offset of the first info page of type 2 within the bank",
+      type: "int",
+      default: "11",
       local: "true"
     },
 

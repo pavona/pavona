@@ -64,7 +64,8 @@ rom_error_t acc_boot_app_load(void);
  *
  * @param additional_seed_idx The attestation key generation seed index to load.
  *                            The index corresponds to the seed offset in flash
- *                            info page `kFlashCtrlInfoPageAttestationKeySeeds`.
+ *                            info page
+                              `FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS`.
  * @param key_type Keymgr key type to generate, attestation or sealing.
  * @param diversification Salt and version information for key manager.
  * @param[out] public_key Attestation public key.

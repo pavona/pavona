@@ -487,7 +487,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
         insert_ip_attrs(instance, get_clkmgr_params(topcfg))
     if "flash_ctrl" in ipgen_instances:
         instance = ipgen_instances["flash_ctrl"][0]
-        insert_ip_attrs(instance, get_flash_ctrl_params(topcfg))
+        insert_ip_attrs(instance, get_flash_ctrl_params(topcfg, cfg_path))
     if "otp_ctrl" in ipgen_instances:
         instance = ipgen_instances["otp_ctrl"][0]
         insert_ip_attrs(instance, get_otp_ctrl_params(topcfg, cfg_path))

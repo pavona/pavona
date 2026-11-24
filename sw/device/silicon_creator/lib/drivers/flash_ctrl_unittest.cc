@@ -42,20 +42,102 @@ struct InfoPage {
  * tests.
  */
 const std::map<const flash_ctrl_info_page_t *, InfoPage> &InfoPages() {
-#define INFO_PAGE_MAP_INIT(name_, bank_, page_)                         \
-  {                                                                     \
-      &name_,                                                           \
-      {                                                                 \
-          bank_,                                                        \
-          page_,                                                        \
-          FLASH_CTRL_BANK##bank_##_INFO0_PAGE_CFG_##page_##_REG_OFFSET, \
-          FLASH_CTRL_BANK##bank_##_INFO0_REGWEN_##page_##_REG_OFFSET,   \
-      },                                                                \
+#define INFO_PAGE_MAP_INIT(name_, bank_, type_, page_, page_suffix_)                 \
+  {                                                                                  \
+      &name_,                                                                        \
+      {                                                                              \
+          bank_,                                                                     \
+          page_,                                                                     \
+          FLASH_CTRL_BANK##bank_##_INFO##type_##_PAGE_CFG##page_suffix_##REG_OFFSET, \
+          FLASH_CTRL_BANK##bank_##_INFO##type_##_REGWEN##page_suffix_##REG_OFFSET,   \
+      },                                                                             \
   },
 
-  static const std::map<const flash_ctrl_info_page_t *, InfoPage> *const
-      kInfoPages = new std::map<const flash_ctrl_info_page_t *, InfoPage>{
-          FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_MAP_INIT)};
+  static const std::map<
+      const flash_ctrl_info_page_t *,
+      InfoPage> *const kInfoPages = new std::map<const flash_ctrl_info_page_t *,
+                                                 InfoPage>{
+      INFO_PAGE_MAP_INIT(
+          FLASH_CTRL_INFO_PAGE_FACTORY_ID, 0, 0, 0,
+          _0_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_CREATOR_SECRET, 0, 0, 1,
+                                  _1_)
+          INFO_PAGE_MAP_INIT(
+              FLASH_CTRL_INFO_PAGE_OWNER_SECRET, 0, 0, 2,
+              _2_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_WAFER_AUTH_SECRET, 0,
+                                      0, 3, _3_)
+              INFO_PAGE_MAP_INIT(
+                  FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS, 0, 0, 4,
+                  _4_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED0,
+                                          0, 0, 5, _5_)
+                  INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED1, 0, 0,
+                                     6, _6_)
+                      INFO_PAGE_MAP_INIT(
+                          FLASH_CTRL_INFO_PAGE_OWNER_RESERVED2, 0, 0, 7,
+                          _7_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED3,
+                                                  0, 0, 8, _8_)
+                          INFO_PAGE_MAP_INIT(
+                              FLASH_CTRL_INFO_PAGE_FACTORY_CERTS, 0, 0, 9,
+                              _9_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_UNALLOCATED0,
+                                                      0,
+                                                      1,
+                                                      0,
+                                                      _)
+                              INFO_PAGE_MAP_INIT(
+                                  FLASH_CTRL_INFO_PAGE_UNALLOCATED1, 0, 2, 0,
+                                  _0_)
+                                  INFO_PAGE_MAP_INIT(
+                                      FLASH_CTRL_INFO_PAGE_UNALLOCATED2, 0, 2,
+                                      1,
+                                      _1_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
+                                                              1,
+                                                              0,
+                                                              0,
+                                                              _0_)
+                                      INFO_PAGE_MAP_INIT(
+                                          FLASH_CTRL_INFO_PAGE_BOOT_DATA1, 1, 0,
+                                          1,
+                                          _1_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
+                                                                  1,
+                                                                  0,
+                                                                  2,
+                                                                  _2_)
+                                          INFO_PAGE_MAP_INIT(
+                                              FLASH_CTRL_INFO_PAGE_OWNER_SLOT1,
+                                              1, 0, 3,
+                                              _3_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_CREATOR_RESERVED0,
+                                                                      1,
+                                                                      0,
+                                                                      4,
+                                                                      _4_)
+                                              INFO_PAGE_MAP_INIT(
+                                                  FLASH_CTRL_INFO_PAGE_OWNER_RESERVED4,
+                                                  1, 0, 5,
+                                                  _5_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED5,
+                                                                          1,
+                                                                          0,
+                                                                          6,
+                                                                          _6_)
+                                                  INFO_PAGE_MAP_INIT(
+                                                      FLASH_CTRL_INFO_PAGE_OWNER_RESERVED6,
+                                                      1, 0, 7,
+                                                      _7_) INFO_PAGE_MAP_INIT(FLASH_CTRL_INFO_PAGE_OWNER_RESERVED7,
+                                                                              1,
+                                                                              0,
+                                                                              8,
+                                                                              _8_)
+                                                      INFO_PAGE_MAP_INIT(
+                                                          FLASH_CTRL_INFO_PAGE_DICE_CERTS,
+                                                          1, 0, 9, _9_)
+                                                          INFO_PAGE_MAP_INIT(
+                                                              FLASH_CTRL_INFO_PAGE_UNALLOCATED3,
+                                                              1, 1, 0, _)
+                                                              INFO_PAGE_MAP_INIT(
+                                                                  FLASH_CTRL_INFO_PAGE_UNALLOCATED4,
+                                                                  1, 2, 0, _0_)
+                                                                  INFO_PAGE_MAP_INIT(
+                                                                      FLASH_CTRL_INFO_PAGE_UNALLOCATED5,
+                                                                      1, 2, 1,
+                                                                      _1_)};
   return *kInfoPages;
 }
 
@@ -68,7 +150,7 @@ class FlashCtrlTest : public rom_test::RomTest {
 };
 
 class InfoPagesTest : public FlashCtrlTest {};
-TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(20)); }
+TEST_F(InfoPagesTest, NumberOfPages) { EXPECT_THAT(InfoPages(), SizeIs(26)); }
 
 TEST_F(InfoPagesTest, PagesPerBank) {
   std::array<uint32_t, 2> pages_per_bank = {0, 0};
@@ -78,7 +160,7 @@ TEST_F(InfoPagesTest, PagesPerBank) {
     ++pages_per_bank[bank];
   }
 
-  EXPECT_THAT(pages_per_bank, Each(10));
+  EXPECT_THAT(pages_per_bank, Each(13));
 }
 
 TEST_F(InfoPagesTest, PageIndices) {
@@ -135,12 +217,12 @@ TEST_P(InitTest, Initialize) {
       otp_,
       read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
-  auto info_page = InfoPages().at(&kFlashCtrlInfoPageBootData0);
+  auto info_page = InfoPages().at(&FLASH_CTRL_INFO_PAGE_BOOT_DATA0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
                     FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
 
-  info_page = InfoPages().at(&kFlashCtrlInfoPageBootData1);
+  info_page = InfoPages().at(&FLASH_CTRL_INFO_PAGE_BOOT_DATA1);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
                     FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
@@ -324,7 +406,8 @@ TEST_F(TransferTest, ReadDataOk) {
 }
 
 TEST_F(TransferTest, ReadInfoOk) {
-  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  // Address of the `FLASH_CTRL_INFO_PAGE_OWNER_SLOT0` page, see
+  // `info_page_addr`.
   const uint32_t addr =
       1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ,
@@ -332,7 +415,7 @@ TEST_F(TransferTest, ReadInfoOk) {
   ExpectReadData(words_);
   ExpectWaitForDone(true, false);
   std::vector<uint32_t> words_out(words_.size());
-  EXPECT_EQ(flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+  EXPECT_EQ(flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0x01234567,
                                  words_.size(), &words_out.front()),
             kErrorOk);
   EXPECT_EQ(words_out, words_);
@@ -348,14 +431,15 @@ TEST_F(TransferTest, ProgDataOk) {
 }
 
 TEST_F(TransferTest, ProgInfoOk) {
-  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  // Address of the `FLASH_CTRL_INFO_PAGE_OWNER_SLOT0` page, see
+  // `info_page_addr`.
   const uint32_t addr =
       1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_PROG,
                       addr + 0x01234567, words_.size());
   ExpectProgData(words_);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+  EXPECT_EQ(flash_ctrl_info_write(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0x01234567,
                                   words_.size(), &words_.front()),
             kErrorOk);
 }
@@ -369,12 +453,13 @@ TEST_F(TransferTest, EraseDataPageOk) {
 }
 
 TEST_F(TransferTest, EraseInfoPageOk) {
-  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  // Address of the `FLASH_CTRL_INFO_PAGE_OWNER_SLOT0` page, see
+  // `info_page_addr`.
   const uint32_t addr =
       1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, addr, 1);
   ExpectWaitForDone(true, false);
-  EXPECT_EQ(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+  EXPECT_EQ(flash_ctrl_info_erase(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0,
                                   kFlashCtrlEraseTypePage),
             kErrorOk);
 }
@@ -683,10 +768,13 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
   std::array<const flash_ctrl_info_page_t *, 7> no_owner_access = {
-      &kFlashCtrlInfoPageFactoryId,        &kFlashCtrlInfoPageCreatorSecret,
-      &kFlashCtrlInfoPageOwnerSecret,      &kFlashCtrlInfoPageWaferAuthSecret,
-      &kFlashCtrlInfoPageBootData0,        &kFlashCtrlInfoPageBootData1,
-      &kFlashCtrlInfoPageCreatorReserved0,
+      &FLASH_CTRL_INFO_PAGE_FACTORY_ID,
+      &FLASH_CTRL_INFO_PAGE_CREATOR_SECRET,
+      &FLASH_CTRL_INFO_PAGE_OWNER_SECRET,
+      &FLASH_CTRL_INFO_PAGE_WAFER_AUTH_SECRET,
+      &FLASH_CTRL_INFO_PAGE_BOOT_DATA0,
+      &FLASH_CTRL_INFO_PAGE_BOOT_DATA1,
+      &FLASH_CTRL_INFO_PAGE_CREATOR_RESERVED0,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
@@ -713,8 +801,8 @@ TEST_F(FlashCtrlTest, BankErasePermsSet) {
 
 TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
   std::array<const flash_ctrl_info_page_t *, 2> cert_pages = {
-      &kFlashCtrlInfoPageAttestationKeySeeds,
-      &kFlashCtrlInfoPageDiceCerts,
+      &FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS,
+      &FLASH_CTRL_INFO_PAGE_DICE_CERTS,
   };
   for (auto page : cert_pages) {
     auto info_page = InfoPages().at(page);
@@ -725,14 +813,15 @@ TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
     EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9666666);
   }
 
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  flash_ctrl_cert_info_page_creator_cfg(
+      &FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS);
+  flash_ctrl_cert_info_page_creator_cfg(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
 }
 
 TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
   std::array<const flash_ctrl_info_page_t *, 2> cert_pages = {
-      &kFlashCtrlInfoPageAttestationKeySeeds,
-      &kFlashCtrlInfoPageDiceCerts,
+      &FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS,
+      &FLASH_CTRL_INFO_PAGE_DICE_CERTS,
   };
   for (auto page : cert_pages) {
     auto info_page = InfoPages().at(page);
@@ -742,8 +831,8 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
   }
 
   flash_ctrl_cert_info_page_owner_restrict(
-      &kFlashCtrlInfoPageAttestationKeySeeds);
-  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
+      &FLASH_CTRL_INFO_PAGE_ATTESTATION_KEY_SEEDS);
+  flash_ctrl_cert_info_page_owner_restrict(&FLASH_CTRL_INFO_PAGE_DICE_CERTS);
 }
 
 struct EraseVerifyCase {

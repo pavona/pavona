@@ -96,9 +96,9 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
     // Page 0 bad, Page 1 good: copy page 1 to page 0.
     memcpy(&owner_page[0], &owner_page[1], sizeof(owner_page[0]));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage));
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot0, 0,
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
         sizeof(owner_page[0]) / sizeof(uint32_t), &owner_page[0]));
     owner_page_valid[0] = owner_page_valid[1];
 
@@ -107,9 +107,9 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
     // Page 1 bad, Page 0 good: copy page 0 to page 1.
     memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-        &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageOwnerSlot1, 0,
+        &FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
         sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
     owner_page_valid[1] = owner_page_valid[0];
   } else {
@@ -188,17 +188,17 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
       .ecc = kMultiBitBool4True,
       .he = kMultiBitBool4False,
   };
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, cfg);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, cfg);
   // Set up the OwnerSecret page for ECC & Scrambling.  We won't
   // turn on read/write/earse permissions until we need them.
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSecret, cfg);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SECRET, cfg);
 
   // We don't want to abort ownership setup if we fail to
   // read the INFO pages, so we discard the error result.
-  if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
+  if (flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, 0,
                            sizeof(owner_page[0]) / sizeof(uint32_t),
                            &owner_page[0]) == kErrorOk) {
     owner_page_valid[0] = owner_page_validity_check(0, bootdata);
@@ -206,7 +206,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
     owner_page_valid[0] = kOwnerPageStatusInvalid;
     memset(&owner_page[0], 0xff, sizeof(owner_page[0]));
   }
-  if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot1, 0,
+  if (flash_ctrl_info_read(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, 0,
                            sizeof(owner_page[1]) / sizeof(uint32_t),
                            &owner_page[1]) == kErrorOk) {
     owner_page_valid[1] = owner_page_validity_check(1, bootdata);
@@ -311,9 +311,9 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
       .he = kMultiBitBool4False,
   };
   // Always make page 0 read only.
-  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot0, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
-  flash_ctrl_info_lock(&kFlashCtrlInfoPageOwnerSlot0);
+  flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, perm);
+  flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0, cfg);
+  flash_ctrl_info_lock(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT0);
   if (rescue == kHardenedBoolTrue) {
     // Do not lock page 1 in rescue mode.
     HARDENED_CHECK_EQ(rescue, kHardenedBoolTrue);
@@ -324,12 +324,12 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
       // Leave page 1 unlocked if we're in "NewVersion" update mode.
     } else {
       // Otherwise, make the page read-only.
-      flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
-      flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+      flash_ctrl_info_perms_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, perm);
+      flash_ctrl_info_cfg_set(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1, cfg);
     }
   } else {
     // In any of the unlocked modes, leave page 1 unlocked.
   }
-  flash_ctrl_info_lock(&kFlashCtrlInfoPageOwnerSlot1);
+  flash_ctrl_info_lock(&FLASH_CTRL_INFO_PAGE_OWNER_SLOT1);
   return;
 }
