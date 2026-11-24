@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/tests/crypto/cryptotest/firmware/ecdsa.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -154,37 +157,38 @@ int set_nist_p384_params(cryptotest_ecdsa_coordinate_t uj_qx,
   return true;
 }
 
-status_t interpret_verification_result(ujson_t *uj,
-                                       hardened_bool_t *verification_result) {
-  cryptotest_ecdsa_verify_output_t uj_output;
+status_t interpret_verification_result(
+    ujson_t *uj, cryptotest_ecdsa_verify_output_t *uj_output,
+    hardened_bool_t *verification_result) {
   switch (*verification_result) {
     case kHardenedBoolFalse:
-      uj_output = kCryptotestEcdsaVerifyOutputFailure;
+      *uj_output = kCryptotestEcdsaVerifyOutputFailure;
       break;
     case kHardenedBoolTrue:
-      uj_output = kCryptotestEcdsaVerifyOutputSuccess;
+      *uj_output = kCryptotestEcdsaVerifyOutputSuccess;
       break;
     default:
       LOG_ERROR("Unexpected result value from otcrypto_ecdsa_verify: %d",
                 verification_result);
       return INTERNAL();
   }
-  RESP_OK(ujson_serialize_cryptotest_ecdsa_verify_output_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptotest_ecdsa_verify_output_t, uj, uj_output);
   return OK_STATUS(0);
 }
 
-status_t interpret_verify_status(ujson_t *uj, otcrypto_status_t status,
+status_t interpret_verify_status(ujson_t *uj,
+                                 cryptotest_ecdsa_verify_output_t *uj_output,
+                                 otcrypto_status_t status,
                                  hardened_bool_t *verification_result) {
-  cryptotest_ecdsa_verify_output_t uj_output;
   switch (status.value) {
     case kOtcryptoStatusValueOk:
-      return interpret_verification_result(uj, verification_result);
+      return interpret_verification_result(uj, uj_output, verification_result);
     case kOtcryptoStatusValueBadArgs:
       // Some ECDSA test vectors test invalid inputs. If cryptolib
       // returns an invalid input code, we simply respond with
       // "validation failed". Otherwise, we error out.
-      uj_output = kCryptotestEcdsaVerifyOutputFailure;
-      RESP_OK(ujson_serialize_cryptotest_ecdsa_verify_output_t, uj, &uj_output);
+      *uj_output = kCryptotestEcdsaVerifyOutputFailure;
+      RESP_OK(ujson_serialize_cryptotest_ecdsa_verify_output_t, uj, uj_output);
       return OK_STATUS(0);
     default:
       LOG_ERROR(
@@ -196,20 +200,20 @@ status_t interpret_verify_status(ujson_t *uj, otcrypto_status_t status,
 }
 
 status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
+                   p256_masked_scalar_t *private_key_masked,
                    otcrypto_unblinded_key_t *public_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
-  p256_masked_scalar_t private_key_masked;
   otcrypto_blinded_key_t private_key = {
       .config = kP256PrivateKeyConfig,
-      .keyblob_length = sizeof(private_key_masked),
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(*private_key_masked),
+      .keyblob = (uint32_t *)private_key_masked,
   };
-  memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_private_key->d0, kP256ScalarBytes);
-  memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
-  memcpy(private_key_masked.share1, uj_private_key->d1, kP256ScalarBytes);
+  memset(private_key_masked->share0, 0, kP256MaskedScalarShareBytes);
+  memcpy(private_key_masked->share0, uj_private_key->d0, kP256ScalarBytes);
+  memset(private_key_masked->share1, 0, kP256MaskedScalarShareBytes);
+  memcpy(private_key_masked->share1, uj_private_key->d1, kP256ScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   otcrypto_status_t status = otcrypto_ecdsa_p256_sign_verify(
@@ -232,20 +236,20 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
 }
 
 status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
+                   p384_masked_scalar_t *private_key_masked,
                    otcrypto_unblinded_key_t *public_key,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
-  p384_masked_scalar_t private_key_masked;
   otcrypto_blinded_key_t private_key = {
       .config = kP384PrivateKeyConfig,
-      .keyblob_length = sizeof(private_key_masked),
-      .keyblob = (uint32_t *)&private_key_masked,
+      .keyblob_length = sizeof(*private_key_masked),
+      .keyblob = (uint32_t *)private_key_masked,
   };
-  memset(private_key_masked.share0, 0, kP384MaskedScalarShareBytes);
-  memcpy(private_key_masked.share0, uj_private_key->d0, kP384ScalarBytes);
-  memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
-  memcpy(private_key_masked.share1, uj_private_key->d1, kP384ScalarBytes);
+  memset(private_key_masked->share0, 0, kP384MaskedScalarShareBytes);
+  memcpy(private_key_masked->share0, uj_private_key->d0, kP384ScalarBytes);
+  memset(private_key_masked->share1, 0, kP384MaskedScalarShareBytes);
+  memcpy(private_key_masked->share1, uj_private_key->d1, kP384ScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
   otcrypto_status_t status = otcrypto_ecdsa_p384_sign_verify(
@@ -267,7 +271,7 @@ status_t p384_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   return OK_STATUS(0);
 }
 
-status_t handle_ecdsa(ujson_t *uj) {
+status_t handle_ecdsa(ujson_t *uj, ecdsa_test_scratch_t *s) {
   // Declare ECDSA parameter ujson deserializer types
   cryptotest_ecdsa_operation_t uj_op;
   cryptotest_ecdsa_hash_alg_t uj_hash_alg;
@@ -293,14 +297,11 @@ status_t handle_ecdsa(ujson_t *uj) {
 
   otcrypto_word32_buf_t signature_mut;
   int success;
-  p256_ecdsa_signature_t signature_p256;
-  p384_ecdsa_signature_t signature_p384;
-  p256_point_t pub_p256;
-  p384_point_t pub_p384;
   switch (uj_curve) {
     case kCryptotestEcdsaCurveP256:
       success = set_nist_p256_params(uj_qx, uj_qy, uj_signature, &public_key,
-                                     &signature_p256, &pub_p256, &signature_mut,
+                                     (p256_ecdsa_signature_t *)&s->sig,
+                                     (p256_point_t *)&s->pk, &signature_mut,
                                      &digest_len);
       if (!success) {
         return INVALID_ARGUMENT();
@@ -308,7 +309,8 @@ status_t handle_ecdsa(ujson_t *uj) {
       break;
     case kCryptotestEcdsaCurveP384:
       success = set_nist_p384_params(uj_qx, uj_qy, uj_signature, &public_key,
-                                     &signature_p384, &pub_p384, &signature_mut,
+                                     (p384_ecdsa_signature_t *)&s->sig,
+                                     (p384_point_t *)&s->pk, &signature_mut,
                                      &digest_len);
       if (!success) {
         return INVALID_ARGUMENT();
@@ -376,12 +378,14 @@ status_t handle_ecdsa(ujson_t *uj) {
     case kCryptotestEcdsaOperationSign: {
       switch (uj_curve) {
         case kCryptotestEcdsaCurveP256: {
-          return p256_sign(uj, &uj_private_key, &public_key, message_digest,
-                           signature_mut, &uj_signature);
+          return p256_sign(uj, &uj_private_key, (p256_masked_scalar_t *)&s->sk,
+                           &public_key, message_digest, signature_mut,
+                           &s->work.sign_out);
         }
         case kCryptotestEcdsaCurveP384: {
-          return p384_sign(uj, &uj_private_key, &public_key, message_digest,
-                           signature_mut, &uj_signature);
+          return p384_sign(uj, &uj_private_key, (p384_masked_scalar_t *)&s->sk,
+                           &public_key, message_digest, signature_mut,
+                           &s->work.sign_out);
         }
         default:
           LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
@@ -415,7 +419,8 @@ status_t handle_ecdsa(ujson_t *uj) {
           LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
           return INVALID_ARGUMENT();
       }
-      return interpret_verify_status(uj, status, &verification_result);
+      return interpret_verify_status(uj, &s->work.verify_out, status,
+                                     &verification_result);
     }
     default:
       LOG_ERROR("Unrecognized ECDSA operation: %d", uj_op);
