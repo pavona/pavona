@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 """Launch riscv-dbg testbench and connect to openocd"""
 
 import sys
