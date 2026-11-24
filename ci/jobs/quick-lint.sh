@@ -107,6 +107,10 @@ section "Check licenses are all okay"
 ci/scripts/check-dependency-licenses.sh
 section_end
 
+section "Check shebangs are using env paths"
+ci/scripts/check-shebangs.sh
+section_end
+
 if is_clean "$before"; then
   exit 0
 else
