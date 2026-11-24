@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -46,9 +47,12 @@ task alert_receiver_alert_rsp_seq::default_rsp_thread();
         wait (!cfg.in_reset);
       end
       wait (req_q.size());
-      rsp = req_q.pop_front();
+      // The observation only triggers a response. Other subscribers can still hold it, so
+      // never randomize or drive the monitor item. Configure a new driver command instead.
+      void'(req_q.pop_front());
+      rsp = alert_esc_seq_item::type_id::create("rsp");
       start_item(rsp);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
                                      r_alert_ping_send == 0;
                                      r_alert_rsp       == 1;
                                      int_err           == 0;

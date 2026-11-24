@@ -104,14 +104,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
 
   // Apply all resets in the DUT concurrently to generate a random in-test reset scenario.
   //
-  // - Assert resets concurrently to make sure all resets are issued.
-  // - Deassert resets concurrently is a specific requirement of the `stress_all_with_rand_reset`
-  // sequence, which will randomly issue resets and terminate the parallel sequence once all DUT
-  // resets are deasserted. If DUT resets are deasserted at different time, the parallel sequence
-  // might send a transaction request to driver between different resets are deasserting. Then when
-  // `stress_all_with_rand_reset` sequence tries to terminate the parallel sequence, an UVM_ERROR
-  // will be thrown by the sequencer saying `task responsible for requesting a wait_for_grant has
-  // been killed`.
+  // This legacy helper asserts and releases all reset pins together.
+  // It does not provide the process termination used by the reset-safe sequence body.
   // In order to ensure all resets at least being asserted for one clock cycle, this task takes an
   // optional input `reset_duration_ps` if the DUT has additional resets. The task uses this input
   // to compute the minimal time required to keep all resets asserted.
@@ -147,8 +141,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     end
   endtask
 
-  // This is called after apply_reset in this class and after apply_resets_concurrently
-  // in cip_base_vseq::run_seq_with_rand_reset_vseq.
+  // The initialization flow calls this hook after apply_reset().
   virtual task post_apply_reset(string reset_kind = "HARD");
   endtask
 
