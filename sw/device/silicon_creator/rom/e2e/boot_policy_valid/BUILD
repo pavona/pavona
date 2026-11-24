@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules/pavona:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "fpga_params",
@@ -46,7 +50,13 @@ BOOT_POLICY_VALID_CASES = [
 [
     otp_image(
         name = "otp_img_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(lc_state),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()

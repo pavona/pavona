@@ -43,10 +43,10 @@ const uint64_t kClockFreqHiSpeedPeripheralHz = 500 * 1000;  // 500kHz
 
 // Egret on Verilator uses a 1/4 clock divider for the peripheral clock, but on
 // Dragonfly the peripheral clock is 1:1 with the high-speed domain clock.
-#if defined(PAVONA_IS_EGRET)
+#if defined(OPENTITAN_IS_EGRET)
 const uint64_t kClockFreqPeripheralHz =
     kClockFreqHiSpeedPeripheralHz / 4;  // 125kHz
-#elif defined(PAVONA_IS_DRAGONFLY)
+#elif defined(OPENTITAN_IS_DRAGONFLY)
 const uint64_t kClockFreqPeripheralHz =
     kClockFreqHiSpeedPeripheralHz;  // 500kHz
 #endif

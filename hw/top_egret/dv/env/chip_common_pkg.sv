@@ -25,7 +25,10 @@ package chip_common_pkg;
   parameter uint ROM_CONSOLE_UART = 0;
 
   // ROM banner values.
-  parameter string ROM_BANNER   = "OpenTitan:4001-0002-01";
+  //
+  // Keep values from lifecycle CSRs in sync with
+  // `hw/top_egret/data/top_egret.hjson`.
+  parameter string ROM_BANNER   = "Pavona:4001-0002-01";
 
   // ROM Boot Fault Values, matches definitions in `rules/const.bzl`.
   parameter string ROM_BFV_BAD_IDENTIFIER       = "0142500d";

@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
 load("//rules/pavona:defs.bzl", "fpga_params", "pavona_test")
 load(
     "//rules:const.bzl",
@@ -32,7 +36,13 @@ otp_json(
 
 otp_image(
     name = "otp_img_cpu_info_enabled",
-    src = "//hw/top_egret/data/otp:otp_json_rma",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [":otp_json_cpu_info_enabled"],
 )
 
@@ -92,7 +102,13 @@ otp_json(
 
 otp_image(
     name = "otp_img_alert_info_enabled",
-    src = "//hw/top_egret/data/otp:otp_json_rma",
+    src = pavona_select_top(
+        {
+            "egret": "//hw/top_egret/data/otp:otp_json_rma",
+            "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_rma",
+        },
+        None,
+    ),
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_alert_info_enabled",
         "//sw/device/silicon_creator/rom/e2e/shutdown_alert:shutdown_alert_owner_sw_cfg",

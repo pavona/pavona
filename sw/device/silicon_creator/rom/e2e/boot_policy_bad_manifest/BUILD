@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//hw/top:defs.bzl",
+    "pavona_select_top",
+)
+load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
@@ -205,7 +209,13 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+        src = pavona_select_top(
+            {
+                "egret": "//hw/top_egret/data/otp:otp_json_{}".format(lc_state),
+                "dragonfly": "//hw/top_dragonfly/data/otp:otp_json_{}".format(lc_state),
+            },
+            None,
+        ),
         overlays = STD_OTP_OVERLAYS + [":otp_json_sec_ver_{}".format(sec_ver)],
         visibility = ["//visibility:private"],
     )
