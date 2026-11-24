@@ -394,8 +394,7 @@ def find_insn_schemes(mnem_to_insn: Dict[str, Insn]) -> Dict[str, RVEncoding]:
     return ret
 
 
-def parse_positionals(
-        argv: List[str]) -> Tuple[List[str], List[str], Set[str]]:
+def parse_positionals(args: List[str]) -> Tuple[List[str], List[str], Set[str]]:
     '''A partial argument parser that extracts positional arguments'''
 
     # The only arguments we actually need to parse from as are the input files:
@@ -416,7 +415,7 @@ def parse_positionals(
     flags = set()
 
     expecting_arg = False
-    for arg in argv[1:]:
+    for arg in args:
         if expecting_arg:
             others.append(arg)
             expecting_arg = False
@@ -1343,10 +1342,10 @@ def run_binutils_as(other_args: List[str], inputs: List[str]) -> int:
         return 127
 
 
-def main(argv: List[str]) -> int:
-    files, other_args, flags = parse_positionals(argv)
-    files = files or ['--']
-    just_translate = '--acc-translate' in flags
+def assemble(args: List[str]) -> int:
+    files, other_args, flags = parse_positionals(args)
+    files = files or ["--"]
+    just_translate = "--acc-translate" in flags
 
     copts = []
     for arg in other_args:
@@ -1414,5 +1413,9 @@ def main(argv: List[str]) -> int:
             return run_binutils_as(transformed, other_args)
 
 
-if __name__ == '__main__':
+def main(argv: List[str]) -> int:
+    return assemble(argv[1:])
+
+
+if __name__ == "__main__":
     sys.exit(main(sys.argv))
