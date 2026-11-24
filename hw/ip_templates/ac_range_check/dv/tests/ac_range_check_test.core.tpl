@@ -12,6 +12,7 @@ filesets:
       - ${module_instance_name}_test_pkg.sv
       - ${module_instance_name}_base_test.sv: {is_include_file: true}
       - ${module_instance_name}_rst_safe_base_test.sv: {is_include_file: true}
+      - ${module_instance_name}_rst_safe_common_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

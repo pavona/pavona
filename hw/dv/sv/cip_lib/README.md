@@ -87,13 +87,9 @@ Apart from these, there are several common settings such as `zero_delays`,
 `clk_freq_mhz`, which are randomized as well as knobs such as `en_scb` and
 `en_cov` to turn on/off scoreboard and coverage collection respectively.
 
-Another setting that can be configured is `can_reset_with_csr_accesses`. This
-should be set to true by environments for IPs that support resets when CSR
-accesses are in flight. For this to work properly, the environment must avoid
-checking correctness of CSR reads if a reset happens while the read is in
-progress. Any vseqs must also make sure to complete when a reset is asserted.
-This flag governs the behavior of `run_seq_with_rand_reset_vseq`, described
-below.
+Reset preparation is not an environment configuration setting.
+The reset-safe sequence body owns termination of functional work when reset occurs.
+The reset trigger does not first request a quiet period through configuration state.
 
 The base class provides a virtual method called `initialize()` which is called
 in `cip_base_test::build_phase` to create some of the objects listed above. If
@@ -192,6 +188,13 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 ```
 
 ### cip_base_vseq
+
+This section describes the legacy class, which is planned for removal.
+Do not refactor this class or use it as the parent for migrated virtual sequences.
+Use `cip_rand_rst_safe_base_vseq` as the retained CIP parent, directly or through a block base sequence.
+Review useful legacy helpers and integrate their required behavior into the reset-safe flow.
+The legacy class remains in the source until its users and package references are removed.
+
 This is the base virtual sequence class that will run on the cip virtual
 sequencer. This base class provides 'sequencing' set of tasks such as
 `dut_init()` and `dut_shutdown()` which are called within `pre_start` and
@@ -224,34 +227,14 @@ Some examples:
   response (with `d_error` = 1), but also triggers a fatal alert and updates status CSRs
   such as `ERR_CODE`. The list of CSRs that are impacted by this alert event, maintained
   in `cfg.tl_intg_alert_fields`, are also checked for correctness.
-* **task run_seq_with_rand_reset_vseq**: This task runs a provided sequence
-  while injecting TL errors with `run_tl_errors_vseq`. After a randomized wait,
-  it injects a reset. Once the reset is complete, it reads all the CSRs to check
-  that they contain their expected reset values.
-
-  The provided sequence must make sure not to drive a reset itself. The reset
-  that would be driven in `dut_init` is disabled in this task by setting the
-  sequence's `do_apply_reset` value to zero, but this behavior needs to be
-  passed on to any sub-sequence that it wishes to spawn by ensuring that they
-  also have `do_apply_reset=0`. An example from `hmac_stress_all_vseq.sv`:
-  ```
-  // randomly trigger internal dut_init reset sequence
-  // disable any internal reset if used in stress_all_with_rand_reset vseq
-  if (do_dut_init) hmac_vseq.do_dut_init = $urandom_range(0, 1);
-  else hmac_vseq.do_dut_init = 0;
-  ```
-
-  The exact mechanism for injecting this reset is configured by the
-  `can_reset_with_csr_accesses` flag from `cip_base_env_cfg` (described
-  elsewhere in this document). If the flag is false, the task is careful to wait
-  until there are no outstanding CSR accesses before it injects the reset. It
-  then injects the reset and uses `disable fork` to kill the sequence that was
-  being run.
-
-  If the flag is true, the task injects the reset at any time it feels
-  appropriate. It then asserts that the sequence that was running has run to
-  completion before the reset is de-asserted, which means it does not need to
-  kill the process.
+* **Reset ownership**: Use the reset-safe sequence body and its `reset_trigger_thread()` for reset control.
+  Use `cip_rst_safe_stress_all_vseq` to run functional children under that reset owner.
+  The retained reset-safe base rejects the old `stress_all_with_rand_reset` and `csr_mem_rw_with_rand_reset` common selectors.
+  It reports an error rather than select a different test.
+  Dedicated reset-safe sequences now own CSR, memory, and TL access-error workloads.
+  Shared access helpers remain in the reset-safe base; workload-specific history does not.
+  Interrupt, alert, shadow-register, and security fault-injection tests still need further migration.
+  Caller migration and reset validation remain necessary.
 * **task run_same_csr_outstanding_vseq**: This task tests the same CSR with
   non-blocking accesses as the regular CSR sequences don't cover that due to
   limitation of uvm_reg.

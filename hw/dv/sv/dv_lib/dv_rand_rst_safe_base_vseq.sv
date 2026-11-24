@@ -51,9 +51,6 @@ class dv_rand_rst_safe_base_vseq #(
   extern virtual task reset_trigger_thread();
   extern virtual task main_thread();
 
-  // TODO: Need to understand what CIP lib does with sequences with reset
-  extern virtual task post_apply_reset(string reset_kind = "HARD");
-
   extern virtual function void handle_reset_assertion ();
 endclass
 
@@ -63,12 +60,6 @@ task dv_rand_rst_safe_base_vseq::dut_init();
   // deasserted
   `uvm_fatal (`gfn, "Derived classes need to provide an implementation")
 endtask
-
-// This is called after apply_reset in this class and after apply_resets_concurrently
-// in cip_base_vseq::run_seq_with_rand_reset_vseq.
-task dv_rand_rst_safe_base_vseq::post_apply_reset(string reset_kind = "HARD");
-endtask
-
 
 // Use the factory to create a sequence by name and return the resulting uvm_sequence.
 function uvm_sequence dv_rand_rst_safe_base_vseq::create_seq_by_name(string name);
