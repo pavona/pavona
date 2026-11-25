@@ -11,6 +11,7 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 # that every one of the execution environments be run in some CI job, otherwise
 # some tests will not run at all in CI.
 _ONLY_RUN_ONE_IN_CI_SORTED = [
+    "//hw/top_egret:fpga_cw340_pqc_test_rom",
     "//hw/top_egret:fpga_cw340_sival_rom_ext",
     "//hw/top_egret:fpga_cw340_sival",
     "//hw/top_egret:fpga_cw340_rom_ext",
