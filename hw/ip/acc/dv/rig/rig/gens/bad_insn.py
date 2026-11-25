@@ -51,7 +51,15 @@ class BadInsn(SnippetGen):
         assert 0
 
     def _gen_bad_pqc(self, model: Model) -> ProgInsn:
-        weights = self.pqc_weights
+        weights = list(self.pqc_weights)
+        # If vector instructions are legal then we can only create illegal decodings
+        # of the bn.mulv variants via the type enum and lane index.
+        if model.pqc:
+            weights = [
+                w if insn.mnemonic in {'bn.mulv', 'bn.mulv.l'} else 0
+                for w, insn in zip(weights, self.pqc_insns)
+            ]
+            assert any(w > 0 for w in weights)
         prog_insn = None
         while prog_insn is None:
             idx = random.choices(range(len(self.pqc_insns)), weights=weights)[0]
@@ -67,28 +75,37 @@ class BadInsn(SnippetGen):
                 op_val = model.pick_operand_value(operand.op_type)
 
                 if op_val is None:
-                    raise ValueError("Op Val produced for pqc instruction is not valid")
+                    raise ValueError("Op Val produced for instruction is not valid")
 
-                # Ensure a proper type enum for mulv/l
-                if (
-                    (insn.mnemonic == 'bn.mulv.l' or insn.mnemonic == "bn.mulv")
-                    and (len(op_vals) == len(insn.operands) - 1)
-                ):
-                    while operand.op_type.op_val_to_str(op_val, 0) == '""':  # Empty enum is ""
-                        op_val = model.pick_operand_value(operand.op_type)
-                        if op_val is None:
-                            raise ValueError("Op Val produced for pqc instruction is not valid")
+                if (len(op_vals) == len(insn.operands) - 1) and model.pqc:
+                    # Ensure an illegal type enum for bn.mulv if vector instructions are expected.
+                    # Otherwise any vector instruction will be illegal and fields don't matter.
+                    if (insn.mnemonic == "bn.mulv"):
+                        while operand.op_type.op_val_to_str(op_val, 0) != '""':  # Empty enum is ""
+                            op_val = model.pick_operand_value(operand.op_type)
+                            if op_val is None:
+                                raise ValueError("Op Val produced for instruction is not valid")
 
-                if op_val is not None:
-                    op_vals.append(op_val)
+                    # bn.mulv.l will be made illegal by its lane index since bn.mulv/bn.mulv.l
+                    # share the same encoding scheme/illegal insn logic in the decoder.
+                    # Ensure that we have some combination of bn.mulv.l.8 to create an illegal idx.
+                    if (insn.mnemonic == "bn.mulv.l"):
+                        while not operand.op_type.op_val_to_str(op_val, 0).startswith(".8"):
+                            op_val = model.pick_operand_value(operand.op_type)
+                            if op_val is None:
+                                raise ValueError("Op Val produced for instruction is not valid")
 
-            # If out of range lane index take modulo to fit in bounds
+                op_vals.append(op_val)
+
+            # Force out of range lane index if vector instructions are expected
+            # by forcing lane index range (0,7) to (8,15) for bn.mulv.l
             if (
-                insn.mnemonic == "bn.mulv.l"
-                and operand.op_type.op_val_to_str(op_vals[-1], 0).startswith(".8")
-                and op_vals[-2] >= 8
+                (insn.mnemonic == "bn.mulv.l") and
+                operand.op_type.op_val_to_str(op_vals[-1], 0).startswith(".8") and
+                op_vals[-2] < 8 and
+                model.pqc
             ):
-                op_vals[-2] = op_vals[-2] % 8
+                op_vals[-2] = op_vals[-2] + 8
 
             assert len(op_vals) == len(insn.operands)
             prog_insn = ProgInsn(insn, op_vals, None)
@@ -107,15 +124,13 @@ class BadInsn(SnippetGen):
         # Create union of valid typing
         prog_insn: Union[DummyProgInsn, ProgInsn]
 
-        # If PQC is enabled only random bit insn will be illegal
-        if model.pqc:
+        # Choose between illegal random bit instruction. Example: (illegal mnemonic/funct)
+        # Or an illegal vector instruction. Example: (valid mnemonic + illegal "type" field)
+        if random.choice([True, False]):
             prog_insn = DummyProgInsn(self._get_badbits())
         else:
-            # Otherwise randomly choose between random bit and vector insn
-            if random.choice([True, False]):
-                prog_insn = DummyProgInsn(self._get_badbits())
-            else:
-                prog_insn = self._gen_bad_pqc(model)
+            prog_insn = self._gen_bad_pqc(model)
+
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
         return (snippet, model)

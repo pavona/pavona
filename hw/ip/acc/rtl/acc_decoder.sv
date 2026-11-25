@@ -170,6 +170,10 @@ module acc_decoder
   logic       mac_lane_word_32_pqc;
   logic       mac_lane_word_16_pqc;
   logic [1:0] mac_exec_mode_pqc;
+  logic       mac_mulv_illegal_acc_mode;
+  logic       mac_mulv_illegal_exec_mode;
+  logic       mac_mulv_illegal_16h;
+  logic       mac_mulv_illegal_lane_idx;
 
   alu_vector_type_t alu_vector_type_bignum_pqc;
   logic             alu_vector_sel_bignum_pqc;
@@ -790,11 +794,28 @@ module acc_decoder
                   mac_lane_word_16_pqc = insn[20];
                 end else begin
                   mac_op_b_qw_sel_bignum = insn[22:21];
-                  mac_lane_word_32_pqc = insn[20];
+                  mac_lane_word_32_pqc   = insn[20];
                 end
               end
+
+              // ACC mode of 2'b11 is illegal encoding
+              mac_mulv_illegal_acc_mode  = insn_alu[29:28] == 2'b11 ? 1'b1 : 1'b0;
+              // EXEC mode of 2'b11 is illegal encoding
+              mac_mulv_illegal_exec_mode = insn_alu[31:30] == 2'b11 ? 1'b1 : 1'b0;
+              // .8S mode for bn.mulv.l cannot have a lane index >= 8 (insn_alu[23] is index MSB)
+              mac_mulv_illegal_lane_idx  = insn_alu[26] & insn_alu[25] & insn_alu[23];
+              // Cannot have .hi or .lo with .16H odd
+              mac_mulv_illegal_16h       = (insn_alu[31:30] != 2'b00) &
+                                            insn_alu[27]              &
+                                            !insn_alu[26];
+
+              illegal_insn = mac_mulv_illegal_acc_mode  |
+                             mac_mulv_illegal_exec_mode |
+                             mac_mulv_illegal_lane_idx  |
+                             mac_mulv_illegal_16h;
+
             end
-            default: ;
+            default: illegal_insn = 1'b1;
           endcase
         end else begin
           illegal_insn = 1'b1;
@@ -807,11 +828,16 @@ module acc_decoder
 
       InsnOpcodeBignumShiftv: begin
         if (AccPQCEn) begin
-          insn_subset                = InsnSubsetBignum;
-          rf_ren_b_bignum            = 1'b1;
-          rf_wdata_sel_bignum        = RfWdSelEx;
-          rf_we_bignum               = 1'b1;
-          alu_vector_type_bignum_pqc = alu_vector_type_t'({2'b01, insn[16]});
+          unique case(insn_alu[14:12])
+            3'b011: begin
+              insn_subset                = InsnSubsetBignum;
+              rf_ren_b_bignum            = 1'b1;
+              rf_wdata_sel_bignum        = RfWdSelEx;
+              rf_we_bignum               = 1'b1;
+              alu_vector_type_bignum_pqc = alu_vector_type_t'({2'b01, insn[16]});
+            end
+            default: illegal_insn = 1'b1;
+          endcase
         end else begin
           illegal_insn = 1'b1;
         end
@@ -823,11 +849,16 @@ module acc_decoder
 
       InsnOpcodeBignumTrn: begin
         if (AccPQCEn) begin
-          insn_subset         = InsnSubsetBignum;
-          rf_ren_a_bignum     = 1'b1;
-          rf_ren_b_bignum     = 1'b1;
-          rf_wdata_sel_bignum = RfWdSelEx;
-          rf_we_bignum        = 1'b1;
+          unique case(insn_alu[14:12])
+            3'b010: begin
+              insn_subset         = InsnSubsetBignum;
+              rf_ren_a_bignum     = 1'b1;
+              rf_ren_b_bignum     = 1'b1;
+              rf_wdata_sel_bignum = RfWdSelEx;
+              rf_we_bignum        = 1'b1;
+            end
+            default: illegal_insn = 1'b1;
+          endcase
         end else begin
           illegal_insn = 1'b1;
         end

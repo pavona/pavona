@@ -146,6 +146,7 @@ module acc_predecode
   alu_vector_type_t alu_bignum_vector_type_pqc;
   logic             alu_bignum_vector_sel_pqc;
   alu_trn_type_t    alu_bignum_trn_type_pqc;
+  logic             alu_bignum_illegal_vec_pqc;
 
   // Shift amount for BN.SHV
   logic [$clog2(WLEN)-1:0] shift_amt_v_type_bignum;
@@ -179,6 +180,7 @@ module acc_predecode
     alu_bignum_vector_type_pqc = alu_vector_type_t'('0);
     alu_bignum_vector_sel_pqc  = 1'b0;
     alu_bignum_trn_type_pqc    = alu_trn_type_t'('0);
+    alu_bignum_illegal_vec_pqc = 1'b0;
 
     flags_adder_update = '0;
     flags_logic_update = '0;
@@ -535,6 +537,26 @@ module acc_predecode
                   // zero_acc not set
                   mac_bignum_acc_rd_en = 1'b1;
                 end
+
+                // Illegal EXEC mode
+                if (imem_rdata_i[31:30] == 2'b11) begin
+                  alu_bignum_illegal_vec_pqc = 1'b1;
+                end
+
+                // Illegal ACC mode
+                if (imem_rdata_i[29:28] == 2'b11) begin
+                  alu_bignum_illegal_vec_pqc = 1'b1;
+                end
+
+                // Illegal .16H encoding (.lo/.hi and .odd)
+                if ((imem_rdata_i[31:30] != 2'b00) && imem_rdata_i[27] && !imem_rdata_i[26]) begin
+                  alu_bignum_illegal_vec_pqc = 1'b1;
+                end
+
+                // Illegal lane IDX for .8S (imem_rdata_i[23] is MSB of index which cannot be >= 8)
+                if (imem_rdata_i[26] & imem_rdata_i[25] & imem_rdata_i[23]) begin
+                  alu_bignum_illegal_vec_pqc = 1'b1;
+                end
               end
               default: ;
             endcase
@@ -547,14 +569,19 @@ module acc_predecode
 
         InsnOpcodeBignumShiftv: begin
           if (AccPQCEn) begin
-            rf_we_bignum                = 1'b1;
-            rf_ren_b_bignum             = 1'b1;
-            alu_bignum_shifter_b_en     = 1'b1;
-            alu_bignum_vector_type_pqc  = alu_vector_type_t'({2'b01, imem_rdata_i[16]});
-            alu_bignum_shift_right      = imem_rdata_i[30];
-            alu_bignum_shift_amt        = shift_amt_v_type_bignum;
-            alu_bignum_logic_shifter_en = 1'b1;
-            alu_bignum_vector_sel_pqc   = 1'b1;
+            unique case (imem_rdata_i[14:12])
+              3'b011: begin
+                rf_we_bignum                = 1'b1;
+                rf_ren_b_bignum             = 1'b1;
+                alu_bignum_shifter_b_en     = 1'b1;
+                alu_bignum_vector_type_pqc  = alu_vector_type_t'({2'b01, imem_rdata_i[16]});
+                alu_bignum_shift_right      = imem_rdata_i[30];
+                alu_bignum_shift_amt        = shift_amt_v_type_bignum;
+                alu_bignum_logic_shifter_en = 1'b1;
+                alu_bignum_vector_sel_pqc   = 1'b1;
+              end
+              default: ;
+            endcase
           end
         end
 
@@ -564,15 +591,28 @@ module acc_predecode
 
         InsnOpcodeBignumTrn: begin
           if (AccPQCEn) begin
-            rf_ren_a_bignum          = 1'b1;
-            rf_ren_b_bignum          = 1'b1;
-            rf_we_bignum             = 1'b1;
-            alu_bignum_trn_type_pqc  = alu_trn_type_t'(imem_rdata_i[27:25]);
+            unique case (imem_rdata_i[14:12])
+              3'b010: begin
+                rf_ren_a_bignum          = 1'b1;
+                rf_ren_b_bignum          = 1'b1;
+                rf_we_bignum             = 1'b1;
+                alu_bignum_trn_type_pqc  = alu_trn_type_t'(imem_rdata_i[27:25]);
+              end
+              default: ;
+            endcase
           end
         end
 
         default: ;
       endcase
+    end
+    // An unsupported BN.MULV/BN.MULV.L encoding is an illegal insn and flagged in the decoder.
+    // Disable the predecoded ones too, because a register access without a valid instruction is a
+    // fatal error (see rd_predec_error and rf_bignum_predec_error in acc_core).
+    if (alu_bignum_illegal_vec_pqc) begin
+      rf_ren_a_bignum = 1'b0;
+      rf_ren_b_bignum = 1'b0;
+      rf_we_bignum    = 1'b0;
     end
   end
 

@@ -804,6 +804,7 @@ class BNADDV(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
@@ -841,6 +842,7 @@ class BNMULV(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         wrs1 = state.wdrs.get_reg(self.wrs1).read_unsigned()
         wrs2 = state.wdrs.get_reg(self.wrs2).read_unsigned()
@@ -854,6 +856,21 @@ class BNMULV(ACCInsn):
         sel = (self.type & 0b10) >> 1
         acc_mode = (self.type & 0b1100) >> 2
         exec_mode = (self.type & 0b110000) >> 4
+
+        # This is an illegal encoding of ACC mode
+        if acc_mode == 3:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
+        # This is an illegal encoding of EXEC mode
+        if exec_mode == 3:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
+        # This is an illegal combination of .16H with .odd and .lo/.hi
+        if exec_mode != 0 and sel and not data_type:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         if data_type:
             size = 32
@@ -952,6 +969,7 @@ class BNMULVL(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         # Extract fields in the encoding:
         #    data_type:    0 = .16H, 1 = .8S
@@ -969,8 +987,27 @@ class BNMULVL(ACCInsn):
         else:
             wrs2 = state.wdrs.get_reg(16).read_unsigned()
 
+        # This is an illegal encoding of ACC mode
+        if acc_mode == 3:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
+        # This is an illegal encoding of EXEC mode
+        if exec_mode == 3:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
+        # This is an illegal combination of .16H with .odd and .lo/.hi
+        if exec_mode != 0 and sel and not data_type:
+            state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
+
         if data_type:
             size = 32
+            # Check for an out of range lane index for .8s data type
+            if self.lane_index >= 8:
+                state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+                return
         else:
             size = 16
         num_lanes = 256 // size
@@ -1309,6 +1346,7 @@ class BNSUBV(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
@@ -1466,6 +1504,7 @@ class BNSHV(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
 
@@ -1987,6 +2026,7 @@ class BNTRN(ACCInsn):
     def execute(self, state: ACCState) -> None:
         if not state.EN_PQC:
             state.stop_at_end_of_cycle(ErrBits.ILLEGAL_INSN)
+            return
 
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
         b = state.wdrs.get_reg(self.wrs2).read_unsigned()
