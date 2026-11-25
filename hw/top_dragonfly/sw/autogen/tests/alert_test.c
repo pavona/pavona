@@ -290,7 +290,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_acc_alert_force(&acc, kDifAccAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdAccFatal + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdAccFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -305,7 +305,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdAesRecovCtrlUpdateErr + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdAesRecovCtrlUpdateErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -320,7 +320,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_aon_timer_alert_force(&aon_timer_aon, kDifAonTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdAonTimerAonFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdAonTimerAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -335,7 +335,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_clkmgr_alert_force(&clkmgr_aon, kDifClkmgrAlertRecovFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdClkmgrAonRecovFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdClkmgrAonRecovFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -350,7 +350,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_csrng_alert_force(&csrng, kDifCsrngAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdCsrngRecovAlert + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdCsrngRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -365,7 +365,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_dma_alert_force(&dma, kDifDmaAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdDmaFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdDmaFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -380,7 +380,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn0, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdEdn0RecovAlert + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdEdn0RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -395,7 +395,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_edn_alert_force(&edn1, kDifEdnAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdEdn1RecovAlert + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdEdn1RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -410,7 +410,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_entropy_src_alert_force(&entropy_src, kDifEntropySrcAlertRecovAlert + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdEntropySrcRecovAlert + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdEntropySrcRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -425,7 +425,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_gpio_alert_force(&gpio, kDifGpioAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdGpioFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdGpioFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -440,7 +440,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_hmac_alert_force(&hmac, kDifHmacAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdHmacFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdHmacFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -455,7 +455,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdI2c0FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdI2c0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -470,7 +470,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_keymgr_dpe_alert_force(&keymgr_dpe, kDifKeymgrDpeAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdKeymgrDpeRecovOperationErr + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdKeymgrDpeRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -485,7 +485,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_kmac_alert_force(&kmac, kDifKmacAlertRecovOperationErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdKmacRecovOperationErr + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdKmacRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -500,7 +500,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_lc_ctrl_alert_force(&lc_ctrl, kDifLcCtrlAlertFatalProgError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdLcCtrlFatalProgError + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdLcCtrlFatalProgError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -515,7 +515,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx0, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx0FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -530,7 +530,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx1, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx1FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -545,7 +545,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx2, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx2FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx2FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -560,7 +560,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx3, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx3FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx3FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -575,7 +575,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx4, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx4FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx4FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -590,7 +590,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx5, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx5FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx5FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -605,7 +605,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx6, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbx6FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbx6FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -620,7 +620,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_jtag, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbxJtagFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbxJtagFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -635,7 +635,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_pcie0, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbxPcie0FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbxPcie0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -650,7 +650,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_mbx_alert_force(&mbx_pcie1, kDifMbxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdMbxPcie1FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdMbxPcie1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -667,7 +667,7 @@ static void trigger_alert_test(void) {
       CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
 
       // Verify that alert handler received it.
-      exp_alert = kTopDragonflyAlertIdOtpCtrlFatalMacroError + i;
+      exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdOtpCtrlFatalMacroError + i;
       CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
           &alert_handler, exp_alert, &is_cause));
       CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -683,7 +683,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_pinmux_alert_force(&pinmux_aon, kDifPinmuxAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdPinmuxAonFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdPinmuxAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -698,7 +698,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr_aon, kDifPwrmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdPwrmgrAonFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdPwrmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -713,7 +713,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl0, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRomCtrl0Fatal + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRomCtrl0Fatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -728,7 +728,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rom_ctrl_alert_force(&rom_ctrl1, kDifRomCtrlAlertFatal + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRomCtrl1Fatal + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRomCtrl1Fatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -743,7 +743,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rstmgr_alert_force(&rstmgr_aon, kDifRstmgrAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRstmgrAonFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRstmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -758,7 +758,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_core_ibex_alert_force(&rv_core_ibex, kDifRvCoreIbexAlertFatalSwErr + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRvCoreIbexFatalSwErr + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRvCoreIbexFatalSwErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -773,7 +773,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_plic_alert_force(&rv_plic, kDifRvPlicAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRvPlicFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRvPlicFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -788,7 +788,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_rv_timer_alert_force(&rv_timer, kDifRvTimerAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdRvTimerFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdRvTimerFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -803,7 +803,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_soc_dbg_ctrl_alert_force(&soc_dbg_ctrl, kDifSocDbgCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSocDbgCtrlFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSocDbgCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -818,7 +818,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSocProxyFatalAlertIntg + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSocProxyFatalAlertIntg + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -833,7 +833,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_spi_device_alert_force(&spi_device, kDifSpiDeviceAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSpiDeviceFatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSpiDeviceFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -848,7 +848,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host0, kDifSpiHostAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSpiHost0FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSpiHost0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -863,7 +863,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_main, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSramCtrlMainFatalError + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSramCtrlMainFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -878,7 +878,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_mbox, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSramCtrlMboxFatalError + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSramCtrlMboxFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -893,7 +893,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_sram_ctrl_alert_force(&sram_ctrl_ret_aon, kDifSramCtrlAlertFatalError + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdSramCtrlRetAonFatalError + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdSramCtrlRetAonFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -908,7 +908,7 @@ static void trigger_alert_test(void) {
     CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDragonflyAlertIdUart0FatalFault + i;
+    exp_alert = (dif_alert_handler_alert_t)kTopDragonflyAlertIdUart0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
