@@ -74,12 +74,9 @@ run_cmds 'make -C hw all'
 run_cmds \
   './ci/scripts/sw-build-test.sh egret //...' \
   './ci/scripts/sw-build-test.sh dragonfly //...'
-
-if [ "$(which verilator)" ]; then
-  run_cmds './ci/scripts/run-verilator-tests.sh'  # verilator tests first as sanity check
-else
-  echo "    Verilator install not found; skipping verilator tests."
-fi
+run_cmds \
+  './ci/scripts/run-verilator-tests.sh egret' \
+  './ci/scripts/run-verilator-tests.sh dragonfly'
 
 echo "Running DV tests [requires dvsim capabilities]..."
 if [ "$TOOL" = "vcs" ] || [ "$TOOL" = "quest" ] || [ "$TOOL" = "xcelium" ] || [ "$TOOL" = "ascentlint" ] || [ "$TOOL" = "verixcdc" ] || [ "$TOOL" = "mrdc" ] || [ "$TOOL" = "veriblelint" ] || [ "$TOOL" = "verilator" ] || [ "$TOOL" = "dc" ]; then  # possible tools listed in util/dvsim/dvsim.py
