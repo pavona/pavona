@@ -16,13 +16,13 @@ limitations under the License.
 Original Author: Shay Gal-on
 */
 #include "coremark.h"
-#include "third_party/coremark/top_egret/core_portme.h"
+#include "third_party/coremark/core_portme.h"
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "hw/top_egret/sw/autogen/top_egret.h"
+
 
 #if VALIDATION_RUN
 volatile ee_s32 seed1_volatile = 0x3415;
