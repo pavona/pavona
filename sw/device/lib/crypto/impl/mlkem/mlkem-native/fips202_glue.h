@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 
+/** SHAKE128 rate in bytes. */
 #define SHAKE128_RATE 168
 
 typedef struct {
