@@ -334,12 +334,76 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "afI/MgMxCKRwglC2F6lHdF9hVuV+wd0fEKznjngOGtw=",
+        "bzlTransitiveDigest": "tS8gzFKpMr9En3a8eu39y1T3uJo4LwjaAGmFUzEV3vM=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "acvp_vectors_aes-cbc_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "c2b519e01da33aeffae8c944e91cc23efff520e7cfd626266a380e8d7f00a4d3",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CBC-1.0/477be50e083e9898a7b9b5a9b61d32125f153af9817338ae576833eaf46e5986/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-cbc_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7cbbc2cf45d191e364436707080871a2c3b99ed0c9bed0a32676f443ea8a18da",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CBC-1.0/477be50e083e9898a7b9b5a9b61d32125f153af9817338ae576833eaf46e5986/prompt.json"
+            }
+          },
+          "acvp_vectors_aes-cfb128_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "0004167bd7335d90dd89ceb8ca6015db512485b83b30315695d26133df357bfa",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CFB128-1.0/bcd38c1124a1fa688db0b9d8ae5682ce5bdb5d14d93aeacd79013229bb985a75/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-cfb128_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "01f1957c2cef59737f292a085fe80fa28944522e0a8e5e83bfc7b278121cdf0a",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CFB128-1.0/bcd38c1124a1fa688db0b9d8ae5682ce5bdb5d14d93aeacd79013229bb985a75/prompt.json"
+            }
+          },
+          "acvp_vectors_aes-ctr_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "b8ca8095eab78f09101dcf96e81f0dae37dbd36c7ada5e9cf66a148977acc909",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CTR-1.0/bf3a2c69229dc51848de4f27241214598fa5331379aaa336a33901c1f958995e/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-ctr_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7522a338bc78d84f4eb0cf8993807b0288c807d714452f2a13cbf387d958f8c2",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-CTR-1.0/bf3a2c69229dc51848de4f27241214598fa5331379aaa336a33901c1f958995e/prompt.json"
+            }
+          },
+          "acvp_vectors_aes-ecb_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "38b8b828052d84b12a7a9e120ba3002c181eb431f7384146fabe2b6aaeabbf43",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-ECB-1.0/b09c94a18cbdd2bc5c050686e4bbe50bc1a01fc490e009fbe2e58743a9a60500/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-ecb_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "9b610aa8bde02f436850aa76fef24f9f4cc8afda8cb8935dcd82b5274c9067a6",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-ECB-1.0/b09c94a18cbdd2bc5c050686e4bbe50bc1a01fc490e009fbe2e58743a9a60500/prompt.json"
+            }
+          },
           "acvp_vectors_aes-kwp_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -354,6 +418,22 @@
               "sha256": "bdee616131c0ec9cb18c214335fbd2277ccaea7baf9822e21bbfbc4db7eed922",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-KWP-1.0/e8673141cae36a83cb6217e8096ca5caaf26ba9dfd287189f50fba28ed781ec8/prompt.json"
+            }
+          },
+          "acvp_vectors_aes-ofb_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "9871168fd68a84639664e33e69b36a517adaee14b327ba121fc01fec9521d546",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-OFB-1.0/81f0c7b6bc03b87b77b046e415c0b31fee5b893e6ec1782d9dac72539df33d88/expectedResults.json"
+            }
+          },
+          "acvp_vectors_aes-ofb_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "ae2ad311f725fbb5ba6dc99e7aacb856aa3c1784bf4b2f0951fb8d0e6699a881",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ACVP-AES-OFB-1.0/81f0c7b6bc03b87b77b046e415c0b31fee5b893e6ec1782d9dac72539df33d88/prompt.json"
             }
           },
           "acvp_vectors_ctr-drbg_expectedResults.json": {
@@ -688,8 +768,18 @@
             "repoRuleId": "@@//third_party/acvp_testvectors:extensions.bzl%_acvp_vectors",
             "attributes": {
               "files": {
+                "aes-cbc/expectedResults.json": "acvp_vectors_aes-cbc_expectedResults.json",
+                "aes-cbc/prompt.json": "acvp_vectors_aes-cbc_prompt.json",
+                "aes-cfb128/expectedResults.json": "acvp_vectors_aes-cfb128_expectedResults.json",
+                "aes-cfb128/prompt.json": "acvp_vectors_aes-cfb128_prompt.json",
+                "aes-ctr/expectedResults.json": "acvp_vectors_aes-ctr_expectedResults.json",
+                "aes-ctr/prompt.json": "acvp_vectors_aes-ctr_prompt.json",
+                "aes-ecb/expectedResults.json": "acvp_vectors_aes-ecb_expectedResults.json",
+                "aes-ecb/prompt.json": "acvp_vectors_aes-ecb_prompt.json",
                 "aes-kwp/expectedResults.json": "acvp_vectors_aes-kwp_expectedResults.json",
                 "aes-kwp/prompt.json": "acvp_vectors_aes-kwp_prompt.json",
+                "aes-ofb/expectedResults.json": "acvp_vectors_aes-ofb_expectedResults.json",
+                "aes-ofb/prompt.json": "acvp_vectors_aes-ofb_prompt.json",
                 "ctr-drbg/expectedResults.json": "acvp_vectors_ctr-drbg_expectedResults.json",
                 "ctr-drbg/prompt.json": "acvp_vectors_ctr-drbg_prompt.json",
                 "hmac-sha2-256/expectedResults.json": "acvp_vectors_hmac-sha2-256_expectedResults.json",
@@ -1105,7 +1195,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "IOSS2+nsp2l83k2FPuhchrr9p4CePW3MNg9RvNwkHHA=",
+        "bzlTransitiveDigest": "zJSK8pthvPNcESLYZedoriFivUb2vNh4Klw8x6CoEu0=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1120,17 +1210,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-4ecdsatestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-4ecdsatestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_aes_kat": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "a203b16c9246b2ebae31dee5de21a606be80cf78ceabaca37150236fa098eb60",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/KAT_AES.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/KAT_AES.zip"
               ]
             }
           },

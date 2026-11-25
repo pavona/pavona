@@ -105,7 +105,11 @@
         "//sw/device/tests/crypto:aes_kwp_kat_functest",
         "//sw/device/tests/crypto:aes_kwp_functest",
         "//sw/device/tests/crypto:aes_gcm_functest",
-        "//sw/device/tests/crypto/cryptotest:aes_kat"
+        "//sw/device/tests/crypto/cryptotest:aes_cbc_kat",
+        "//sw/device/tests/crypto/cryptotest:aes_cfb128_kat",
+        "//sw/device/tests/crypto/cryptotest:aes_ctr_kat",
+        "//sw/device/tests/crypto/cryptotest:aes_ecb_kat",
+        "//sw/device/tests/crypto/cryptotest:aes_ofb_kat"
       ]
       lc_states: ["PROD"]
     }

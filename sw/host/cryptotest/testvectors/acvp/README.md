@@ -27,6 +27,8 @@ The supported algorithms below mark those with deferred test cases.
 
 ## Supported algorithms
 
+- [AES-CBC, AES-CFB128, AES-ECB, AES-OFB](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, MCT.
+- [AES-CTR](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): AFT, counter tests.
 - [AES-KWP](https://pages.nist.gov/ACVP/draft-celi-acvp-symmetric.html): encrypt, decrypt.
 - [ctrDRBG](https://pages.nist.gov/ACVP/draft-vassilev-acvp-drbg.html) with AES-256 and without a derivation function: AFT, revision SP800-90Ar1.
 - [HMAC-SHA2-256, HMAC-SHA2-384, HMAC-SHA2-512](https://pages.nist.gov/ACVP/draft-fussell-acvp-mac.html): AFT, revision 2.0.
@@ -40,6 +42,19 @@ The supported algorithms below mark those with deferred test cases.
 - [SHAKE-128, SHAKE-256](https://pages.nist.gov/ACVP/draft-celi-acvp-sha3.html): AFT, revision FIPS202.
 
 ## Unsupported capabilities
+
+### AES-CBC, AES-CFB128, AES-ECB, AES-OFB
+
+- AES-CFB1 and AES-CFB8.
+  The cryptolib implements CFB with 128-bit segments only.
+
+The device runs the whole Monte Carlo test.
+
+### AES-CTR
+
+- Payloads shorter than one block.
+  The cryptolib encrypts whole 16-byte blocks only.
+- RFC 3686 conformance tests.
 
 ### AES-KWP
 
