@@ -111,7 +111,7 @@ static status_t wrap_unwrap_random_test(void) {
       .keyblob = keyblob_kek,
   };
   otcrypto_const_word32_buf_t key_salt_buf = {
-      .data = (uint32_t *)kKeySalt,
+      .data = (const uint32_t *)kKeySalt,
       .len = sizeof(kKeySalt) / sizeof(uint32_t),
   };
   TRY(otcrypto_hw_backed_key(kKeyVersion, key_salt_buf, &kek));

@@ -181,7 +181,7 @@ status_t keyblob_buffer_to_keymgr_diversification(
   // Update the SHA-256 context with the provided keyblob.
   const uint32_t *keyblob_rest = keyblob + 1;
   uint32_t keyblob_rest_length = keyblob_length - sizeof(uint32_t);
-  HARDENED_TRY(kmac_absorb((uint8_t *)keyblob_rest, keyblob_rest_length));
+  HARDENED_TRY(kmac_absorb((const uint8_t *)keyblob_rest, keyblob_rest_length));
 
   // Update the SHA-256 context with the provided mode.
   uint32_t mode_data = launder32(mode);

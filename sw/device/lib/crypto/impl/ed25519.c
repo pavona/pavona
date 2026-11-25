@@ -279,7 +279,7 @@ static status_t construct_hash_k(uint32_t hash_k[kEd25519HashWords],
 
   // Update with the first half of the signature, R.
   otcrypto_const_byte_buf_t signature_point_buf = {
-      .data = (uint8_t *)signature.data,
+      .data = (const uint8_t *)signature.data,
       .len = kEd25519PointBytes,
   };
   HARDENED_TRY(otcrypto_sha2_update(&ctx, signature_point_buf));
@@ -356,7 +356,7 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Check the signature lengths.
   HARDENED_TRY(ed25519_signature_length_check(signature.len));
-  ed25519_signature_t *sig = (ed25519_signature_t *)signature.data;
+  const ed25519_signature_t *sig = (const ed25519_signature_t *)signature.data;
 
   // Compute the hash k = SHA-512([dom2] || R || A || M).
   uint32_t hash_k[kEd25519HashWords];

@@ -99,7 +99,7 @@ static status_t run_aes_test(void) {
   }
   TRY(aes_update(out, NULL));
 
-  CHECK_ARRAYS_EQ((uint32_t *)ciphertext, (uint32_t *)kCiphertext,
+  CHECK_ARRAYS_EQ((uint32_t *)ciphertext, (const uint32_t *)kCiphertext,
                   sizeof(ciphertext) / (sizeof(uint32_t)));
 
   LOG_INFO("Cleaning up.");

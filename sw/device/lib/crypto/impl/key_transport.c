@@ -225,7 +225,8 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   size_t plaintext_num_words = config_words + 2 + keyblob_words;
   uint32_t *plaintext = wrapped_key.data;
   hardened_memshred(plaintext, plaintext_num_words);
-  hardened_memcpy(plaintext, (uint32_t *)&key_to_wrap->config, config_words);
+  hardened_memcpy(plaintext, (const uint32_t *)&key_to_wrap->config,
+                  config_words);
   plaintext[config_words] = key_to_wrap->checksum;
   plaintext[config_words + 1] = keyblob_words;
   hardened_memcpy(plaintext + config_words + 2, key_to_wrap->keyblob,

@@ -100,7 +100,7 @@ static inline void block_shiftr(ghash_block_t *block, size_t nbits) {
  * @return Value of block[index]
  */
 static inline uint8_t block_byte_get(const ghash_block_t *block, size_t index) {
-  return ((char *)block->data)[index];
+  return ((const char *)block->data)[index];
 }
 
 /**

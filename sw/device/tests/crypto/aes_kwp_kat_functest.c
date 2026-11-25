@@ -109,8 +109,8 @@ static status_t aes_kwp_unwrap_kat(const uint32_t *kek, size_t kek_words,
   if (valid) {
     TRY_CHECK(success == kHardenedBoolTrue);
     TRY_CHECK(act_ptext_len == ptext_bytes);
-    TRY_CHECK_ARRAYS_EQ((unsigned char *)act_ptext, (unsigned char *)ptext,
-                        ptext_bytes);
+    TRY_CHECK_ARRAYS_EQ((unsigned char *)act_ptext,
+                        (const unsigned char *)ptext, ptext_bytes);
   } else {
     TRY_CHECK(success == kHardenedBoolFalse);
   }

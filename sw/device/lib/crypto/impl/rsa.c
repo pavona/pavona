@@ -1104,7 +1104,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      rsa_2048_int_t *sig = (rsa_2048_int_t *)signature.data;
+      const rsa_2048_int_t *sig = (const rsa_2048_int_t *)signature.data;
       return rsa_signature_verify_2048_start(pk, sig, session_token);
     }
     case kOtcryptoRsaSize3072: {
@@ -1112,7 +1112,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      rsa_3072_int_t *sig = (rsa_3072_int_t *)signature.data;
+      const rsa_3072_int_t *sig = (const rsa_3072_int_t *)signature.data;
       return rsa_signature_verify_3072_start(pk, sig, session_token);
     }
     case kOtcryptoRsaSize4096: {
@@ -1120,7 +1120,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      rsa_4096_int_t *sig = (rsa_4096_int_t *)signature.data;
+      const rsa_4096_int_t *sig = (const rsa_4096_int_t *)signature.data;
       return rsa_signature_verify_4096_start(pk, sig, session_token);
     }
     default:
@@ -1341,7 +1341,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_2048_private_key_t *sk =
           (rsa_2048_private_key_t *)private_key->keyblob;
-      rsa_2048_int_t *ctext = (rsa_2048_int_t *)ciphertext.data;
+      const rsa_2048_int_t *ctext = (const rsa_2048_int_t *)ciphertext.data;
       return rsa_decrypt_2048_start(sk, ctext, session_token);
     }
     case kOtcryptoRsaSize3072: {
@@ -1353,7 +1353,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_3072_private_key_t *sk =
           (rsa_3072_private_key_t *)private_key->keyblob;
-      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext.data;
+      const rsa_3072_int_t *ctext = (const rsa_3072_int_t *)ciphertext.data;
       return rsa_decrypt_3072_start(sk, ctext, session_token);
     }
     case kOtcryptoRsaSize4096: {
@@ -1365,7 +1365,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       }
       rsa_4096_private_key_t *sk =
           (rsa_4096_private_key_t *)private_key->keyblob;
-      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext.data;
+      const rsa_4096_int_t *ctext = (const rsa_4096_int_t *)ciphertext.data;
       return rsa_decrypt_4096_start(sk, ctext, session_token);
     }
     default:
