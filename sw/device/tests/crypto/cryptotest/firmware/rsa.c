@@ -405,6 +405,9 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
     case kCryptotestRsaHashAlgSha512:
       mode = kOtcryptoHashModeSha512;
       break;
+    case kCryptotestRsaHashAlgSha3_224:
+      mode = kOtcryptoHashModeSha3_224;
+      break;
     case kCryptotestRsaHashAlgSha3_256:
       mode = kOtcryptoHashModeSha3_256;
       break;
@@ -528,6 +531,10 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
     case kCryptotestRsaHashAlgSha512:
       mode = kOtcryptoHashModeSha512;
       hash_len = kSha512DigestBytes;
+      break;
+    case kCryptotestRsaHashAlgSha3_224:
+      mode = kOtcryptoHashModeSha3_224;
+      hash_len = kKmacSha3224DigestBytes;
       break;
     case kCryptotestRsaHashAlgSha3_256:
       mode = kOtcryptoHashModeSha3_256;
