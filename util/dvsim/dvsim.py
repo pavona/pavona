@@ -322,12 +322,13 @@ def parse_args():
     parser.add_argument(
         "--tool",
         "-t",
-        help=("Explicitly set the tool to use. This is "
-              "optional for running simulations (where it can "
-              "be set in an .hjson file), but is required for "
-              "other flows. Possible tools include: vcs, questa,"
-              "xcelium, ascentlint, verixcdc, mrdc, veriblelint,"
-              "verilator, dc."))
+        help=("Explicitly set the tool to use, overriding the "
+              "tool named in the .hjson file. A config in any "
+              "flow may name its own tool, and most do, so this "
+              "is needed only where none is set. "
+              "Possible tools include: vcs, questa, "
+              "xcelium, ascentlint, verixcdc, mrdc, veriblelint, "
+              "slang, verilator, dc."))
 
     parser.add_argument("--list",
                         "-l",
@@ -391,8 +392,7 @@ def parse_args():
                       help=('Run only up to N builds/tests at a time. '
                             'Default value 16, unless the DVSIM_MAX_PARALLEL '
                             'environment variable is set, in which case that '
-                            'is used. Only applicable when launching jobs '
-                            'locally.'))
+                            'is used. Applies to every launcher.'))
 
     disg.add_argument("--max-job-mem-gb",
                       type=float,
@@ -401,7 +401,8 @@ def parse_args():
                             'grows beyond GB gigabytes. Only that job is '
                             'killed; the rest of the regression carries on, '
                             'and the report says why it died. Off by default. '
-                            'Only applicable when launching jobs locally.'))
+                            'Enforced when launching locally or through '
+                            'Slurm.'))
 
     disg.add_argument("--run-wait-timeout-mins",
                       type=int,
@@ -435,11 +436,14 @@ def parse_args():
     pathg.add_argument("--branch",
                        "-br",
                        metavar='B',
-                       help=('By default, dvsim creates files below '
-                             '{scratch-root}/{dut}.{flow}.{tool}/{branch}. '
-                             'If --branch is not specified, dvsim assumes the '
-                             'current directory is a git repository and uses '
-                             'the name of the current branch.'))
+                       help=('The branch component of the output path. The '
+                             'rest of that path is set by scratch_path in the '
+                             'project configuration, and is '
+                             '{scratch-root}/{branch}/{name}-{flow}-{tool} for '
+                             'Pavona. If --branch is not specified, dvsim '
+                             'assumes the current directory is a git '
+                             'repository and uses the name of the current '
+                             'branch.'))
 
     pathg.add_argument("--max-odirs",
                        "-mo",
