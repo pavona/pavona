@@ -141,7 +141,7 @@ extern char _dv_log_offset[];
       __attribute__((section(".logs.fields")))                   \
       static const log_fields_t kLogFields =                     \
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_dv((const log_fields_t*)((char*)&kLogFields + (uintptr_t)&_dv_log_offset), \
+      base_log_internal_dv((const log_fields_t*)((const char*)&kLogFields + (uintptr_t)&_dv_log_offset), \
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); \
       /* clang-format on */                                        \
