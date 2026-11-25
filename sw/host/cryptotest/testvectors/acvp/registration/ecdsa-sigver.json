@@ -1,0 +1,34 @@
+{
+  "algorithm": "ECDSA",
+  "mode": "sigVer",
+  "revision": "FIPS186-5",
+  "prereqVals": [],
+  "capabilities": [
+    {
+      "curve": [
+        "P-256"
+      ],
+      "hashAlg": [
+        "SHA2-256",
+        "SHA2-384",
+        "SHA2-512",
+        "SHA3-256",
+        "SHA3-384",
+        "SHA3-512"
+      ]
+    },
+    {
+      "curve": [
+        "P-384"
+      ],
+      "hashAlg": [
+        "SHA2-384",
+        "SHA2-512",
+        "SHA3-384",
+        "SHA3-512"
+      ]
+    }
+  ],
+  "conformances": [],
+  "componentTest": false
+}

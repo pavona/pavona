@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # Copyright lowRISC contributors (OpenTitan project).
+# Copyright zeroRISC Inc.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +15,12 @@ from Crypto.Hash import SHA256, SHA384, SHA512, SHA3_256, SHA3_384, SHA3_512
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 from cryptotest_util import rng
+
+# Accepted ECC curves and corresponding scalar sizes in bytes.
+CURVE_SCALAR_BYTES = {
+    "p256": 32,
+    "p384": 48,
+}
 
 MESSAGE_LENGTH = 512
 
@@ -64,22 +71,20 @@ def generate_test_vectors(args):
         r = signature[:int(len(signature) / 2)]
         s = signature[int(len(signature) / 2):]
 
-        d = hex(int(key_pair.d))[2:]
-
         # Create sign test vector (currently only SHA-2 is supported)
+        scalar_bytes = CURVE_SCALAR_BYTES[args.curve]
         if args.hash_alg.startswith("sha-"):
             test_vectors.append({
                 "vendor": "random",
                 "test_case_id": count,
                 "algorithm": "ecdsa",
-                "operation": "sign",
+                "operation": "siggen",
                 "curve": args.curve,
                 "hash_alg": args.hash_alg,
                 "message": list(msg),
-                # The [2:] removes the '0x' at the beginning of hex strings
-                "qx": hex(int(public.x))[2:],
-                "qy": hex(int(public.y))[2:],
-                "d": d,
+                "qx": list(public.x.to_bytes(scalar_bytes, "big")),
+                "qy": list(public.y.to_bytes(scalar_bytes, "big")),
+                "d": list(key_pair.d.to_bytes(scalar_bytes, "big")),
                 "result": True,
             })
 
@@ -88,15 +93,14 @@ def generate_test_vectors(args):
             "vendor": "random",
             "test_case_id": count,
             "algorithm": "ecdsa",
-            "operation": "verify",
+            "operation": "sigver",
             "curve": args.curve,
             "hash_alg": args.hash_alg,
             "message": list(msg),
-            # The [2:] removes the '0x' at the beginning of hex strings
-            "qx": hex(int(public.x))[2:],
-            "qy": hex(int(public.y))[2:],
-            "r": bytes(r).hex(),
-            "s": bytes(s).hex(),
+            "qx": list(public.x.to_bytes(scalar_bytes, "big")),
+            "qy": list(public.y.to_bytes(scalar_bytes, "big")),
+            "r": list(bytes(r)),
+            "s": list(bytes(s)),
             "result": verify_result,
         })
 

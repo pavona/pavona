@@ -54,6 +54,7 @@
 
 // Scratch buffers for crypto tests.
 static union {
+  ecdsa_test_scratch_t ecdsa;
   hash_test_scratch_t hash;
   hkdf_test_scratch_t hkdf;
   hmac_test_scratch_t hmac;
@@ -86,7 +87,7 @@ status_t process_cmd(ujson_t *uj) {
         RESP_ERR(uj, handle_drbg(uj));
         break;
       case kCryptotestCommandEcdsa:
-        RESP_ERR(uj, handle_ecdsa(uj));
+        RESP_ERR(uj, handle_ecdsa(uj, &cryptotest_scratch.ecdsa));
         break;
       case kCryptotestCommandEcdh:
         RESP_ERR(uj, handle_ecdh(uj));
