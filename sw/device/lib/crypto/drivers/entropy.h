@@ -1,4 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
+// Copyright zeroRISC Inc.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_ENTROPY_H_
@@ -183,7 +184,7 @@ status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
 /**
  * Uninstantiate the SW CSRNG.
  *
- * Thia operation effectively resets the state of the SW CSRNG instance,
+ * This operation effectively resets the state of the SW CSRNG instance,
  * clearing any errors that it may have encountered due to bad command syntax or
  * entropy source failures.
  *
@@ -191,6 +192,25 @@ status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_csrng_uninstantiate(void);
+
+/*
+ * Instantiates a fresh CSRNG instance with empty seed and TRNG input enabled,
+ * requests and reads data from it to fill `buf`, and then uninstantiates it.
+ *
+ * This is a convenience function which internally utilizes the other entropy
+ * API functions.
+ *
+ * Shreds `buf` on failure.
+ *
+ * @param buf A buffer to fill with words from the CSRNG output buffer.
+ * @param len The number of words to read into `buf`.
+ * @param fips_check Whether to expect FIPS-compatible entropy.
+ * @return Result of the operation.
+ */
+
+OT_WARN_UNUSED_RESULT
+status_t entropy_csrng_oneshot(uint32_t *buf, size_t len,
+                               hardened_bool_t fips_check);
 
 #ifdef __cplusplus
 }

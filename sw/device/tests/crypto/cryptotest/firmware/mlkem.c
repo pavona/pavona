@@ -56,11 +56,8 @@ static status_t send_decaps_fail(ujson_t *uj) {
 #ifdef ACC_MLKEM_HARDENED
 static status_t generate_seed_mask(uint32_t *seed_mask, size_t seed_words) {
   TRY(entropy_complex_check());
-  TRY(entropy_csrng_instantiate(
-      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
-  TRY(entropy_csrng_generate(&kEntropyEmptySeed, seed_mask, seed_words,
-                             /*fips_check=*/kHardenedBoolTrue));
-  TRY(entropy_csrng_uninstantiate());
+  TRY(entropy_csrng_oneshot(seed_mask, seed_words,
+                            /*fips_check=*/kHardenedBoolTrue));
   return OK_STATUS();
 }
 #endif

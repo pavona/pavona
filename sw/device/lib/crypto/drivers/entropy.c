@@ -10,6 +10,7 @@
 #include "hw/top/dt/entropy_src.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/multibits.h"
@@ -1158,4 +1159,20 @@ status_t entropy_csrng_uninstantiate(void) {
                                 .generate_len = 0,
                             },
                             kEntropyCsrngSendAppCmdTypeCsrng);
+}
+
+status_t entropy_csrng_oneshot(uint32_t *buf, size_t len,
+                               hardened_bool_t fips_check) {
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+  status_t status =
+      entropy_csrng_generate(&kEntropyEmptySeed, buf, len, fips_check);
+  status_t uninstantiate_status = entropy_csrng_uninstantiate();
+  if (launder32(OT_UNSIGNED(status.value)) == kHardenedBoolTrue) {
+    status = uninstantiate_status;
+  }
+  if (launder32(OT_UNSIGNED(status.value)) != kHardenedBoolTrue) {
+    hardened_memshred(buf, len);
+  }
+  return status;
 }
