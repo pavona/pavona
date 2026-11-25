@@ -234,9 +234,6 @@ cc_library(
     name = "usage_constraints",
     srcs = ["usage_constraints.c"],
     hdrs = ["usage_constraints.h"],
-    copts = [
-        "-Wno-enum-enum-conversion",
-    ],
     defines = pavona_select_top(
         {
             "egret": ["OTP_MANUF_STATE"],
