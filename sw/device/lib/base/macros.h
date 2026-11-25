@@ -609,7 +609,7 @@ extern "C++" {
  * # Example Uses
  */
 #define OT_ADDRESSABLE_LABEL(kName_)                                         \
-  extern const char kName_[];                                                \
+  extern const char kName_[]; /* NOLINT(bugprone-macro-parentheses) */       \
   asm volatile(".local " #kName_ "; " #kName_ ":;");                         \
   /* Force this to be at function scope. It could go at global scope, but it \
    * would give a garbage value dependent on the whims of the linker. */     \

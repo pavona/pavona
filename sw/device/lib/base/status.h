@@ -98,7 +98,7 @@ enum ot_status_create_record_magic {
       /* mod_id is either an external pointer, or a value produced by MAKE_MODULE_ID */ \
       /* in which case it is already shifted by 16 bits so it can be OR'ed. */ \
       .module_id = __builtin_constant_p(mod_id) ? (mod_id) : OT_SCR_UNKNOWN_MOD_ID, \
-      .filename = file, \
+      .filename = file, /* NOLINT(bugprone-macro-parentheses) */ \
     }; \
   })
 #endif /* __cplusplus */

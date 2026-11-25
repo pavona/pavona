@@ -76,7 +76,7 @@
 
 
 // Helper to count number of fields.
-#define ujson_count(name_, type_, ...) +1
+#define ujson_count(name_, type_, ...) +1  // NOLINT(bugprone-macro-parentheses)
 
 //////////////////////////////////////////////////////////////////////
 // Serialize Implementation
@@ -235,7 +235,7 @@
     }
 
 #define UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
-    status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
+    status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { /* NOLINT(bugprone-macro-parentheses) */ \
         size_t nfield = 0; \
         char key[128]; \
         uj->str_size = 0; \
@@ -260,7 +260,7 @@
     else if (ujson_streq(value, #name_)) { *self = k ##formal_name_ ## name_; }
 
 #define UJSON_IMPL_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
-    status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
+    status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { /* NOLINT(bugprone-macro-parentheses) */ \
         char value[128]; \
         uj->str_size = 0; \
         if (TRY(ujson_consume_maybe(uj, '"'))) { \
@@ -320,7 +320,7 @@
     ( /*then*/ \
         UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
     , /*else*/ \
-        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
+        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) /* NOLINT(bugprone-macro-parentheses) */ \
     ) /*endif*/
 
 #define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
@@ -328,7 +328,7 @@
     ( /*then*/ \
         UJSON_IMPL_DESERIALIZE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__) \
     , /*else*/ \
-        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
+        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) /* NOLINT(bugprone-macro-parentheses) */ \
     ) /*endif*/
 // clang-format on
 

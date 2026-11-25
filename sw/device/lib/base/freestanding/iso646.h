@@ -19,6 +19,7 @@
 // The below macro definitions cause clang-format to freak out somewhat, so we
 // need to turn it off.
 // clang-format off
+// NOLINTBEGIN(bugprone-macro-parentheses)
 
 #define and &&
 #define and_eq &=
@@ -36,6 +37,7 @@
 
 #define compl ~
 
+// NOLINTEND(bugprone-macro-parentheses)
 // clang-format on
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_FREESTANDING_ISO646_H_
