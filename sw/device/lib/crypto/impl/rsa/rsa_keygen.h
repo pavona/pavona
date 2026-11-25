@@ -261,7 +261,7 @@ status_t rsa_key_check_2048_start(const rsa_2048_public_key_t *public_key,
                                   const rsa_2048_private_key_t *private_key,
                                   uint32_t *session_token);
 
-/*
+/**
  * Waits for an RSA-2048 private key check to complete.
  *
  * Should be invoked only after `rsa_key_check_2048_start`. Blocks until ACC is
@@ -316,7 +316,7 @@ status_t rsa_key_check_3072_start(const rsa_3072_public_key_t *public_key,
                                   const rsa_3072_private_key_t *private_key,
                                   uint32_t *session_token);
 
-/*
+/**
  * Waits for an RSA-3072 private key check to complete.
  *
  * Should be invoked only after `rsa_key_check_3072_start`. Blocks until ACC is
@@ -371,7 +371,7 @@ status_t rsa_key_check_4096_start(const rsa_4096_public_key_t *public_key,
                                   const rsa_4096_private_key_t *private_key,
                                   uint32_t *session_token);
 
-/*
+/**
  * Waits for an RSA-4096 private key check to complete.
  *
  * Should be invoked only after `rsa_key_check_4096_start`. Blocks until ACC is

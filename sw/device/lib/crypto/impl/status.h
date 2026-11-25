@@ -52,12 +52,17 @@ extern "C" {
                                  ((__LINE__ & 0x7ff) << 5) | kUnimplemented)})
 #else
 
+/** Error after which it is OK to retry (e.g. timeout). */
 #define OTCRYPTO_RECOV_ERR \
   ((status_t){.value = kOtcryptoStatusValueInternalError})
+/** Error after which it is not OK to retry (e.g. integrity check). */
 #define OTCRYPTO_FATAL_ERR ((status_t){.value = kOtcryptoStatusValueFatalError})
+/** Invalid input arguments; wrong length or invalid type. */
 #define OTCRYPTO_BAD_ARGS ((status_t){.value = kOtcryptoStatusValueBadArgs})
+/** An asynchronous operation is still in progress. */
 #define OTCRYPTO_ASYNC_INCOMPLETE \
   ((status_t){.value = kOtcryptoStatusValueAsyncIncomplete})
+/** The operation is not yet implemented. */
 #define OTCRYPTO_NOT_IMPLEMENTED \
   ((status_t){.value = kOtcryptoStatusValueNotImplemented})
 
