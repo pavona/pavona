@@ -75,29 +75,56 @@ enum {
 };
 
 /**
- * ACC-backed ML-DSA (synchronous) primitives.
+ * Generates an ML-DSA-44 key pair on ACC.
  *
- * Each function loads the run_mldsa ACC binary, writes inputs and the mode
- * code into ACC dmem, executes, waits for idle, and reads outputs back. The
- * shared KL-runtime kernels in `sw/acc/crypto/mldsa` are dispatched based on
- * the chosen parameter set (ML-DSA-44 / 65 / 87).
+ * @param zeta Key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Secret key.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_keygen(const uint32_t zeta[kMldsaSeedWords],
                              uint32_t pk[kMldsa44PublicKeyWords],
                              uint32_t sk[kMldsa44SecretKeyWords]);
 
+/**
+ * Generates an ML-DSA-65 key pair on ACC.
+ *
+ * @param zeta Key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Secret key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_keygen(const uint32_t zeta[kMldsaSeedWords],
                              uint32_t pk[kMldsa65PublicKeyWords],
                              uint32_t sk[kMldsa65SecretKeyWords]);
 
+/**
+ * Generates an ML-DSA-87 key pair on ACC.
+ *
+ * @param zeta Key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Secret key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_keygen(const uint32_t zeta[kMldsaSeedWords],
                              uint32_t pk[kMldsa87PublicKeyWords],
                              uint32_t sk[kMldsa87SecretKeyWords]);
 
+/**
+ * Signs a message with ML-DSA-44 on ACC.
+ *
+ * @param sk Secret key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign(const uint32_t sk[kMldsa44SecretKeyWords],
                            const uint8_t *msg, size_t msg_bytes,
@@ -105,6 +132,18 @@ status_t mldsa_acc_44_sign(const uint32_t sk[kMldsa44SecretKeyWords],
                            const uint32_t rnd[kMldsaRndWords],
                            uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a message with ML-DSA-65 on ACC.
+ *
+ * @param sk Secret key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign(const uint32_t sk[kMldsa65SecretKeyWords],
                            const uint8_t *msg, size_t msg_bytes,
@@ -112,6 +151,18 @@ status_t mldsa_acc_65_sign(const uint32_t sk[kMldsa65SecretKeyWords],
                            const uint32_t rnd[kMldsaRndWords],
                            uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a message with ML-DSA-87 on ACC.
+ *
+ * @param sk Secret key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign(const uint32_t sk[kMldsa87SecretKeyWords],
                            const uint8_t *msg, size_t msg_bytes,
@@ -120,9 +171,17 @@ status_t mldsa_acc_87_sign(const uint32_t sk[kMldsa87SecretKeyWords],
                            uint32_t sig[kMldsa87SignatureWords]);
 
 /**
- * Verify the signature. On success the status is OTCRYPTO_OK and
- * `*verification_result` is set to `kHardenedBoolTrue` if the signature is
- * valid or `kHardenedBoolFalse` otherwise.
+ * Verifies an ML-DSA-44 signature on ACC.
+ *
+ * @param pk Public key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_verify(const uint32_t pk[kMldsa44PublicKeyWords],
@@ -131,6 +190,19 @@ status_t mldsa_acc_44_verify(const uint32_t pk[kMldsa44PublicKeyWords],
                              const uint32_t sig[kMldsa44SignatureWords],
                              hardened_bool_t *verification_result);
 
+/**
+ * Verifies an ML-DSA-65 signature on ACC.
+ *
+ * @param pk Public key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_verify(const uint32_t pk[kMldsa65PublicKeyWords],
                              const uint8_t *msg, size_t msg_bytes,
@@ -138,6 +210,19 @@ status_t mldsa_acc_65_verify(const uint32_t pk[kMldsa65PublicKeyWords],
                              const uint32_t sig[kMldsa65SignatureWords],
                              hardened_bool_t *verification_result);
 
+/**
+ * Verifies an ML-DSA-87 signature on ACC.
+ *
+ * @param pk Public key.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_verify(const uint32_t pk[kMldsa87PublicKeyWords],
                              const uint8_t *msg, size_t msg_bytes,
@@ -146,43 +231,95 @@ status_t mldsa_acc_87_verify(const uint32_t pk[kMldsa87PublicKeyWords],
                              hardened_bool_t *verification_result);
 
 /**
- * ACC-backed ML-DSA external-mu primitives.
+ * Signs a message representative with ML-DSA-44 on ACC (external mu).
  *
- * `mu` is a precomputed message representative (FIPS 204 external-mu
- * variant); the caller has already done the context/message encoding and
- * hashing that the non-mu primitives above do internally.
+ * @param sk Secret key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign_mu(const uint32_t sk[kMldsa44SecretKeyWords],
                               const uint32_t mu[kMldsaMuWords],
                               const uint32_t rnd[kMldsaRndWords],
                               uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a message representative with ML-DSA-65 on ACC (external mu).
+ *
+ * @param sk Secret key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign_mu(const uint32_t sk[kMldsa65SecretKeyWords],
                               const uint32_t mu[kMldsaMuWords],
                               const uint32_t rnd[kMldsaRndWords],
                               uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a message representative with ML-DSA-87 on ACC (external mu).
+ *
+ * @param sk Secret key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign_mu(const uint32_t sk[kMldsa87SecretKeyWords],
                               const uint32_t mu[kMldsaMuWords],
                               const uint32_t rnd[kMldsaRndWords],
                               uint32_t sig[kMldsa87SignatureWords]);
 
+/**
+ * Verifies an ML-DSA-44 signature over a message representative on ACC
+ * (external mu).
+ *
+ * @param pk Public key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_verify_mu(const uint32_t pk[kMldsa44PublicKeyWords],
                                 const uint32_t mu[kMldsaMuWords],
                                 const uint32_t sig[kMldsa44SignatureWords],
                                 hardened_bool_t *verification_result);
 
+/**
+ * Verifies an ML-DSA-65 signature over a message representative on ACC
+ * (external mu).
+ *
+ * @param pk Public key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_verify_mu(const uint32_t pk[kMldsa65PublicKeyWords],
                                 const uint32_t mu[kMldsaMuWords],
                                 const uint32_t sig[kMldsa65SignatureWords],
                                 hardened_bool_t *verification_result);
 
+/**
+ * Verifies an ML-DSA-87 signature over a message representative on ACC
+ * (external mu).
+ *
+ * @param pk Public key.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_verify_mu(const uint32_t pk[kMldsa87PublicKeyWords],
                                 const uint32_t mu[kMldsaMuWords],
@@ -190,13 +327,18 @@ status_t mldsa_acc_87_verify_mu(const uint32_t pk[kMldsa87PublicKeyWords],
                                 hardened_bool_t *verification_result);
 
 /**
- * ACC-backed HashML-DSA primitives (FIPS 204 Algorithms 4/5).
+ * Signs a pre-hashed message with HashML-DSA-44 on ACC.
  *
- * `ph`/`ph_bytes` is the pre-hashed message (the caller hashes the message
- * with the hash function named by `hash_mode` before calling); `hash_mode`
- * selects the OID folded into the signed message representative.
+ * @param sk Secret key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign_pre_hash(const uint32_t sk[kMldsa44SecretKeyWords],
                                     const uint8_t *ph, size_t ph_bytes,
@@ -205,6 +347,19 @@ status_t mldsa_acc_44_sign_pre_hash(const uint32_t sk[kMldsa44SecretKeyWords],
                                     const uint32_t rnd[kMldsaRndWords],
                                     uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a pre-hashed message with HashML-DSA-65 on ACC.
+ *
+ * @param sk Secret key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign_pre_hash(const uint32_t sk[kMldsa65SecretKeyWords],
                                     const uint8_t *ph, size_t ph_bytes,
@@ -213,6 +368,19 @@ status_t mldsa_acc_65_sign_pre_hash(const uint32_t sk[kMldsa65SecretKeyWords],
                                     const uint32_t rnd[kMldsaRndWords],
                                     uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a pre-hashed message with HashML-DSA-87 on ACC.
+ *
+ * @param sk Secret key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign_pre_hash(const uint32_t sk[kMldsa87SecretKeyWords],
                                     const uint8_t *ph, size_t ph_bytes,
@@ -221,6 +389,20 @@ status_t mldsa_acc_87_sign_pre_hash(const uint32_t sk[kMldsa87SecretKeyWords],
                                     const uint32_t rnd[kMldsaRndWords],
                                     uint32_t sig[kMldsa87SignatureWords]);
 
+/**
+ * Verifies a HashML-DSA-44 signature over a pre-hashed message on ACC.
+ *
+ * @param pk Public key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_verify_pre_hash(
     const uint32_t pk[kMldsa44PublicKeyWords], const uint8_t *ph,
@@ -229,6 +411,20 @@ status_t mldsa_acc_44_verify_pre_hash(
     const uint32_t sig[kMldsa44SignatureWords],
     hardened_bool_t *verification_result);
 
+/**
+ * Verifies a HashML-DSA-65 signature over a pre-hashed message on ACC.
+ *
+ * @param pk Public key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_verify_pre_hash(
     const uint32_t pk[kMldsa65PublicKeyWords], const uint8_t *ph,
@@ -237,6 +433,20 @@ status_t mldsa_acc_65_verify_pre_hash(
     const uint32_t sig[kMldsa65SignatureWords],
     hardened_bool_t *verification_result);
 
+/**
+ * Verifies a HashML-DSA-87 signature over a pre-hashed message on ACC.
+ *
+ * @param pk Public key.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param sig Signature.
+ * @param[out] verification_result `kHardenedBoolTrue` if the signature is
+ * valid, `kHardenedBoolFalse` otherwise.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_verify_pre_hash(
     const uint32_t pk[kMldsa87PublicKeyWords], const uint8_t *ph,
@@ -246,8 +456,13 @@ status_t mldsa_acc_87_verify_pre_hash(
     hardened_bool_t *verification_result);
 
 /**
- * Hardened (masked) ML-DSA keygen and sign: the signing key is the masked
- * component-major keyblob (`kMldsa*MaskedSecretKeyWords`; see mldsa.h).
+ * Generates an ML-DSA-44 key pair on ACC with a masked secret key.
+ *
+ * @param zeta_share0 First Boolean share of the key generation seed.
+ * @param zeta_share1 Second Boolean share of the key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Masked secret key, see mldsa.h for the layout.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_keygen_hardened(
@@ -256,6 +471,15 @@ status_t mldsa_acc_44_keygen_hardened(
     uint32_t pk[kMldsa44PublicKeyWords],
     uint32_t sk[kMldsa44MaskedSecretKeyWords]);
 
+/**
+ * Generates an ML-DSA-65 key pair on ACC with a masked secret key.
+ *
+ * @param zeta_share0 First Boolean share of the key generation seed.
+ * @param zeta_share1 Second Boolean share of the key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Masked secret key, see mldsa.h for the layout.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_keygen_hardened(
     const uint32_t zeta_share0[kMldsaSeedWords],
@@ -263,6 +487,15 @@ status_t mldsa_acc_65_keygen_hardened(
     uint32_t pk[kMldsa65PublicKeyWords],
     uint32_t sk[kMldsa65MaskedSecretKeyWords]);
 
+/**
+ * Generates an ML-DSA-87 key pair on ACC with a masked secret key.
+ *
+ * @param zeta_share0 First Boolean share of the key generation seed.
+ * @param zeta_share1 Second Boolean share of the key generation seed.
+ * @param[out] pk Public key.
+ * @param[out] sk Masked secret key, see mldsa.h for the layout.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_keygen_hardened(
     const uint32_t zeta_share0[kMldsaSeedWords],
@@ -270,18 +503,54 @@ status_t mldsa_acc_87_keygen_hardened(
     uint32_t pk[kMldsa87PublicKeyWords],
     uint32_t sk[kMldsa87MaskedSecretKeyWords]);
 
+/**
+ * Signs a message with ML-DSA-44 on ACC using a masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign_hardened(
     const uint32_t sk[kMldsa44MaskedSecretKeyWords], const uint8_t *msg,
     size_t msg_bytes, const uint8_t *ctx, size_t ctx_bytes,
     const uint32_t rnd[kMldsaRndWords], uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a message with ML-DSA-65 on ACC using a masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign_hardened(
     const uint32_t sk[kMldsa65MaskedSecretKeyWords], const uint8_t *msg,
     size_t msg_bytes, const uint8_t *ctx, size_t ctx_bytes,
     const uint32_t rnd[kMldsaRndWords], uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a message with ML-DSA-87 on ACC using a masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param msg Message.
+ * @param msg_bytes Length of `msg` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign_hardened(
     const uint32_t sk[kMldsa87MaskedSecretKeyWords], const uint8_t *msg,
@@ -289,28 +558,67 @@ status_t mldsa_acc_87_sign_hardened(
     const uint32_t rnd[kMldsaRndWords], uint32_t sig[kMldsa87SignatureWords]);
 
 /**
- * Hardened (masked) ML-DSA external-mu and HashML-DSA sign. See the
- * corresponding non-hardened primitives above for parameter semantics.
+ * Signs a message representative with ML-DSA-44 on ACC (external mu) using a
+ * masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign_mu_hardened(
     const uint32_t sk[kMldsa44MaskedSecretKeyWords],
     const uint32_t mu[kMldsaMuWords], const uint32_t rnd[kMldsaRndWords],
     uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a message representative with ML-DSA-65 on ACC (external mu) using a
+ * masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign_mu_hardened(
     const uint32_t sk[kMldsa65MaskedSecretKeyWords],
     const uint32_t mu[kMldsaMuWords], const uint32_t rnd[kMldsaRndWords],
     uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a message representative with ML-DSA-87 on ACC (external mu) using a
+ * masked secret key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param mu Precomputed message representative (FIPS 204 external mu).
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign_mu_hardened(
     const uint32_t sk[kMldsa87MaskedSecretKeyWords],
     const uint32_t mu[kMldsaMuWords], const uint32_t rnd[kMldsaRndWords],
     uint32_t sig[kMldsa87SignatureWords]);
 
+/**
+ * Signs a pre-hashed message with HashML-DSA-44 on ACC using a masked secret
+ * key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_44_sign_pre_hash_hardened(
     const uint32_t sk[kMldsa44MaskedSecretKeyWords], const uint8_t *ph,
@@ -318,6 +626,20 @@ status_t mldsa_acc_44_sign_pre_hash_hardened(
     otcrypto_mldsa_sign_mode_t hash_mode, const uint32_t rnd[kMldsaRndWords],
     uint32_t sig[kMldsa44SignatureWords]);
 
+/**
+ * Signs a pre-hashed message with HashML-DSA-65 on ACC using a masked secret
+ * key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_65_sign_pre_hash_hardened(
     const uint32_t sk[kMldsa65MaskedSecretKeyWords], const uint8_t *ph,
@@ -325,6 +647,20 @@ status_t mldsa_acc_65_sign_pre_hash_hardened(
     otcrypto_mldsa_sign_mode_t hash_mode, const uint32_t rnd[kMldsaRndWords],
     uint32_t sig[kMldsa65SignatureWords]);
 
+/**
+ * Signs a pre-hashed message with HashML-DSA-87 on ACC using a masked secret
+ * key.
+ *
+ * @param sk Masked secret key, see mldsa.h for the layout.
+ * @param ph Message hashed with the hash function selected by `hash_mode`.
+ * @param ph_bytes Length of `ph` in bytes.
+ * @param ctx Context string.
+ * @param ctx_bytes Length of `ctx` in bytes.
+ * @param hash_mode Pre-hash function, which selects the OID that is signed.
+ * @param rnd Signing randomness.
+ * @param[out] sig Signature.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mldsa_acc_87_sign_pre_hash_hardened(
     const uint32_t sk[kMldsa87MaskedSecretKeyWords], const uint8_t *ph,

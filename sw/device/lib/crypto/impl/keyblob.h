@@ -89,6 +89,7 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
  * @param share1 Second share.
  * @param config Key configuration.
  * @param[out] keyblob Destination buffer.
+ * @return Result of the operation.
  */
 status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              const otcrypto_key_config_t config,
@@ -112,6 +113,7 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  * @param keyblob_length Length of the keyblob in bytes.
  * @param mode Key mode to use in the diversification.
  * @param[out] diversification Destination key manager diversification struct.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_buffer_to_keymgr_diversification(
@@ -131,6 +133,7 @@ status_t keyblob_buffer_to_keymgr_diversification(
  *
  * @param key Blinded key to use.
  * @param[out] diversification Destination key manager diversification struct.
+ * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(

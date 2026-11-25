@@ -62,63 +62,137 @@ enum {
 };
 
 /**
- * ACC-backed ML-KEM primitives.
+ * Generates an ML-KEM-512 key pair on ACC.
+ *
+ * @param coins Key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Decapsulation key.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_512_keygen(const uint32_t coins[kMlkemKeygenSeedWords],
                               uint32_t pk[kMlkem512PublicKeyWords],
                               uint32_t sk[kMlkem512SecretKeyWords]);
 
+/**
+ * Generates an ML-KEM-768 key pair on ACC.
+ *
+ * @param coins Key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Decapsulation key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_768_keygen(const uint32_t coins[kMlkemKeygenSeedWords],
                               uint32_t pk[kMlkem768PublicKeyWords],
                               uint32_t sk[kMlkem768SecretKeyWords]);
 
+/**
+ * Generates an ML-KEM-1024 key pair on ACC.
+ *
+ * @param coins Key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Decapsulation key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_keygen(const uint32_t coins[kMlkemKeygenSeedWords],
                                uint32_t pk[kMlkem1024PublicKeyWords],
                                uint32_t sk[kMlkem1024SecretKeyWords]);
 
+/**
+ * Encapsulates a shared secret to an ML-KEM-512 encapsulation key on ACC.
+ *
+ * @param coins Encapsulation randomness m.
+ * @param pk Encapsulation key.
+ * @param[out] ct Ciphertext.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_512_encap(const uint32_t coins[kMlkemEncapSeedWords],
                              const uint32_t pk[kMlkem512PublicKeyWords],
                              uint32_t ct[kMlkem512CiphertextWords],
                              uint32_t ss[kMlkemSharedSecretWords]);
 
+/**
+ * Encapsulates a shared secret to an ML-KEM-768 encapsulation key on ACC.
+ *
+ * @param coins Encapsulation randomness m.
+ * @param pk Encapsulation key.
+ * @param[out] ct Ciphertext.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_768_encap(const uint32_t coins[kMlkemEncapSeedWords],
                              const uint32_t pk[kMlkem768PublicKeyWords],
                              uint32_t ct[kMlkem768CiphertextWords],
                              uint32_t ss[kMlkemSharedSecretWords]);
 
+/**
+ * Encapsulates a shared secret to an ML-KEM-1024 encapsulation key on ACC.
+ *
+ * @param coins Encapsulation randomness m.
+ * @param pk Encapsulation key.
+ * @param[out] ct Ciphertext.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_encap(const uint32_t coins[kMlkemEncapSeedWords],
                               const uint32_t pk[kMlkem1024PublicKeyWords],
                               uint32_t ct[kMlkem1024CiphertextWords],
                               uint32_t ss[kMlkemSharedSecretWords]);
 
+/**
+ * Decapsulates an ML-KEM-512 ciphertext on ACC.
+ *
+ * @param ct Ciphertext.
+ * @param sk Decapsulation key.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_512_decap(const uint32_t ct[kMlkem512CiphertextWords],
                              const uint32_t sk[kMlkem512SecretKeyWords],
                              uint32_t ss[kMlkemSharedSecretWords]);
 
+/**
+ * Decapsulates an ML-KEM-768 ciphertext on ACC.
+ *
+ * @param ct Ciphertext.
+ * @param sk Decapsulation key.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_768_decap(const uint32_t ct[kMlkem768CiphertextWords],
                              const uint32_t sk[kMlkem768SecretKeyWords],
                              uint32_t ss[kMlkemSharedSecretWords]);
 
+/**
+ * Decapsulates an ML-KEM-1024 ciphertext on ACC.
+ *
+ * @param ct Ciphertext.
+ * @param sk Decapsulation key.
+ * @param[out] ss Shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_decap(const uint32_t ct[kMlkem1024CiphertextWords],
                               const uint32_t sk[kMlkem1024SecretKeyWords],
                               uint32_t ss[kMlkemSharedSecretWords]);
 
 /**
- * Masked ML-KEM primitives (run_mlkem_hardened app). The masked dk
- * (kMlkem*MaskedSecretKeyBytes) is passed straight to/from the ACC; the
- * decapsulated shared secret is returned as two Boolean shares.
+ * Generates an ML-KEM-512 key pair on ACC with a masked decapsulation key.
+ *
+ * @param coins_share0 First Boolean share of the key generation seed d || z.
+ * @param coins_share1 Second Boolean share of the key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Masked decapsulation key.
+ * @return Result of the operation.
  */
-
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_512_keygen_hardened(
     const uint32_t coins_share0[kMlkemKeygenSeedWords],
@@ -126,6 +200,15 @@ status_t mlkem_acc_512_keygen_hardened(
     uint32_t pk[kMlkem512PublicKeyWords],
     uint32_t sk[kMlkem512MaskedSecretKeyWords]);
 
+/**
+ * Generates an ML-KEM-768 key pair on ACC with a masked decapsulation key.
+ *
+ * @param coins_share0 First Boolean share of the key generation seed d || z.
+ * @param coins_share1 Second Boolean share of the key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Masked decapsulation key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_768_keygen_hardened(
     const uint32_t coins_share0[kMlkemKeygenSeedWords],
@@ -133,6 +216,15 @@ status_t mlkem_acc_768_keygen_hardened(
     uint32_t pk[kMlkem768PublicKeyWords],
     uint32_t sk[kMlkem768MaskedSecretKeyWords]);
 
+/**
+ * Generates an ML-KEM-1024 key pair on ACC with a masked decapsulation key.
+ *
+ * @param coins_share0 First Boolean share of the key generation seed d || z.
+ * @param coins_share1 Second Boolean share of the key generation seed d || z.
+ * @param[out] pk Encapsulation key.
+ * @param[out] sk Masked decapsulation key.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_keygen_hardened(
     const uint32_t coins_share0[kMlkemKeygenSeedWords],
@@ -140,6 +232,16 @@ status_t mlkem_acc_1024_keygen_hardened(
     uint32_t pk[kMlkem1024PublicKeyWords],
     uint32_t sk[kMlkem1024MaskedSecretKeyWords]);
 
+/**
+ * Decapsulates an ML-KEM-512 ciphertext on ACC with a masked decapsulation
+ * key.
+ *
+ * @param ct Ciphertext.
+ * @param sk Masked decapsulation key.
+ * @param[out] ss_share0 First Boolean share of the shared secret.
+ * @param[out] ss_share1 Second Boolean share of the shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_512_decap_hardened(
     const uint32_t ct[kMlkem512CiphertextWords],
@@ -147,6 +249,16 @@ status_t mlkem_acc_512_decap_hardened(
     uint32_t ss_share0[kMlkemSharedSecretWords],
     uint32_t ss_share1[kMlkemSharedSecretWords]);
 
+/**
+ * Decapsulates an ML-KEM-768 ciphertext on ACC with a masked decapsulation
+ * key.
+ *
+ * @param ct Ciphertext.
+ * @param sk Masked decapsulation key.
+ * @param[out] ss_share0 First Boolean share of the shared secret.
+ * @param[out] ss_share1 Second Boolean share of the shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_768_decap_hardened(
     const uint32_t ct[kMlkem768CiphertextWords],
@@ -154,6 +266,16 @@ status_t mlkem_acc_768_decap_hardened(
     uint32_t ss_share0[kMlkemSharedSecretWords],
     uint32_t ss_share1[kMlkemSharedSecretWords]);
 
+/**
+ * Decapsulates an ML-KEM-1024 ciphertext on ACC with a masked decapsulation
+ * key.
+ *
+ * @param ct Ciphertext.
+ * @param sk Masked decapsulation key.
+ * @param[out] ss_share0 First Boolean share of the shared secret.
+ * @param[out] ss_share1 Second Boolean share of the shared secret.
+ * @return Result of the operation.
+ */
 OT_WARN_UNUSED_RESULT
 status_t mlkem_acc_1024_decap_hardened(
     const uint32_t ct[kMlkem1024CiphertextWords],

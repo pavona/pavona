@@ -30,6 +30,8 @@ status_t ibex_disable_icache(hardened_bool_t *icache_enabled);
  *
  * If icache_enabled == kHardenedBoolTrue, this function enables the iCache by
  * writing to CPUCTRL.
+ *
+ * @param icache_enabled Output of `ibex_disable_icache`.
  */
 void ibex_restore_icache(hardened_bool_t icache_enabled);
 
