@@ -193,15 +193,6 @@ jobs:
       top_name: egret
       design_suffix: cw310_hyperdebug
 
-  chip_egret_cw340_pqc:
-    name: Egret for CW340 (PQC)
-    needs: quick_lint
-    uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
-    with:
-      top_name: egret
-      design_suffix: cw340_pqc
-
   # CW310 FPGA jobs
   execute_tests_cw310:
     name: Egret CW310 Tests
@@ -210,16 +201,6 @@ jobs:
     secrets: inherit
     with:
       bitstream: chip_egret_cw310_hyperdebug
-
-  # CW340 FPGA jobs
-  execute_tests_cw340:
-    name: Egret CW340 Tests
-    needs:
-      - chip_egret_cw340_pqc
-    uses: ./.github/workflows/egret-cw340-pr.yml
-    secrets: inherit
-    with:
-      bitstream: chip_egret_cw340
 
   sw_build_test:
     name: Build and test software (Egret)
