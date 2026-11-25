@@ -285,3 +285,30 @@ jobs:
       - name: Execute QEMU smoketest
         run: |
           ./bazelisk.sh test //sw/device/tests:rom_exit_immediately_sim_qemu_base
+
+  # This job exists to report the overall result of running the above CI jobs,
+  # by checking that all of them succeed. Github checks the result of this job
+  # to decide whether it is permitted for a PR to be merged.
+  ci_result:
+    name: CI result
+
+    needs:
+      - acc_crypto_tests
+      - acc_standalone_tests
+      - chip_egret_cw310
+      - chip_egret_cw340_pqc
+      - df_sw_build_test
+      - execute_tests_cw310
+      - execute_tests_cw340
+      - qemu_smoketest
+      - quick_lint
+      - slow_lint
+      - sw_build_test
+      - verible_lint
+      - verilator_dragonfly
+      - verilator_egret
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
