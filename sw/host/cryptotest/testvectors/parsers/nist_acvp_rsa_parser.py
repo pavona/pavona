@@ -136,6 +136,89 @@ def parse_sigver(data):
     return test_vectors
 
 
+def associated_data(group):
+    """Assembles the associated data of a KTS-IFC test group."""
+    config = group["ktsConfiguration"]
+    if config["encoding"] == "none" and config["associatedDataPattern"] == "":
+        return b""
+    if config["encoding"] != "concatenation":
+        raise SystemExit("parse_kts: encodings other than concatenation are not implemented")
+    # The initiator is party U and the responder is party V.
+    if group["kasRole"] == "initiator":
+        parts = {"uPartyInfo": group["iutId"], "vPartyInfo": group["serverId"]}
+    else:
+        parts = {"uPartyInfo": group["serverId"], "vPartyInfo": group["iutId"]}
+    data = b""
+    for field in config["associatedDataPattern"].split("||"):
+        if field not in parts:
+            raise SystemExit(f"parse_kts: associated data field {field} is not implemented")
+        data += bytes.fromhex(parts[field])
+    return data
+
+
+def parse_kts(data, expected_path):
+    """Parse a KTS-IFC prompt or internalProjection.
+    Response: iutC and dkm for the initiator, dkm for the responder."""
+    if data["revision"] != "Sp800-56Br2":
+        raise SystemExit("parse_kts: only revision Sp800-56Br2 is implemented")
+    answers = {}
+    if expected_path is not None:
+        answers = {test["tcId"]: test
+                   for group in load_vector_set(expected_path)["testGroups"]
+                   for test in group["tests"]}
+    test_vectors = []
+    for group in data["testGroups"]:
+        if group["scheme"] != "KTS-OAEP-basic":
+            raise SystemExit("parse_kts: schemes other than KTS-OAEP-basic are not implemented")
+        if group["keyGenerationMethod"] != "rsakpg1-crt":
+            raise SystemExit("parse_kts: key formats other than CRT are not implemented")
+        config = group["ktsConfiguration"]
+        if config["hashAlg"] not in HASH_ALGS:
+            raise SystemExit(f"parse_kts: {config['hashAlg']} is not implemented")
+        label = associated_data(group)
+        for test in group["tests"]:
+            vector = {
+                **acvp_common(data, group),
+                "test_case_id": test["tcId"],
+                "padding": "oaep",
+                "security_level": group["modulo"],
+                "hash_alg": HASH_ALGS[config["hashAlg"]],
+                "label": list(label),
+            }
+            if group["kasRole"] == "initiator":
+                vector.update({
+                    "operation": "encrypt_random",
+                    "n": list(bytes.fromhex(test["serverN"])),
+                    "e": int(test["serverE"], 16),
+                    "message_len": group["l"] // 8,
+                })
+                # The server's private key, to decrypt the device's ciphertext.
+                if "serverP" in test:
+                    vector.update({
+                        "p": list(bytes.fromhex(test["serverP"])),
+                        "q": list(bytes.fromhex(test["serverQ"])),
+                        "result": True,
+                    })
+            else:
+                vector.update({
+                    "operation": "decrypt",
+                    "n": list(bytes.fromhex(test["iutN"])),
+                    "e": int(test["iutE"], 16),
+                    "p": list(bytes.fromhex(test["iutP"])),
+                    "q": list(bytes.fromhex(test["iutQ"])),
+                    "d_p": list(bytes.fromhex(test["iutDmp1"])),
+                    "d_q": list(bytes.fromhex(test["iutDmq1"])),
+                    "i_q": list(bytes.fromhex(test["iutIqmp"])),
+                    "ciphertext": list(bytes.fromhex(test["serverC"])),
+                })
+                dkm = answers.get(test["tcId"], test).get("dkm")
+                if dkm is not None:
+                    vector["message"] = list(bytes.fromhex(dkm))
+                    vector["result"] = True
+            test_vectors.append(vector)
+    return test_vectors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Parsing utility for ACVP RSA prompts.")
@@ -163,7 +246,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--test-type",
-        choices=["keygen", "siggen", "sigver"],
+        choices=["keygen", "kts", "siggen", "sigver"],
         required=True,
         help="Type of test vectors to parse.",
     )
@@ -176,7 +259,10 @@ def main() -> int:
         test_vectors = parse_siggen(raw_data)
     elif args.test_type == "sigver":
         test_vectors = parse_sigver(raw_data)
-    apply_expected(test_vectors, args.expected)
+    elif args.test_type == "kts":
+        test_vectors = parse_kts(raw_data, args.expected)
+    if args.test_type != "kts":
+        apply_expected(test_vectors, args.expected)
 
     with open(args.schema) as schema_file:
         schema = json.load(schema_file)

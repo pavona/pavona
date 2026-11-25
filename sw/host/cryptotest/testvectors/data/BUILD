@@ -798,6 +798,26 @@ run_binary(
 )
 
 run_binary(
+    name = "acvp_kts_ifc_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:kts-ifc/internalProjection.json",
+    ],
+    outs = [":acvp_kts_ifc.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:kts-ifc/internalProjection.json)",
+        "--dst",
+        "$(location :acvp_kts_ifc.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--test-type",
+        "kts",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
+run_binary(
     name = "acvp_rsa_keygen_json",
     srcs = [
         "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",

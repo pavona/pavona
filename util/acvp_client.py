@@ -38,6 +38,7 @@ VECTOR_SETS = {
     ("HMAC-SHA2-512", ""): ("hmac_sha512", "hmac"),
     ("KDF", ""): ("kdf_hmac", "kdf_hmac"),
     ("KDF", "KMAC"): ("kdf_kmac", "kdf_kmac"),
+    ("KTS-IFC", ""): ("rsa", "kts"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),

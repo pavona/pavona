@@ -23,10 +23,11 @@ use std::time::Duration;
 use cryptotest_acvp::{AcvpIds, AcvpOpts, Fields, ResponseBuilder, hex};
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::rsa_commands::{
-    CryptotestRsaCiphertext, CryptotestRsaDecryptOutput, CryptotestRsaExpectedLength,
-    CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessage, CryptotestRsaOperation,
-    CryptotestRsaPadding, CryptotestRsaPrivateKey, CryptotestRsaPublicKey, CryptotestRsaRawMessage,
-    CryptotestRsaSecurityLevel, CryptotestRsaSignature, CryptotestRsaVerifyOutput,
+    CryptotestRsaCiphertext, CryptotestRsaDecryptOutput, CryptotestRsaEncryptRandomOutput,
+    CryptotestRsaExpectedLength, CryptotestRsaHashAlg, CryptotestRsaLabel, CryptotestRsaMessage,
+    CryptotestRsaOperation, CryptotestRsaPadding, CryptotestRsaPrivateKey, CryptotestRsaPublicKey,
+    CryptotestRsaRawMessage, CryptotestRsaSecurityLevel, CryptotestRsaSignature,
+    CryptotestRsaVerifyOutput,
 };
 use rsa::{Oaep, Pkcs1v15Sign, Pss, RsaPrivateKey, RsaPublicKey};
 
@@ -68,6 +69,9 @@ struct RsaTestCase {
     message: Vec<u8>,
     #[serde(default)]
     label: Vec<u8>,
+    /// Length in bytes of the message the device generates.
+    #[serde(default)]
+    message_len: usize,
     #[serde(default)]
     n: Vec<u8>,
     #[serde(default)]
@@ -169,7 +173,7 @@ fn generate_key(
 /// Builds the device private key from the test case parameters.
 fn test_case_key(test_case: &RsaTestCase) -> CryptotestRsaPrivateKey {
     // Convert parameters to unsigned little-endian
-    let le = |x: &[u8]| BigInt::from_signed_bytes_be(x).to_bytes_le().1;
+    let le = |x: &[u8]| BigUint::from_bytes_be(x).to_bytes_le();
     let n = le(&test_case.n);
     let p = le(&test_case.p);
     let q = le(&test_case.q);
@@ -287,6 +291,7 @@ fn run_rsa_testcase(
         "verify" => CryptotestRsaOperation::Verify,
         "encrypt" => CryptotestRsaOperation::Encrypt,
         "decrypt" => CryptotestRsaOperation::Decrypt,
+        "encrypt_random" => CryptotestRsaOperation::EncryptRandom,
         "keygen_sign" => CryptotestRsaOperation::Sign,
         _ => panic!("Unsupported RSA operation"),
     };
@@ -530,6 +535,77 @@ fn run_rsa_testcase(
                 })
                 .is_ok()
         }
+        CryptotestRsaOperation::EncryptRandom => {
+            let n = BigUint::from_bytes_be(test_case.n.as_slice());
+            let n_le = n.to_bytes_le();
+            CryptotestRsaExpectedLength {
+                expected_len: test_case.message_len,
+            }
+            .send(spi_console)?;
+            CryptotestRsaLabel {
+                label: ArrayVec::try_from(test_case.label.as_slice())
+                    .expect("Label was too long for device firmware configuration."),
+                label_len: test_case.label.len(),
+            }
+            .send(spi_console)?;
+            CryptotestRsaExpectedLength {
+                expected_len: test_case.security_level / 8,
+            }
+            .send(spi_console)?;
+            CryptotestRsaPublicKey {
+                n: ArrayVec::try_from(n_le.as_slice())
+                    .expect("RSA parameter n too long for device firmware configuration."),
+                n_len: n_le.len(),
+                e: test_case.e,
+            }
+            .send(spi_console)?;
+            let output =
+                CryptotestRsaEncryptRandomOutput::recv(spi_console, opts.timeout, false, false)?;
+            let ciphertext: Vec<u8> = output.ciphertext[..output.ciphertext_len]
+                .iter()
+                .rev()
+                .cloned()
+                .collect();
+            let message = &output.message[..output.message_len];
+            if test_case.vendor == "acvp" {
+                let mut fields = Fields::new();
+                fields.insert("iutC".to_string(), json!(hex(&ciphertext)));
+                fields.insert("dkm".to_string(), json!(hex(message)));
+                responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
+            }
+            // Decrypt with the private key of the receiver, where the test vector has it.
+            test_case.p.is_empty() || {
+                let private = RsaPrivateKey::from_p_q(
+                    BigUint::from_bytes_be(test_case.p.as_slice()),
+                    BigUint::from_bytes_be(test_case.q.as_slice()),
+                    BigUint::from(test_case.e),
+                )
+                .expect("Invalid server private key");
+                let label = std::str::from_utf8(test_case.label.as_slice())
+                    .expect("The rsa crate only supports UTF-8 labels.");
+                let scheme = match hash_alg {
+                    CryptotestRsaHashAlg::Sha256 => Oaep::new_with_label::<sha2::Sha256, _>(label),
+                    CryptotestRsaHashAlg::Sha384 => Oaep::new_with_label::<sha2::Sha384, _>(label),
+                    CryptotestRsaHashAlg::Sha512 => Oaep::new_with_label::<sha2::Sha512, _>(label),
+                    CryptotestRsaHashAlg::Sha3_224 => {
+                        Oaep::new_with_label::<sha3::Sha3_224, _>(label)
+                    }
+                    CryptotestRsaHashAlg::Sha3_256 => {
+                        Oaep::new_with_label::<sha3::Sha3_256, _>(label)
+                    }
+                    CryptotestRsaHashAlg::Sha3_384 => {
+                        Oaep::new_with_label::<sha3::Sha3_384, _>(label)
+                    }
+                    CryptotestRsaHashAlg::Sha3_512 => {
+                        Oaep::new_with_label::<sha3::Sha3_512, _>(label)
+                    }
+                    _ => panic!("SHAKE-based hashes are currently unsupported."),
+                };
+                private.decrypt(scheme, &ciphertext).is_ok_and(|plaintext| {
+                    plaintext == message && plaintext.len() == test_case.message_len
+                })
+            }
+        }
         CryptotestRsaOperation::Decrypt => {
             let ciphertext: Vec<_> = test_case.ciphertext.iter().cloned().rev().collect();
             // Send ciphertext
@@ -554,8 +630,18 @@ fn run_rsa_testcase(
             // Send private key
             test_case_key(test_case).send(spi_console)?;
             let output = CryptotestRsaDecryptOutput::recv(spi_console, opts.timeout, false, false)?;
-            output.success != 0
-                && output.plaintext[..output.plaintext_len].eq(test_case.message.as_slice())
+            let success = output.success != 0;
+            let plaintext = if success {
+                &output.plaintext[..output.plaintext_len]
+            } else {
+                &[]
+            };
+            if test_case.vendor == "acvp" {
+                let mut fields = Fields::new();
+                fields.insert("dkm".to_string(), json!(hex(plaintext)));
+                responses.add(&test_case.acvp, test_case.test_case_id as u64, fields);
+            }
+            success && plaintext.eq(test_case.message.as_slice())
         }
         _ => unreachable!("Invalid value for RSA operation"),
     };

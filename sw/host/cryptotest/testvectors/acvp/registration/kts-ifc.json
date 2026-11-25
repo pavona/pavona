@@ -1,0 +1,39 @@
+{
+  "algorithm": "KTS-IFC",
+  "revision": "Sp800-56Br2",
+  "iutId": "63727970746f74657374",
+  "scheme": {
+    "KTS-OAEP-basic": {
+      "l": 512,
+      "kasRole": [
+        "initiator",
+        "responder"
+      ],
+      "ktsMethod": {
+        "hashAlgs": [
+          "SHA2-256",
+          "SHA2-384",
+          "SHA2-512",
+          "SHA3-224",
+          "SHA3-256",
+          "SHA3-384",
+          "SHA3-512"
+        ],
+        "supportsNullAssociatedData": true,
+        "encoding": [
+          "concatenation"
+        ],
+        "associatedDataPattern": "uPartyInfo||vPartyInfo"
+      }
+    }
+  },
+  "keyGenerationMethods": [
+    "rsakpg1-crt"
+  ],
+  "modulo": [
+    2048,
+    3072,
+    4096
+  ],
+  "fixedPubExp": "010001"
+}

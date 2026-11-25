@@ -769,6 +769,7 @@ RSA_TESTVECTOR_TARGETS = [
     ]
     for wy_suffix in suffixes
 ] + [
+    "//sw/host/cryptotest/testvectors/data:acvp_kts_ifc_json",
     "//sw/host/cryptotest/testvectors/data:acvp_rsa_sigver_json",
 ]
 

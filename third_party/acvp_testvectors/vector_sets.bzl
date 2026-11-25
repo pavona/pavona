@@ -73,6 +73,13 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
         },
     },
+    "kts-ifc": {
+        "algorithm": "KTS-IFC-Sp800-56Br2",
+        "registration_sha256": "27b2e90bb85c6556be6577c7caee82e50c0e5378f2c0781e1df73aef063b4134",
+        "files": {
+            "internalProjection.json": "c0313f126c102e41fd3e6a2b005375b646caad8b9ef9b286eaf6bef6a9dc99c9",
+        },
+    },
     "ml-dsa-keygen": {
         "algorithm": "ML-DSA-keyGen-FIPS204",
         "registration_sha256": "00d8321144c9eba8e39473d149d6e7ff9d23da4c781d2305b2d7c640e036b7de",
