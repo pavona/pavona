@@ -29,7 +29,8 @@ extern "C" {
     value(_, Verify) \
     value(_, Encrypt) \
     value(_, Decrypt) \
-    value(_, Keygen)
+    value(_, Keygen) \
+    value(_, EncryptRandom)
 UJSON_SERDE_ENUM(CryptotestRsaOperation, cryptotest_rsa_operation_t, RSA_OPERATION);
 
 #define RSA_PADDING(_, value) \
@@ -86,6 +87,13 @@ UJSON_SERDE_STRUCT(CryptotestRsaSignature, cryptotest_rsa_signature_t, RSA_SIGNA
     bytes(ciphertext, RSA_CMD_MAX_CIPHERTEXT_BYTES, ciphertext_len) \
     field(ciphertext_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaCiphertext, cryptotest_rsa_ciphertext_t, RSA_CIPHERTEXT);
+
+#define RSA_ENCRYPT_RANDOM_OUTPUT(field, string, bytes) \
+    bytes(ciphertext, RSA_CMD_MAX_CIPHERTEXT_BYTES, ciphertext_len) \
+    field(ciphertext_len, size_t) \
+    bytes(message, RSA_CMD_MAX_RAW_MESSAGE_BYTES, message_len) \
+    field(message_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaEncryptRandomOutput, cryptotest_rsa_encrypt_random_output_t, RSA_ENCRYPT_RANDOM_OUTPUT);
 
 #define RSA_EXPECTED_LENGTH(field, string, bytes) \
     field(expected_len, size_t)

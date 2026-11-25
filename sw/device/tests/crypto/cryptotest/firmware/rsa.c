@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -378,7 +379,18 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   return OK_STATUS(0);
 }
 
-status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
+/**
+ * Encrypts a message with RSA-OAEP.
+ *
+ * Known-answer tests such as Wycheproof send the message. A KTS-OAEP initiator
+ * (ACVP KTS-IFC) generates the message itself and returns it with the
+ * ciphertext.
+ *
+ * @param uj Console to read the command from and write the response to.
+ * @param random_message Whether the device generates the message.
+ * @return Status code (OK or error).
+ */
+status_t handle_rsa_oaep_encrypt(ujson_t *uj, bool random_message) {
   cryptotest_rsa_security_level_t uj_security_level;
   cryptotest_rsa_hash_alg_t uj_hash_alg;
   cryptotest_rsa_raw_message_t uj_message;
@@ -388,7 +400,30 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
                                                         &uj_security_level));
   TRY(ujson_deserialize_cryptotest_rsa_hash_alg_t(uj, &uj_hash_alg));
-  TRY(ujson_deserialize_cryptotest_rsa_raw_message_t(uj, &uj_message));
+  if (random_message) {
+    cryptotest_rsa_expected_length_t uj_message_length;
+    TRY(ujson_deserialize_cryptotest_rsa_expected_length_t(uj,
+                                                           &uj_message_length));
+    if (uj_message_length.expected_len > RSA_CMD_MAX_RAW_MESSAGE_BYTES) {
+      LOG_ERROR("Unsupported RSA message length: %d",
+                uj_message_length.expected_len);
+      return INVALID_ARGUMENT();
+    }
+    uint32_t random_buf[(RSA_CMD_MAX_RAW_MESSAGE_BYTES + sizeof(uint32_t) - 1) /
+                        sizeof(uint32_t)];
+    TRY(entropy_complex_check());
+    TRY(entropy_csrng_instantiate(
+        /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+    TRY(entropy_csrng_generate(
+        &kEntropyEmptySeed, random_buf,
+        ceil_div(uj_message_length.expected_len, sizeof(uint32_t)),
+        /*fips_check=*/kHardenedBoolTrue));
+    TRY(entropy_csrng_uninstantiate());
+    memcpy(uj_message.message, random_buf, uj_message_length.expected_len);
+    uj_message.message_len = uj_message_length.expected_len;
+  } else {
+    TRY(ujson_deserialize_cryptotest_rsa_raw_message_t(uj, &uj_message));
+  }
   TRY(ujson_deserialize_cryptotest_rsa_label_t(uj, &uj_label));
   TRY(ujson_deserialize_cryptotest_rsa_expected_length_t(
       uj, &uj_ciphertext_length));
@@ -491,6 +526,17 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
       otcrypto_rsa_encrypt(&public_key, mode, message, label, ciphertext);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
+  }
+  if (random_message) {
+    cryptotest_rsa_encrypt_random_output_t uj_output;
+    memcpy(uj_output.ciphertext, ciphertext.data,
+           ciphertext.len * sizeof(uint32_t));
+    uj_output.ciphertext_len = ciphertext.len * sizeof(uint32_t);
+    memcpy(uj_output.message, uj_message.message, uj_message.message_len);
+    uj_output.message_len = uj_message.message_len;
+    RESP_OK(ujson_serialize_cryptotest_rsa_encrypt_random_output_t, uj,
+            &uj_output);
+    return OK_STATUS(0);
   }
   cryptotest_rsa_ciphertext_t uj_ciphertext;
   memcpy(uj_ciphertext.ciphertext, ciphertext.data,
@@ -882,7 +928,7 @@ status_t handle_rsa(ujson_t *uj) {
     case kCryptotestRsaOperationEncrypt: {
       switch (uj_padding) {
         case kCryptotestRsaPaddingOaep:
-          return handle_rsa_oaep_encrypt(uj);
+          return handle_rsa_oaep_encrypt(uj, /*random_message=*/false);
         default:
           LOG_ERROR("Unexpected RSA padding mode for encrypt operation: %d",
                     uj_padding);
@@ -896,6 +942,17 @@ status_t handle_rsa(ujson_t *uj) {
         default:
           LOG_ERROR("Unexpected RSA padding mode for decrypt operation: %d",
                     uj_padding);
+          return INVALID_ARGUMENT();
+      }
+    }
+    case kCryptotestRsaOperationEncryptRandom: {
+      switch (uj_padding) {
+        case kCryptotestRsaPaddingOaep:
+          return handle_rsa_oaep_encrypt(uj, /*random_message=*/true);
+        default:
+          LOG_ERROR(
+              "Unexpected RSA padding mode for encrypt-random operation: %d",
+              uj_padding);
           return INVALID_ARGUMENT();
       }
     }
