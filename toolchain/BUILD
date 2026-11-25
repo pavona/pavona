@@ -334,6 +334,7 @@ cc_args(
         "-Wimplicit-fallthrough",
         "-Winvalid-pch",
         "-Wno-covered-switch-default",
+        "-Wno-enum-enum-conversion",
         "-Wno-error=unused-function",
         "-Wno-gnu-auto-type",
         "-Wno-gnu-empty-initializer",
