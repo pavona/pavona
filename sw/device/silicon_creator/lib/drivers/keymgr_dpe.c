@@ -14,7 +14,7 @@
 
 #include "hw/top/keymgr_dpe_regs.h"  // Generated.
 
-#define KEYMGR_DPE_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
+#define KEYMGR_DPE_ASSERT(a, b) static_assert((a) == (b), "Bad value for " #a)
 KEYMGR_DPE_ASSERT(kScKeymgrStateReset,
                   KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET);
 KEYMGR_DPE_ASSERT(kScKeymgrStateAvailable,

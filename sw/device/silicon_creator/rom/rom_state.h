@@ -113,7 +113,7 @@ typedef struct rom_state_cb {
   ROM_STATE_PRE_HOOK_WEAK_(state_)                               \
   ROM_STATE_POST_HOOK_WEAK_(state_)
 
-#define ROM_STATE_VALUES_(state_, value_, run_, run_arg) state_ = value_,
+#define ROM_STATE_VALUES_(state_, value_, run_, run_arg) state_ = (value_),
 #define ROM_STATE_CFI_INDEXES_(state_, value_, run_, run_arg) \
   state_##_cfi_index,                                         \
   state_##_pre_run_cfi_index,                                 \
@@ -132,12 +132,12 @@ typedef struct rom_state_cb {
 
 #define ROM_STATE_TABLE_ENTRIES_(state_, value_, run_, run_arg_)        \
   {                                                                     \
-      .state = state_,                                                  \
+      .state = (state_),                                                \
       .cfi = ROM_STATE_CFI_ENTRIES_(state_, value_, run_, run_arg_),    \
       .pre_run = rom_state_pre_##state_,                                \
       .post_run = rom_state_post_##state_,                              \
-      .run = run_,                                                      \
-      .arg = run_arg_,                                                  \
+      .run = (run_),                                                    \
+      .arg = (run_arg_),                                                \
   },
 
 /**

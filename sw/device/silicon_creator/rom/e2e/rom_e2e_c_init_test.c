@@ -54,7 +54,7 @@ static void fault(void) {
  */
 #define CHECK_EQ(lhs_, rhs_, name_)                                        \
   do {                                                                     \
-    if (lhs_ != rhs_) {                                                    \
+    if ((lhs_) != (rhs_)) {                                                \
       setup_stdout();                                                      \
       LOG_ERROR("Check failed: %s (0x%08x != 0x%08x)", name_, lhs_, rhs_); \
       fault();                                                             \

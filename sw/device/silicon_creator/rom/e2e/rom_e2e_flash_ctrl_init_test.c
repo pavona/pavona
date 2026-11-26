@@ -53,8 +53,8 @@ typedef struct flash_cfg_reg {
 static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
                                  uint32_t expected_bank) {
 #define INFO_PAGE_BANK_CASE_(name_, bank_, page_) \
-  if (&name_ == info_page) {                      \
-    CHECK(bank_ == expected_bank);                \
+  if (&(name_) == info_page) {                    \
+    CHECK((bank_) == expected_bank);              \
     return;                                       \
   }
 
@@ -70,8 +70,8 @@ static void check_info_page_bank(const flash_ctrl_info_page_t *info_page,
 static void check_info_page_pagenum(const flash_ctrl_info_page_t *info_page,
                                     uint32_t expected_pagenum) {
 #define INFO_PAGE_PAGENUM_CASE_(name_, bank_, page_) \
-  if (&name_ == info_page) {                         \
-    CHECK(page_ == expected_pagenum);                \
+  if (&(name_) == info_page) {                       \
+    CHECK((page_) == expected_pagenum);              \
     return;                                          \
   }
 

@@ -78,7 +78,7 @@ enum module_ {
  *               repeat within a module.
  */
 #define ERROR_(error_, module_, status_) \
-  ((error_ << 24) | (module_ << 8) | (status_))
+  (((error_) << 24) | ((module_) << 8) | (status_))
 
 // clang-format off
 // Use an X-macro to facilitate writing unit tests.

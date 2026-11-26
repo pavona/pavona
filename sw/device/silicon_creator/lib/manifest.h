@@ -680,7 +680,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
         &manifest->extensions.entries[index_];                                 \
     uint32_t table_id = entry->identifier;                                     \
     uint32_t offset = entry->offset;                                           \
-    if (launder32(table_id) == id_) {                                          \
+    if (launder32(table_id) == (id_)) {                                        \
       HARDENED_CHECK_EQ(table_id, id_);                                        \
       if (launder32(offset) >= kMinSize && launder32(offset) < kMaxSize) {     \
         HARDENED_CHECK_GE(offset, kMinSize);                                   \
@@ -688,7 +688,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
         uintptr_t ext_address = (uintptr_t)((char *)manifest + entry->offset); \
         uint32_t header_id =                                                   \
             ((manifest_ext_header_t *)ext_address)->identifier;                \
-        if (launder32(header_id) == id_) {                                     \
+        if (launder32(header_id) == (id_)) {                                   \
           HARDENED_CHECK_EQ(header_id, id_);                                   \
           *name_ = (const type_ *)ext_address;                                 \
           return kErrorOk;                                                     \

@@ -30,21 +30,21 @@ static OT_WARN_UNUSED_RESULT rom_error_t rom_state_get_state_cb(
 // clang-format off
 #define CFI_ROM_STATE_INIT(cfi_table_, state_cb_)                     \
   do {                                                                \
-    const rom_state_cfi_t *state_cfi = &state_cb_->cfi;               \
-    const rom_state_t state = state_cb_->state;                       \
+    const rom_state_cfi_t *state_cfi = &(state_cb_)->cfi;             \
+    const rom_state_t state = (state_cb_)->state;                     \
     cfi_func_counter_init(cfi_table_, state_cfi->state_index, state); \
   } while(0)
 
 #define CFI_ROM_STATE_PREP_CB(cfi_table_, state_cb_, cb_step_, counter_) \
   do {                                                                   \
-    const rom_state_cfi_t *state_cfi = &state_cb_->cfi;                  \
-    const rom_state_t state = state_cb_->state;                          \
+    const rom_state_cfi_t *state_cfi = &(state_cb_)->cfi;                \
+    const rom_state_t state = (state_cb_)->state;                        \
     cfi_func_counter_increment(cfi_table_, state_cfi->state_index,       \
-                               counter_ + 1, state);                     \
+                               (counter_) + 1, state);                   \
     cfi_func_counter_prepcall(cfi_table_, state_cfi->state_index,        \
-                              counter_ + 2,                              \
+                              (counter_) + 2,                            \
                               state_cfi->cb_step_ ## _index, state,      \
-                              cfi_step_to_count(state, counter_ + 3));   \
+                              cfi_step_to_count(state, (counter_) + 3)); \
   } while(0)
 // clang-format on
 
