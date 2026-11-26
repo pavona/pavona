@@ -1,0 +1,146 @@
+// Copyright zeroRISC Inc.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  build_modes: [
+    {
+      name: cover_reg_top
+    }
+  ]
+
+  // One block test supplies its configuration to the shared environment. Sequence names are
+  // common to all blocks; the common test creates the matching type specialization.
+  run_modes: [
+    {
+      name: csr_rst_safe_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_vseq"
+      run_opts: ["+en_scb=0"]
+    }
+    {
+      name: csr_rst_safe_with_rand_reset_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_with_rand_reset_vseq"
+      run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
+    }
+    {
+      // Normal completion validates the same mixed traffic used in interrupted epochs.
+      name: csr_mem_rst_safe_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_mem_vseq"
+      run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
+    }
+    {
+      name: csr_mem_rst_safe_with_rand_reset_tests_mode
+      uvm_test: "{name}_rst_safe_common_test"
+      uvm_test_seq: "cip_rst_safe_csr_mem_with_rand_reset_vseq"
+      run_opts: ["+en_scb=0", "+test_timeout_ns=10000000000"]
+    }
+  ]
+
+  tests: [
+    {
+      // The common CSR sequence selects a deliberate write/reset/check flow for this workload.
+      name: "{name}_rst_safe_csr_hw_reset"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_hw_reset"]
+      en_run_modes: ["csr_rst_safe_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: "{name}_rst_safe_csr_rw"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["csr_rst_safe_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_csr_bit_bash"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_bit_bash"]
+      en_run_modes: ["csr_rst_safe_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: "{name}_rst_safe_csr_aliasing"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["csr_rst_safe_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: "{name}_rst_safe_csr_rw_with_rand_reset"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_rw"]
+      en_run_modes: ["csr_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_csr_bit_bash_with_rand_reset"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_bit_bash"]
+      en_run_modes: ["csr_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: "{name}_rst_safe_csr_aliasing_with_rand_reset"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_aliasing"]
+      en_run_modes: ["csr_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 5
+    }
+    {
+      name: "{name}_rst_safe_same_csr_outstanding"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_same_csr_outstanding"]
+      en_run_modes: ["csr_rst_safe_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_same_csr_outstanding_with_rand_reset"
+      build_mode: cover_reg_top
+      run_opts: ["+csr_same_csr_outstanding"]
+      en_run_modes: ["csr_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_csr_mem_rw"
+      build_mode: cover_reg_top
+      en_run_modes: ["csr_mem_rst_safe_tests_mode"]
+      reseed: 20
+    }
+    {
+      name: "{name}_rst_safe_csr_mem_rw_with_rand_reset"
+      build_mode: cover_reg_top
+      en_run_modes: ["csr_mem_rst_safe_with_rand_reset_tests_mode"]
+      reseed: 20
+    }
+  ]
+
+  regressions: [
+    {
+      name: smoke
+      tests: ["{name}_rst_safe_csr_hw_reset", "{name}_rst_safe_csr_rw"]
+    }
+    {
+      name: sw_access
+      tests: ["{name}_rst_safe_csr_hw_reset",
+              "{name}_rst_safe_csr_rw",
+              "{name}_rst_safe_csr_bit_bash",
+              "{name}_rst_safe_csr_aliasing",
+              "{name}_rst_safe_same_csr_outstanding"]
+    }
+    {
+      name: csr_with_rand_reset
+      tests: ["{name}_rst_safe_csr_rw_with_rand_reset",
+              "{name}_rst_safe_csr_bit_bash_with_rand_reset",
+              "{name}_rst_safe_csr_aliasing_with_rand_reset",
+              "{name}_rst_safe_same_csr_outstanding_with_rand_reset",
+              "{name}_rst_safe_csr_mem_rw_with_rand_reset"]
+    }
+    {
+      name: csr_mem
+      tests: ["{name}_rst_safe_csr_mem_rw", "{name}_rst_safe_csr_mem_rw_with_rand_reset"]
+    }
+  ]
+}
