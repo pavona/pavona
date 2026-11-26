@@ -75,7 +75,7 @@ typedef struct test {
 
 #define BANK1_START_PAGE 256
 #define START_PAGE_ADDR \
-  TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_PARAM_BYTES_PER_BANK
+  (TOP_EGRET_FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_PARAM_BYTES_PER_BANK)
 
 static const test_t kRegion[] = {
     {.region_index = 0,

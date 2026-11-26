@@ -25,7 +25,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 #define FLASH_WORD_SZ flash_info.bytes_per_word
 #define FLASH_PAGE_SZ flash_info.bytes_per_page
 #define FLASH_UINT32_WORDS_PER_PAGE \
-  (FLASH_PAGE_SZ / FLASH_WORD_SZ) * (FLASH_WORD_SZ / sizeof(uint32_t))
+  ((FLASH_PAGE_SZ / FLASH_WORD_SZ) * (FLASH_WORD_SZ / sizeof(uint32_t)))
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 
 static dif_flash_ctrl_state_t flash;

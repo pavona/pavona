@@ -52,7 +52,7 @@
  */
 #define SS_CHECK_DIF_OK(dif_call)                    \
   do {                                               \
-    if (dif_call != kDifOk) {                        \
+    if ((dif_call) != kDifOk) {                      \
       simple_serial_send_status(kSimpleSerialError); \
       return;                                        \
     }                                                \

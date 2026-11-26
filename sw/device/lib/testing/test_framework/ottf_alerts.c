@@ -24,7 +24,7 @@
 // Maximum number of alerts that can be expected at once.
 #define MAX_ALERTS_EXPECTED 16
 // Number of words required to store all alerts one per bit.
-#define ALERT_COUNT_WORDS (ALERT_HANDLER_PARAM_N_ALERTS + 31) / 32
+#define ALERT_COUNT_WORDS ((ALERT_HANDLER_PARAM_N_ALERTS + 31) / 32)
 
 static dif_alert_handler_t ottf_alert_handler;
 
