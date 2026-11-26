@@ -42,7 +42,7 @@ extern "C++" {
  */
 // This is a sufficiently well-known macro that we don't really need to bother
 // with a prefix like the others, and a rename will cause churn.
-#define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
+#define ARRAYSIZE(array) (sizeof(array) / sizeof((array)[0]))
 
 /**
  * An annotation that a switch/case fallthrough is the intended behavior.
@@ -224,7 +224,7 @@ extern "C++" {
  * @param enum_offset Expected offset of the member as an enum constant.
  */
 #define OT_ASSERT_MEMBER_OFFSET_AS_ENUM(type, member, enum_offset) \
-  static_assert(offsetof(type, member) == enum_offset,             \
+  static_assert(offsetof(type, member) == (enum_offset),           \
                 "Unexpected offset for " #type "." #member)
 
 /**
@@ -249,7 +249,7 @@ extern "C++" {
  * @param enum_size Expected size of the type as an enum constant.
  */
 #define OT_ASSERT_MEMBER_SIZE_AS_ENUM(type, member, enum_size) \
-  static_assert(sizeof(((type *)0)->member) == enum_size,      \
+  static_assert(sizeof(((type *)0)->member) == (enum_size),    \
                 "Unexpected size for " #type)
 
 /**
@@ -268,7 +268,7 @@ extern "C++" {
  * @param expected_value Expected enum value.
  */
 #define OT_ASSERT_ENUM_VALUE(var, expected_value) \
-  static_assert(var == expected_value, "Unexpected value for " #var)
+  static_assert((var) == (expected_value), "Unexpected value for " #var)
 
 /**
  * A variable-argument macro that expands to the number of arguments passed into

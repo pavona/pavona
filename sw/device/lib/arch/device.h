@@ -128,15 +128,15 @@ extern const uint64_t kUartBaudrate;
  * the NCO width, use NCO = 0xffff for this case since the error is tolerable.
  * Refer to #4263
  */
-#define CALCULATE_UART_NCO_(baudrate, peripheral_clock) \
-  (baudrate == 1500000 && peripheral_clock == 24000000) \
-      ? 0xffff                                          \
-      : (uint32_t)(((uint64_t)(baudrate) << (16 + 4)) / (peripheral_clock))
+#define CALCULATE_UART_NCO_(baudrate, peripheral_clock)      \
+  (((baudrate) == 1500000 && (peripheral_clock) == 24000000) \
+       ? 0xffff                                              \
+       : (uint32_t)(((uint64_t)(baudrate) << (16 + 4)) / (peripheral_clock)))
 
-#define CALCULATE_UART_NCO(baudrate, peripheral_clock)      \
-  CALCULATE_UART_NCO_(baudrate, peripheral_clock) < 0x10000 \
-      ? CALCULATE_UART_NCO_(baudrate, peripheral_clock)     \
-      : 0;
+#define CALCULATE_UART_NCO(baudrate, peripheral_clock)       \
+  (CALCULATE_UART_NCO_(baudrate, peripheral_clock) < 0x10000 \
+       ? CALCULATE_UART_NCO_(baudrate, peripheral_clock)     \
+       : 0)
 
 /**
  * The pre-calculated UART NCO value based on the Baudrate and Peripheral clock.

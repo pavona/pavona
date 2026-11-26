@@ -87,7 +87,7 @@ enum ot_status_create_record_magic {
   /* We are only interested in non-Ok statuses so we try to avoid them. */ \
   /* Assume that the code is a constant value so that the compiler will */ \
   /* remove the code when the condition is false. */                       \
-  __builtin_choose_expr(code_val != kOk,                                   \
+  __builtin_choose_expr((code_val) != kOk,                                 \
                         __RECORD_STATUS_CREATE(code_val, mod_id, file), ({}))
 
 #define __RECORD_STATUS_CREATE(code_val, mod_id, file)           \
@@ -97,7 +97,7 @@ enum ot_status_create_record_magic {
     static const ot_status_create_record_t kOtStatusRecord = { \
       /* mod_id is either an external pointer, or a value produced by MAKE_MODULE_ID */ \
       /* in which case it is already shifted by 16 bits so it can be OR'ed. */ \
-      .module_id = __builtin_constant_p(mod_id) ? mod_id : OT_SCR_UNKNOWN_MOD_ID, \
+      .module_id = __builtin_constant_p(mod_id) ? (mod_id) : OT_SCR_UNKNOWN_MOD_ID, \
       .filename = file, \
     }; \
   })
@@ -106,15 +106,15 @@ enum ot_status_create_record_magic {
 #define _DIF_RESULT_INTO_STATUS(val_)                                       \
   ({                                                                        \
     absl_status_t code_;                                                    \
-    memcpy(&code_, &val_, sizeof(code_));                                   \
+    memcpy(&code_, &(val_), sizeof(code_));                                 \
     status_create(code_, MODULE_ID, __FILE__, code_ == kOk ? 0 : __LINE__); \
   })
 
-#define _ROM_ERROR_INTO_STATUS(val_)        \
-  ({                                        \
-    uint32_t val32_;                        \
-    memcpy(&val32_, &val_, sizeof(val32_)); \
-    status_from_rom_error(val32_);          \
+#define _ROM_ERROR_INTO_STATUS(val_)          \
+  ({                                          \
+    uint32_t val32_;                          \
+    memcpy(&val32_, &(val_), sizeof(val32_)); \
+    status_from_rom_error(val32_);            \
   })
 
 /**

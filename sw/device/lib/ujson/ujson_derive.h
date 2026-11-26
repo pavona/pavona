@@ -126,7 +126,7 @@
 #define ujson_ser_bytes(name_, size_, len_) { \
         TRY(ujson_serialize_string(uj, #name_)); \
         TRY(ujson_putbuf(uj, ":", 1)); \
-        size_t n = self->len_ < (size_t)size_ ? self->len_ : (size_t)size_; \
+        size_t n = self->len_ < (size_t)(size_) ? self->len_ : (size_t)(size_); \
         TRY(ujson_serialize_hex(uj, self->name_, n)); \
         if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
     }

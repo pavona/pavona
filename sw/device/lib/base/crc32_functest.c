@@ -10,7 +10,7 @@
 
 #define LOG_TEST_PARAMS(x)                                           \
   LOG_INFO("[%s] Test params: input = 0x%!y, expected_crc32 = 0x%x", \
-           __FUNCTION__, x.input_len, x.input, x.expected_crc32);
+           __FUNCTION__, (x).input_len, (x).input, (x).expected_crc32);
 
 typedef struct test_params {
   const char *input;
