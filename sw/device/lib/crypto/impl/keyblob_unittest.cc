@@ -17,8 +17,8 @@ namespace keyblob_unittest {
 namespace {
 using ::testing::ElementsAreArray;
 
-#define EXPECT_OK(status_) EXPECT_EQ(status_.value, OTCRYPTO_OK.value)
-#define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
+#define EXPECT_OK(status_) EXPECT_EQ((status_).value, OTCRYPTO_OK.value)
+#define EXPECT_NOT_OK(status_) EXPECT_NE((status_).value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR software key).
 constexpr otcrypto_key_config_t kConfigCtr128 = {

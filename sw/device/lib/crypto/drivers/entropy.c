@@ -333,7 +333,7 @@ static const uint32_t kOkShares[kEntropySeedWords + 1] = {
     0x4f51f602, 0x963ae7a2, 0xfc6046d3, 0x7ab34624, 0xa0443290,
     0xb8d78bdf, 0xa92632e5, 0xeb57207e};
 
-#define ENTROPY_CMD(m, i) ((bitfield_field32_t){.mask = m, .index = i})
+#define ENTROPY_CMD(m, i) ((bitfield_field32_t){.mask = (m), .index = (i)})
 // The application command header is not specified as a register in the
 // hardware specification, so the fields are mapped here by hand. The
 // command register also accepts arbitrary 32bit data.
@@ -839,7 +839,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
         entropy_src_base() + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
     uint32_t thresh_act_ = bitfield_field32_read(                         \
         thresh_reg_, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);  \
-    if (launder32(thresh_act_) != exp) {                                  \
+    if (launder32(thresh_act_) != (exp)) {                                \
       return OTCRYPTO_RECOV_ERR;                                          \
     }                                                                     \
     HARDENED_CHECK_EQ(thresh_act_, exp);                                  \
