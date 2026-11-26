@@ -671,7 +671,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   OT_WARN_UNUSED_RESULT                                                        \
                                                                                \
   inline rom_error_t manifest_ext_get_##name_(const manifest_t *manifest,      \
-                                              const type_ **name_) {           \
+                                              const type_ **ext) {             \
     enum {                                                                     \
       kMinSize = CHIP_MANIFEST_SIZE,                                           \
       kMaxSize = CHIP_ROM_EXT_RESIZABLE_SIZE_MAX - sizeof(type_),              \
@@ -690,7 +690,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
             ((manifest_ext_header_t *)ext_address)->identifier;                \
         if (launder32(header_id) == (id_)) {                                   \
           HARDENED_CHECK_EQ(header_id, id_);                                   \
-          *name_ = (const type_ *)ext_address;                                 \
+          *ext = (const type_ *)ext_address;                                   \
           return kErrorOk;                                                     \
         }                                                                      \
       }                                                                        \
