@@ -49,16 +49,18 @@ autogen_acc_insn_count_header(
     name = "mlkem_insn_counts",
     hjson = "mlkem_modes.hjson",
     template = "mlkem_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_mlkem",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_mlkem"],
+    }),
 )
 
 autogen_acc_insn_count_header(
     name = "mlkem_insn_counts_hardened",
     hjson = "mlkem_modes.hjson",
     template = "mlkem_insn_counts_hardened.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_mlkem_hardened",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_mlkem_hardened"],
+    }),
 )

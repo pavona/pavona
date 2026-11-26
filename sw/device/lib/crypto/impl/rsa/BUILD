@@ -103,7 +103,8 @@ autogen_acc_insn_count_header(
     name = "rsa_modexp_insn_counts",
     hjson = "rsa_modexp_modes.hjson",
     template = "rsa_modexp_insn_counts.h.tpl",
-    deps = [
-        "//sw/acc/crypto:run_rsa_modexp",
-    ],
+    deps = select({
+        "//sw/device/lib/crypto/impl:skip_insn_counts": [],
+        "//conditions:default": ["//sw/acc/crypto:run_rsa_modexp"],
+    }),
 )
