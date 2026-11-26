@@ -104,10 +104,10 @@ impl<B: Board> Backend<B> {
     const LAST_PIN_NUMBER: u8 = 106;
 
     /// Create a new connection to a Chip Whisperer board.
-    pub fn new(
+    pub fn new<S: AsRef<str>>(
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
-        usb_serial: Option<&str>,
+        usb_serial: &[S],
     ) -> Result<Self> {
         Ok(Backend {
             usb: UsbBackend::new(

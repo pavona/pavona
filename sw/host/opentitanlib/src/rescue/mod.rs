@@ -68,7 +68,7 @@ pub struct RescueParams {
     #[command(flatten)]
     pub uart: UartParams,
     #[arg(long)]
-    pub usb_serial: Option<String>,
+    pub usb_serial: Vec<String>,
 }
 
 impl RescueParams {
