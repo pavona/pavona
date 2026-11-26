@@ -76,6 +76,14 @@ pavona_test(
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
@@ -104,6 +112,14 @@ pavona_test(
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":manifest_bad_erase_contraint",
