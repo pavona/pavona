@@ -5,8 +5,14 @@ PROJECT_NAME           = "cryptolib lint"
 INPUT                  = sw/device/lib/crypto
 RECURSIVE              = YES
 FILE_PATTERNS          = *.h *.c
+# Lint the functions in every header, not just those with an @file block.
+FILTER_PATTERNS        = *.h=quality/doxygen-file-filter.sh
 OPTIMIZE_OUTPUT_FOR_C  = YES
 JAVADOC_AUTOBRIEF      = YES
+# Strip __attribute__((...)), which Doxygen misparses as a function.
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+PREDEFINED             = "__attribute__(x)="
 
 # Doxygen requires at least one GENERATE_* to be enabled.
 GENERATE_HTML          = NO
