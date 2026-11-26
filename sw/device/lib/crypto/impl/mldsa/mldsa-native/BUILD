@@ -13,6 +13,7 @@ cc_library(
     srcs = [
         "mldsa_native_alloc.c",
         "mldsa_native_monobuild.c",
+        "mldsa_native_monobuild_asm.S",
     ],
     hdrs = [
         "fips202_glue.h",

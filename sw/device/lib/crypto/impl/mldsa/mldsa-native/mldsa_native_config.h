@@ -67,6 +67,42 @@
 #define MLD_CONFIG_INTERNAL_API_QUALIFIER static
 
 /**
+ * MLD_CONFIG_USE_NATIVE_BACKEND_ARITH
+ *
+ * Determines whether a native arithmetic backend should be used.
+ *
+ * The arithmetic backend covers performance-critical functions
+ * such as the number-theoretic transform (NTT).
+ *
+ * If this option is unset, the C backend will be used.
+ *
+ * If this option is set, the arithmetic backend to be used is
+ * determined by MLD_CONFIG_ARITH_BACKEND_FILE: If the latter is
+ * unset, the default backend for your target architecture
+ * will be used. If set, it must be the name of a backend metadata
+ * file.
+ *
+ * This can also be set using CFLAGS.
+ */
+#define MLD_CONFIG_USE_NATIVE_BACKEND_ARITH
+
+/**
+ * MLD_CONFIG_ARITH_BACKEND_FILE
+ *
+ * The arithmetic backend to use.
+ *
+ * If MLD_CONFIG_USE_NATIVE_BACKEND_ARITH is unset, this option
+ * is ignored.
+ *
+ * If MLD_CONFIG_USE_NATIVE_BACKEND_ARITH is set, this option must
+ * either be undefined or the filename of an arithmetic backend.
+ * If unset, the default backend will be used.
+ *
+ * This can be set using CFLAGS.
+ */
+#define MLD_CONFIG_ARITH_BACKEND_FILE "native/rv32im/fastmul.h"
+
+/**
  * MLD_CONFIG_FIPS202_CUSTOM_HEADER
  *
  * Custom header to use for FIPS-202

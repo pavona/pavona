@@ -250,6 +250,7 @@
     "sw/device/lib/crypto/include/mldsa.h",
     "sw/device/lib/crypto/impl/mldsa/mldsa-native/BUILD",
     "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_monobuild.c",
+    "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_monobuild_asm.S",
     "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_monobuild.h",
     "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_alloc.c",
     "sw/device/lib/crypto/impl/mldsa/mldsa-native/mldsa_native_alloc.h",
