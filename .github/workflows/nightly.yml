@@ -35,6 +35,15 @@ jobs:
       top_name: egret
       design_suffix: cw340
 
+  # Build PQC CW340 bitstream
+  chip_egret_cw340_pqc:
+    name: Egret for CW340 (PQC)
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: egret
+      design_suffix: cw340_pqc
+
   # Hyper310 nightly FPGA jobs
   execute_nightly_tests_egret_cw310:
     name: Egret CW310 Nightly Tests
@@ -51,11 +60,13 @@ jobs:
     needs:
       - on-demand
       - chip_egret_cw340
+      - chip_egret_cw340_pqc
     if: success() || failure()
     uses: ./.github/workflows/egret-cw340-nightly.yml
     secrets: inherit
     with:
       bitstream: chip_egret_cw340
+      pqc_bitstream: chip_egret_cw340_pqc
 
   # DVSim nightly
   #dvsim-all:

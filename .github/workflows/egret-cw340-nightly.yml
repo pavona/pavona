@@ -9,6 +9,9 @@ on:
       bitstream:
         required: true
         type: string
+      pqc_bitstream:
+        required: true
+        type: string
 
 jobs:
   # CW340 FPGA jobs
@@ -96,6 +99,21 @@ jobs:
       timeout_filters: 'short,moderate,long,eternal'
       timeout: 300
 
+  execute_pqc_fpga_tests_cw340:
+    name: CW340 PQCEn=1 Tests
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      name: CW340 PQCEn=1 Tests
+      job_name: execute_pqc_fpga_tests_cw340
+      bitstream: ${{ inputs.pqc_bitstream }}
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_pqc_test_rom
+      timeout_filters: 'short,moderate,long,eternal'
+      timeout: 300
+      extra_bazel_flags: --define=acc_has_pqc=true
+
   verify_fpga_jobs:
     name: Verify FPGA jobs
     uses: ./.github/workflows/verify-fpga.yml
@@ -110,4 +128,5 @@ jobs:
       - execute_sival_fpga_tests_cw340
       - execute_sival_rom_ext_fpga_tests_cw340
       - execute_manuf_fpga_tests_cw340
+      - execute_pqc_fpga_tests_cw340
     if: success() || failure()
