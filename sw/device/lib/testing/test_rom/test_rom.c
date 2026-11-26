@@ -197,7 +197,9 @@ bool rom_test_main(void) {
   }
 
   // Print the chip version information
-  LOG_INFO("kChipInfo: scm_revision=%x", kChipInfo.scm_revision);
+  LOG_INFO("kChipInfo: scm_revision=%08x%08x",
+           kChipInfo.scm_revision.scm_revision_high,
+           kChipInfo.scm_revision.scm_revision_low);
 
   // Skip sram_init for test_rom
   dif_rstmgr_reset_info_bitfield_t reset_reasons;

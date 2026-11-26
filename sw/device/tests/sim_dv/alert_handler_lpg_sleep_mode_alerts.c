@@ -425,7 +425,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
   } else {
     dif_pwrmgr_wakeup_reason_t wakeup_reason;
     CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
-    LOG_ERROR("Unexpected wakeup_reason=%x", wakeup_reason);
+    LOG_ERROR("Unexpected wakeup reason: types=%x request_sources=%x",
+              wakeup_reason.types, wakeup_reason.request_sources);
     CHECK(false, "Unexpected wakeup reason");
   }
 }

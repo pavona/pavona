@@ -70,7 +70,9 @@ bool second_rom_test_main(void) {
   }
 
   // Print the chip version information
-  LOG_INFO("kChipInfo: scm_revision=%x", kChipInfo.scm_revision);
+  LOG_INFO("kChipInfo: scm_revision=%08x%08x",
+           kChipInfo.scm_revision.scm_revision_high,
+           kChipInfo.scm_revision.scm_revision_low);
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.

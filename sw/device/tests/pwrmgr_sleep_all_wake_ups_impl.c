@@ -467,7 +467,8 @@ void check_wakeup_reason(size_t wakeup_unit) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 1 << wakeup_unit)),
-        "wakeup reason wrong exp:%x  obs:%x", wakeup_unit, wakeup_reason);
+        "wakeup reason wrong exp:%x  obs types:%x sources:%x", wakeup_unit,
+        wakeup_reason.types, wakeup_reason.request_sources);
 
   src->check(wakeup);
 }
