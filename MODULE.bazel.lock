@@ -1018,7 +1018,7 @@
     },
     "//third_party/mldsa_native:extensions.bzl%mldsa_native": {
       "general": {
-        "bzlTransitiveDigest": "EHhp8IV9QMml8INBW8b1mIH9xov9Q1ppyZ+E7tVfX0w=",
+        "bzlTransitiveDigest": "5HMKAXMcjsNyn6YOfNUYyrSvMvupY1oEJajdctsQjnM=",
         "usagesDigest": "u4wmpsW8xRNXUJxQAEu2V94rpike0oJR5U4wylT/dU8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1028,10 +1028,10 @@
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
             "attributes": {
               "build_file": "@@//third_party/mldsa_native:BUILD.mldsa_native.bazel",
-              "sha256": "97a7305c32b62cbcae97891823176e18ca96d9eaafc3728587d75bb113862a40",
-              "strip_prefix": "mldsa-native-2.0.0",
+              "sha256": "6983c47f9df878dc327d09bf512ccbf092b8077f8dcde8c7c4c43935f5220a5f",
+              "strip_prefix": "mldsa-native-2.1.0",
               "urls": [
-                "https://github.com/pq-code-package/mldsa-native/archive/v2.0.0.tar.gz"
+                "https://github.com/pq-code-package/mldsa-native/archive/v2.1.0.tar.gz"
               ]
             }
           }

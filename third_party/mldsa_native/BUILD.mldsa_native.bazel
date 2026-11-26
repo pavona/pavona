@@ -10,6 +10,7 @@ cc_library(
     hdrs = [
         "mldsa/mldsa_native.c",
         "mldsa/mldsa_native.h",
+        "mldsa/src/capability.h",
         "mldsa/src/cbmc.h",
         "mldsa/src/common.h",
         "mldsa/src/context.h",
