@@ -418,6 +418,26 @@ extern "C++" {
   } while (0)
 
 /**
+ * A macro that expands to an assertion that checks that arg is not wider
+ * than a pointer, failing with a relevant error message if the provided
+ * argument is too wide.
+ *
+ * The 0 ? (arg) : (arg) makes it so that when an array is passed it is
+ * changed into a pointer in the same way as it does when passed to the
+ * LOG function.
+ *
+ * @param arg An argument/expression to check
+ * @param func_name The name of the macro/functionality being invoked, to be
+ * printed in a relevant error if the assertion fails.
+ */
+#define OT_FAIL_IF_WIDER_THAN_WORD(arg, func_name)                \
+  do {                                                            \
+    static_assert(sizeof(0 ? (arg) : (arg)) <= sizeof(uintptr_t), \
+                  "Argument '" #arg "' passed to the " #func_name \
+                  " function must be no wider than a pointer.");  \
+  } while (0)
+
+/**
  * A macro representing the OpenTitan execution platform.
  */
 #if defined(__riscv_xlen) && __riscv_xlen == 32
