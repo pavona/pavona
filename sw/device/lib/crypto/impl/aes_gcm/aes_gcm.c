@@ -396,20 +396,25 @@ status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
 status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx, size_t input_len,
                                        const uint8_t *input, size_t *output_len,
                                        uint8_t *output) {
+  if (output_len == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  *output_len = 0;
+
   // If the length is 0, we have nothing to do.
   if (input_len == 0) {
     return OTCRYPTO_OK;
+  }
+
+  // Check for null pointers.
+  if (ctx == NULL || input == NULL || output == NULL) {
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check that the total input length is < 2^32 bytes. This is stricter
   // than NIST requires, but SP800-38D also allows implementations to stipulate
   // lower length limits.
   if (input_len > UINT32_MAX - ctx->input_len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check for null pointers.
-  if (ctx == NULL || input == NULL || output == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
