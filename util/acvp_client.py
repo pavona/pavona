@@ -38,11 +38,15 @@ VECTOR_SETS = {
     ("HMAC-SHA2-512", ""): ("hmac_sha512", "hmac"),
     ("KDF", ""): ("kdf_hmac", "kdf_hmac"),
     ("KDF", "KMAC"): ("kdf_kmac", "kdf_kmac"),
+    ("KTS-IFC", ""): ("rsa", "kts"),
     ("ML-DSA", "keyGen"): ("mldsa", "keygen"),
     ("ML-DSA", "sigGen"): ("mldsa", "siggen"),
     ("ML-DSA", "sigVer"): ("mldsa", "sigver"),
     ("ML-KEM", "keyGen"): ("mlkem", "keygen"),
     ("ML-KEM", "encapDecap"): ("mlkem", "encap_decap"),
+    ("RSA", "keyGen"): ("rsa_keygen", "keygen"),
+    ("RSA", "sigGen"): ("rsa_siggen", "siggen"),
+    ("RSA", "sigVer"): ("rsa", "sigver"),
     ("SHA2-256", ""): ("sha256", "sha2"),
     ("SHA2-384", ""): ("sha384", "sha2"),
     ("SHA2-512", ""): ("sha512", "sha2"),
@@ -68,6 +72,8 @@ PARSER_NAMES = {
     "sha3_512": "hash",
     "shake128": "hash",
     "shake256": "hash",
+    "rsa_keygen": "rsa",
+    "rsa_siggen": "rsa",
 }
 
 

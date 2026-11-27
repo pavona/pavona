@@ -334,7 +334,7 @@
     },
     "//third_party/acvp_testvectors:extensions.bzl%acvp_testvectors": {
       "general": {
-        "bzlTransitiveDigest": "afI/MgMxCKRwglC2F6lHdF9hVuV+wd0fEKznjngOGtw=",
+        "bzlTransitiveDigest": "vR3Ujw/3FVNSfGHpMXw6d4pf6rxGjH8U5hFab0r9RQg=",
         "usagesDigest": "aQyJZB4+BH8LKepQrQKng17NJSDhmZ8VbPjsUEggYI0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -460,6 +460,14 @@
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KDF-KMAC-Sp800-108r1/6a0d5d9b5d64cc28b4dff9c0b372080c5b2aa500a8869e05ddf7d85eccf761df/prompt.json"
             }
           },
+          "acvp_vectors_kts-ifc_internalProjection.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "c0313f126c102e41fd3e6a2b005375b646caad8b9ef9b286eaf6bef6a9dc99c9",
+              "downloaded_file_path": "internalProjection.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/KTS-IFC-Sp800-56Br2/27b2e90bb85c6556be6577c7caee82e50c0e5378f2c0781e1df73aef063b4134/internalProjection.json"
+            }
+          },
           "acvp_vectors_ml-dsa-keygen_expectedResults.json": {
             "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
             "attributes": {
@@ -538,6 +546,38 @@
               "sha256": "dd2c988a2a129e4a98e1556a58e858b9a542b39cd6456af8b52b0b6cad29ae28",
               "downloaded_file_path": "prompt.json",
               "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/ML-KEM-keyGen-FIPS203/449a585000ee3c31bed0cdc0192ac2c44d5756aea1f2a9989f45cd7429a58d85/prompt.json"
+            }
+          },
+          "acvp_vectors_rsa-keygen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "b9034a3791d71e0e71d4bead7064ead0a7c1c2d22ffb32662de48289ecc6d5df",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-keyGen-FIPS186-5/110bdb68edb265f34840bf98ffa1d8135ed033b977b55d3c846853517e674429/prompt.json"
+            }
+          },
+          "acvp_vectors_rsa-siggen_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "7ae3756e7347498b1ac0a1cf507c3363ce3582dec61f4e05f47695a24c3d6cdb",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigGen-FIPS186-5/db3e81a05717d6c937dfa168730ca6e3df84fbd873a00676cabf68d738d78de0/prompt.json"
+            }
+          },
+          "acvp_vectors_rsa-sigver_expectedResults.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "894267419505f9dc82bbfaeb7dba755a8e56f54f1edf4e3e97493aae6304fff9",
+              "downloaded_file_path": "expectedResults.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/expectedResults.json"
+            }
+          },
+          "acvp_vectors_rsa-sigver_prompt.json": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_file",
+            "attributes": {
+              "sha256": "a27d70493930cdb62ba30277878f0f87adf026b77848770ce849434c703991ef",
+              "downloaded_file_path": "prompt.json",
+              "url": "https://storage.googleapis.com/pavona-test-vectors/acvp-vectors/1.1.0.43/RSA-sigVer-FIPS186-5/2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392/prompt.json"
             }
           },
           "acvp_vectors_sha2-256_expectedResults.json": {
@@ -703,6 +743,7 @@
                 "kdf/internalProjection.json": "acvp_vectors_kdf_internalProjection.json",
                 "kdf-kmac/expectedResults.json": "acvp_vectors_kdf-kmac_expectedResults.json",
                 "kdf-kmac/prompt.json": "acvp_vectors_kdf-kmac_prompt.json",
+                "kts-ifc/internalProjection.json": "acvp_vectors_kts-ifc_internalProjection.json",
                 "ml-dsa-keygen/expectedResults.json": "acvp_vectors_ml-dsa-keygen_expectedResults.json",
                 "ml-dsa-keygen/prompt.json": "acvp_vectors_ml-dsa-keygen_prompt.json",
                 "ml-dsa-siggen/expectedResults.json": "acvp_vectors_ml-dsa-siggen_expectedResults.json",
@@ -713,6 +754,10 @@
                 "ml-kem-encapdecap/prompt.json": "acvp_vectors_ml-kem-encapdecap_prompt.json",
                 "ml-kem-keygen/expectedResults.json": "acvp_vectors_ml-kem-keygen_expectedResults.json",
                 "ml-kem-keygen/prompt.json": "acvp_vectors_ml-kem-keygen_prompt.json",
+                "rsa-keygen/prompt.json": "acvp_vectors_rsa-keygen_prompt.json",
+                "rsa-siggen/prompt.json": "acvp_vectors_rsa-siggen_prompt.json",
+                "rsa-sigver/expectedResults.json": "acvp_vectors_rsa-sigver_expectedResults.json",
+                "rsa-sigver/prompt.json": "acvp_vectors_rsa-sigver_prompt.json",
                 "sha2-256/expectedResults.json": "acvp_vectors_sha2-256_expectedResults.json",
                 "sha2-256/prompt.json": "acvp_vectors_sha2-256_prompt.json",
                 "sha2-384/expectedResults.json": "acvp_vectors_sha2-384_expectedResults.json",
@@ -1105,7 +1150,7 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "IOSS2+nsp2l83k2FPuhchrr9p4CePW3MNg9RvNwkHHA=",
+        "bzlTransitiveDigest": "ToBIItyJ9RwaxStzPdOe8fAuPHLbjBYPc1UqoyLFPhU=",
         "usagesDigest": "f6mPFM6d+dHnuIkZ3FGerWh8KSqwNQRb6aC5YdgoiUM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1153,17 +1198,6 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/ecccdhtestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_rsa_fips_186_3": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "8405aeb3572a4f98ed4b1a3ccb3f2f49e725462dd28ec4759d6a15d88855d19c",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-3rsatestvectors.zip"
               ]
             }
           }

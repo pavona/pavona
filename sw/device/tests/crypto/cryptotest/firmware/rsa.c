@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -15,6 +16,8 @@
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -48,15 +51,77 @@ uint32_t RANDOM_MASK[128] = {
     0x6B5B171F, 0x2748C3A5,
 };
 
+/**
+ * Hashes a message with the hash function of the signature scheme.
+ *
+ * @param uj_hash_alg Hash function.
+ * @param uj_message Message to hash.
+ * @param[out] digest Digest (at least `kSha512DigestWords` words).
+ * @return Status code (OK or error).
+ */
+static status_t hash_message(cryptotest_rsa_hash_alg_t uj_hash_alg,
+                             const cryptotest_rsa_message_t *uj_message,
+                             otcrypto_hash_digest_t *digest) {
+  otcrypto_const_byte_buf_t message = {
+      .data = uj_message->message,
+      .len = uj_message->message_len,
+  };
+  otcrypto_status_t status;
+  switch (uj_hash_alg) {
+    case kCryptotestRsaHashAlgSha256:
+      digest->mode = kOtcryptoHashModeSha256;
+      digest->len = kSha256DigestWords;
+      status = otcrypto_sha2_256(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha384:
+      digest->mode = kOtcryptoHashModeSha384;
+      digest->len = kSha384DigestWords;
+      status = otcrypto_sha2_384(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha512:
+      digest->mode = kOtcryptoHashModeSha512;
+      digest->len = kSha512DigestWords;
+      status = otcrypto_sha2_512(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha3_224:
+      digest->mode = kOtcryptoHashModeSha3_224;
+      digest->len = kKmacSha3224DigestWords;
+      status = otcrypto_sha3_224(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha3_256:
+      digest->mode = kOtcryptoHashModeSha3_256;
+      digest->len = kKmacSha3256DigestWords;
+      status = otcrypto_sha3_256(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha3_384:
+      digest->mode = kOtcryptoHashModeSha3_384;
+      digest->len = kKmacSha3384DigestWords;
+      status = otcrypto_sha3_384(message, digest);
+      break;
+    case kCryptotestRsaHashAlgSha3_512:
+      digest->mode = kOtcryptoHashModeSha3_512;
+      digest->len = kKmacSha3512DigestWords;
+      status = otcrypto_sha3_512(message, digest);
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA hash mode: %d", uj_hash_alg);
+      return INVALID_ARGUMENT();
+  }
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+  return OK_STATUS();
+}
+
 status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   cryptotest_rsa_security_level_t uj_security_level;
   cryptotest_rsa_hash_alg_t uj_hash_alg;
-  cryptotest_rsa_message_digest_t uj_message;
+  cryptotest_rsa_message_t uj_message;
   cryptotest_rsa_private_key_t uj_private_key;
   TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
                                                         &uj_security_level));
   TRY(ujson_deserialize_cryptotest_rsa_hash_alg_t(uj, &uj_hash_alg));
-  TRY(ujson_deserialize_cryptotest_rsa_message_digest_t(uj, &uj_message));
+  TRY(ujson_deserialize_cryptotest_rsa_message_t(uj, &uj_message));
   TRY(ujson_deserialize_cryptotest_rsa_private_key_t(uj, &uj_private_key));
 
   otcrypto_key_mode_t key_mode;
@@ -72,39 +137,6 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       return INTERNAL();
   }
 
-  otcrypto_hash_mode_t mode;
-  switch (uj_hash_alg) {
-    case kCryptotestRsaHashAlgSha256:
-      mode = kOtcryptoHashModeSha256;
-      break;
-    case kCryptotestRsaHashAlgSha384:
-      mode = kOtcryptoHashModeSha384;
-      break;
-    case kCryptotestRsaHashAlgSha512:
-      mode = kOtcryptoHashModeSha512;
-      break;
-    case kCryptotestRsaHashAlgSha3_224:
-      mode = kOtcryptoHashModeSha3_224;
-      break;
-    case kCryptotestRsaHashAlgSha3_256:
-      mode = kOtcryptoHashModeSha3_256;
-      break;
-    case kCryptotestRsaHashAlgSha3_384:
-      mode = kOtcryptoHashModeSha3_384;
-      break;
-    case kCryptotestRsaHashAlgSha3_512:
-      mode = kOtcryptoHashModeSha3_512;
-      break;
-    case kCryptotestRsaHashAlgShake128:
-      mode = kOtcryptoHashXofModeShake128;
-      break;
-    case kCryptotestRsaHashAlgShake256:
-      mode = kOtcryptoHashXofModeShake256;
-      break;
-    default:
-      LOG_ERROR("Unrecognized RSA hash mode: %d", uj_hash_alg);
-      return INVALID_ARGUMENT();
-  }
   size_t key_length;
   size_t keyblob_length;
   uint32_t d_share1_buf[sizeof(rsa_4096_int_t) / sizeof(uint32_t)];
@@ -205,14 +237,9 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
     return INTERNAL(status.value);
   }
 
-  uint8_t message_buf[RSA_CMD_MAX_MESSAGE_DIGEST_BYTES];
-  memset(message_buf, 0, sizeof(message_buf));
-  memcpy(message_buf, uj_message.message_digest, uj_message.message_digest_len);
-  const otcrypto_hash_digest_t message_digest = {
-      .mode = mode,
-      .len = uj_message.message_digest_len / sizeof(uint32_t),
-      .data = (uint32_t *)message_buf,
-  };
+  uint32_t digest_buf[kSha512DigestWords];
+  otcrypto_hash_digest_t message_digest = {.data = digest_buf};
+  TRY(hash_message(uj_hash_alg, &uj_message, &message_digest));
 
   uint32_t signature_buf[RSA_CMD_MAX_SIGNATURE_BYTES / sizeof(uint32_t)];
   otcrypto_word32_buf_t signature = {
@@ -236,13 +263,13 @@ status_t handle_rsa_sign(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
 status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   cryptotest_rsa_security_level_t uj_security_level;
   cryptotest_rsa_hash_alg_t uj_hash_alg;
-  cryptotest_rsa_message_digest_t uj_message;
+  cryptotest_rsa_message_t uj_message;
   cryptotest_rsa_public_key_t uj_public_key;
   cryptotest_rsa_signature_t uj_signature;
   TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
                                                         &uj_security_level));
   TRY(ujson_deserialize_cryptotest_rsa_hash_alg_t(uj, &uj_hash_alg));
-  TRY(ujson_deserialize_cryptotest_rsa_message_digest_t(uj, &uj_message));
+  TRY(ujson_deserialize_cryptotest_rsa_message_t(uj, &uj_message));
   TRY(ujson_deserialize_cryptotest_rsa_public_key_t(uj, &uj_public_key));
   TRY(ujson_deserialize_cryptotest_rsa_signature_t(uj, &uj_signature));
 
@@ -259,47 +286,9 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
       return INTERNAL();
   }
 
-  otcrypto_hash_mode_t mode;
-  switch (uj_hash_alg) {
-    case kCryptotestRsaHashAlgSha256:
-      mode = kOtcryptoHashModeSha256;
-      break;
-    case kCryptotestRsaHashAlgSha384:
-      mode = kOtcryptoHashModeSha384;
-      break;
-    case kCryptotestRsaHashAlgSha512:
-      mode = kOtcryptoHashModeSha512;
-      break;
-    case kCryptotestRsaHashAlgSha3_224:
-      mode = kOtcryptoHashModeSha3_224;
-      break;
-    case kCryptotestRsaHashAlgSha3_256:
-      mode = kOtcryptoHashModeSha3_256;
-      break;
-    case kCryptotestRsaHashAlgSha3_384:
-      mode = kOtcryptoHashModeSha3_384;
-      break;
-    case kCryptotestRsaHashAlgSha3_512:
-      mode = kOtcryptoHashModeSha3_512;
-      break;
-    case kCryptotestRsaHashAlgShake128:
-      mode = kOtcryptoHashXofModeShake128;
-      break;
-    case kCryptotestRsaHashAlgShake256:
-      mode = kOtcryptoHashXofModeShake256;
-      break;
-    default:
-      LOG_ERROR("Unrecognized RSA hash mode: %d", uj_hash_alg);
-      return INVALID_ARGUMENT();
-  }
-
-  uint32_t message_buf[uj_message.message_digest_len / sizeof(uint32_t)];
-  memcpy(message_buf, uj_message.message_digest, uj_message.message_digest_len);
-  const otcrypto_hash_digest_t message_digest = {
-      .mode = mode,
-      .len = uj_message.message_digest_len / sizeof(uint32_t),
-      .data = message_buf,
-  };
+  uint32_t digest_buf[kSha512DigestWords];
+  otcrypto_hash_digest_t message_digest = {.data = digest_buf};
+  TRY(hash_message(uj_hash_alg, &uj_message, &message_digest));
 
   rsa_2048_public_key_t public_key_2048;
   rsa_3072_public_key_t public_key_3072;
@@ -390,7 +379,18 @@ status_t handle_rsa_verify(ujson_t *uj, otcrypto_rsa_padding_t padding_mode) {
   return OK_STATUS(0);
 }
 
-status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
+/**
+ * Encrypts a message with RSA-OAEP.
+ *
+ * Known-answer tests such as Wycheproof send the message. A KTS-OAEP initiator
+ * (ACVP KTS-IFC) generates the message itself and returns it with the
+ * ciphertext.
+ *
+ * @param uj Console to read the command from and write the response to.
+ * @param random_message Whether the device generates the message.
+ * @return Status code (OK or error).
+ */
+status_t handle_rsa_oaep_encrypt(ujson_t *uj, bool random_message) {
   cryptotest_rsa_security_level_t uj_security_level;
   cryptotest_rsa_hash_alg_t uj_hash_alg;
   cryptotest_rsa_raw_message_t uj_message;
@@ -400,7 +400,30 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
                                                         &uj_security_level));
   TRY(ujson_deserialize_cryptotest_rsa_hash_alg_t(uj, &uj_hash_alg));
-  TRY(ujson_deserialize_cryptotest_rsa_raw_message_t(uj, &uj_message));
+  if (random_message) {
+    cryptotest_rsa_expected_length_t uj_message_length;
+    TRY(ujson_deserialize_cryptotest_rsa_expected_length_t(uj,
+                                                           &uj_message_length));
+    if (uj_message_length.expected_len > RSA_CMD_MAX_RAW_MESSAGE_BYTES) {
+      LOG_ERROR("Unsupported RSA message length: %d",
+                uj_message_length.expected_len);
+      return INVALID_ARGUMENT();
+    }
+    uint32_t random_buf[(RSA_CMD_MAX_RAW_MESSAGE_BYTES + sizeof(uint32_t) - 1) /
+                        sizeof(uint32_t)];
+    TRY(entropy_complex_check());
+    TRY(entropy_csrng_instantiate(
+        /*disable_trng_input=*/kHardenedBoolFalse, &kEntropyEmptySeed));
+    TRY(entropy_csrng_generate(
+        &kEntropyEmptySeed, random_buf,
+        ceil_div(uj_message_length.expected_len, sizeof(uint32_t)),
+        /*fips_check=*/kHardenedBoolTrue));
+    TRY(entropy_csrng_uninstantiate());
+    memcpy(uj_message.message, random_buf, uj_message_length.expected_len);
+    uj_message.message_len = uj_message_length.expected_len;
+  } else {
+    TRY(ujson_deserialize_cryptotest_rsa_raw_message_t(uj, &uj_message));
+  }
   TRY(ujson_deserialize_cryptotest_rsa_label_t(uj, &uj_label));
   TRY(ujson_deserialize_cryptotest_rsa_expected_length_t(
       uj, &uj_ciphertext_length));
@@ -416,6 +439,9 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
       break;
     case kCryptotestRsaHashAlgSha512:
       mode = kOtcryptoHashModeSha512;
+      break;
+    case kCryptotestRsaHashAlgSha3_224:
+      mode = kOtcryptoHashModeSha3_224;
       break;
     case kCryptotestRsaHashAlgSha3_256:
       mode = kOtcryptoHashModeSha3_256;
@@ -501,6 +527,17 @@ status_t handle_rsa_oaep_encrypt(ujson_t *uj) {
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
+  if (random_message) {
+    cryptotest_rsa_encrypt_random_output_t uj_output;
+    memcpy(uj_output.ciphertext, ciphertext.data,
+           ciphertext.len * sizeof(uint32_t));
+    uj_output.ciphertext_len = ciphertext.len * sizeof(uint32_t);
+    memcpy(uj_output.message, uj_message.message, uj_message.message_len);
+    uj_output.message_len = uj_message.message_len;
+    RESP_OK(ujson_serialize_cryptotest_rsa_encrypt_random_output_t, uj,
+            &uj_output);
+    return OK_STATUS(0);
+  }
   cryptotest_rsa_ciphertext_t uj_ciphertext;
   memcpy(uj_ciphertext.ciphertext, ciphertext.data,
          ciphertext.len * sizeof(uint32_t));
@@ -540,6 +577,10 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
     case kCryptotestRsaHashAlgSha512:
       mode = kOtcryptoHashModeSha512;
       hash_len = kSha512DigestBytes;
+      break;
+    case kCryptotestRsaHashAlgSha3_224:
+      mode = kOtcryptoHashModeSha3_224;
+      hash_len = kKmacSha3224DigestBytes;
       break;
     case kCryptotestRsaHashAlgSha3_256:
       mode = kOtcryptoHashModeSha3_256;
@@ -709,6 +750,150 @@ status_t handle_rsa_oaep_decrypt(ujson_t *uj) {
   return OK_STATUS(0);
 }
 
+/**
+ * Gets the key lengths for an RSA security level.
+ *
+ * @param uj_security_level RSA security level.
+ * @param[out] rsa_size RSA size parameter.
+ * @param[out] public_key_length Public key length in bytes.
+ * @param[out] private_key_length Private key length in bytes.
+ * @param[out] keyblob_length Private keyblob length in bytes.
+ * @return Status code (OK or error).
+ */
+static status_t key_lengths_get(
+    cryptotest_rsa_security_level_t uj_security_level,
+    otcrypto_rsa_size_t *rsa_size, size_t *public_key_length,
+    size_t *private_key_length, size_t *keyblob_length) {
+  switch (uj_security_level) {
+    case kCryptotestRsaSecurityLevelRsa2048:
+      *rsa_size = kOtcryptoRsaSize2048;
+      *public_key_length = kOtcryptoRsa2048PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa2048PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes;
+      return OK_STATUS();
+    case kCryptotestRsaSecurityLevelRsa3072:
+      *rsa_size = kOtcryptoRsaSize3072;
+      *public_key_length = kOtcryptoRsa3072PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa3072PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes;
+      return OK_STATUS();
+    case kCryptotestRsaSecurityLevelRsa4096:
+      *rsa_size = kOtcryptoRsaSize4096;
+      *public_key_length = kOtcryptoRsa4096PublicKeyBytes;
+      *private_key_length = kOtcryptoRsa4096PrivateKeyBytes;
+      *keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes;
+      return OK_STATUS();
+    default:
+      LOG_ERROR("Unsupported RSA security level: %d", uj_security_level);
+      return INVALID_ARGUMENT();
+  }
+}
+
+/**
+ * Writes the modulus and public exponent of a public key.
+ *
+ * @param public_key Public key.
+ * @param[out] n Modulus (at least `kRsa4096NumBytes` bytes).
+ * @param[out] n_len Length of the modulus in bytes.
+ * @param[out] e Public exponent.
+ * @return Status code (OK or error).
+ */
+static status_t public_key_get(otcrypto_unblinded_key_t *public_key, uint8_t *n,
+                               size_t *n_len, uint32_t *e) {
+  uint32_t n_buf[kRsa4096NumWords];
+  otcrypto_word32_buf_t modulus = {
+      .data = n_buf,
+      .len = (public_key->key_length - sizeof(uint32_t)) / sizeof(uint32_t),
+  };
+  otcrypto_status_t status =
+      otcrypto_rsa_public_key_deconstruct(public_key, modulus, e);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from public key deconstruction = 0x%x",
+              status.value);
+    return INTERNAL(status.value);
+  }
+  *n_len = modulus.len * sizeof(uint32_t);
+  memcpy(n, n_buf, *n_len);
+  return OK_STATUS();
+}
+
+status_t handle_rsa_keygen(ujson_t *uj, otcrypto_key_mode_t key_mode) {
+  cryptotest_rsa_security_level_t uj_security_level;
+  TRY(ujson_deserialize_cryptotest_rsa_security_level_t(uj,
+                                                        &uj_security_level));
+
+  otcrypto_rsa_size_t rsa_size;
+  size_t public_key_length;
+  size_t private_key_length;
+  size_t keyblob_length;
+  TRY(key_lengths_get(uj_security_level, &rsa_size, &public_key_length,
+                      &private_key_length, &keyblob_length));
+  uint32_t public_key_buf[kOtcryptoRsa4096PublicKeyBytes / sizeof(uint32_t)];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_length,
+      .key = public_key_buf,
+  };
+  uint32_t keyblob[kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t)];
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = key_mode,
+              .key_length = private_key_length,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelPassiveRemote,
+          },
+      .keyblob_length = keyblob_length,
+      .keyblob = keyblob,
+  };
+  otcrypto_status_t status =
+      otcrypto_rsa_keygen(rsa_size, &public_key, &private_key);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from key generation = 0x%x", status.value);
+    return INTERNAL(status.value);
+  }
+
+  cryptotest_rsa_private_key_t uj_private_key;
+  memset(&uj_private_key, 0, sizeof(uj_private_key));
+  TRY(public_key_get(&public_key, uj_private_key.n, &uj_private_key.n_len,
+                     &uj_private_key.e));
+
+  size_t cofactor_words = uj_private_key.n_len / sizeof(uint32_t) / 2;
+  uint32_t p_buf[kRsa4096NumWords / 2];
+  uint32_t q_buf[kRsa4096NumWords / 2];
+  uint32_t d_p_buf[kRsa4096NumWords / 2];
+  uint32_t d_q_buf[kRsa4096NumWords / 2];
+  uint32_t i_q_buf[kRsa4096NumWords / 2];
+  otcrypto_word32_buf_t p = {.data = p_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t q = {.data = q_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t d_p = {.data = d_p_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t d_q = {.data = d_q_buf, .len = cofactor_words};
+  otcrypto_word32_buf_t i_q = {.data = i_q_buf, .len = cofactor_words};
+  status =
+      otcrypto_rsa_private_key_deconstruct(&private_key, p, q, d_p, d_q, i_q);
+  if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value from private key deconstruction = 0x%x",
+              status.value);
+    return INTERNAL(status.value);
+  }
+
+  size_t cofactor_len = cofactor_words * sizeof(uint32_t);
+  uj_private_key.p_len = cofactor_len;
+  memcpy(uj_private_key.p, p_buf, cofactor_len);
+  uj_private_key.q_len = cofactor_len;
+  memcpy(uj_private_key.q, q_buf, cofactor_len);
+  uj_private_key.d_p_len = cofactor_len;
+  memcpy(uj_private_key.d_p, d_p_buf, cofactor_len);
+  uj_private_key.d_q_len = cofactor_len;
+  memcpy(uj_private_key.d_q, d_q_buf, cofactor_len);
+  uj_private_key.i_q_len = cofactor_len;
+  memcpy(uj_private_key.i_q, i_q_buf, cofactor_len);
+  RESP_OK(ujson_serialize_cryptotest_rsa_private_key_t, uj, &uj_private_key);
+  return OK_STATUS();
+}
+
 status_t handle_rsa(ujson_t *uj) {
   cryptotest_rsa_operation_t uj_op;
   cryptotest_rsa_padding_t uj_padding;
@@ -743,7 +928,7 @@ status_t handle_rsa(ujson_t *uj) {
     case kCryptotestRsaOperationEncrypt: {
       switch (uj_padding) {
         case kCryptotestRsaPaddingOaep:
-          return handle_rsa_oaep_encrypt(uj);
+          return handle_rsa_oaep_encrypt(uj, /*random_message=*/false);
         default:
           LOG_ERROR("Unexpected RSA padding mode for encrypt operation: %d",
                     uj_padding);
@@ -756,6 +941,29 @@ status_t handle_rsa(ujson_t *uj) {
           return handle_rsa_oaep_decrypt(uj);
         default:
           LOG_ERROR("Unexpected RSA padding mode for decrypt operation: %d",
+                    uj_padding);
+          return INVALID_ARGUMENT();
+      }
+    }
+    case kCryptotestRsaOperationEncryptRandom: {
+      switch (uj_padding) {
+        case kCryptotestRsaPaddingOaep:
+          return handle_rsa_oaep_encrypt(uj, /*random_message=*/true);
+        default:
+          LOG_ERROR(
+              "Unexpected RSA padding mode for encrypt-random operation: %d",
+              uj_padding);
+          return INVALID_ARGUMENT();
+      }
+    }
+    case kCryptotestRsaOperationKeygen: {
+      switch (uj_padding) {
+        case kCryptotestRsaPaddingPkcs15:
+          return handle_rsa_keygen(uj, kOtcryptoKeyModeRsaSignPkcs);
+        case kCryptotestRsaPaddingPss:
+          return handle_rsa_keygen(uj, kOtcryptoKeyModeRsaSignPss);
+        default:
+          LOG_ERROR("Unexpected RSA padding mode for keygen operation: %d",
                     uj_padding);
           return INVALID_ARGUMENT();
       }

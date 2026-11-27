@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#define RSA_CMD_MAX_MESSAGE_DIGEST_BYTES 64
+#define RSA_CMD_MAX_MESSAGE_BYTES 256
 #define RSA_CMD_MAX_RAW_MESSAGE_BYTES 446
 #define RSA_CMD_MAX_LABEL_BYTES 68
 #define RSA_CMD_MAX_SIGNATURE_BYTES 1024
@@ -28,7 +28,9 @@ extern "C" {
     value(_, Sign) \
     value(_, Verify) \
     value(_, Encrypt) \
-    value(_, Decrypt)
+    value(_, Decrypt) \
+    value(_, Keygen) \
+    value(_, EncryptRandom)
 UJSON_SERDE_ENUM(CryptotestRsaOperation, cryptotest_rsa_operation_t, RSA_OPERATION);
 
 #define RSA_PADDING(_, value) \
@@ -71,10 +73,10 @@ UJSON_SERDE_STRUCT(CryptotestRsaDecryptOutput, cryptotest_rsa_decrypt_output_t, 
     field(label_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaLabel, cryptotest_rsa_label_t, RSA_LABEL);
 
-#define RSA_MESSAGE_DIGEST(field, string, bytes) \
-    bytes(message_digest, RSA_CMD_MAX_MESSAGE_DIGEST_BYTES, message_digest_len) \
-    field(message_digest_len, size_t)
-UJSON_SERDE_STRUCT(CryptotestRsaMessageDigest, cryptotest_rsa_message_digest_t, RSA_MESSAGE_DIGEST);
+#define RSA_MESSAGE(field, string, bytes) \
+    bytes(message, RSA_CMD_MAX_MESSAGE_BYTES, message_len) \
+    field(message_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaMessage, cryptotest_rsa_message_t, RSA_MESSAGE);
 
 #define RSA_SIGNATURE(field, string, bytes) \
     bytes(signature, RSA_CMD_MAX_SIGNATURE_BYTES, signature_len) \
@@ -85,6 +87,13 @@ UJSON_SERDE_STRUCT(CryptotestRsaSignature, cryptotest_rsa_signature_t, RSA_SIGNA
     bytes(ciphertext, RSA_CMD_MAX_CIPHERTEXT_BYTES, ciphertext_len) \
     field(ciphertext_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestRsaCiphertext, cryptotest_rsa_ciphertext_t, RSA_CIPHERTEXT);
+
+#define RSA_ENCRYPT_RANDOM_OUTPUT(field, string, bytes) \
+    bytes(ciphertext, RSA_CMD_MAX_CIPHERTEXT_BYTES, ciphertext_len) \
+    field(ciphertext_len, size_t) \
+    bytes(message, RSA_CMD_MAX_RAW_MESSAGE_BYTES, message_len) \
+    field(message_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestRsaEncryptRandomOutput, cryptotest_rsa_encrypt_random_output_t, RSA_ENCRYPT_RANDOM_OUTPUT);
 
 #define RSA_EXPECTED_LENGTH(field, string, bytes) \
     field(expected_len, size_t)

@@ -769,18 +769,8 @@ RSA_TESTVECTOR_TARGETS = [
     ]
     for wy_suffix in suffixes
 ] + [
-    "//sw/host/cryptotest/testvectors/data:nist_cavp_rsa_{}_{}_json".format(
-        padding_mode,
-        operation,
-    )
-    for padding_mode in [
-        "pkcs1_1.5",
-        "pss",
-    ]
-    for operation in [
-        "sign",
-        "verify",
-    ]
+    "//sw/host/cryptotest/testvectors/data:acvp_kts_ifc_json",
+    "//sw/host/cryptotest/testvectors/data:acvp_rsa_sigver_json",
 ]
 
 RSA_TESTVECTOR_ARGS = " ".join([
@@ -790,8 +780,33 @@ RSA_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "rsa_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
     slow_test = True,
     test_args = RSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
     test_vectors = RSA_TESTVECTOR_TARGETS,
+)
+
+cryptotest(
+    name = "rsa_keygen_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    manual = True,
+    test_args = "--timeout=1200s --rsa-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_rsa_keygen_json)\"",
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_rsa_keygen_json"],
+)
+
+cryptotest(
+    name = "rsa_siggen_kat",
+    extra_exec_envs = {
+        "//hw/top_egret:fpga_cw340_pqc_test_rom": "fpga_cw340",
+    },
+    manual = True,
+    test_args = "--timeout=1200s --rsa-json=\"$(rootpath //sw/host/cryptotest/testvectors/data:acvp_rsa_siggen_json)\"",
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = ["//sw/host/cryptotest/testvectors/data:acvp_rsa_siggen_json"],
 )

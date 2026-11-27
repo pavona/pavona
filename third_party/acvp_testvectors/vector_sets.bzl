@@ -73,6 +73,13 @@ ACVP_VECTOR_SETS = {
             "prompt.json": "fc5d4eecf2281ccc011afaa2348a27dd748888b1578a32a5d41dff47854f315b",
         },
     },
+    "kts-ifc": {
+        "algorithm": "KTS-IFC-Sp800-56Br2",
+        "registration_sha256": "27b2e90bb85c6556be6577c7caee82e50c0e5378f2c0781e1df73aef063b4134",
+        "files": {
+            "internalProjection.json": "c0313f126c102e41fd3e6a2b005375b646caad8b9ef9b286eaf6bef6a9dc99c9",
+        },
+    },
     "ml-dsa-keygen": {
         "algorithm": "ML-DSA-keyGen-FIPS204",
         "registration_sha256": "00d8321144c9eba8e39473d149d6e7ff9d23da4c781d2305b2d7c640e036b7de",
@@ -111,6 +118,28 @@ ACVP_VECTOR_SETS = {
         "files": {
             "expectedResults.json": "d2a2e5b59d758db5812c6bbcf6d09c900ed2c91a5cfedcf2018388c2e764a1a1",
             "prompt.json": "dd2c988a2a129e4a98e1556a58e858b9a542b39cd6456af8b52b0b6cad29ae28",
+        },
+    },
+    "rsa-keygen": {
+        "algorithm": "RSA-keyGen-FIPS186-5",
+        "registration_sha256": "110bdb68edb265f34840bf98ffa1d8135ed033b977b55d3c846853517e674429",
+        "files": {
+            "prompt.json": "b9034a3791d71e0e71d4bead7064ead0a7c1c2d22ffb32662de48289ecc6d5df",
+        },
+    },
+    "rsa-siggen": {
+        "algorithm": "RSA-sigGen-FIPS186-5",
+        "registration_sha256": "db3e81a05717d6c937dfa168730ca6e3df84fbd873a00676cabf68d738d78de0",
+        "files": {
+            "prompt.json": "7ae3756e7347498b1ac0a1cf507c3363ce3582dec61f4e05f47695a24c3d6cdb",
+        },
+    },
+    "rsa-sigver": {
+        "algorithm": "RSA-sigVer-FIPS186-5",
+        "registration_sha256": "2c5f5f6e2ce835631c3dd881c68dcdc6e5fa992d2faec1f72936676ca6b14392",
+        "files": {
+            "expectedResults.json": "894267419505f9dc82bbfaeb7dba755a8e56f54f1edf4e3e97493aae6304fff9",
+            "prompt.json": "a27d70493930cdb62ba30277878f0f87adf026b77848770ce849434c703991ef",
         },
     },
     "sha2-256": {
