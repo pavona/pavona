@@ -224,7 +224,7 @@ static status_t aes_gcm_counter(const size_t iv_len, const uint32_t *iv,
     // If the IV is 128 bits, then J0 = GHASH(H, IV || {0}^120 || 0x80), where
     // {0}^120 means 120 zero bits (15 0x00 bytes).
     ghash_init(ctx);
-    ghash_update(ctx, iv_len * sizeof(uint32_t), (unsigned char *)iv);
+    ghash_update(ctx, iv_len * sizeof(uint32_t), (const unsigned char *)iv);
     uint8_t buffer[kAesBlockNumBytes];
     memset(buffer, 0, kAesBlockNumBytes);
     buffer[kAesBlockNumBytes - 1] = 0x80;

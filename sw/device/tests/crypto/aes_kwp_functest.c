@@ -48,7 +48,8 @@ static const otcrypto_key_config_t kWrappingKeyConfig256 = {
  */
 static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
                                 const otcrypto_blinded_key_t *key_kek,
-                                char *wrap_name, char *unwrap_name) {
+                                const char *wrap_name,
+                                const char *unwrap_name) {
   size_t wrapped_num_words;
   TRY(otcrypto_wrapped_key_len(key_to_wrap->config, &wrapped_num_words));
 

@@ -29,7 +29,7 @@ typedef const struct ecdsa_p256_verify_test_vector {
   // Expected result (true iff signature is valid).
   bool valid;
   // Any notes about the test vector (a C string).
-  char *comment;
+  const char *comment;
   // Length (in bytes) of the message.
   size_t msg_len;
   // Message bytes.

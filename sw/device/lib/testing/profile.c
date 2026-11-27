@@ -16,7 +16,7 @@ uint32_t profile_end(uint64_t t_start) {
   return (uint32_t)cycles;
 }
 
-uint32_t profile_end_and_print(uint64_t t_start, char *name) {
+uint32_t profile_end_and_print(uint64_t t_start, const char *name) {
   uint32_t cycles = profile_end(t_start);
   uint32_t time_ms = cycles / 100000;
   LOG_INFO("%s took %u cycles or %u ms @ 100 MHz.", name, cycles, time_ms);

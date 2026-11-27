@@ -219,7 +219,8 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming) {
 
   // Check the result (not including padding).
   TRY_CHECK_ARRAYS_EQ((unsigned char *)recovered_plaintext_data,
-                      (unsigned char *)test->plaintext, test->plaintext_len);
+                      (const unsigned char *)test->plaintext,
+                      test->plaintext_len);
 
   return OK_STATUS();
 }

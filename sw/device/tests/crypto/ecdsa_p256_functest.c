@@ -61,7 +61,7 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Hash the message.
   otcrypto_const_byte_buf_t msg = {
       .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
+      .data = (const unsigned char *)&kMessage,
   };
   uint32_t msg_digest_data[256 / 32];
   otcrypto_hash_digest_t msg_digest = {

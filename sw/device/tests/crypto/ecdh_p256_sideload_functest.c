@@ -72,7 +72,7 @@ status_t key_exchange_test(void) {
       .keyblob = keyblobA,
   };
   otcrypto_const_word32_buf_t private_keyA_salt_buf = {
-      .data = (uint32_t *)kPrivateKeyASalt,
+      .data = (const uint32_t *)kPrivateKeyASalt,
       .len = sizeof(kPrivateKeyASalt) / sizeof(uint32_t),
   };
   TRY(otcrypto_hw_backed_key(kPrivateKeyAVersion, private_keyA_salt_buf,
@@ -85,7 +85,7 @@ status_t key_exchange_test(void) {
       .keyblob = keyblobB,
   };
   otcrypto_const_word32_buf_t private_keyB_salt_buf = {
-      .data = (uint32_t *)kPrivateKeyBSalt,
+      .data = (const uint32_t *)kPrivateKeyBSalt,
       .len = sizeof(kPrivateKeyASalt) / sizeof(uint32_t),
   };
   TRY(otcrypto_hw_backed_key(kPrivateKeyBVersion, private_keyB_salt_buf,

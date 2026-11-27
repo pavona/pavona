@@ -171,7 +171,7 @@ status_t basic_encrypt_decrypt_test(void) {
   // Encrypt the test plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
   otcrypto_const_word32_buf_t key_salt1_buf = {
-      .data = (uint32_t *)kKeySalt1,
+      .data = (const uint32_t *)kKeySalt1,
       .len = sizeof(kKeySalt1) / sizeof(uint32_t),
   };
   TRY(encrypt(key_salt1_buf, ciphertext1));
@@ -197,7 +197,7 @@ status_t sideload_update_test(void) {
   // Sideload the first key and encrypt the plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
   otcrypto_const_word32_buf_t key_salt1_buf = {
-      .data = (uint32_t *)kKeySalt1,
+      .data = (const uint32_t *)kKeySalt1,
       .len = sizeof(kKeySalt1) / sizeof(uint32_t),
   };
   TRY(encrypt(key_salt1_buf, ciphertext1));
@@ -205,7 +205,7 @@ status_t sideload_update_test(void) {
   // Sideload the second key and encrypt the plaintext.
   uint32_t ciphertext2[ARRAYSIZE(kAesPlaintextBlock)];
   otcrypto_const_word32_buf_t key_salt2_buf = {
-      .data = (uint32_t *)kKeySalt2,
+      .data = (const uint32_t *)kKeySalt2,
       .len = sizeof(kKeySalt2) / sizeof(uint32_t),
   };
   TRY(encrypt(key_salt2_buf, ciphertext2));
@@ -232,7 +232,7 @@ status_t sideload_clear_test(void) {
   // Sideload the first key and encrypt the plaintext.
   uint32_t ciphertext1[ARRAYSIZE(kAesPlaintextBlock)];
   otcrypto_const_word32_buf_t key_salt1_buf = {
-      .data = (uint32_t *)kKeySalt1,
+      .data = (const uint32_t *)kKeySalt1,
       .len = sizeof(kKeySalt1) / sizeof(uint32_t),
   };
   TRY(encrypt(key_salt1_buf, ciphertext1));

@@ -58,7 +58,7 @@ status_t sign_then_verify_test(void) {
 
   // Construct the private key handle.
   otcrypto_const_word32_buf_t private_key_salt_buf = {
-      .data = (uint32_t *)kPrivateKeySalt,
+      .data = (const uint32_t *)kPrivateKeySalt,
       .len = sizeof(kPrivateKeySalt) / sizeof(uint32_t),
   };
   TRY(otcrypto_hw_backed_key(kPrivateKeyVersion, private_key_salt_buf,
@@ -79,7 +79,7 @@ status_t sign_then_verify_test(void) {
   // Hash the message.
   otcrypto_const_byte_buf_t message = {
       .len = sizeof(kMessage) - 1,
-      .data = (unsigned char *)&kMessage,
+      .data = (const unsigned char *)&kMessage,
   };
   uint32_t message_digest_data[kSha256DigestWords];
   otcrypto_hash_digest_t message_digest = {

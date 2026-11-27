@@ -80,7 +80,7 @@ static status_t run_test(otcrypto_const_byte_buf_t msg,
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
   otcrypto_const_byte_buf_t msg_buf = {
-      .data = (unsigned char *)plaintext,
+      .data = (const unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
   const uint32_t exp_digest[] = {

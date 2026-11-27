@@ -650,7 +650,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
 
   // Check the signature lengths.
   HARDENED_TRY(p384_signature_length_check(signature.len));
-  p384_ecdsa_signature_t *sig = (p384_ecdsa_signature_t *)signature.data;
+  const p384_ecdsa_signature_t *sig =
+      (const p384_ecdsa_signature_t *)signature.data;
 
   // Start the asynchronous signature-verification routine.
   HARDENED_TRY(
@@ -681,7 +682,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
   HARDENED_TRY(entropy_complex_check());
 
   HARDENED_TRY(p384_signature_length_check(signature.len));
-  p384_ecdsa_signature_t *sig_p384 = (p384_ecdsa_signature_t *)signature.data;
+  const p384_ecdsa_signature_t *sig_p384 =
+      (const p384_ecdsa_signature_t *)signature.data;
   return p384_ecdsa_verify_finalize(sig_p384, session_token,
                                     verification_result, recovered_r.data);
 }

@@ -594,11 +594,11 @@ typedef struct otcrypto_blinded_key {
   /**
    * Key configuration information.
    */
-  const otcrypto_key_config_t config;
+  otcrypto_key_config_t config;
   /**
    * Length of blinded key material in bytes.
    */
-  const uint32_t keyblob_length;
+  uint32_t keyblob_length;
   /**
    * Implementation specific, storage provided by caller.
    */
