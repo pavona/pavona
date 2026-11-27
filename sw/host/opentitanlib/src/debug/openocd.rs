@@ -153,7 +153,7 @@ impl OpenOcd {
 
         log::info!("Connecting to OpenOCD tcl interface...");
 
-        let stream = TcpStream::connect(("localhost", openocd_port))
+        let stream = TcpStream::connect(("127.0.0.1", openocd_port))
             .context("failed to connect to OpenOCD socket")?;
 
         // Disable TCP Nagle delay to ensure minimal latency to OpenOCD.
