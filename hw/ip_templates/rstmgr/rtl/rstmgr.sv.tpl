@@ -49,12 +49,16 @@ module rstmgr
   // software initiated reset request
   output mubi4_t sw_rst_req_o,
 
+% if with_alert_dump:
   // Interface to alert handler
   input alert_handler_pkg::alert_crashdump_t alert_dump_i,
 
+% endif
+% if with_cpu_dump:
   // Interface to cpu crash dump
   input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
 
+% endif
   // dft bypass
   input scan_rst_ni,
   // SEC_CM: SCAN.INTERSIG.MUBI
@@ -405,6 +409,7 @@ module rstmgr
                                        reg2hw.reset_info.hw_req.q;
   assign hw2reg.reset_info.hw_req.de = rst_hw_req;
 
+% if with_alert_dump or with_cpu_dump:
   ////////////////////////////////////////////////////
   // Crash info capture                             //
   ////////////////////////////////////////////////////
@@ -416,6 +421,8 @@ module rstmgr
   logic dump_capture_halt;
   assign dump_capture_halt = rst_hw_req;
 
+% endif
+% if with_alert_dump:
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(alert_handler_pkg::alert_crashdump_t))
   ) u_alert_info (
@@ -428,6 +435,8 @@ module rstmgr
     .slot_o(hw2reg.alert_info.d)
   );
 
+% endif
+% if with_cpu_dump:
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
   ) u_cpu_info (
@@ -440,12 +449,19 @@ module rstmgr
     .slot_o(hw2reg.cpu_info.d)
   );
 
+% endif
+% if with_alert_dump or with_cpu_dump:
   // once dump is captured, no more information is captured until
   // re-enabled by software.
+% endif
+% if with_alert_dump:
   assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
   assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
+% endif
+% if with_cpu_dump:
   assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
   assign hw2reg.cpu_info_ctrl.en.de = dump_capture_halt;
+% endif
 
   ////////////////////////////////////////////////////
   // Exported resets                                //
