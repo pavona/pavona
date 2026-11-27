@@ -109,15 +109,26 @@ extern char _dv_log_offset[];
 #define OT_FAIL_IF_64_BIT_LOG(arg) OT_FAIL_IF_64_BIT(arg, LOG)
 
 /**
+ * A macro that wraps the `OT_FAIL_IF_WIDER_THAN_WORD` macro, providing the
+ * name of the LOG macro for better error messages.
+ *
+ * @param arg an arg/expression to check
+ */
+#define OT_FAIL_IF_WIDER_THAN_WORD_LOG(arg) OT_FAIL_IF_WIDER_THAN_WORD(arg, LOG)
+
+/**
  * A macro that checks the variable arguments of the `LOG` function are valid
  * at compile time, by asserting that each of the argument is not a standard
- * C integer type with a width of 64 bits. Any such invalid argument will
- * cause a relevant error via a static assertion.
+ * C integer type with a width of 64 bits and is not wider than a word. Any
+ * such invalid argument will cause a relevant error via a static assertion.
  *
  * @param ... the variable args list
  */
-#define OT_CHECK_VALID_LOG_ARGS(...) \
-  OT_VA_FOR_EACH(OT_FAIL_IF_64_BIT_LOG, ##__VA_ARGS__)
+#define OT_CHECK_VALID_LOG_ARGS(...)                               \
+  do {                                                             \
+    OT_VA_FOR_EACH(OT_FAIL_IF_64_BIT_LOG, ##__VA_ARGS__);          \
+    OT_VA_FOR_EACH(OT_FAIL_IF_WIDER_THAN_WORD_LOG, ##__VA_ARGS__); \
+  } while (false)
 
 /**
  * Basic logging macro that all other logging macros delegate to.

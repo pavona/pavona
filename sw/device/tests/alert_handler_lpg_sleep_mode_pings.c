@@ -317,7 +317,8 @@ static void check_wakeup_reason(void) {
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources)) ==
             true,
-        "wakeup reason wrong exp:%d  obs:%d", wakeup_sources, wakeup_reason);
+        "wakeup reason wrong exp:%x  obs types:%x sources:%x", wakeup_sources,
+        wakeup_reason.types, wakeup_reason.request_sources);
 }
 
 /**
