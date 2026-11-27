@@ -114,6 +114,7 @@ status_t execute_test(const dif_csrng_t *csrng, const dif_edn_t *edn0) {
   CHECK_DIF_OK(dif_edn_get_recoverable_alerts(&edn, &alerts));
   CHECK(alerts == (1 << kDifEdnRecoverableAlertRepeatedGenBits));
 
+  CHECK_DIF_OK(dif_edn_stop(edn0));
   CHECK_STATUS_OK(ottf_alerts_expect_alert_finish(
       dt_edn_alert_to_alert_id(kTestEdn, kDtEdnAlertRecovAlert)));
 
