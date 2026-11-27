@@ -61,6 +61,7 @@ class OtpCtrlExt(Extension):
     OTP_PARTITION_INFO_STRUCT_LOCK_ADDR_FIELD_NAME = Name(["lock", "reg", "offset"])
     OTP_PARTITION_INFO_STRUCT_READ_LOCK_BIT_FIELD_NAME = Name(["read", "lock", "bit"])
     OTP_PARTITION_INFO_STRUCT_LIFECYCLE_FIELD_NAME = Name(["is", "lifecycle"])
+    OTP_PARTITION_INFO_STRUCT_INTEGRITY_FIELD_NAME = Name(["integrity"])
     OTP_PARTITION_INFO_STRUCT_ZEROIZABLE_FIELD_NAME = Name(["zeroizable"])
     OTP_PARTITION_INFO_STRUCT_ALIGN_MASK_FIELD_NAME = Name(["align", "mask"])
     OTP_PARTITION_INFO_STRUCT_NAME = Name.from_snake_case("dt_otp_partition_info")
@@ -130,6 +131,11 @@ class OtpCtrlExt(Extension):
             docstring = "Whether this partition is zeroizable."
         )
         self._otp_partition_info_struct.add_field(
+            name = self.OTP_PARTITION_INFO_STRUCT_INTEGRITY_FIELD_NAME,
+            field_type = ScalarType("uint8_t"),
+            docstring = "Whether this partition has hardware ECC enabled."
+        )
+        self._otp_partition_info_struct.add_field(
             name = self.OTP_PARTITION_INFO_STRUCT_LIFECYCLE_FIELD_NAME,
             field_type = ScalarType("uint8_t"),
             docstring = "Whether this partition stores the chip life cycle state."
@@ -151,6 +157,7 @@ class OtpCtrlExt(Extension):
             self.OTP_PARTITION_INFO_STRUCT_LOCK_ADDR_FIELD_NAME: "0xdeadbeef",
             self.OTP_PARTITION_INFO_STRUCT_READ_LOCK_BIT_FIELD_NAME: "0xdeadbeef",
             self.OTP_PARTITION_INFO_STRUCT_ZEROIZABLE_FIELD_NAME: "0",
+            self.OTP_PARTITION_INFO_STRUCT_INTEGRITY_FIELD_NAME: "0",
             self.OTP_PARTITION_INFO_STRUCT_LIFECYCLE_FIELD_NAME: "0",
             self.OTP_PARTITION_INFO_STRUCT_ALIGN_MASK_FIELD_NAME: "0x0",
         }
@@ -213,6 +220,8 @@ class OtpCtrlExt(Extension):
                             read_lock_bit if has_lock_csr else "0xdeadbeef",
                         self.OTP_PARTITION_INFO_STRUCT_ZEROIZABLE_FIELD_NAME:
                             1 if partition["zeroizable"] else 0,
+                        self.OTP_PARTITION_INFO_STRUCT_INTEGRITY_FIELD_NAME:
+                            1 if partition["integrity"] else 0,
                         self.OTP_PARTITION_INFO_STRUCT_LIFECYCLE_FIELD_NAME:
                             1 if partition["variant"] == "LifeCycle" else 0,
                         self.OTP_PARTITION_INFO_STRUCT_ALIGN_MASK_FIELD_NAME:

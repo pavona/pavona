@@ -47,6 +47,7 @@ class OtpCtrlIpConfig:
                 "hw_digest": partition["hw_digest"],
                 "read_lock": partition["read_lock"],
                 "zeroizable": partition["zeroizable"],
+                "integrity": partition["integrity"],
             }
             for partition in self._param_values["otp_mmap"]["partitions"]
         ]

@@ -7,6 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "hw/top/dt/otp_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
@@ -14,11 +15,6 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
-#if defined(OPENTITAN_IS_EGRET)
-#include "hw/top_egret/sw/autogen/top_egret.h"
-#elif defined(OPENTITAN_IS_DRAGONFLY)
-#include "hw/top_dragonfly/sw/autogen/top_dragonfly.h"
-#endif
 
 namespace otp_unittest {
 namespace {
@@ -29,20 +25,13 @@ constexpr int kMaxOtpWordsToRead = 10;
 
 class OtpTest : public rom_test::RomTest {
  protected:
-#if defined(OPENTITAN_IS_EGRET)
-  uint32_t base_ = TOP_EGRET_OTP_CTRL_CORE_BASE_ADDR;
-#elif defined(OPENTITAN_IS_DRAGONFLY)
-  uint32_t base_ = TOP_DRAGONFLY_OTP_CTRL_CORE_BASE_ADDR;
-#endif
+  uint32_t base_;
   rom_test::MockSecMmio mmio_;
   rom_test::MockAbsMmio abs_mmio_;
+
+ public:
+  OtpTest() { base_ = dt_otp_ctrl_primary_reg_block(kDtOtpCtrl); }
 };
-
-TEST_F(OtpTest, CreatorSwCfgLockdown) {
-  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0);
-
-  otp_creator_sw_cfg_lockdown();
-}
 
 class OtpReadTest : public OtpTest {
  protected:
@@ -269,6 +258,158 @@ TEST_P(OtpDaiReadTest, ReadLenN32bitWords) {
   for (size_t i = 0; i < num_words_to_read; ++i) {
     EXPECT_EQ(data[i], 0x01020300 + i);
   }
+}
+
+class OtpPermissionTest : public OtpTest {};
+
+TEST_F(OtpPermissionTest, Readable) {
+  EXPECT_SEC_READ32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x1);
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionCreatorSwCfg), true);
+}
+
+TEST_F(OtpPermissionTest, ReadLocked) {
+  EXPECT_SEC_READ32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x0);
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionCreatorSwCfg), false);
+}
+
+TEST_F(OtpPermissionTest, NotReadable) {
+  EXPECT_EQ(otp_partition_is_readable(kOtpPartitionSecret0), false);
+}
+
+TEST_F(OtpPermissionTest, Zeroizable) {
+  EXPECT_EQ(otp_partition_is_zeroizable(kOtpPartitionSecret3), true);
+}
+
+TEST_F(OtpPermissionTest, ReadLock) {
+  EXPECT_SEC_WRITE32(base_ + OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET, 0x0);
+  EXPECT_EQ(otp_partition_read_lock(kOtpPartitionCreatorSwCfg), kErrorOk);
+}
+
+TEST_F(OtpPermissionTest, ReadLockNotLockable) {
+  EXPECT_EQ(otp_partition_read_lock(kOtpPartitionHwCfg0),
+            kErrorOtpCtrlUnsupported);
+}
+
+TEST_F(OtpPermissionTest, HasIntegrity) {
+  EXPECT_EQ(otp_partition_has_integrity(kOtpPartitionCreatorSwCfg), true);
+}
+
+TEST_F(OtpPermissionTest, DoesNotHaveIntegrity) {
+  EXPECT_EQ(otp_partition_has_integrity(kOtpPartitionVendorTest), false);
+}
+
+class OtpDaiWriteTest : public OtpTest {
+ protected:
+  void ExpectDaiIdleCheck(bool idle) {
+    EXPECT_ABS_READ32(base_ + OTP_CTRL_STATUS_REG_OFFSET,
+                      {{OTP_CTRL_STATUS_DAI_IDLE_BIT, idle}});
+  }
+};
+
+TEST_F(OtpDaiWriteTest, Write32) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  for (size_t i = 0; i < ARRAYSIZE(data); ++i) {
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                       data[i]);
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(
+        base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET + 0x4 + i * sizeof(uint32_t));
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x2);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(
+      otp_dai_write(kOtpPartitionCreatorSwCfg, 0x4, data, ARRAYSIZE(data)),
+      kErrorOk);
+}
+
+TEST_F(OtpDaiWriteTest, Write64) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  for (size_t i = 0; i < ARRAYSIZE(data); i += 2) {
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
+                       data[i]);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET,
+                       data[i + 1]);
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(
+        base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+        OTP_CTRL_PARAM_SECRET0_OFFSET + 0x8 + i * sizeof(uint32_t));
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x2);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x8, data, ARRAYSIZE(data)),
+            kErrorOk);
+}
+
+TEST_F(OtpDaiWriteTest, Write32Unaligned) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x2, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
+TEST_F(OtpDaiWriteTest, Write64Unaligned) {
+  uint32_t data[4] = {0x11, 0x22, 0x33, 0x44};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x4, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
+TEST_F(OtpDaiWriteTest, Write64BadSize) {
+  uint32_t data[3] = {0x11, 0x22, 0x33};
+  EXPECT_EQ(otp_dai_write(kOtpPartitionSecret0, 0x8, data, ARRAYSIZE(data)),
+            kErrorOtpCtrlBadAlignment);
+}
+
+class OtpDaiZeroizeTest : public OtpTest {
+ protected:
+  void ExpectDaiIdleCheck(bool idle) {
+    EXPECT_ABS_READ32(base_ + OTP_CTRL_STATUS_REG_OFFSET,
+                      {{OTP_CTRL_STATUS_DAI_IDLE_BIT, idle}});
+  }
+};
+
+TEST_F(OtpDaiZeroizeTest, Zeroize32) {
+  // Expect implementation to zeroize the zeroization field first.
+  ExpectDaiIdleCheck(true);
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                     OTP_CTRL_PARAM_HW_CFG2_ZER_OFFSET);
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x8);
+  ExpectDaiIdleCheck(true);
+  ExpectDaiIdleCheck(true);
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                     OTP_CTRL_PARAM_HW_CFG2_ZER_OFFSET + sizeof(uint32_t));
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x8);
+  ExpectDaiIdleCheck(true);
+  // Expect implementation to zeroize the remaining fields.
+  for (size_t off = OTP_CTRL_PARAM_HW_CFG2_OFFSET;
+       off < OTP_CTRL_PARAM_HW_CFG2_ZER_OFFSET; off += sizeof(uint32_t)) {
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, off);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x8);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(otp_dai_zeroize(kOtpPartitionHwCfg2), kErrorOk);
+}
+
+TEST_F(OtpDaiZeroizeTest, Zeroize64) {
+  // Expect implementation to zeroize the zeroization field first.
+  ExpectDaiIdleCheck(true);
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                     OTP_CTRL_PARAM_SECRET3_ZER_OFFSET);
+  EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x8);
+  ExpectDaiIdleCheck(true);
+  // Expect implementation to zeroize the remaining fields.
+  for (size_t off = OTP_CTRL_PARAM_SECRET3_OFFSET;
+       off < OTP_CTRL_PARAM_SECRET3_ZER_OFFSET; off += sizeof(uint64_t)) {
+    ExpectDaiIdleCheck(true);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET, off);
+    EXPECT_ABS_WRITE32(base_ + OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET, 0x8);
+    ExpectDaiIdleCheck(true);
+  }
+  EXPECT_EQ(otp_dai_zeroize(kOtpPartitionSecret3), kErrorOk);
+}
+
+TEST_F(OtpDaiZeroizeTest, ZeroizeInvalidPartition) {
+  EXPECT_EQ(otp_dai_zeroize(kOtpPartitionLifeCycle), kErrorOtpCtrlUnsupported);
 }
 
 INSTANTIATE_TEST_SUITE_P(Read32bitWordArrays, OtpDaiReadTest,
