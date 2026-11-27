@@ -247,12 +247,14 @@ otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
                                       hardened_bool_t *success,
                                       otcrypto_blinded_key_t *unwrapped_key,
                                       otcrypto_word32_buf_t work) {
+  if (success == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   *success = kHardenedBoolFalse;
 
   if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||
-      success == NULL || unwrapped_key == NULL ||
-      unwrapped_key->keyblob == NULL || work.data == NULL ||
-      work.len < wrapped_key.len) {
+      unwrapped_key == NULL || unwrapped_key->keyblob == NULL ||
+      work.data == NULL || work.len < wrapped_key.len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
