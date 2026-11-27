@@ -28,22 +28,32 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
+// This test needs to work for tops with different clock frequencies.
+// Slow tops like egret take 5us per aon clock cycle, while faster ones
+// like dragonfly take 16ns per aon cycle. On the other hand, the test
+// uses busy_spin_micros, which counts in microseconds.
+// The strategy this test uses to deal with this is to specify the bark
+// and bite times in aon clock cycles, except the resulting time must
+// exceed 5us.
+
+enum {
+  /**
+   * The minimum number of microseconds for either bark and bite timeout.
+   */
+  kMinimumNumMicros = 5,
+
+  /**
+   * The minimum number of aon cycles for the same.
+   */
+  kMinimumAonCycles = 20,
+};
+
 /**
  * Configure the wdog.
  */
 static void config_wdog(const dif_aon_timer_t *aon_timer,
-                        const dif_pwrmgr_t *pwrmgr, uint64_t bark_time_us,
-                        uint64_t bite_time_us) {
-  uint32_t bark_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(bark_time_us,
-                                                                &bark_cycles));
-  uint32_t bite_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(bite_time_us,
-                                                                &bite_cycles));
-
-  LOG_INFO("Wdog will bark after %u us and bite after %u us",
-           (uint32_t)bark_time_us, (uint32_t)bite_time_us);
-
+                        const dif_pwrmgr_t *pwrmgr, uint32_t bark_cycles,
+                        uint32_t bite_cycles) {
   // Set wdog as a reset source.
   dif_pwrmgr_request_sources_t reset_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
@@ -59,21 +69,35 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
 
 /**
  * Execute the aon timer wdog bite reset test.
+ *
+ * Sets the watchdog to bark after a number of aon_cycles that is small,
+ * but not too small that it consumes less than 5us.
  */
 static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
-                           const dif_pwrmgr_t *pwrmgr, uint32_t bark_time_us) {
-  uint64_t bite_time_us = bark_time_us * 2;
-  config_wdog(aon_timer, pwrmgr, bark_time_us, bite_time_us);
+                           const dif_pwrmgr_t *pwrmgr) {
+  uint32_t bark_aon_cycles = kMinimumAonCycles;
+  uint32_t aon_cycles_for_min_micros;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
+      kMinimumNumMicros, &aon_cycles_for_min_micros));
+  if (bark_aon_cycles < aon_cycles_for_min_micros) {
+    bark_aon_cycles = aon_cycles_for_min_micros;
+  }
+  uint32_t bark_time_us;
+  CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(bark_aon_cycles,
+                                                             &bark_time_us));
+  LOG_INFO("bark_time_us = %d", bark_time_us);
+  config_wdog(aon_timer, pwrmgr, bark_aon_cycles, 2 * bark_aon_cycles);
 
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
-  uint64_t aon_timer_clock_freq_hz = dt_clock_frequency(
-      dt_aon_timer_clock(kDtAonTimerAon, kDtAonTimerClockAon));
-  uint32_t wait_us =
-      (uint32_t)bark_time_us +
-      (uint32_t)udiv64_slow(5 * 1000000 + aon_timer_clock_freq_hz - 1,
-                            aon_timer_clock_freq_hz, NULL);
-
+  uint32_t extra_time_us;
+  CHECK_STATUS_OK(
+      aon_timer_testutils_get_us_from_aon_cycles(3 + 2, &extra_time_us));
+  if (extra_time_us == 0) {
+    extra_time_us = 1;
+  }
+  uint32_t wait_us = bark_time_us + extra_time_us;
+  LOG_INFO("wait_us = %d", wait_us);
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);
   bool is_pending = false;
@@ -81,7 +105,6 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
       aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
   CHECK(is_pending, "Wdog bark irq did not rise after %u microseconds",
         wait_us);
-
   // Wait for the remaining time to the wdog bite.
   busy_spin_micros(wait_us);
   // If we arrive here the test must fail.
@@ -112,8 +135,7 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, setting wdog");
-    // Executing the wdog bite reset test.
-    wdog_bite_test(&aon_timer, &pwrmgr, /*bark_time_us=*/200);
+    wdog_bite_test(&aon_timer, &pwrmgr);
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("Booting for the second time due to wdog bite reset");
 

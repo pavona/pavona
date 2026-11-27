@@ -6,8 +6,8 @@
 // This sequence injects a POR when requested by SW via sw_logger_vif, otherwise
 // it waits till SW informs the test is done via sw_logger_vif.
 
-class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_deep_sleep_all_reset_vseq)
+class chip_sw_sleep_all_reset_vseq extends chip_sw_base_vseq;
+  `uvm_object_utils(chip_sw_sleep_all_reset_vseq)
 
   `uvm_object_new
 
@@ -67,4 +67,4 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
     assert_por_reset_deep_sleep(reset_delay);
   endtask
 
-endclass
+endclass : chip_sw_sleep_all_reset_vseq
