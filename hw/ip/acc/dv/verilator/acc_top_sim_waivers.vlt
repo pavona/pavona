@@ -68,3 +68,16 @@ public -module "prim_flop" -var "d_i"
 // use this to pass the information from the ELF file to the ISS on
 // the first call to AccTopApplyLoopWarp() in acc_top_sim.cc.
 public -module "acc_core_model" -var "model_handle"
+
+// The public markings above prevent some optimizations (UNOPTPUBLIC) that need to be waived.
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'insn_addr_i' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'loop_start_req_i' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'loop_start_commit_i' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'loop_iterations_i' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'current_loop_valid' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'current_loop' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'current_loop_finish' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'loop_stack_rd_idx' prevents optimization*"
+lint_off -file "*/acc_loop_controller.sv" -match "Public signal 'prefetch_loop_iterations_o' prevents optimization*"
+lint_off -file "*/prim_flop.sv" -match "Public signal 'd_i' prevents optimization*"
+lint_off -file "*/acc_core_model.sv" -match "Public signal 'model_handle' prevents optimization*"

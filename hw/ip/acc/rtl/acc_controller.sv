@@ -214,7 +214,6 @@ module acc_controller
   logic recoverable_err;
   logic software_err;
   logic non_insn_addr_software_err;
-  /* verilator lint_off UNOPTFLAT */
   logic fatal_err;
   logic internal_fatal_err;
   logic done_complete;

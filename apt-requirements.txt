@@ -27,6 +27,7 @@ libelf-dev
 libfl-dev
 libftdi1-2
 libftdi1-dev
+liblz4-dev
 libpcsclite-dev
 libssl-dev
 libtool
