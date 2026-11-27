@@ -44,7 +44,7 @@ struct InfoPage {
 const std::map<const flash_ctrl_info_page_t *, InfoPage> &InfoPages() {
 #define INFO_PAGE_MAP_INIT(name_, bank_, page_)                         \
   {                                                                     \
-      &name_,                                                           \
+      &(name_),                                                         \
       {                                                                 \
           bank_,                                                        \
           page_,                                                        \

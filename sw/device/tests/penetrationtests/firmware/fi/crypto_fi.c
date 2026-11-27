@@ -28,7 +28,7 @@
 
 #define SHADOW_REG_ACCESS(shadow_reg_addr, tmp)    \
   abs_mmio_write32_shadowed(shadow_reg_addr, tmp); \
-  tmp = abs_mmio_read32(shadow_reg_addr);
+  (tmp) = abs_mmio_read32(shadow_reg_addr);
 
 #define SHADOW_REG_ACCESS_10(shadow_reg_addr, tmp) \
   SHADOW_REG_ACCESS(shadow_reg_addr, tmp)          \

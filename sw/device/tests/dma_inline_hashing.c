@@ -27,7 +27,7 @@
 // The TX_SIZE must be in sync with the data size in spi_device_dma_seq.sv
 // 1 SPI segment can only transfer at maximum 512 bytes
 #define TX_SIZE 512
-#define CHUNK_SIZE 32 * 4  // Half the SPI host FIFO size
+#define CHUNK_SIZE (32 * 4)  // Half the SPI host FIFO size
 
 OTTF_DEFINE_TEST_CONFIG();
 

@@ -27,7 +27,7 @@ static_assert(USBDEV_NUM_ENDPOINTS == USBDEV_PARAM_N_ENDPOINTS,
  * Constants used to indicate that a buffer pool is full or empty.
  */
 #define BUFFER_POOL_FULL (USBDEV_NUM_BUFFERS - 1)
-#define BUFFER_POOL_EMPTY -1
+#define BUFFER_POOL_EMPTY (-1)
 
 /**
  * Hardware information for endpoints.

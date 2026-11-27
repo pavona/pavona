@@ -235,13 +235,13 @@ static inline void template_patch_size_be(template_state_t *state,
  * Helpers for writing static assertions on variable array sizes.
  */
 #define ASSERT_VAR_SIZE_EQ(actual, expected) \
-  static_assert(actual == expected, "Invalid variable size.");
+  static_assert((actual) == (expected), "Invalid variable size.");
 
 #define ASSERT_VAR_SIZE_GE(actual, expected) \
-  static_assert(actual >= expected, "Invalid variable size.");
+  static_assert((actual) >= (expected), "Invalid variable size.");
 
 #define ASSERT_VAR_SIZE_LE(actual, expected) \
-  static_assert(actual <= expected, "Invalid variable size.");
+  static_assert((actual) <= (expected), "Invalid variable size.");
 
 /**
  * Check if the given variable is fixed-length.

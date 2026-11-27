@@ -27,8 +27,8 @@ OTTF_DEFINE_TEST_CONFIG();
   test_();                                 \
   LOG_INFO("Finished test " #test_ ": ok.");
 
-#define CHECK_WORD_ALIGNED(addr_)                 \
-  CHECK((uintptr_t)addr_ % sizeof(uint32_t) == 0, \
+#define CHECK_WORD_ALIGNED(addr_)                   \
+  CHECK((uintptr_t)(addr_) % sizeof(uint32_t) == 0, \
         #addr_ " must be word aligned");
 
 void boot_measurements_test(void) {

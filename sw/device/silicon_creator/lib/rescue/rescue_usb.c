@@ -42,7 +42,7 @@ static const usb_device_descriptor_t device_desc = {
   USB_INTERFACE_DSCR(/*inum=*/1, /*alt=*/alt, /*nep=*/0, \
                      /*class=*/kDfuDeviceClass,          \
                      /*subclass=*/kDfuDeviceSubClass,    \
-                     /*protocol=*/kDfuDeviceProtocol, /*iint=*/4 + alt)
+                     /*protocol=*/kDfuDeviceProtocol, /*iint=*/4 + (alt))
 
 static const uint8_t config_desc[] = {
     USB_CFG_DSCR_HEAD(

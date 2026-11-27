@@ -55,7 +55,7 @@ typedef struct random_order {
  * @param ctx The context to check.
  */
 #define RANDOM_ORDER_HARDENED_CHECK_DONE(ctx_) \
-  HARDENED_CHECK_EQ(ctx_.max, ctx_.ctr)
+  HARDENED_CHECK_EQ((ctx_).max, (ctx_).ctr)
 
 /**
  * Constructs a new, randomly-seeded traversal order,

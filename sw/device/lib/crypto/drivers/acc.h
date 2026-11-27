@@ -228,24 +228,24 @@ typedef struct acc_app {
  * @param max_count_ Maximum allowed instruction count.
  */
 #ifndef OT_DISABLE_HARDENING
-#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)          \
-  do {                                                        \
-    uint32_t insn_count = acc_instruction_count_get();        \
-    if (insn_count < min_count_ || insn_count > max_count_) { \
-      acc_dmem_sec_wipe_nofail();                             \
-      return OTCRYPTO_FATAL_ERR;                              \
-    }                                                         \
-    HARDENED_CHECK_GE(insn_count, min_count_);                \
-    HARDENED_CHECK_LE(insn_count, max_count_);                \
+#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)              \
+  do {                                                            \
+    uint32_t insn_count = acc_instruction_count_get();            \
+    if (insn_count < (min_count_) || insn_count > (max_count_)) { \
+      acc_dmem_sec_wipe_nofail();                                 \
+      return OTCRYPTO_FATAL_ERR;                                  \
+    }                                                             \
+    HARDENED_CHECK_GE(insn_count, min_count_);                    \
+    HARDENED_CHECK_LE(insn_count, max_count_);                    \
   } while (false)
 #else  // OT_DISABLE_HARDENING
-#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)          \
-  do {                                                        \
-    uint32_t insn_count = acc_instruction_count_get();        \
-    if (insn_count < min_count_ || insn_count > max_count_) { \
-      acc_dmem_sec_wipe_nofail();                             \
-      return OTCRYPTO_FATAL_ERR;                              \
-    }                                                         \
+#define ACC_CHECK_INSN_COUNT(min_count_, max_count_)              \
+  do {                                                            \
+    uint32_t insn_count = acc_instruction_count_get();            \
+    if (insn_count < (min_count_) || insn_count > (max_count_)) { \
+      acc_dmem_sec_wipe_nofail();                                 \
+      return OTCRYPTO_FATAL_ERR;                                  \
+    }                                                             \
   } while (false)
 #endif  // OT_DISABLE_HARDENING
 

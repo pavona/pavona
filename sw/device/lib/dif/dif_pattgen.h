@@ -35,7 +35,7 @@ extern "C" {
  * @channel_ Pattern Generator channel of the enumeration constant.
  */
 #define PATTGEN_CHANNEL_ENUM_INIT_(channel_) \
-  kDifPattgenChannel##channel_ = channel_,
+  kDifPattgenChannel##channel_ = (channel_),
 
 /**
  * A Pattern Generator channel.

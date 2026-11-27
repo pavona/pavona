@@ -64,8 +64,8 @@ static_assert(
 // program can supply its own implementation.  The implementation present
 // in this file will be named `unmocked_${name}` so the test program can
 // invoke it for testing.
-#define SHUTDOWN_FUNC(modifiers_, name_) \
-  extern void name_;                     \
+#define SHUTDOWN_FUNC(modifiers_, name_)                      \
+  extern void name_; /* NOLINT(bugprone-macro-parentheses) */ \
   void unmocked_##name_
 #else
 #define SHUTDOWN_FUNC(modifiers_, name_) \

@@ -14,7 +14,7 @@
 
 #include "hw/top/keymgr_regs.h"  // Generated.
 
-#define KEYMGR_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
+#define KEYMGR_ASSERT(a, b) static_assert((a) == (b), "Bad value for " #a)
 KEYMGR_ASSERT(kScKeymgrStateReset, KEYMGR_WORKING_STATE_STATE_VALUE_RESET);
 KEYMGR_ASSERT(kScKeymgrStateInit, KEYMGR_WORKING_STATE_STATE_VALUE_INIT);
 KEYMGR_ASSERT(kScKeymgrStateCreatorRootKey,

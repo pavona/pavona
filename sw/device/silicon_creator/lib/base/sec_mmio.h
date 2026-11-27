@@ -124,7 +124,7 @@ extern sec_mmio_ctx_t sec_mmio_ctx;
  * to their respective functions.
  */
 #define SEC_MMIO_ASSERT_WRITE_INCREMENT(enum_val, expected) \
-  static_assert(enum_val == expected, "Unexpected value for " #enum_val)
+  static_assert((enum_val) == (expected), "Unexpected value for " #enum_val)
 
 /**
  * Initializes the module.

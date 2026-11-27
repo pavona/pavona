@@ -18,11 +18,11 @@
  * @param expected_result An std::array or vector containing the expected
  * result.
  */
-#define EXPECT_EQ_CONST_ARRAY(array, array_size, expected_result)              \
-  do {                                                                         \
-    EXPECT_EQ(array_size, expected_result.size());                             \
-    EXPECT_EQ(true, std::equal(expected_result.begin(), expected_result.end(), \
-                               array));                                        \
+#define EXPECT_EQ_CONST_ARRAY(array, array_size, expected_result)  \
+  do {                                                             \
+    EXPECT_EQ(array_size, (expected_result).size());               \
+    EXPECT_EQ(true, std::equal((expected_result).begin(),          \
+                               (expected_result).end(), (array))); \
   } while (0)
 
 namespace asn1_unittest {

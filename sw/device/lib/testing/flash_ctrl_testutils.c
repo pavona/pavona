@@ -301,7 +301,7 @@ status_t flash_ctrl_testutils_show_faults(
   dif_flash_ctrl_faults_t faults = {.memory_properties_error = false};
   CHECK_DIF_OK(dif_flash_ctrl_get_faults(flash_ctrl, &faults));
 #define LOG_IF_FIELD_SET(_struct, _field)             \
-  if (_struct._field != 0) {                          \
+  if ((_struct)._field != 0) {                        \
     LOG_INFO("Flash_ctrl fault status has " #_field); \
   }
 

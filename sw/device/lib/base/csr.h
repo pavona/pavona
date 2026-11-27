@@ -52,10 +52,10 @@ uint32_t mock_csr_read(uint32_t addr);
 
 #define CSR_READ_IMPL(csr, dest)                           \
   do {                                                     \
-    static_assert(sizeof(*dest) == sizeof(uint32_t),       \
+    static_assert(sizeof(*(dest)) == sizeof(uint32_t),     \
                   "dest must point to a 4-byte variable"); \
     CSR_FORCE_CONST_EXPR(csr);                             \
-    *dest = mock_csr_read(csr);                            \
+    *(dest) = mock_csr_read(csr);                          \
   } while (false)
 
 void mock_csr_write(uint32_t addr, uint32_t value);
@@ -90,11 +90,11 @@ void mock_csr_clear_bits(uint32_t addr, uint32_t mask);
 
 #else  // OT_PLATFORM_RV32
 
-#define CSR_READ_IMPL(csr, dest)                           \
-  do {                                                     \
-    static_assert(sizeof(*dest) == sizeof(uint32_t),       \
-                  "dest must point to a 4-byte variable"); \
-    asm volatile("csrr %0, %1;" : "=r"(*dest) : "i"(csr)); \
+#define CSR_READ_IMPL(csr, dest)                             \
+  do {                                                       \
+    static_assert(sizeof(*(dest)) == sizeof(uint32_t),       \
+                  "dest must point to a 4-byte variable");   \
+    asm volatile("csrr %0, %1;" : "=r"(*(dest)) : "i"(csr)); \
   } while (false)
 
 #define CSR_WRITE_IMPL(csr, val)                       \

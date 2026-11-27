@@ -76,7 +76,7 @@
  * Defines all counter initialization constants. Used inside
  * `CFI_DEFINE_COUNTERS()`.
  */
-#define CFI_FUNC_COUNTER_INIT_CONSTANTS_(name_, value_) name_##Val0 = value_,
+#define CFI_FUNC_COUNTER_INIT_CONSTANTS_(name_, value_) name_##Val0 = (value_),
 
 /**
  * Initializes all counter values to zero. Used inside `CFI_DEFINE_COUNTERS()`.

@@ -47,7 +47,7 @@ extern "C" {
  * @channel_ ADC Controller channel of the enumeration constant.
  */
 #define DIF_ADC_CTRL_CHANNEL_ENUM_INIT_(channel_) \
-  kDifAdcCtrlChannel##channel_ = channel_,
+  kDifAdcCtrlChannel##channel_ = (channel_),
 
 /**
  * An ADC Controller Channel.
@@ -63,7 +63,7 @@ typedef enum dif_adc_ctrl_channel {
  * @filter_ ADC Controller filter of the enumeration constant.
  */
 #define DIF_ADC_CTRL_FILTER_ENUM_INIT_(filter_) \
-  kDifAdcCtrlFilter##filter_ = filter_,
+  kDifAdcCtrlFilter##filter_ = (filter_),
 
 /**
  * An ADC Controller filter.
@@ -85,7 +85,7 @@ typedef enum dif_adc_ctrl_filter {
  * @filter_cause_ ADC Controller IRQ filter cause of the enumeration constant.
  */
 #define DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_(filter_cause_) \
-  kDifAdcCtrlIrqCauseFilter##filter_cause_ = 1U << filter_cause_,
+  kDifAdcCtrlIrqCauseFilter##filter_cause_ = 1U << (filter_cause_),
 
 /**
  * An ADC Controller IRQ cause.

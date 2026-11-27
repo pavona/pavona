@@ -72,9 +72,10 @@ OTTF_DEFINE_TEST_CONFIG();
  * multiple rounds, one per peripheral.
  */
 
-#define MAKE_INIT_FUNC(ip_)                                          \
-  void ip_##_init(void *ip_, int32_t dt) {                           \
-    CHECK_DIF_OK(dif##_##ip_##_init_from_dt((dt_##ip_##_t)dt, ip_)); \
+#define MAKE_INIT_FUNC(ip_)                                           \
+  void ip_##_init(void *ip_ /* NOLINT(bugprone-macro-parentheses) */, \
+                  int32_t dt) {                                       \
+    CHECK_DIF_OK(dif##_##ip_##_init_from_dt((dt_##ip_##_t)dt, ip_));  \
   }
 
 #define MAKE_BASE_ADDR_FUNC(ip_)                                    \

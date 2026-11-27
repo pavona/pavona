@@ -20,7 +20,8 @@
 
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 
-#define ROM_PATCH_BITFIELD(m, i) ((bitfield_field32_t){.mask = m, .index = i})
+#define ROM_PATCH_BITFIELD(m, i) \
+  ((bitfield_field32_t){.mask = (m), .index = (i)})
 static const bitfield_field32_t kRomPatchLockValid = ROM_PATCH_BITFIELD(0xf, 0);
 static const bitfield_field32_t kRomPatchSizeWords =
     ROM_PATCH_BITFIELD(0xffff, 8);

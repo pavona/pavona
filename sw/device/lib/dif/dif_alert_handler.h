@@ -40,7 +40,7 @@ extern "C" {
  * @value_ Value of the enumeration constant.
  */
 #define ALERT_CLASS_ENUM_INIT_(class_, value_) \
-  kDifAlertHandlerClass##class_ = value_,
+  kDifAlertHandlerClass##class_ = (value_),
 
 /**
  * An alert class.
@@ -89,7 +89,7 @@ typedef uint32_t dif_alert_handler_alert_t;
  * constant.
  * @name_ Name of the enumeration constant.
  */
-#define LOC_ALERT_ENUM_INIT_(name_, value_) name_ = value_,
+#define LOC_ALERT_ENUM_INIT_(name_, value_) name_ = (value_),
 
 /**
  * A local alert originating from within the alert handler itself.
