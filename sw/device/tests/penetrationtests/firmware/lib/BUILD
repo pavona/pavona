@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "pavona_require_top")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -13,6 +15,8 @@ cc_library(
     name = "extclk_sca_fi",
     srcs = ["extclk_sca_fi.c"],
     hdrs = ["extclk_sca_fi.h"],
+    # extclk_sca_fi.c uses egret's external clock control, which other tops do not have.
+    target_compatible_with = pavona_require_top("egret"),
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:multibits",
