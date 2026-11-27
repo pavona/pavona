@@ -31,9 +31,13 @@ load("//rules/pavona:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/usr/bin/env bash
 set -e
 
+SCRIPT_ARGS=("$@")
+
 function cleanup {{
-  echo "cleanup: {post_test_harness} {post_test_cmd}"
-  {post_test_harness} {post_test_cmd}
+  if [[ -n "{post_test_harness}" ]]; then
+    echo "cleanup: {post_test_harness} ${{SCRIPT_ARGS[@]}} {post_test_cmd}"
+    {post_test_harness} "${{SCRIPT_ARGS[@]}}" {post_test_cmd}
+  fi
 }}
 
 # Bazel will send a SIGTERM when the timeout expires and will
