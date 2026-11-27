@@ -10,6 +10,7 @@ cc_library(
     hdrs = [
         "mlkem/mlkem_native.c",
         "mlkem/mlkem_native.h",
+        "mlkem/src/capability.h",
         "mlkem/src/cbmc.h",
         "mlkem/src/common.h",
         "mlkem/src/compress.c",

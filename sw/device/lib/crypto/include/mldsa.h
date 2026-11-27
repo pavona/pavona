@@ -127,16 +127,16 @@ enum {
   kOtcryptoMldsa87WorkBufferVerifyWords = 0,
 #else
   // Work buffer sizes in 32-bit words
-  kOtcryptoMldsa44WorkBufferKeypairWords = 11584 / sizeof(uint32_t),
-  kOtcryptoMldsa44WorkBufferSignWords = 13120 / sizeof(uint32_t),
+  kOtcryptoMldsa44WorkBufferKeypairWords = 7488 / sizeof(uint32_t),
+  kOtcryptoMldsa44WorkBufferSignWords = 9792 / sizeof(uint32_t),
   kOtcryptoMldsa44WorkBufferVerifyWords = 9120 / sizeof(uint32_t),
 
-  kOtcryptoMldsa65WorkBufferKeypairWords = 14656 / sizeof(uint32_t),
-  kOtcryptoMldsa65WorkBufferSignWords = 17248 / sizeof(uint32_t),
+  kOtcryptoMldsa65WorkBufferKeypairWords = 8512 / sizeof(uint32_t),
+  kOtcryptoMldsa65WorkBufferSignWords = 11872 / sizeof(uint32_t),
   kOtcryptoMldsa65WorkBufferVerifyWords = 10208 / sizeof(uint32_t),
 
-  kOtcryptoMldsa87WorkBufferKeypairWords = 18752 / sizeof(uint32_t),
-  kOtcryptoMldsa87WorkBufferSignWords = 21344 / sizeof(uint32_t),
+  kOtcryptoMldsa87WorkBufferKeypairWords = 10560 / sizeof(uint32_t),
+  kOtcryptoMldsa87WorkBufferSignWords = 14176 / sizeof(uint32_t),
   kOtcryptoMldsa87WorkBufferVerifyWords = 12512 / sizeof(uint32_t),
 #endif
 };
