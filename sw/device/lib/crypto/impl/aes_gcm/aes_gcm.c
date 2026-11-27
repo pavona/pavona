@@ -197,6 +197,8 @@ static status_t aes_gcm_hash_subkey(const aes_key_t key, ghash_context_t *ctx) {
   // Set the key for the GHASH context.
   ghash_init_subkey(hash_subkey.data, ctx);
 
+  hardened_memshred(hash_subkey.data, ARRAYSIZE(hash_subkey.data));
+
   return OTCRYPTO_OK;
 }
 

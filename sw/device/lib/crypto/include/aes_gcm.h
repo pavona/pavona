@@ -218,6 +218,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
  * not long enough; if `output` is overly long, only the first
  * `output_bytes_written` bytes will be used.
  *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the plaintext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
+ *
  * @param ctx Context object for the operation, updated in place.
  * @param input Plaintext for encryption, ciphertext for decryption.
  * @param[out] output Ciphertext for encryption, plaintext for decryption.
@@ -268,6 +272,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  * IMPORTANT: the caller must check both the returned status and the `success`
  * parameter to know if the tag is valid. The returned status may be OK even if
  * the tag check did not succeed, if there were no errors during processing.
+ *
+ * Security Warning: This API does not yet check the validity of the tag of the
+ * GCM before writing the plaintext. Please handle the API call with care and
+ * release decrypted data only after the tag is verified.
  *
  * @param ctx Context object for the operation.
  * @param auth_tag Authentication tag to check.
