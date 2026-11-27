@@ -797,46 +797,68 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_aes_gcm_parser",
 )
 
-[
-    run_binary(
-        name = "nist_cavp_rsa_{}_{}_json".format(
-            padding_mode,
-            operation,
-        ),
-        srcs = [
-            "@nist_cavp_rsa_fips_186_3//:Sig{}{}_186-3.{}".format(prefix, infix, suffix),
-            "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
-        ],
-        outs = [":nist_rsa_{}_{}.json".format(
-            padding_mode,
-            operation,
-        )],
-        args = [
-            "--src",
-            "$(location @nist_cavp_rsa_fips_186_3//:Sig{}{}_186-3.{})".format(prefix, infix, suffix),
-            "--dst",
-            "$(location :nist_rsa_{}_{}.json)".format(
-                padding_mode,
-                operation,
-            ),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
-            "--operation",
-            operation,
-            "--padding",
-            padding_mode,
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_rsa_parser",
-    )
-    for padding_mode, infix in [
-        ("pkcs1_1.5", "15"),
-        ("pss", "PSS"),
-    ]
-    for operation, prefix, suffix in [
-        ("sign", "Gen", "txt"),
-        ("verify", "Ver", "rsp"),
-    ]
-]
+run_binary(
+    name = "acvp_rsa_keygen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-keygen/prompt.json",
+    ],
+    outs = [":acvp_rsa_keygen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-keygen/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_keygen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--test-type",
+        "keygen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
+run_binary(
+    name = "acvp_rsa_siggen_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-siggen/prompt.json",
+    ],
+    outs = [":acvp_rsa_siggen.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-siggen/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_siggen.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--test-type",
+        "siggen",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
+
+run_binary(
+    name = "acvp_rsa_sigver_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        "@acvp_vectors//:rsa-sigver/expectedResults.json",
+        "@acvp_vectors//:rsa-sigver/prompt.json",
+    ],
+    outs = [":acvp_rsa_sigver.json"],
+    args = [
+        "--src",
+        "$(location @acvp_vectors//:rsa-sigver/prompt.json)",
+        "--dst",
+        "$(location :acvp_rsa_sigver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+        "--expected",
+        "$(location @acvp_vectors//:rsa-sigver/expectedResults.json)",
+        "--test-type",
+        "sigver",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_acvp_rsa_parser",
+)
 
 WYCHEPROOF_RSA_OAEP_SUFFIXES = {
     2048: [

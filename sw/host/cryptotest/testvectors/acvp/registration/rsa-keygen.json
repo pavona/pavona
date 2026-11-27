@@ -1,0 +1,40 @@
+{
+  "algorithm": "RSA",
+  "mode": "keyGen",
+  "revision": "FIPS186-5",
+  "infoGeneratedByServer": false,
+  "pubExpMode": "fixed",
+  "fixedPubExp": "010001",
+  "keyFormat": "crt",
+  "capabilities": [
+    {
+      "randPQ": "probable",
+      "properties": [
+        {
+          "modulo": 2048,
+          "primeTest": [
+            "2powSecStr"
+          ],
+          "pMod8": 0,
+          "qMod8": 0
+        },
+        {
+          "modulo": 3072,
+          "primeTest": [
+            "2powSecStr"
+          ],
+          "pMod8": 0,
+          "qMod8": 0
+        },
+        {
+          "modulo": 4096,
+          "primeTest": [
+            "2powSecStr"
+          ],
+          "pMod8": 0,
+          "qMod8": 0
+        }
+      ]
+    }
+  ]
+}

@@ -28,14 +28,34 @@
         "type": "integer"
       },
       "algorithm": {
-        "description": "Should be rsa",
+        "description": "Should be rsa, or the ACVP algorithm the test came from",
         "type": "string",
-        "enum": ["rsa"]
+        "enum": ["rsa", "RSA"]
+      },
+      "mode": {
+        "description": "ACVP mode the test came from",
+        "type": "string"
+      },
+      "revision": {
+        "description": "ACVP algorithm revision the test came from",
+        "type": "string"
+      },
+      "is_sample": {
+        "description": "Whether the ACVP vector set is a sample",
+        "type": "boolean"
+      },
+      "vs_id": {
+        "description": "ACVP vector set ID the test came from",
+        "type": "integer"
+      },
+      "tg_id": {
+        "description": "ACVP test group ID the test came from",
+        "type": "integer"
       },
       "operation": {
         "description": "RSA operation",
         "type": "string",
-        "enum": ["sign", "verify", "encrypt", "decrypt"]
+        "enum": ["sign", "verify", "encrypt", "decrypt", "keygen", "keygen_sign"]
       },
       "padding": {
         "description": "RSA padding type",
