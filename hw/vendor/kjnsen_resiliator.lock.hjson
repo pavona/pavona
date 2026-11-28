@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/kjnsen/resiliator
-    rev: 1a271faa61f0174d359d46bf9bc865c286ceff26
+    rev: 3a2487a235c5c72683a450e66f7ff760a4cd4de6
   }
 }

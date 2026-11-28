@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Konrad Jansen
+// SPDX-FileCopyrightText: 2026 Vincent Quentin Ulitzsch
+// SPDX-FileCopyrightText: 2026 Niclas Kuehnapfel
+// SPDX-License-Identifier: Apache-2.0
+
 #ifndef INJECTION_H
 #define INJECTION_H
 

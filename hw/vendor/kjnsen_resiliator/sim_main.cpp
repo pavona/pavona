@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2026 Konrad Jansen
+// SPDX-FileCopyrightText: 2026 Vincent Quentin Ulitzsch
+// SPDX-FileCopyrightText: 2026 Niclas Kuehnapfel
+// SPDX-License-Identifier: Apache-2.0
+
 #include <signal.h>
 #include <limits.h>
 #include <sys/types.h>
