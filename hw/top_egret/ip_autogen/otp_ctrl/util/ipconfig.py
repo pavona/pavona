@@ -28,7 +28,7 @@ class OtpCtrlIpConfig:
             return False
         if partition.get("secret"):
             return False
-        if not partition.get("sw_digest") and not partition.get("hw_digest"):
+        if partition.get("variant") != "Unbuffered":
             return False
         return True
 

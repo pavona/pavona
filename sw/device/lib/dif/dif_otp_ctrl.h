@@ -24,6 +24,18 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Indices into dif_otp_ctrl_status_t.causes that are not partitions.
+ *
+ * The DAI and the LCI report a root cause of their own after the partitions,
+ * which is why that array is two entries longer than the partition count.
+ */
+enum {
+  kDifOtpCtrlPartitionDaiError = kOtpPartitionCount,
+  kDifOtpCtrlPartitionLciError,
+  kDifOtpCtrlNumberOfCauses,
+};
+
+/**
  * Runtime configuration for OTP.
  *
  * This struct describes runtime information for one-time configuration of the

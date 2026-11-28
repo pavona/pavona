@@ -539,7 +539,7 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
 
   // Not all partitions have a digest.
   if (!partition_info.sw_digest && !partition_info.hw_digest) {
-    return kDifBadArg;
+    return kDifError;
   }
 
   // For software partitions, the digest must be nonzero; for all other
