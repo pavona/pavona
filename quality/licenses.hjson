@@ -3,6 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   licences: [
+    // Resiliator integration
+    {
+      licence:
+        '''
+        Copyright Konrad Jansen, Vincent Quentin Ulitzsch, Niclas Kuehnapfel
+        Licensed under the Apache License, Version 2.0, see LICENSE for details.
+        SPDX-License-Identifier: Apache-2.0
+        ''',
+      match_regex: "false",
+    },
     // Upstream
     {
       licence:

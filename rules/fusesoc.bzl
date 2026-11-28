@@ -92,7 +92,7 @@ def _fusesoc_build_impl(ctx):
         # compiler provided by Bazel. `fusesoc_build.py` converts these into
         # absolute paths once the working directory is known.
         target_env = {
-            "VERILATOR_BINARY": ctx.executable._verilator.path,
+            "VERILATOR_BINARY": ctx.executable.verilator.path,
             "VERILATOR_AR": ctx.executable._ar.path,
             "VERILATOR_CC": ctx.executable._cc.path,
             "VERILATOR_CXX": ctx.executable._cxx.path,
@@ -114,11 +114,11 @@ def _fusesoc_build_impl(ctx):
             cfg_file,
         ],
         tools = ([
-            ctx.executable._verilator,
+            ctx.executable.verilator,
             ctx.executable._ar,
             ctx.executable._cc,
             ctx.executable._cxx,
-        ] + ctx.files._verilator_install) if ctx.attr.target != "synth" else [],
+        ] + ctx.files.verilator_install) if ctx.attr.target != "synth" else [],
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
@@ -173,16 +173,25 @@ fusesoc_build = rule(
             executable = True,
             cfg = "exec",
         ),
-        "_verilator": attr.label(
+        "verilator": attr.label(
             executable = True,
             default = "//third_party/verilator",
-            doc = "Verilator binary target",
+            doc = """
+                Verilator binary target. Override to build against a different
+                Verilator, e.g. `//third_party/resiliator:verilator` for the
+                fault-injection fork. Must be kept consistent with
+                `verilator_install`.
+            """,
             cfg = "exec",
         ),
-        "_verilator_install": attr.label(
+        "verilator_install": attr.label(
             allow_files = True,
             default = "//third_party/verilator:verilator_install",
-            doc = "Full Verilator installation staged alongside the wrapper.",
+            doc = """
+                Full Verilator installation staged alongside the wrapper. Must
+                come from the same build as `verilator`, because the wrapper
+                `exec()`s `verilator_bin` out of this tree.
+            """,
             cfg = "exec",
         ),
         "_ar": attr.label(
